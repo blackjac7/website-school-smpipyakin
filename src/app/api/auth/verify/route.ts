@@ -6,6 +6,13 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "your-super-secret-key-change-this-in-production"
 );
 
+/**
+ * API Route Handler for verifying user authentication tokens.
+ * Handles GET requests to check if a valid session exists.
+ * Verifies the JWT token from the `auth-token` cookie.
+ *
+ * @returns {Promise<NextResponse>} JSON response containing user data if valid, or error if invalid/missing token.
+ */
 export async function GET() {
   try {
     const cookieStore = await cookies();

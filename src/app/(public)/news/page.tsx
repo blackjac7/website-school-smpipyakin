@@ -5,9 +5,19 @@ import CategoryFilter from "@/components/news/CategoryFilter";
 import { newsData } from "@/shared/data/news";
 import { useState, useMemo } from "react";
 
+/**
+ * NewsPage component.
+ * Displays a list of news and achievements, filtered by category.
+ * @returns {JSX.Element} The rendered NewsPage component.
+ */
 export default function NewsPage() {
   const [activeCategory, setActiveCategory] = useState("all");
 
+  /**
+   * Filters the news data based on the active category.
+   * Memoized to avoid unnecessary recalculations.
+   * @returns {Array} The filtered array of news items.
+   */
   const filteredNews = useMemo(() => {
     if (activeCategory === "all") return newsData;
     return newsData.filter((news) => news.category === activeCategory);

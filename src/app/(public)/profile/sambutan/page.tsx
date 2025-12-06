@@ -1,11 +1,19 @@
 import Image from "next/image";
 import { User } from "lucide-react";
 
+/**
+ * Metadata for the Principal's Welcome page.
+ */
 export const metadata = {
   title: "Sambutan Kepala Sekolah",
   description: "Sambutan Kepala SMP IP Yakin Jakarta",
 };
 
+/**
+ * SambutanPage component.
+ * Displays the welcome message from the school principal along with their photo.
+ * @returns {JSX.Element} The rendered SambutanPage component.
+ */
 export default function SambutanPage() {
   return (
     <div className="space-y-6">

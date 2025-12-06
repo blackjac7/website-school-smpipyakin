@@ -12,6 +12,17 @@ interface HeaderProps {
   onToggleSidebar?: () => void;
 }
 
+/**
+ * Header component for the OSIS dashboard.
+ * Displays the dashboard title, user profile, and notifications.
+ * @param {HeaderProps} props - The component props.
+ * @param {Notification[]} props.notifications - List of notifications.
+ * @param {boolean} props.showNotifications - Whether to show the notifications dropdown.
+ * @param {function} props.setShowNotifications - Function to toggle notification dropdown visibility.
+ * @param {number} props.unreadCount - Number of unread notifications.
+ * @param {function} props.onToggleSidebar - Function to toggle the sidebar (for mobile).
+ * @returns {JSX.Element} The rendered Header component.
+ */
 export default function Header({
   notifications,
   showNotifications,

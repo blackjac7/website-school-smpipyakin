@@ -10,6 +10,9 @@ import {
   Calendar,
 } from "lucide-react";
 
+/**
+ * Interface representing the structure of the PPDB registration form data.
+ */
 interface FormData {
   namaLengkap: string;
   nisn: string;
@@ -20,6 +23,9 @@ interface FormData {
   kontakOrtu: string;
 }
 
+/**
+ * Props for the PPDBForm component.
+ */
 interface PPDBFormProps {
   formData: FormData;
   isSubmitting: boolean;
@@ -28,6 +34,19 @@ interface PPDBFormProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
+/**
+ * PPDBForm component.
+ * Displays the registration form for new student admission.
+ * Includes fields for personal data, address, previous school, and parent contact.
+ * Handles validation and submission states.
+ * @param {PPDBFormProps} props - The component props.
+ * @param {FormData} props.formData - The current form data.
+ * @param {boolean} props.isSubmitting - Whether the form is currently being submitted.
+ * @param {"idle" | "success" | "error"} props.submitStatus - The status of the form submission.
+ * @param {function} props.onInputChange - Callback function to handle input changes.
+ * @param {function} props.onSubmit - Callback function to handle form submission.
+ * @returns {JSX.Element} The rendered PPDBForm component.
+ */
 export default function PPDBForm({
   formData,
   isSubmitting,

@@ -12,8 +12,16 @@ import adminIllustration from "@/assets/admin-illustration.jpg";
 import osisIllustration from "@/assets/osis-illustration.jpg";
 import ppdbIllustration from "@/assets/ppdb-illustration.jpg";
 
+/**
+ * Type defining the possible user roles.
+ */
 type Role = "siswa" | "kesiswaan" | "admin" | "osis" | "ppdb-officer";
 
+/**
+ * LoginForm component for user authentication.
+ * Handles user input, role selection, and submission of login credentials.
+ * Displays different illustrations and titles based on the selected role.
+ */
 const LoginForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -24,6 +32,11 @@ const LoginForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  /**
+   * Handles the form submission event.
+   * Validates input, attempts login, and redirects on success.
+   * @param {object} e - The form event object.
+   */
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
 

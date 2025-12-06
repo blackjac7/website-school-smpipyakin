@@ -2,6 +2,12 @@
 
 import { Facebook, Instagram, Youtube, MessageCircle } from "lucide-react";
 
+/**
+ * SocialMediaSection component.
+ * Displays a grid of social media links with icons, descriptions, and hover effects.
+ * Includes a call-to-action message.
+ * @returns {JSX.Element} The rendered SocialMediaSection component.
+ */
 const SocialMediaSection = () => {
   const socialMedias = [
     {

@@ -10,6 +10,18 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
+/**
+ * Sidebar component.
+ * Displays the navigation sidebar for the admin dashboard.
+ * Supports mobile responsive behavior with overlay and close button.
+ * @param {SidebarProps} props - The component props.
+ * @param {MenuItem[]} props.menuItems - Array of menu items to display.
+ * @param {string} props.activeMenu - The ID of the currently active menu item.
+ * @param {function} props.setActiveMenu - Function to set the active menu item.
+ * @param {boolean} [props.isOpen=true] - Whether the sidebar is open (for mobile).
+ * @param {function} [props.onClose] - Function to close the sidebar (for mobile).
+ * @returns {JSX.Element} The rendered Sidebar component.
+ */
 export default function Sidebar({
   menuItems,
   activeMenu,

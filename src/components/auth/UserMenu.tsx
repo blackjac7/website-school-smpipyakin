@@ -7,12 +7,23 @@ interface UserMenuProps {
   className?: string;
 }
 
+/**
+ * UserMenu component.
+ * Displays the current user's profile information and a logout button.
+ * Can be toggled open and closed.
+ * @param {UserMenuProps} props - The component props.
+ * @returns {JSX.Element | null} The UserMenu component.
+ */
 export function UserMenu({ className = "" }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout, isLoggingOut } = useAuth();
 
   if (!user) return null;
 
+  /**
+   * Handles the logout action.
+   * Closes the menu and calls the logout function from useAuth.
+   */
   const handleLogout = async () => {
     setIsOpen(false);
     await logout();

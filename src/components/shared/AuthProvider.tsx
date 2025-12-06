@@ -11,6 +11,9 @@ import { useRouter, usePathname } from "next/navigation";
 import LogoutAnimation from "./LogoutAnimation";
 import ToastNotification from "./ToastNotification";
 
+/**
+ * Interface representing the authenticated user.
+ */
 interface User {
   id: string;
   name: string;
@@ -21,6 +24,9 @@ interface User {
   permissions: string[];
 }
 
+/**
+ * Interface representing a toast notification.
+ */
 interface Toast {
   id: string;
   type: "success" | "error" | "info" | "warning";
@@ -29,6 +35,9 @@ interface Toast {
   duration?: number;
 }
 
+/**
+ * Interface for the AuthContext value.
+ */
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
@@ -42,6 +51,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Hook to access the authentication context.
+ * @returns {AuthContextType} The authentication context value.
+ * @throws {Error} If used outside of an AuthProvider.
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -54,6 +68,13 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+/**
+ * AuthProvider component.
+ * Manages global authentication state, including user login, logout, and permissions.
+ * Also provides toast notifications and logout animations.
+ * @param {AuthProviderProps} props - The component props.
+ * @returns {JSX.Element} The AuthProvider component.
+ */
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,6 +94,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [pathname]);
 
+  /**
+   * Checks the authentication status by verifying the token with the server.
+   */
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
@@ -100,6 +124,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  /**
+   * Logs in a user with the provided credentials.
+   * @param {string} username - The username.
+   * @param {string} password - The password.
+   * @param {string} role - The role.
+   * @returns {Promise<boolean>} - True if login was successful, false otherwise.
+   */
   const login = async (
     username: string,
     password: string,
@@ -158,16 +189,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoading(false);
     }
   };
+
+  /**
+   * Shows a toast notification.
+   * @param {Omit<Toast, "id">} toast - The toast properties without ID.
+   */
   const showToast = (toast: Omit<Toast, "id">) => {
     const id = Date.now().toString();
     const newToast = { id, ...toast };
     setToasts((prev) => [...prev, newToast]);
   };
 
+  /**
+   * Removes a toast notification by ID.
+   * @param {string} id - The ID of the toast to remove.
+   */
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
+  /**
+   * Logs out the current user.
+   */
   const logout = async () => {
     setIsLoggingOut(true);
 
@@ -209,10 +252,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  /**
+   * Checks if the user has a specific permission.
+   * @param {string} permission - The permission to check.
+   * @returns {boolean} - True if the user has the permission.
+   */
   const hasPermission = (permission: string): boolean => {
     return user?.permissions?.includes(permission) || false;
   };
 
+  /**
+   * Checks if the user has a specific role.
+   * @param {string | string[]} roles - The role or array of roles to check.
+   * @returns {boolean} - True if the user has the role (or one of the roles).
+   */
   const hasRole = (roles: string | string[]): boolean => {
     if (!user) return false;
 
@@ -220,6 +273,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return roleArray.includes(user.role);
   };
 
+  /**
+   * Handles the completion of the logout animation.
+   */
   const handleAnimationComplete = () => {
     setShowAnimation(false);
     // Set flag for logout success message

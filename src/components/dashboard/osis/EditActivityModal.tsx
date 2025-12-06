@@ -10,6 +10,16 @@ interface EditActivityModalProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
+/**
+ * EditActivityModal component.
+ * Displays a modal form for editing an existing activity in the OSIS dashboard.
+ * @param {EditActivityModalProps} props - The component props.
+ * @param {boolean} props.isOpen - Whether the modal is open.
+ * @param {Activity | null} props.activity - The activity to edit.
+ * @param {function} props.onClose - Callback function to close the modal.
+ * @param {function} props.onSubmit - Callback function to handle form submission.
+ * @returns {JSX.Element | null} The rendered EditActivityModal component or null if not open.
+ */
 export default function EditActivityModal({
   isOpen,
   activity,

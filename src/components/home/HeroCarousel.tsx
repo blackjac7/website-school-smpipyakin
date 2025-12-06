@@ -38,6 +38,12 @@ const heroSlides = [
   },
 ];
 
+/**
+ * HeroCarousel component.
+ * Displays a full-width image carousel with text overlays and call-to-action buttons.
+ * Automatically cycles through slides and provides manual navigation.
+ * @returns {JSX.Element} The rendered HeroCarousel component.
+ */
 export default function HeroCarousel() {
   const [current, setCurrent] = useState(0);
 

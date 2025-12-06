@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { MapPin, Phone, Mail } from "lucide-react";
 
+/**
+ * Footer component for the application.
+ * Displays school information, quick links, operational hours, and copyright notice.
+ * @returns {JSX.Element} The rendered Footer component.
+ */
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-white">

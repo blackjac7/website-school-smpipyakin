@@ -1,3 +1,6 @@
+/**
+ * Export all components and types from the student dashboard module.
+ */
 export { default as DashboardHeader } from './DashboardHeader';
 export { default as ProfileSection } from './ProfileSection';
 export { default as NotificationsOverview } from './NotificationsOverview';

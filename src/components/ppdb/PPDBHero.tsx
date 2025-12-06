@@ -2,6 +2,11 @@
 
 import { GraduationCap, Calendar, Users, Award } from "lucide-react";
 
+/**
+ * PPDBHero component.
+ * Displays the hero section of the PPDB page with title, subtitle, CTA buttons, and highlights.
+ * @returns {JSX.Element} The rendered PPDBHero component.
+ */
 export default function PPDBHero() {
   const highlights = [
     {

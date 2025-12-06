@@ -19,6 +19,17 @@ interface ActivitiesListProps {
   onDeleteActivity: (id: number) => void;
 }
 
+/**
+ * ActivitiesList component.
+ * Displays a list of OSIS activities with options to view, edit, and delete.
+ * @param {ActivitiesListProps} props - The component props.
+ * @param {Activity[]} props.activities - The array of activities to display.
+ * @param {function} props.onAddActivity - Callback function to add a new activity.
+ * @param {function} props.onViewActivity - Callback function to view activity details.
+ * @param {function} props.onEditActivity - Callback function to edit an activity.
+ * @param {function} props.onDeleteActivity - Callback function to delete an activity.
+ * @returns {JSX.Element} The rendered ActivitiesList component.
+ */
 export default function ActivitiesList({
   activities,
   onAddActivity,

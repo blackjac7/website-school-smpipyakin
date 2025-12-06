@@ -26,6 +26,11 @@ const dummyNews = [
   },
 ];
 
+/**
+ * NewsSection component.
+ * Displays a grid of recent news cards with images, titles, dates, and links to details.
+ * @returns {JSX.Element} The rendered NewsSection component.
+ */
 export default function NewsSection() {
   return (
     <section className="bg-gray-50 py-16">

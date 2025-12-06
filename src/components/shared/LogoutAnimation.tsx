@@ -8,6 +8,14 @@ interface LogoutAnimationProps {
   onComplete?: () => void;
 }
 
+/**
+ * LogoutAnimation component.
+ * Displays a multi-step animation during the logout process.
+ * @param {LogoutAnimationProps} props - The component props.
+ * @param {boolean} props.isVisible - Whether the animation should be visible.
+ * @param {function} [props.onComplete] - Callback function to execute when the animation completes.
+ * @returns {JSX.Element | null} The rendered LogoutAnimation component or null if not visible.
+ */
 export default function LogoutAnimation({
   isVisible,
   onComplete,

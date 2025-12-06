@@ -11,6 +11,13 @@ const menuItems = [
   { path: "/profile/guru", label: "Profil Guru" },
 ];
 
+/**
+ * ProfileLayout component.
+ * Provides a common layout for all profile-related pages, including a sidebar navigation menu.
+ * @param {object} props - The component props.
+ * @param {React.ReactNode} props.children - The child components to be rendered within the layout.
+ * @returns {JSX.Element} The rendered ProfileLayout component.
+ */
 export default function ProfileLayout({
   children,
 }: {

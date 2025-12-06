@@ -5,6 +5,11 @@ import {
   AlertTriangle 
 } from "lucide-react";
 
+/**
+ * StatsCards component.
+ * Displays a grid of statistic cards for the student affairs dashboard.
+ * @returns {JSX.Element} The rendered StatsCards component.
+ */
 export default function StatsCards() {
   const stats = [
     {

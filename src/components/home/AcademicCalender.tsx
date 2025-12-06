@@ -4,6 +4,11 @@ import { Calendar } from "lucide-react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+/**
+ * AcademicCalendar component.
+ * Displays a preview of the academic calendar with upcoming events and activities.
+ * @returns {JSX.Element} The rendered AcademicCalendar component.
+ */
 export default function AcademicCalendar() {
   const calendar = [
     {

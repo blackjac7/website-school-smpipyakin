@@ -11,6 +11,18 @@ interface HeaderProps {
   onToggleSidebar?: () => void;
 }
 
+/**
+ * Header component for the student affairs dashboard.
+ * Displays the current menu title, description, notifications, and user profile/logout.
+ * @param {HeaderProps} props - The component props.
+ * @param {string} props.activeMenu - The ID of the currently active menu.
+ * @param {Notification[]} props.notifications - List of notifications.
+ * @param {boolean} props.showNotifications - Whether to show the notification dropdown.
+ * @param {function} props.setShowNotifications - Function to toggle notification dropdown visibility.
+ * @param {number} props.unreadCount - Number of unread notifications.
+ * @param {function} props.onToggleSidebar - Function to toggle the sidebar (for mobile).
+ * @returns {JSX.Element} The rendered Header component.
+ */
 export default function Header({
   activeMenu,
   notifications,

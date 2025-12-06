@@ -2,6 +2,11 @@
 
 import { Calendar as CalendarIcon, Clock, Check, X } from "lucide-react";
 
+/**
+ * StatsCards component.
+ * Displays a grid of statistic cards for the OSIS dashboard.
+ * @returns {JSX.Element} The rendered StatsCards component.
+ */
 export default function StatsCards() {
   const stats = [
     {

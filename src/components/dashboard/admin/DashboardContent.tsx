@@ -10,6 +10,16 @@ interface DashboardContentProps {
   onAddContent: () => void;
 }
 
+/**
+ * DashboardContent component.
+ * Displays the main content for the admin dashboard, including stats cards, quick action buttons, and activity list.
+ * @param {DashboardContentProps} props - The component props.
+ * @param {StatCard[]} props.stats - The array of statistics to display.
+ * @param {Activity[]} props.activities - The array of recent activities to display.
+ * @param {function} props.onAddUser - Callback function to add a new user.
+ * @param {function} props.onAddContent - Callback function to add new content.
+ * @returns {JSX.Element} The rendered DashboardContent component.
+ */
 export default function DashboardContent({ stats, activities, onAddUser, onAddContent }: DashboardContentProps) {
   return (
     <>

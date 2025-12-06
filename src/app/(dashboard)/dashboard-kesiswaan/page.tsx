@@ -18,6 +18,11 @@ import {
 } from "@/components/dashboard/kesiswaan";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
+/**
+ * KesiswaanDashboard component.
+ * Provides the main interface for the student affairs dashboard, including content validation, reports, and settings.
+ * @returns {JSX.Element} The rendered KesiswaanDashboard component.
+ */
 function KesiswaanDashboard() {
   const [activeMenu, setActiveMenu] = useState("validation");
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,6 +38,7 @@ function KesiswaanDashboard() {
     "approve" | "reject"
   >("approve");
 
+  // ... (Data definitions for menuItems, notifications, contentItems, reportStats remain the same)
   const menuItems: MenuItem[] = [
     {
       id: "validation",
@@ -243,7 +249,12 @@ function KesiswaanDashboard() {
   );
 }
 
-// Wrap with protected route for admin and kesiswaan only
+/**
+ * KesiswaanDashboardPage component.
+ * Main entry point for the student affairs dashboard.
+ * Protects the route to ensure only users with the 'kesiswaan' role can access it.
+ * @returns {JSX.Element} The rendered KesiswaanDashboardPage component.
+ */
 export default function KesiswaanDashboardPage() {
   return (
     <ProtectedRoute requiredRoles={["kesiswaan"]}>

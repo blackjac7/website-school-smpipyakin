@@ -16,6 +16,12 @@ import {
 } from "@/components/dashboard/ppdb";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
+/**
+ * PPDBDashboard component.
+ * Provides the main interface for the PPDB (New Student Admission) dashboard.
+ * Allows officers to validate applicants, view reports, and manage settings.
+ * @returns {JSX.Element} The rendered PPDBDashboard component.
+ */
 function PPDBDashboard() {
   const [activeMenu, setActiveMenu] = useState("validation");
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,6 +34,7 @@ function PPDBDashboard() {
   const [validationAction, setValidationAction] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // ... (Data definitions for menuItems, stats, applicants, reportData remain the same)
   const menuItems: MenuItem[] = [
     { id: "validation", label: "Validasi Pendaftar", icon: Users },
     { id: "reports", label: "Laporan", icon: FileText },
@@ -246,7 +253,12 @@ function PPDBDashboard() {
   );
 }
 
-// Wrap with protected route for admin and ppdb-officer only
+/**
+ * PPDBDashboardPage component.
+ * Main entry point for the PPDB dashboard.
+ * Protects the route to ensure only users with the 'ppdb-officer' role can access it.
+ * @returns {JSX.Element} The rendered PPDBDashboardPage component.
+ */
 export default function PPDBDashboardPage() {
   return (
     <ProtectedRoute requiredRoles={["ppdb-officer"]}>

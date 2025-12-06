@@ -15,6 +15,15 @@ const PROTECTED_ROUTES = {
   "/dashboard-ppdb": ["ppdb-officer"],
 };
 
+/**
+ * Middleware function for handling authentication and authorization.
+ * Checks if the request is for a protected route, verifies the JWT token,
+ * and ensures the user has the required role to access the route.
+ * Redirects to login or unauthorized pages as needed.
+ *
+ * @param {NextRequest} request - The incoming request object.
+ * @returns {Promise<NextResponse>} The response, potentially a redirect or modified headers.
+ */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -87,6 +96,10 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
+/**
+ * Configuration for the middleware matcher.
+ * Specifies which paths trigger the middleware.
+ */
 export const config = {
   matcher: [
     "/dashboard-admin/:path*",

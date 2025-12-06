@@ -16,6 +16,13 @@ interface NewsCardProps {
   news: News;
 }
 
+/**
+ * NewsCard component.
+ * Displays a summary of a news item, including image, date, category, title, excerpt, and a link to read more.
+ * @param {NewsCardProps} props - The component props.
+ * @param {News} props.news - The news data to display.
+ * @returns {JSX.Element} The rendered NewsCard component.
+ */
 export default function NewsCard({ news }: NewsCardProps) {
   const Icon = news.category === "achievement" ? Award : Users;
 

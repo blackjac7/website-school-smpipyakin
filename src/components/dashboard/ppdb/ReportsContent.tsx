@@ -13,6 +13,14 @@ interface ReportsContentProps {
   reportData: ReportData;
 }
 
+/**
+ * ReportsContent component.
+ * Displays reports and statistics for the PPDB dashboard.
+ * Includes total applicants, acceptance rate, average grade, document completion, monthly registrations, regional distribution, grade distribution, and export options.
+ * @param {ReportsContentProps} props - The component props.
+ * @param {ReportData} props.reportData - The data to display in the reports.
+ * @returns {JSX.Element} The rendered ReportsContent component.
+ */
 export default function ReportsContent({ reportData }: ReportsContentProps) {
   return (
     <div className="space-y-8">

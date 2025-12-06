@@ -23,6 +23,16 @@ interface LoadingEffectProps {
   showMessage?: boolean;
 }
 
+/**
+ * LoadingEffect component.
+ * Displays a loading screen with a Lottie animation, school logo, and loading message.
+ * Optimized for SSR by dynamically importing the Lottie player.
+ * @param {LoadingEffectProps} props - The component props.
+ * @param {string} [props.message="Memuat halaman..."] - The loading message to display.
+ * @param {"sm" | "md" | "lg"} [props.size="md"] - The size of the loading animation.
+ * @param {boolean} [props.showMessage=true] - Whether to show the loading message.
+ * @returns {JSX.Element} The rendered LoadingEffect component.
+ */
 const LoadingEffect = memo(
   ({
     message = "Memuat halaman...",
