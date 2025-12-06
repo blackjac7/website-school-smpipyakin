@@ -3,7 +3,9 @@
 import FacilityCard from "@/components/facilities/FacilityCard";
 import { School, BookOpen, Dumbbell, FlaskConical } from "lucide-react";
 
-// Type definition for Facility
+/**
+ * Type definition for Facility.
+ */
 export interface Facility {
   id: string;
   name: string;
@@ -76,6 +78,11 @@ const categoryIcons: Record<Facility["category"], React.ReactElement> = {
   other: <School className="h-6 w-6" />,
 };
 
+/**
+ * FacilitiesPage component.
+ * Displays a grid of school facilities with their descriptions and images.
+ * @returns {JSX.Element} The rendered FacilitiesPage component.
+ */
 const FacilitiesPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 pt-25">

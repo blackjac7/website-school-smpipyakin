@@ -10,6 +10,16 @@ interface HeaderProps {
   onToggleSidebar?: () => void;
 }
 
+/**
+ * Header component for the admin dashboard.
+ * Contains the dashboard title, notification bell with dropdown, and user profile/logout section.
+ * @param {HeaderProps} props - The component props.
+ * @param {boolean} props.showNotifications - Whether to show the notifications dropdown.
+ * @param {function} props.setShowNotifications - Function to toggle notification dropdown visibility.
+ * @param {Notification[]} props.notifications - List of notification objects.
+ * @param {function} props.onToggleSidebar - Function to toggle the sidebar (for mobile).
+ * @returns {JSX.Element} The rendered Header component.
+ */
 export default function Header({
   showNotifications,
   setShowNotifications,

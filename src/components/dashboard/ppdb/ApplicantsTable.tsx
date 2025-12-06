@@ -8,6 +8,14 @@ interface ApplicantsTableProps {
   onViewDetail: (applicant: Applicant) => void;
 }
 
+/**
+ * ApplicantsTable component.
+ * Displays a table of PPDB applicants with pagination.
+ * @param {ApplicantsTableProps} props - The component props.
+ * @param {Applicant[]} props.applicants - Array of applicant objects to display.
+ * @param {function} props.onViewDetail - Callback function to view applicant details.
+ * @returns {JSX.Element} The rendered ApplicantsTable component.
+ */
 export default function ApplicantsTable({
   applicants,
   onViewDetail,

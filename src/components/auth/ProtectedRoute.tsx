@@ -5,13 +5,27 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/shared/AuthProvider";
 import { SimpleLoading } from "@/components/shared";
 
+/**
+ * Props for the ProtectedRoute component.
+ */
 interface ProtectedRouteProps {
+  /** The child components to render if the user is authorized. */
   children: ReactNode;
+  /** An array of roles allowed to access this route. */
   requiredRoles?: string[];
+  /** An array of permissions required to access this route. */
   requiredPermissions?: string[];
+  /** The URL to redirect to if the user is not authenticated. */
   fallbackUrl?: string;
 }
 
+/**
+ * ProtectedRoute component.
+ * Wraps components that require authentication and specific roles/permissions.
+ * Redirects unauthenticated or unauthorized users to appropriate pages.
+ * @param {ProtectedRouteProps} props - The component props.
+ * @returns {JSX.Element | null} The children if authorized, otherwise null or a loading indicator.
+ */
 export function ProtectedRoute({
   children,
   requiredRoles = [],

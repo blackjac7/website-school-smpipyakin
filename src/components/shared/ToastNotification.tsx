@@ -96,6 +96,14 @@ const Toast = ({
   );
 };
 
+/**
+ * ToastNotification component.
+ * Displays a list of toast notifications.
+ * @param {ToastNotificationProps} props - The component props.
+ * @param {ToastProps[]} props.toasts - The list of toast notifications to display.
+ * @param {function} props.onClose - Callback function to close a toast notification.
+ * @returns {JSX.Element | null} The rendered ToastNotification component or null if no toasts.
+ */
 export default function ToastNotification({
   toasts,
   onClose,

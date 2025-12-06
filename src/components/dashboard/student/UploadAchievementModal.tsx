@@ -8,6 +8,16 @@ interface UploadAchievementModalProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
+/**
+ * UploadAchievementModal component.
+ * Displays a modal form for students to upload new achievements.
+ * Includes fields for category, title, description, date, level, and document upload.
+ * @param {UploadAchievementModalProps} props - The component props.
+ * @param {boolean} props.isOpen - Whether the modal is open.
+ * @param {function} props.onClose - Callback function to close the modal.
+ * @param {function} props.onSubmit - Callback function to handle form submission.
+ * @returns {JSX.Element | null} The rendered UploadAchievementModal component or null if not open.
+ */
 export default function UploadAchievementModal({
   isOpen,
   onClose,

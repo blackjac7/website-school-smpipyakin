@@ -7,6 +7,13 @@ interface ValidationStatusCardProps {
   validationStatus: ValidationStatus[];
 }
 
+/**
+ * ValidationStatusCard component.
+ * Displays the validation status of OSIS activities.
+ * @param {ValidationStatusCardProps} props - The component props.
+ * @param {ValidationStatus[]} props.validationStatus - Array of validation statuses to display.
+ * @returns {JSX.Element} The rendered ValidationStatusCard component.
+ */
 export default function ValidationStatusCard({
   validationStatus,
 }: ValidationStatusCardProps) {

@@ -9,6 +9,15 @@ interface FacilityCardProps {
   icon: React.ReactNode;
 }
 
+/**
+ * FacilityCard component.
+ * Displays a card for a school facility, including an image, title, description, and an icon.
+ * Handles image loading and error states.
+ * @param {FacilityCardProps} props - The component props.
+ * @param {Facility} props.facility - The facility data to display.
+ * @param {React.ReactNode} props.icon - The icon to display on the card.
+ * @returns {JSX.Element} The rendered FacilityCard component.
+ */
 const FacilityCard = ({ facility, icon }: FacilityCardProps) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);

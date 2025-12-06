@@ -9,6 +9,12 @@ import {
   LogoutAnimation,
 } from "@/components/shared";
 
+/**
+ * LogoutDemo component.
+ * Demonstrates the usage of various logout-related components.
+ * Includes buttons for simple logout, profile dropdown, sidebar logout, and manual controls for modals and animations.
+ * @returns {JSX.Element} The rendered LogoutDemo component.
+ */
 export default function LogoutDemo() {
   const [showModal, setShowModal] = useState(false);
   const [showAnimation, setShowAnimation] = useState(false);

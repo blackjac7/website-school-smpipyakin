@@ -1,16 +1,27 @@
+/**
+ * Interface representing a menu item in the PPDB dashboard sidebar.
+ */
 export interface MenuItem {
   id: string;
   label: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: any;
 }
 
+/**
+ * Interface representing a statistic item in the stats cards.
+ */
 export interface Stat {
   label: string;
   value: string;
   color: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: any;
 }
 
+/**
+ * Interface representing a PPDB applicant.
+ */
 export interface Applicant {
   id: number;
   name: string;
@@ -36,6 +47,9 @@ export interface Applicant {
   };
 }
 
+/**
+ * Interface representing the structure of report data.
+ */
 export interface ReportData {
   monthly: Array<{
     month: string;

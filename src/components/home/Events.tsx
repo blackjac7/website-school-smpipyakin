@@ -2,6 +2,11 @@
 
 import { Calendar } from "lucide-react";
 
+/**
+ * Events component.
+ * Displays a list of upcoming school events.
+ * @returns {JSX.Element} The rendered Events component.
+ */
 export default function Events() {
   const agenda = [
     {

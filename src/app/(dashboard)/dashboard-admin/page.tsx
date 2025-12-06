@@ -31,6 +31,12 @@ import {
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { UserMenu } from "@/components/auth/UserMenu";
 
+/**
+ * AdminDashboard component.
+ * Provides the main interface for the admin dashboard, including sidebar, header, and content areas.
+ * Manages state for menus, modals, notifications, and data display.
+ * @returns {JSX.Element} The rendered AdminDashboard component.
+ */
 function AdminDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [showUserModal, setShowUserModal] = useState(false);
@@ -40,6 +46,7 @@ function AdminDashboard() {
   const [userModalMode, setUserModalMode] = useState<"add" | "edit">("add");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // ... (Menu items, stats, users, notifications, activities, and contentItems data remain the same)
   const menuItems: MenuItem[] = [
     { id: "dashboard", label: "Dashboard Home", icon: Home },
     { id: "users", label: "Manajemen Pengguna", icon: Users },
@@ -351,7 +358,12 @@ function AdminDashboard() {
   );
 }
 
-// Wrap with protected route for admin only
+/**
+ * AdminDashboardPage component.
+ * Main entry point for the admin dashboard.
+ * Protects the route to ensure only users with the 'admin' role can access it.
+ * @returns {JSX.Element} The rendered AdminDashboardPage component.
+ */
 export default function AdminDashboardPage() {
   return (
     <ProtectedRoute requiredRoles={["admin"]}>

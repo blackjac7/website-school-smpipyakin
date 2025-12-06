@@ -6,6 +6,9 @@ import PPDBInfo from "@/components/ppdb/PPDBInfo";
 import PPDBForm from "@/components/ppdb/PPDBForm";
 import PPDBStatus from "@/components/ppdb/PPDBStatus";
 
+/**
+ * Interface representing the structure of the PPDB registration form data.
+ */
 interface FormData {
   namaLengkap: string;
   nisn: string;
@@ -16,6 +19,12 @@ interface FormData {
   kontakOrtu: string;
 }
 
+/**
+ * PPDBPage component.
+ * Main page for the New Student Admission (PPDB) process.
+ * Includes sections for Hero, Info, Registration Form, and Status Check.
+ * @returns {JSX.Element} The rendered PPDBPage component.
+ */
 export default function PPDBPage() {
   const [formData, setFormData] = useState<FormData>({
     namaLengkap: "",
@@ -38,10 +47,20 @@ export default function PPDBPage() {
     document.title = "PPDB - SMP IP Yakin Jakarta";
   }, []);
 
+  /**
+   * Handles input changes in the registration form.
+   * @param {string} field - The name of the field being updated.
+   * @param {string} value - The new value of the field.
+   */
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  /**
+   * Handles the submission of the registration form.
+   * Simulates an API call and updates the submission status.
+   * @param {React.FormEvent} e - The form submission event.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -79,6 +98,10 @@ export default function PPDBPage() {
     }
   };
 
+  /**
+   * Checks the registration status based on the provided NISN.
+   * Simulates a status check response.
+   */
   const handleStatusCheck = () => {
     if (statusNISN.trim()) {
       // Simulate status check with realistic responses
@@ -97,6 +120,9 @@ export default function PPDBPage() {
     }
   };
 
+  /**
+   * Simulates the download of the PPDB guide.
+   */
   const handleDownloadGuide = () => {
     // Simulate PDF download
     alert(

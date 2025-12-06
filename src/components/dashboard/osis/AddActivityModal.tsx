@@ -8,6 +8,15 @@ interface AddActivityModalProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
+/**
+ * AddActivityModal component.
+ * Displays a modal form for adding a new activity in the OSIS dashboard.
+ * @param {AddActivityModalProps} props - The component props.
+ * @param {boolean} props.isOpen - Whether the modal is open.
+ * @param {function} props.onClose - Callback function to close the modal.
+ * @param {function} props.onSubmit - Callback function to handle form submission.
+ * @returns {JSX.Element | null} The rendered AddActivityModal component or null if not open.
+ */
 export default function AddActivityModal({
   isOpen,
   onClose,

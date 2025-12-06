@@ -15,6 +15,19 @@ interface LogoutButtonProps {
   onLogout?: () => void;
 }
 
+/**
+ * LogoutButton component.
+ * Displays a button or dropdown for logging out the user.
+ * Includes multiple variants (simple, dropdown, profile) and a confirmation modal.
+ * @param {LogoutButtonProps} props - The component props.
+ * @param {string} [props.userName="User"] - The name of the user.
+ * @param {string} [props.userRole="Role"] - The role of the user.
+ * @param {string} [props.userAvatar] - The avatar URL of the user.
+ * @param {"simple" | "dropdown" | "profile"} [props.variant="simple"] - The display variant.
+ * @param {string} [props.className=""] - Additional CSS classes.
+ * @param {function} [props.onLogout] - Custom logout handler (optional).
+ * @returns {JSX.Element | null} The rendered LogoutButton component.
+ */
 export default function LogoutButton({
   userName = "User",
   userRole = "Role",

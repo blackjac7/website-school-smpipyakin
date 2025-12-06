@@ -1,5 +1,8 @@
 import { LucideIcon } from 'lucide-react';
 
+/**
+ * Interface representing a User in the admin dashboard.
+ */
 export interface User {
   id: number;
   name: string;
@@ -11,6 +14,9 @@ export interface User {
   joinDate: string;
 }
 
+/**
+ * Interface representing a Notification in the admin dashboard.
+ */
 export interface Notification {
   id: number;
   type: 'alert' | 'info' | 'success';
@@ -20,6 +26,9 @@ export interface Notification {
   read: boolean;
 }
 
+/**
+ * Interface representing a recent Activity.
+ */
 export interface Activity {
   user: string;
   action: string;
@@ -27,6 +36,9 @@ export interface Activity {
   type: 'content' | 'profile' | 'calendar' | 'system';
 }
 
+/**
+ * Interface representing a Content Item (News/Announcement).
+ */
 export interface ContentItem {
   id: number;
   title: string;
@@ -37,6 +49,9 @@ export interface ContentItem {
   views: number;
 }
 
+/**
+ * Interface representing a Statistics Card data.
+ */
 export interface StatCard {
   label: string;
   value: string;
@@ -45,12 +60,18 @@ export interface StatCard {
   changeType: 'increase' | 'decrease' | 'stable';
 }
 
+/**
+ * Interface representing a Menu Item in the sidebar.
+ */
 export interface MenuItem {
   id: string;
   label: string;
   icon: LucideIcon;
 }
 
+/**
+ * Props for the AdminDashboard component.
+ */
 export interface AdminDashboardProps {
   activeMenu: string;
   setActiveMenu: (menu: string) => void;
@@ -58,6 +79,9 @@ export interface AdminDashboardProps {
   setShowNotifications: (show: boolean) => void;
 }
 
+/**
+ * Props for the UserModal component.
+ */
 export interface UserModalProps {
   show: boolean;
   onClose: () => void;
@@ -66,6 +90,9 @@ export interface UserModalProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
+/**
+ * Props for the ContentModal component.
+ */
 export interface ContentModalProps {
   show: boolean;
   onClose: () => void;

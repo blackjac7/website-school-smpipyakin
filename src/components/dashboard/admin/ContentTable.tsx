@@ -6,6 +6,14 @@ interface ContentTableProps {
   onAddContent: () => void;
 }
 
+/**
+ * ContentTable component.
+ * Displays a table of content items (news, announcements) with search, filter, and action buttons.
+ * @param {ContentTableProps} props - The component props.
+ * @param {ContentItem[]} props.contentItems - The array of content items to display.
+ * @param {function} props.onAddContent - Callback function to trigger adding new content.
+ * @returns {JSX.Element} The rendered ContentTable component.
+ */
 export default function ContentTable({
   contentItems,
   onAddContent,

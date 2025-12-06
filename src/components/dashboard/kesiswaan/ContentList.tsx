@@ -21,6 +21,22 @@ interface ContentListProps {
   onPreview: (content: ContentItem) => void;
 }
 
+/**
+ * ContentList component.
+ * Displays a list of content items with filtering, searching, and action buttons.
+ * @param {ContentListProps} props - The component props.
+ * @param {ContentItem[]} props.contentItems - The array of content items to display.
+ * @param {string} props.searchTerm - The current search term.
+ * @param {function} props.setSearchTerm - Function to update the search term.
+ * @param {string} props.statusFilter - The current status filter.
+ * @param {function} props.setStatusFilter - Function to update the status filter.
+ * @param {string} props.categoryFilter - The current category filter.
+ * @param {function} props.setCategoryFilter - Function to update the category filter.
+ * @param {function} props.onApprove - Callback function to approve a content item.
+ * @param {function} props.onReject - Callback function to reject a content item.
+ * @param {function} props.onPreview - Callback function to preview a content item.
+ * @returns {JSX.Element} The rendered ContentList component.
+ */
 export default function ContentList({
   contentItems,
   searchTerm,
