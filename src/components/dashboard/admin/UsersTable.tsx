@@ -8,16 +8,6 @@ interface UsersTableProps {
   onDeleteUser: (id: number) => void;
 }
 
-/**
- * UsersTable component.
- * Displays a table of users with search, filter, and action buttons (add, edit, delete, export).
- * @param {UsersTableProps} props - The component props.
- * @param {UserType[]} props.users - The array of user objects to display.
- * @param {function} props.onAddUser - Callback function to trigger adding a new user.
- * @param {function} props.onEditUser - Callback function to trigger editing a user.
- * @param {function} props.onDeleteUser - Callback function to trigger deleting a user.
- * @returns {JSX.Element} The rendered UsersTable component.
- */
 export default function UsersTable({
   users,
   onAddUser,

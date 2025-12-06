@@ -29,14 +29,9 @@ import {
   type ContentItem,
 } from "@/components/dashboard/admin";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { UserMenu } from "@/components/auth/UserMenu";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 
-/**
- * AdminDashboard component.
- * Provides the main interface for the admin dashboard, including sidebar, header, and content areas.
- * Manages state for menus, modals, notifications, and data display.
- * @returns {JSX.Element} The rendered AdminDashboard component.
- */
 function AdminDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [showUserModal, setShowUserModal] = useState(false);
@@ -45,8 +40,8 @@ function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
   const [userModalMode, setUserModalMode] = useState<"add" | "edit">("add");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const confirmModal = useToastConfirm();
 
-  // ... (Menu items, stats, users, notifications, activities, and contentItems data remain the same)
   const menuItems: MenuItem[] = [
     { id: "dashboard", label: "Dashboard Home", icon: Home },
     { id: "users", label: "Manajemen Pengguna", icon: Users },
@@ -233,9 +228,32 @@ function AdminDashboard() {
   };
 
   const handleDeleteUser = (id: number) => {
-    if (confirm("Apakah Anda yakin ingin menghapus pengguna ini?")) {
-      console.log("Delete user:", id);
-    }
+    confirmModal.showConfirm(
+      {
+        title: "Hapus Pengguna",
+        message: "Apakah Anda yakin ingin menghapus pengguna ini?",
+        description:
+          "Tindakan ini tidak dapat dibatalkan dan semua data pengguna akan dihapus secara permanen.",
+        type: "danger",
+        confirmText: "Ya, Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
+        try {
+          // TODO: Implement actual delete API call
+          console.log("Delete user:", id);
+          // Example API call:
+          // const response = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+          // if (response.ok) {
+          //   toast.success("Pengguna berhasil dihapus!");
+          //   // Reload users list
+          // }
+        } catch (error) {
+          console.error("Failed to delete user:", error);
+          // toast.error("Gagal menghapus pengguna.");
+        }
+      }
+    );
   };
 
   const handleUserSubmit = (e: React.FormEvent) => {
@@ -354,16 +372,26 @@ function AdminDashboard() {
           onClick={() => setShowNotifications(false)}
         ></div>
       )}
+
+      {/* Toast Confirm Modal */}
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.options.title}
+        message={confirmModal.options.message}
+        description={confirmModal.options.description}
+        type={confirmModal.options.type}
+        confirmText={confirmModal.options.confirmText}
+        cancelText={confirmModal.options.cancelText}
+        isLoading={confirmModal.isLoading}
+        showCloseButton={confirmModal.options.showCloseButton}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+      />
     </div>
   );
 }
 
-/**
- * AdminDashboardPage component.
- * Main entry point for the admin dashboard.
- * Protects the route to ensure only users with the 'admin' role can access it.
- * @returns {JSX.Element} The rendered AdminDashboardPage component.
- */
+// Wrap with protected route for admin only
 export default function AdminDashboardPage() {
   return (
     <ProtectedRoute requiredRoles={["admin"]}>

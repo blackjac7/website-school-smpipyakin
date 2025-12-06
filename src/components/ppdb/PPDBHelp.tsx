@@ -4,13 +4,6 @@ interface PPDBHelpProps {
   onWhatsAppChat: () => void;
 }
 
-/**
- * PPDBHelp component.
- * Displays a help section with FAQs, contact methods, office location, and a call-to-action for WhatsApp support.
- * @param {PPDBHelpProps} props - The component props.
- * @param {function} props.onWhatsAppChat - Callback function to initiate a WhatsApp chat.
- * @returns {JSX.Element} The rendered PPDBHelp component.
- */
 export default function PPDBHelp({ onWhatsAppChat }: PPDBHelpProps) {
   const faqs = [
     {
@@ -71,7 +64,7 @@ export default function PPDBHelp({ onWhatsAppChat }: PPDBHelpProps) {
             Butuh Bantuan?
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Tim kami siap membantu Anda dalam proses pendaftaran. 
+            Tim kami siap membantu Anda dalam proses pendaftaran.
             Jangan ragu untuk menghubungi kami kapan saja!
           </p>
         </div>
@@ -156,7 +149,7 @@ export default function PPDBHelp({ onWhatsAppChat }: PPDBHelpProps) {
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-3xl p-8 text-center text-white">
           <h3 className="text-2xl font-bold mb-4">Masih Ada Pertanyaan?</h3>
           <p className="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">
-            Tim PPDB kami siap membantu Anda 24/7. Chat langsung dengan kami via WhatsApp 
+            Tim PPDB kami siap membantu Anda 24/7. Chat langsung dengan kami via WhatsApp
             untuk mendapatkan jawaban cepat dan akurat!
           </p>
           <button

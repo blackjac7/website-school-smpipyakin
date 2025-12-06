@@ -1,9 +1,5 @@
 import Image from "next/image";
 
-/**
- * LoginHeader component.
- * Displays the school logo, name, and a welcome message.
- */
 const LoginHeader = () => {
   return (
     <>

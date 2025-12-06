@@ -9,17 +9,6 @@ interface UserModalProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
-/**
- * UserModal component.
- * Displays a modal form for adding or editing a user.
- * @param {UserModalProps} props - The component props.
- * @param {boolean} props.show - Whether the modal is visible.
- * @param {function} props.onClose - Callback function to close the modal.
- * @param {"add" | "edit"} props.mode - The mode of the modal (add or edit).
- * @param {User | null} props.selectedUser - The user object to edit (if mode is "edit").
- * @param {function} props.onSubmit - Callback function to handle form submission.
- * @returns {JSX.Element | null} The rendered UserModal component or null if not shown.
- */
 export default function UserModal({
   show,
   onClose,

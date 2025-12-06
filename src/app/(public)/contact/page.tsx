@@ -4,11 +4,6 @@ import ContactForm from "@/components/contact/ContactForm";
 import SocialMediaSection from "@/components/contact/SocialMediaSection";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 
-/**
- * ContactPage component.
- * Displays contact information, a contact form, social media links, and a Google Map.
- * @returns {JSX.Element} The rendered ContactPage component.
- */
 export default function ContactPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 pt-25">

@@ -1,10 +1,5 @@
 import { Instagram } from "lucide-react";
 
-/**
- * InstagramEmbed component.
- * Embeds the school's Instagram feed and provides a link to follow.
- * @returns {JSX.Element} The rendered InstagramEmbed component.
- */
 export default function InstagramEmbed() {
   return (
     <section className="py-16 bg-gray-50">

@@ -1,10 +1,5 @@
 import { AlertTriangle } from "lucide-react";
 
-/**
- * AlertCard component.
- * Displays an alert message indicating pending validations for the student affairs dashboard.
- * @returns {JSX.Element} The rendered AlertCard component.
- */
 export default function AlertCard() {
   return (
     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">

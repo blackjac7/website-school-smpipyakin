@@ -9,17 +9,6 @@ interface ValidationModalProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
-/**
- * ValidationModal component.
- * Displays a modal form for validating (approving or rejecting) content.
- * @param {ValidationModalProps} props - The component props.
- * @param {boolean} props.isOpen - Whether the modal is open.
- * @param {ContentItem | null} props.content - The content item being validated.
- * @param {string} props.validationAction - The action being performed ("approve" or "reject").
- * @param {function} props.onClose - Function to close the modal.
- * @param {function} props.onSubmit - Function to handle form submission.
- * @returns {JSX.Element | null} The rendered ValidationModal component or null if not open.
- */
 export default function ValidationModal({
   isOpen,
   content,

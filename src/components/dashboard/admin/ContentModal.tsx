@@ -6,15 +6,6 @@ interface ContentModalProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
-/**
- * ContentModal component.
- * Displays a modal form for adding new content (news or announcements).
- * @param {ContentModalProps} props - The component props.
- * @param {boolean} props.show - Whether the modal is visible.
- * @param {function} props.onClose - Callback function to close the modal.
- * @param {function} props.onSubmit - Callback function to handle form submission.
- * @returns {JSX.Element | null} The rendered ContentModal component or null if not shown.
- */
 export default function ContentModal({
   show,
   onClose,

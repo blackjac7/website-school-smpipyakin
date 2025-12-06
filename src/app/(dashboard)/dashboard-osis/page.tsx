@@ -18,11 +18,6 @@ import {
 } from "@/components/dashboard/osis";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
-/**
- * OSISDashboard component.
- * Provides the main interface for the OSIS dashboard, allowing management of activities and schedules.
- * @returns {JSX.Element} The rendered OSISDashboard component.
- */
 function OSISDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [showForm, setShowForm] = useState(false);
@@ -34,7 +29,6 @@ function OSISDashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // ... (Data definitions for menuItems, activities, notifications, validationStatus remain the same)
   const menuItems: MenuItem[] = [
     { id: "dashboard", label: "Dashboard", icon: Home },
     { id: "add-activity", label: "Tambah Kegiatan", icon: Plus },
@@ -248,12 +242,7 @@ function OSISDashboard() {
   );
 }
 
-/**
- * OSISDashboardPage component.
- * Main entry point for the OSIS dashboard.
- * Protects the route to ensure only users with the 'osis' role can access it.
- * @returns {JSX.Element} The rendered OSISDashboardPage component.
- */
+// Wrap with protected route for admin, kesiswaan, and osis
 export default function OSISDashboardPage() {
   return (
     <ProtectedRoute requiredRoles={["osis"]}>

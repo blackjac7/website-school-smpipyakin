@@ -13,14 +13,6 @@ const categories = [
   { id: "activity", label: "Kegiatan", icon: Users },
 ];
 
-/**
- * CategoryFilter component.
- * Displays a list of category buttons to filter news and activities.
- * @param {CategoryFilterProps} props - The component props.
- * @param {string} props.activeCategory - The ID of the currently active category.
- * @param {function} props.onCategoryChange - Callback function to update the active category.
- * @returns {JSX.Element} The rendered CategoryFilter component.
- */
 export default function CategoryFilter({
   activeCategory,
   onCategoryChange,

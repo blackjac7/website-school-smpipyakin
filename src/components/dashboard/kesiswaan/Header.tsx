@@ -1,6 +1,7 @@
 import { Bell, Menu } from "lucide-react";
-import { Notification } from "./types";
 import { LogoutButton } from "@/components/shared";
+import { useAuth } from "@/components/shared/AuthProvider";
+import { Notification } from "./types";
 
 interface HeaderProps {
   activeMenu: string;
@@ -11,18 +12,6 @@ interface HeaderProps {
   onToggleSidebar?: () => void;
 }
 
-/**
- * Header component for the student affairs dashboard.
- * Displays the current menu title, description, notifications, and user profile/logout.
- * @param {HeaderProps} props - The component props.
- * @param {string} props.activeMenu - The ID of the currently active menu.
- * @param {Notification[]} props.notifications - List of notifications.
- * @param {boolean} props.showNotifications - Whether to show the notification dropdown.
- * @param {function} props.setShowNotifications - Function to toggle notification dropdown visibility.
- * @param {number} props.unreadCount - Number of unread notifications.
- * @param {function} props.onToggleSidebar - Function to toggle the sidebar (for mobile).
- * @returns {JSX.Element} The rendered Header component.
- */
 export default function Header({
   activeMenu,
   notifications,
@@ -31,6 +20,7 @@ export default function Header({
   unreadCount,
   onToggleSidebar,
 }: HeaderProps) {
+  const { user } = useAuth();
   const getHeaderTitle = () => {
     switch (activeMenu) {
       case "validation":
@@ -116,10 +106,10 @@ export default function Header({
                           <p
                             className={`text-sm ${!notification.read ? "font-medium" : ""} text-gray-900`}
                           >
-                            {notification.message}
+                            {notification.title || notification.type}
                           </p>
                           <p className="text-sm text-gray-600 mt-1">
-                            {notification.detail}
+                            {notification.message}
                           </p>
                           <p className="text-xs text-gray-500 mt-2">
                             {notification.time}
@@ -135,7 +125,7 @@ export default function Header({
 
           <LogoutButton
             variant="profile"
-            userName="Admin Kesiswaan"
+            userName={user?.name || user?.username || "Admin Kesiswaan"}
             userRole="Staff Kesiswaan"
             className="ml-2"
           />

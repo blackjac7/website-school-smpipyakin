@@ -4,14 +4,6 @@ interface PPDBInfoProps {
   onDownloadGuide: () => void;
 }
 
-/**
- * PPDBInfo component.
- * Displays important information for the PPDB process, including registration steps, important dates, and document requirements.
- * Also provides a button to download the PPDB guide.
- * @param {PPDBInfoProps} props - The component props.
- * @param {function} props.onDownloadGuide - Callback function to download the PPDB guide PDF.
- * @returns {JSX.Element} The rendered PPDBInfo component.
- */
 export default function PPDBInfo({ onDownloadGuide }: PPDBInfoProps) {
   const registrationSteps = [
     "Isi formulir pendaftaran dengan lengkap",

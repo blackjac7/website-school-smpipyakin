@@ -12,17 +12,6 @@ interface SidebarLogoutProps {
   onLogout?: () => void;
 }
 
-/**
- * SidebarLogout component.
- * Displays user information and a logout button at the bottom of a sidebar.
- * Includes a confirmation modal for logout.
- * @param {SidebarLogoutProps} props - The component props.
- * @param {string} [props.userName="User"] - The name of the user.
- * @param {string} [props.userRole="Role"] - The role of the user.
- * @param {string} [props.className=""] - Additional CSS classes.
- * @param {function} [props.onLogout] - Custom logout handler (optional).
- * @returns {JSX.Element} The rendered SidebarLogout component.
- */
 export default function SidebarLogout({
   userName = "User",
   userRole = "Role",

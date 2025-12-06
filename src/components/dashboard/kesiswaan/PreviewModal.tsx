@@ -9,17 +9,6 @@ interface PreviewModalProps {
   onReject: (content: ContentItem) => void;
 }
 
-/**
- * PreviewModal component.
- * Displays the full details of a content item for review.
- * @param {PreviewModalProps} props - The component props.
- * @param {boolean} props.isOpen - Whether the modal is open.
- * @param {ContentItem | null} props.content - The content item to preview.
- * @param {function} props.onClose - Function to close the modal.
- * @param {function} props.onApprove - Function to approve the content.
- * @param {function} props.onReject - Function to reject the content.
- * @returns {JSX.Element | null} The rendered PreviewModal component or null if not open.
- */
 export default function PreviewModal({
   isOpen,
   content,

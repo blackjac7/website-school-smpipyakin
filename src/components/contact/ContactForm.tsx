@@ -1,29 +1,10 @@
-import { useState, useEffect } from "react";
-import {
-  Send,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
+import { useState } from "react";
+import { Send, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import emailjs from "@emailjs/browser";
-import {
-  RateLimiter,
-  sanitizeInput,
-  isValidEmail,
-  isValidPhone,
-  getClientIP,
-} from "@/utils/security";
+import { sanitizeInput, isValidEmail, isValidPhone } from "@/utils/security";
+import { useAntiBot } from "@/hooks/useAntiBot";
+import AntiBotComponents from "@/components/shared/AntiBotComponents";
 
-// Initialize rate limiter
-const rateLimiter = new RateLimiter(3, 86400000); // 3 submissions per day
-
-/**
- * ContactForm component.
- * Allows users to send messages to the school via email.
- * Includes validation, rate limiting, anti-spam (honeypot + CAPTCHA), and success/error handling.
- * @returns {JSX.Element} The rendered ContactForm component.
- */
 const ContactForm = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -33,51 +14,24 @@ const ContactForm = () => {
     message: "",
   });
 
-  const [honeypot, setHoneypot] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Math Captcha
-  const [captcha, setCaptcha] = useState({ num1: 0, num2: 0, answer: 0 });
-  const [userCaptchaAnswer, setUserCaptchaAnswer] = useState("");
+  // Anti-bot validation
+  const antiBot = useAntiBot("contact", {
+    enableCaptcha: true,
+    enableHoneypot: true,
+    enableRateLimit: true,
+  });
 
-  /**
-   * Generates a new simple math CAPTCHA.
-   */
-  const generateCaptcha = () => {
-    const num1 = Math.floor(Math.random() * 10) + 1;
-    const num2 = Math.floor(Math.random() * 10) + 1;
-    const answer = num1 + num2;
-    setCaptcha({ num1, num2, answer });
-    setUserCaptchaAnswer("");
-  };
-
-  // Initialize captcha on component mount
-  useEffect(() => {
-    generateCaptcha();
-  }, []);
-
-  /**
-   * Validates the form inputs, including honeypot, rate limiting, email format, phone format, required fields, and CAPTCHA.
-   * @returns {boolean} True if the form is valid, false otherwise.
-   */
   const validateForm = (): boolean => {
-    // Honeypot check
-    if (honeypot) {
-      setErrorMessage("Spam terdeteksi. Silakan coba lagi.");
-      return false;
-    }
-
-    // Rate limiting check
-    const clientIP = getClientIP();
-    if (!rateLimiter.isAllowed(clientIP)) {
-      const remaining = rateLimiter.getRemainingAttempts(clientIP);
-      setErrorMessage(
-        `Terlalu banyak percobaan. Silakan coba lagi dalam 1 jam. Sisa percobaan: ${remaining}`
-      );
+    // Anti-bot validation
+    const antiBotResult = antiBot.validateAntiBot();
+    if (!antiBotResult.isValid) {
+      setErrorMessage(antiBotResult.error || "Validasi keamanan gagal.");
       return false;
     }
 
@@ -104,21 +58,9 @@ const ContactForm = () => {
       return false;
     }
 
-    // Captcha validation
-    if (parseInt(userCaptchaAnswer) !== captcha.answer) {
-      setErrorMessage("Jawaban captcha tidak benar. Silakan coba lagi.");
-      generateCaptcha(); // Generate new captcha
-      return false;
-    }
-
     return true;
   };
 
-  /**
-   * Handles the form submission.
-   * Validates the form, sanitizes input, sends the email using EmailJS, and handles the response.
-   * @param {React.FormEvent} e - The form submission event.
-   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
@@ -160,8 +102,11 @@ const ContactForm = () => {
         subject: "",
         message: "",
       });
-      setUserCaptchaAnswer("");
-      generateCaptcha(); // Generate new captcha after successful submission
+
+      // Reset anti-bot
+      antiBot.setUserCaptchaAnswer("");
+      antiBot.generateCaptcha();
+      antiBot.setHoneypot("");
     } catch (error) {
       console.error("Email send error:", error);
       setSubmitStatus("error");
@@ -173,10 +118,6 @@ const ContactForm = () => {
     }
   };
 
-  /**
-   * Handles input changes for text inputs and textareas.
-   * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>} e - The change event.
-   */
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -223,17 +164,6 @@ const ContactForm = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Honeypot field (hidden) */}
-        <input
-          type="text"
-          name="website"
-          value={honeypot}
-          onChange={(e) => setHoneypot(e.target.value)}
-          style={{ display: "none" }}
-          tabIndex={-1}
-          autoComplete="off"
-        />
-
         <div>
           <label
             htmlFor="name"
@@ -342,45 +272,21 @@ const ContactForm = () => {
           </div>
         </div>
 
-        {/* Math Captcha */}
-        <div>
-          <label
-            htmlFor="captcha"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Verifikasi Anti-Spam *
-          </label>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg">
-              <span className="text-lg font-mono font-bold text-gray-800">
-                {captcha.num1} + {captcha.num2} = ?
-              </span>
-              <button
-                type="button"
-                onClick={generateCaptcha}
-                disabled={isSubmitting}
-                className="p-1 text-gray-600 hover:text-blue-600 disabled:text-gray-400"
-                title="Generate captcha baru"
-              >
-                <RefreshCw className="h-4 w-4" />
-              </button>
-            </div>
-            <input
-              type="number"
-              id="captcha"
-              name="captcha"
-              required
-              value={userCaptchaAnswer}
-              onChange={(e) => setUserCaptchaAnswer(e.target.value)}
-              disabled={isSubmitting}
-              placeholder="Jawaban"
-              className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
-            />
-          </div>
-          <div className="text-xs text-gray-500 mt-1">
-            Selesaikan operasi matematika di atas untuk verifikasi
-          </div>
-        </div>
+        {/* Anti-Bot Security */}
+        <AntiBotComponents
+          captcha={antiBot.captcha}
+          userCaptchaAnswer={antiBot.userCaptchaAnswer}
+          onCaptchaAnswerChange={antiBot.setUserCaptchaAnswer}
+          onCaptchaRefresh={antiBot.generateCaptcha}
+          honeypot={antiBot.honeypot}
+          onHoneypotChange={antiBot.setHoneypot}
+          honeypotFieldName={antiBot.honeypotFieldName}
+          isClient={antiBot.isClient}
+          captchaLabel="Verifikasi Anti-Spam"
+          size="md"
+          showCaptcha={true}
+          showHoneypot={true}
+        />
 
         <button
           type="submit"

@@ -4,14 +4,6 @@ interface SimpleLoadingProps {
   message?: string;
 }
 
-/**
- * SimpleLoading component.
- * Displays a simple loading screen with CSS animations, school logo, and loading message.
- * Used as a fallback or simpler alternative to LoadingEffect.
- * @param {SimpleLoadingProps} props - The component props.
- * @param {string} [props.message="Memuat halaman..."] - The loading message to display.
- * @returns {JSX.Element} The rendered SimpleLoading component.
- */
 export default function SimpleLoading({ message = "Memuat halaman..." }: SimpleLoadingProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -32,15 +24,15 @@ export default function SimpleLoading({ message = "Memuat halaman..." }: SimpleL
         <div className="relative w-48 h-48 flex items-center justify-center">
           {/* Outer ring */}
           <div className="absolute inset-0 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600"></div>
-          
+
           {/* Inner ring */}
-          <div 
+          <div
             className="absolute inset-4 border-3 border-blue-100 rounded-full border-b-blue-500"
             style={{
               animation: "spin 3s linear infinite reverse"
             }}
           ></div>
-          
+
           {/* Center icon */}
           <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center animate-pulse">
             <svg
