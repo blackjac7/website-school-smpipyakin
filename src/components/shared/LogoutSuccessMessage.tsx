@@ -7,14 +7,6 @@ interface LogoutSuccessMessageProps {
   className?: string;
 }
 
-/**
- * LogoutSuccessMessage component.
- * Displays a success message toast after a user has successfully logged out.
- * It checks for a 'justLoggedOut' flag in sessionStorage to trigger the message.
- * @param {LogoutSuccessMessageProps} props - The component props.
- * @param {string} [props.className=""] - Additional CSS classes.
- * @returns {JSX.Element | null} The rendered LogoutSuccessMessage component or null if not visible.
- */
 export default function LogoutSuccessMessage({
   className = "",
 }: LogoutSuccessMessageProps) {

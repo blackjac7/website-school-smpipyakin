@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, User, Bell, Edit } from "lucide-react";
 import LogoutConfirmModal from "./LogoutConfirmModal";
 import { useAuth } from "./AuthProvider";
+import { FormattedNotification } from "@/utils/notificationHelpers";
 
 interface LogoutButtonProps {
   userName?: string;
@@ -13,21 +14,14 @@ interface LogoutButtonProps {
   variant?: "simple" | "dropdown" | "profile";
   className?: string;
   onLogout?: () => void;
+  onEditProfile?: () => void;
+  // Mobile notifications props
+  notifications?: FormattedNotification[];
+  unreadCount?: number;
+  onNotificationClick?: (notification: FormattedNotification) => void;
+  onViewAllNotifications?: () => void;
 }
 
-/**
- * LogoutButton component.
- * Displays a button or dropdown for logging out the user.
- * Includes multiple variants (simple, dropdown, profile) and a confirmation modal.
- * @param {LogoutButtonProps} props - The component props.
- * @param {string} [props.userName="User"] - The name of the user.
- * @param {string} [props.userRole="Role"] - The role of the user.
- * @param {string} [props.userAvatar] - The avatar URL of the user.
- * @param {"simple" | "dropdown" | "profile"} [props.variant="simple"] - The display variant.
- * @param {string} [props.className=""] - Additional CSS classes.
- * @param {function} [props.onLogout] - Custom logout handler (optional).
- * @returns {JSX.Element | null} The rendered LogoutButton component.
- */
 export default function LogoutButton({
   userName = "User",
   userRole = "Role",
@@ -35,6 +29,12 @@ export default function LogoutButton({
   variant = "simple",
   className = "",
   onLogout,
+  onEditProfile,
+  // Mobile notifications props
+  notifications = [],
+  unreadCount = 0,
+  onNotificationClick,
+  onViewAllNotifications,
 }: LogoutButtonProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -58,7 +58,7 @@ export default function LogoutButton({
       <button
         onClick={confirmLogout}
         disabled={isLoggingOut}
-        className={`group flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 ${
+        className={`group flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 cursor-pointer ${
           isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
         } ${className}`}
       >
@@ -80,19 +80,27 @@ export default function LogoutButton({
       <div className="relative">
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className={`flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 ${className}`}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer ${className}`}
         >
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-md overflow-hidden">
-            {userAvatar ? (
-              <Image
-                src={userAvatar}
-                alt={userName}
-                width={32}
-                height={32}
-                className="w-full h-full rounded-full object-cover"
-              />
-            ) : (
-              <User className="w-4 h-4 text-white" />
+          <div className="relative">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-md overflow-hidden">
+              {userAvatar ? (
+                <Image
+                  src={userAvatar}
+                  alt={userName}
+                  width={32}
+                  height={32}
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                <User className="w-4 h-4 text-white" />
+              )}
+            </div>
+            {/* Notification badge for mobile - only show on small screens */}
+            {unreadCount > 0 && (
+              <span className="md:hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center border-2 border-white font-semibold shadow-lg">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
             )}
           </div>
           {variant === "profile" && (
@@ -141,29 +149,104 @@ export default function LogoutButton({
 
               {/* Menu Items */}
               <div className="py-2">
-                <button
-                  onClick={() => {
-                    setShowDropdown(false);
-                    // Add profile edit functionality here
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
-                >
-                  <User className="w-4 h-4" />
-                  <span>Edit Profile</span>
-                </button>
+                {/* Mobile Notifications Section */}
+                <div className="md:hidden">
+                  {notifications.length > 0 ? (
+                    <>
+                      <div className="px-4 py-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-gray-900">
+                            Notifikasi
+                          </span>
+                          {unreadCount > 0 && (
+                            <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-semibold">
+                              {unreadCount} baru
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="max-h-48 overflow-y-auto">
+                        {notifications.slice(0, 3).map((notification) => (
+                          <button
+                            key={notification.id}
+                            onClick={() => {
+                              onNotificationClick?.(notification);
+                              setShowDropdown(false);
+                            }}
+                            className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 ${
+                              !notification.read ? "bg-blue-50" : ""
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <notification.icon
+                                className={`w-4 h-4 ${notification.color} mt-1 flex-shrink-0`}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <p
+                                  className={`text-sm ${
+                                    !notification.read
+                                      ? "font-semibold"
+                                      : "font-medium"
+                                  } text-gray-900 truncate`}
+                                >
+                                  {notification.title}
+                                </p>
+                                <p className="text-xs text-gray-600 truncate">
+                                  {notification.message}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                  {notification.time}
+                                </p>
+                              </div>
+                              {!notification.read && (
+                                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                      {notifications.length > 3 && (
+                        <button
+                          onClick={() => {
+                            onViewAllNotifications?.();
+                            setShowDropdown(false);
+                          }}
+                          className="w-full px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 hover:text-orange-500 transition-colors border-t border-gray-200 font-medium"
+                        >
+                          Lihat Semua Notifikasi
+                        </button>
+                      )}
+                      <hr className="my-2 border-gray-200" />
+                    </>
+                  ) : (
+                    <>
+                      <div className="px-4 py-6 text-center">
+                        <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                        <p className="text-sm text-gray-500">
+                          Tidak ada notifikasi
+                        </p>
+                      </div>
+                      <hr className="my-2 border-gray-200" />
+                    </>
+                  )}
+                </div>
 
-                <button
-                  onClick={() => {
-                    setShowDropdown(false);
-                    // Add settings functionality here
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span>Pengaturan</span>
-                </button>
-
-                <hr className="my-2 border-gray-200" />
+                {/* Edit Profile Menu */}
+                {onEditProfile && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setShowDropdown(false);
+                        onEditProfile();
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors duration-150 cursor-pointer"
+                    >
+                      <Edit className="w-4 h-4" />
+                      <span>Edit Profil</span>
+                    </button>
+                    <hr className="my-2 border-gray-200" />
+                  </>
+                )}
 
                 <button
                   onClick={() => {
@@ -171,7 +254,7 @@ export default function LogoutButton({
                     confirmLogout();
                   }}
                   disabled={isLoggingOut}
-                  className={`w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150 ${
+                  className={`w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150 cursor-pointer ${
                     isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                 >

@@ -5,14 +5,6 @@ interface ReportsContentProps {
   reportStats: ReportStats;
 }
 
-/**
- * ReportsContent component.
- * Displays charts and statistics for content validation reports.
- * Includes monthly validation, category distribution, status overview, and export options.
- * @param {ReportsContentProps} props - The component props.
- * @param {ReportStats} props.reportStats - The statistics data to display.
- * @returns {JSX.Element} The rendered ReportsContent component.
- */
 export default function ReportsContent({ reportStats }: ReportsContentProps) {
   return (
     <div className="space-y-8">

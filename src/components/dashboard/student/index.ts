@@ -1,10 +1,11 @@
-/**
- * Export all components and types from the student dashboard module.
- */
-export { default as DashboardHeader } from './DashboardHeader';
-export { default as ProfileSection } from './ProfileSection';
-export { default as NotificationsOverview } from './NotificationsOverview';
-export { default as AchievementsSection } from './AchievementsSection';
-export { default as EditProfileModal } from './EditProfileModal';
-export { default as UploadAchievementModal } from './UploadAchievementModal';
-export * from './types';
+export { default as AchievementsSection } from "./AchievementsSection";
+export { default as UploadAchievementModal } from "./UploadAchievementModal";
+export { default as ProfileImageUpload } from "./ProfileImageUpload";
+export { default as WorksSection } from "./WorksSection";
+export { default as UploadWorkModal } from "./UploadWorkModal";
+export { default as StudentSidebar } from "./StudentSidebar";
+export { default as StudentHeader } from "./StudentHeader";
+export { default as DashboardOverview } from "./DashboardOverview";
+export { default as QuickEditModal } from "./QuickEditModal";
+export { default as FullProfileModal } from "./FullProfileModal";
+export * from "./types";

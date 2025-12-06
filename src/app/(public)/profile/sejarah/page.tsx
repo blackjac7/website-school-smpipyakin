@@ -2,11 +2,6 @@
 
 import { History } from "lucide-react";
 
-/**
- * SejarahPage component.
- * Displays the history of SMP IP Yakin Jakarta, including important milestones.
- * @returns {JSX.Element} The rendered SejarahPage component.
- */
 export default function SejarahPage() {
   return (
     <div className="space-y-6">

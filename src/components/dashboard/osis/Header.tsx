@@ -1,8 +1,9 @@
 "use client";
 
 import { Bell, Menu } from "lucide-react";
-import { Notification } from "./types";
 import { LogoutButton } from "@/components/shared";
+import { useAuth } from "@/components/shared/AuthProvider";
+import { Notification } from "./types";
 
 interface HeaderProps {
   notifications: Notification[];
@@ -12,17 +13,6 @@ interface HeaderProps {
   onToggleSidebar?: () => void;
 }
 
-/**
- * Header component for the OSIS dashboard.
- * Displays the dashboard title, user profile, and notifications.
- * @param {HeaderProps} props - The component props.
- * @param {Notification[]} props.notifications - List of notifications.
- * @param {boolean} props.showNotifications - Whether to show the notifications dropdown.
- * @param {function} props.setShowNotifications - Function to toggle notification dropdown visibility.
- * @param {number} props.unreadCount - Number of unread notifications.
- * @param {function} props.onToggleSidebar - Function to toggle the sidebar (for mobile).
- * @returns {JSX.Element} The rendered Header component.
- */
 export default function Header({
   notifications,
   showNotifications,
@@ -30,6 +20,7 @@ export default function Header({
   unreadCount,
   onToggleSidebar,
 }: HeaderProps) {
+  const { user } = useAuth();
   return (
     <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-4">
       <div className="flex justify-between items-center">
@@ -95,10 +86,10 @@ export default function Header({
                           <p
                             className={`text-sm ${!notification.read ? "font-medium" : ""} text-gray-900`}
                           >
-                            {notification.message}
+                            {notification.title || notification.type}
                           </p>
                           <p className="text-sm text-gray-600 mt-1">
-                            {notification.detail}
+                            {notification.message}
                           </p>
                           <p className="text-xs text-gray-500 mt-2">
                             {notification.time}
@@ -114,7 +105,7 @@ export default function Header({
 
           <LogoutButton
             variant="profile"
-            userName="OSIS Member"
+            userName={user?.name || user?.username || "OSIS Member"}
             userRole="Organisasi Siswa"
             className="ml-2"
           />

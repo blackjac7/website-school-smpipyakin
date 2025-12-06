@@ -9,52 +9,65 @@ import {
   School,
   Calendar,
 } from "lucide-react";
+import DocumentsSection from "./DocumentsSection";
+import AntiBotComponents from "@/components/shared/AntiBotComponents";
 
-/**
- * Interface representing the structure of the PPDB registration form data.
- */
 interface FormData {
   namaLengkap: string;
   nisn: string;
   jenisKelamin: string;
+  tempatLahir: string;
   tanggalLahir: string;
   alamatLengkap: string;
   asalSekolah: string;
   kontakOrtu: string;
+  namaOrtu: string;
+  emailOrtu: string;
+  documents: {
+    ijazah: File | null;
+    aktaKelahiran: File | null;
+    kartuKeluarga: File | null;
+    pasFoto: File | null;
+  };
 }
 
-/**
- * Props for the PPDBForm component.
- */
 interface PPDBFormProps {
   formData: FormData;
   isSubmitting: boolean;
   submitStatus: "idle" | "success" | "error";
   onInputChange: (field: string, value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
+  onFileChange: (
+    documentType: keyof FormData["documents"],
+    file: File | null
+  ) => void;
+  // Anti-bot props
+  antiBot?: {
+    captcha: {
+      num1: number;
+      num2: number;
+      answer: number;
+    };
+    userCaptchaAnswer: string;
+    setUserCaptchaAnswer: (answer: string) => void;
+    generateCaptcha: () => void;
+    honeypot: string;
+    setHoneypot: (value: string) => void;
+    honeypotFieldName: string;
+    isClient: boolean;
+  };
 }
 
-/**
- * PPDBForm component.
- * Displays the registration form for new student admission.
- * Includes fields for personal data, address, previous school, and parent contact.
- * Handles validation and submission states.
- * @param {PPDBFormProps} props - The component props.
- * @param {FormData} props.formData - The current form data.
- * @param {boolean} props.isSubmitting - Whether the form is currently being submitted.
- * @param {"idle" | "success" | "error"} props.submitStatus - The status of the form submission.
- * @param {function} props.onInputChange - Callback function to handle input changes.
- * @param {function} props.onSubmit - Callback function to handle form submission.
- * @returns {JSX.Element} The rendered PPDBForm component.
- */
 export default function PPDBForm({
   formData,
   isSubmitting,
   submitStatus,
   onInputChange,
   onSubmit,
+  onFileChange,
+  antiBot,
 }: PPDBFormProps) {
-  const formFields = [
+  const basicFields = [
     {
       id: "namaLengkap",
       label: "Nama Lengkap",
@@ -69,6 +82,17 @@ export default function PPDBForm({
       type: "text",
       placeholder: "Masukan NISN siswa",
       icon: <User className="w-5 h-5 text-gray-400" />,
+      required: true,
+    },
+  ];
+
+  const additionalFields = [
+    {
+      id: "tempatLahir",
+      label: "Tempat Lahir",
+      type: "text",
+      placeholder: "Tempat lahir siswa",
+      icon: <MapPin className="w-5 h-5 text-gray-400" />,
       required: true,
     },
     {
@@ -87,6 +111,17 @@ export default function PPDBForm({
       icon: <School className="w-5 h-5 text-gray-400" />,
       required: true,
     },
+  ];
+
+  const parentFields = [
+    {
+      id: "namaOrtu",
+      label: "Nama Orang Tua/Wali",
+      type: "text",
+      placeholder: "Nama lengkap orang tua/wali",
+      icon: <User className="w-5 h-5 text-gray-400" />,
+      required: true,
+    },
     {
       id: "kontakOrtu",
       label: "Kontak Orang Tua/Wali",
@@ -94,6 +129,14 @@ export default function PPDBForm({
       placeholder: "Contoh: 081234567890",
       icon: <Phone className="w-5 h-5 text-gray-400" />,
       required: true,
+    },
+    {
+      id: "emailOrtu",
+      label: "Email Orang Tua/Wali",
+      type: "email",
+      placeholder: "email@contoh.com",
+      icon: <User className="w-5 h-5 text-gray-400" />,
+      required: false,
     },
   ];
 
@@ -150,7 +193,7 @@ export default function PPDBForm({
                 Data Pribadi Siswa
               </h3>
               <div className="grid md:grid-cols-2 gap-6">
-                {formFields.slice(0, 2).map((field) => (
+                {basicFields.map((field) => (
                   <div key={field.id} className="group">
                     <label
                       htmlFor={field.id}
@@ -169,7 +212,11 @@ export default function PPDBForm({
                         id={field.id}
                         type={field.type}
                         placeholder={field.placeholder}
-                        value={formData[field.id as keyof FormData]}
+                        value={
+                          formData[
+                            field.id as keyof Omit<FormData, "documents">
+                          ] as string
+                        }
                         onChange={(e) =>
                           onInputChange(field.id, e.target.value)
                         }
@@ -210,7 +257,7 @@ export default function PPDBForm({
                 Informasi Tambahan
               </h3>
               <div className="space-y-6">
-                {formFields.slice(2).map((field) => (
+                {additionalFields.map((field) => (
                   <div key={field.id} className="group">
                     <label
                       htmlFor={field.id}
@@ -229,7 +276,11 @@ export default function PPDBForm({
                         id={field.id}
                         type={field.type}
                         placeholder={field.placeholder}
-                        value={formData[field.id as keyof FormData]}
+                        value={
+                          formData[
+                            field.id as keyof Omit<FormData, "documents">
+                          ] as string
+                        }
                         onChange={(e) =>
                           onInputChange(field.id, e.target.value)
                         }
@@ -267,6 +318,90 @@ export default function PPDBForm({
                 </div>
               </div>
             </div>
+
+            {/* Parent Information */}
+            <div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                <User className="w-5 h-5 text-blue-600" />
+                Data Orang Tua/Wali
+              </h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                {parentFields.map((field) => (
+                  <div key={field.id} className="group">
+                    <label
+                      htmlFor={field.id}
+                      className="block text-gray-700 font-medium mb-2"
+                    >
+                      {field.label}{" "}
+                      {field.required && (
+                        <span className="text-red-500">*</span>
+                      )}
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        {field.icon}
+                      </div>
+                      <input
+                        id={field.id}
+                        type={field.type}
+                        placeholder={field.placeholder}
+                        value={
+                          formData[
+                            field.id as keyof Omit<FormData, "documents">
+                          ] as string
+                        }
+                        onChange={(e) =>
+                          onInputChange(field.id, e.target.value)
+                        }
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 group-hover:border-gray-400"
+                        required={field.required}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Documents Section */}
+            <DocumentsSection
+              documents={formData.documents}
+              onFileChange={onFileChange}
+            />
+
+            {/* Anti-Bot Section */}
+            {antiBot && (
+              <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl shadow-sm border border-amber-200 p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
+                    <AlertCircle className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-amber-900">
+                      Verifikasi Keamanan
+                    </h3>
+                    <p className="text-sm text-amber-700">
+                      Lengkapi verifikasi berikut untuk melindungi sistem dari
+                      spam
+                    </p>
+                  </div>
+                </div>
+
+                <AntiBotComponents
+                  captcha={antiBot.captcha}
+                  userCaptchaAnswer={antiBot.userCaptchaAnswer}
+                  onCaptchaAnswerChange={antiBot.setUserCaptchaAnswer}
+                  onCaptchaRefresh={antiBot.generateCaptcha}
+                  honeypot={antiBot.honeypot}
+                  onHoneypotChange={antiBot.setHoneypot}
+                  honeypotFieldName={antiBot.honeypotFieldName}
+                  isClient={antiBot.isClient}
+                  showCaptcha={true}
+                  showHoneypot={true}
+                  captchaLabel="Verifikasi Matematika"
+                  size="md"
+                />
+              </div>
+            )}
 
             {/* Submit Button */}
             <div className="pt-6">

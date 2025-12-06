@@ -5,13 +5,6 @@ interface ActivityListProps {
   activities: Activity[];
 }
 
-/**
- * ActivityList component.
- * Displays a list of recent activities in the admin dashboard.
- * @param {ActivityListProps} props - The component props.
- * @param {Activity[]} props.activities - The array of activity objects to display.
- * @returns {JSX.Element} The rendered ActivityList component.
- */
 export default function ActivityList({ activities }: ActivityListProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">

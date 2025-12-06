@@ -2,11 +2,6 @@
 
 import { Target, Award } from "lucide-react";
 
-/**
- * VisiMisiPage component.
- * Displays the school's Vision, Mission, and Goals.
- * @returns {JSX.Element} The rendered VisiMisiPage component.
- */
 export default function VisiMisiPage() {
   return (
     <div className="space-y-8">

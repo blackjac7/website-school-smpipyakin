@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import StructuredData from "@/components/script/StructuredData";
-import Chatbot from "@/components/script/Chatbot";
 import { LoadingProvider } from "@/components/shared";
 import { AuthProvider } from "@/components/shared/AuthProvider";
+import { Toaster } from "react-hot-toast";
 
-/**
- * Metadata for the application, including SEO, Open Graph, and Twitter card information.
- */
 export const metadata: Metadata = {
   icons: {
     icon: [
@@ -48,12 +45,6 @@ export const metadata: Metadata = {
   },
 };
 
-/**
- * RootLayout component that wraps the entire application.
- * It sets up the HTML structure, metadata, global styles, and providers.
- * @param {Readonly<{ children: React.ReactNode }>} props - The component props.
- * @returns {JSX.Element} The rendered root layout.
- */
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -93,7 +84,33 @@ export default function RootLayout({
         <AuthProvider>
           <LoadingProvider>
             <main className="min-h-screen">{children}</main>
-            {/* <Chatbot /> */}
+
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: "#fff",
+                  color: "#374151",
+                  borderRadius: "8px",
+                  border: "1px solid #e5e7eb",
+                  boxShadow:
+                    "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+                },
+                success: {
+                  iconTheme: {
+                    primary: "#10b981",
+                    secondary: "#fff",
+                  },
+                },
+                error: {
+                  iconTheme: {
+                    primary: "#ef4444",
+                    secondary: "#fff",
+                  },
+                },
+              }}
+            />
           </LoadingProvider>
         </AuthProvider>
       </body>

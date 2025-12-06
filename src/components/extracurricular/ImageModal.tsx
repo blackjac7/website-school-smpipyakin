@@ -11,17 +11,6 @@ interface ImageModalProps {
   title: string;
 }
 
-/**
- * ImageModal component.
- * Displays a modal with a larger view of an image.
- * Includes a close button and click-outside-to-close functionality.
- * @param {ImageModalProps} props - The component props.
- * @param {boolean} props.isOpen - Whether the modal is open.
- * @param {function} props.onClose - Callback function to close the modal.
- * @param {string} props.imageUrl - The URL of the image to display.
- * @param {string} props.title - The title or caption for the image.
- * @returns {JSX.Element | null} The rendered ImageModal component or null if not open.
- */
 const ImageModal: React.FC<ImageModalProps> = ({
   isOpen,
   onClose,

@@ -1,18 +1,12 @@
 import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "your-super-secret-key-change-this-in-production"
 );
 
-/**
- * API Route Handler for verifying user authentication tokens.
- * Handles GET requests to check if a valid session exists.
- * Verifies the JWT token from the `auth-token` cookie.
- *
- * @returns {Promise<NextResponse>} JSON response containing user data if valid, or error if invalid/missing token.
- */
 export async function GET() {
   try {
     const cookieStore = await cookies();
@@ -25,13 +19,35 @@ export async function GET() {
     // Verify token
     const { payload: decoded } = await jwtVerify(token, JWT_SECRET);
 
-    // In production, you might want to fetch fresh user data from database
+    // Get fresh user data from database
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId as string },
+      include: {
+        siswa: true,
+        kesiswaan: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 401 });
+    }
+
+    // Get display name
+    let displayName = user.username;
+    if (user.siswa?.name) {
+      displayName = user.siswa.name;
+    } else if (user.kesiswaan?.name) {
+      displayName = user.kesiswaan.name;
+    }
+
     return NextResponse.json({
       success: true,
       user: {
-        id: decoded.userId,
-        username: decoded.username,
+        id: user.id,
+        username: user.username,
+        name: displayName,
         role: decoded.role,
+        email: user.email,
         permissions: decoded.permissions,
       },
     });

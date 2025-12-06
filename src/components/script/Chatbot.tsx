@@ -10,12 +10,6 @@ const BubbleChat = dynamic(
   }
 );
 
-/**
- * Chatbot component.
- * Integrates a BubbleChat widget from Flowise.
- * Provides a conversational AI interface for visitors.
- * @returns {JSX.Element} The rendered Chatbot component.
- */
 const Chatbot = () => {
   return (
     <BubbleChat

@@ -1,0 +1,378 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================
+// AUTH & USER MANAGEMENT (Based on your dbdiagram)
+// =============================================
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  username  String   @unique @db.VarChar(100)
+  email     String?  @unique @db.VarChar(100) // Added for auth compatibility
+  password  String   @db.VarChar(255)
+  role      UserRole
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp
+  updatedAt DateTime @updatedAt @db.Timestamp
+
+  // Relations
+  siswa               Siswa?
+  kesiswaan           Kesiswaan?
+  newsArticles        News[]               @relation("NewsAuthor")
+  schoolActivities    SchoolActivity[]     @relation("ActivityCreator")
+  notifications       Notification[]
+
+  @@map("users")
+}
+
+// =============================================
+// STUDENT MANAGEMENT
+// =============================================
+
+model Siswa {
+  id          String      @id @default(uuid()) @db.Uuid
+  userId      String      @unique @db.Uuid
+  nisn         String      @unique @db.VarChar(20)
+  name        String?     @db.VarChar(100)
+  image       String?     @db.VarChar(255)
+  year        Int?
+  gender      GenderType
+  osisAccess  Boolean     @default(false) @map("osis_access")
+
+  // Profile fields
+  email       String?     @db.VarChar(100)
+  phone       String?     @db.VarChar(20)
+  address     String?     @db.Text
+  birthDate   DateTime?   @map("birth_date") @db.Date
+  birthPlace  String?     @map("birth_place") @db.VarChar(100)
+  parentName  String?     @map("parent_name") @db.VarChar(100)
+  parentPhone String?     @map("parent_phone") @db.VarChar(20)
+  class       String?     @db.VarChar(20)
+
+  // Timestamps
+  createdAt   DateTime    @default(now()) @db.Timestamp
+  updatedAt   DateTime    @updatedAt @db.Timestamp
+
+  // Relations
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievements    StudentAchievement[]
+  works           StudentWork[]
+
+  @@map("siswa")
+}
+
+model Kesiswaan {
+  id           String      @id @default(uuid()) @db.Uuid
+  userId       String      @unique @db.Uuid
+  nip          String      @unique @db.VarChar(20)
+  name         String?     @db.VarChar(100)
+  gender       GenderType
+  statusActive Boolean     @default(true) @map("status_active")
+
+  // Timestamps
+  createdAt    DateTime    @default(now()) @db.Timestamp
+  updatedAt    DateTime    @updatedAt @db.Timestamp
+
+  // Relations
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("kesiswaan")
+}
+
+// =============================================
+// PPDB (Penerimaan Peserta Didik Baru)
+// =============================================
+
+model PPDBApplication {
+  id                String              @id @default(uuid()) @db.Uuid
+  name              String              @db.VarChar(100)
+  nisn              String              @unique @db.VarChar(20)
+  gender            GenderType?
+  birthPlace        String?             @map("birth_place") @db.VarChar(100)
+  birthDate         DateTime?           @map("birth_date") @db.Date
+  address           String?             @db.Text
+  asalSekolah       String?             @map("asal_sekolah") @db.VarChar(100)
+  parentContact     String?             @map("parent_contact") @db.VarChar(20)
+  parentName        String?             @map("parent_name") @db.VarChar(100)
+  parentEmail       String?             @map("parent_email") @db.VarChar(100)
+  status            PPDBStatus          @default(PENDING)
+  feedback          String?             @db.Text
+
+  // Document Cloudinary URLs
+  ijazahUrl         String?             @map("ijazah_url") @db.VarChar(500)
+  aktaKelahiranUrl  String?             @map("akta_kelahiran_url") @db.VarChar(500)
+  kartuKeluargaUrl  String?             @map("kartu_keluarga_url") @db.VarChar(500)
+  pasFotoUrl        String?             @map("pas_foto_url") @db.VarChar(500)
+
+  // Timestamps
+  createdAt         DateTime            @default(now()) @db.Timestamp
+  updatedAt         DateTime            @updatedAt @db.Timestamp
+
+  @@map("ppdb_applications")
+}
+
+// =============================================
+// CONTENT MANAGEMENT
+// =============================================
+
+model News {
+  id                 String         @id @default(uuid()) @db.Uuid
+  title              String         @db.VarChar(255)
+  date               DateTime       @db.Date
+  content            String         @db.Text
+  image              String?        @db.VarChar(255)
+  kategori           BeritaKategori
+  statusPersetujuan  StatusApproval @map("status_persetujuan")
+  authorId           String         @map("author_id") @db.Uuid
+
+  // Timestamps
+  createdAt          DateTime       @default(now()) @db.Timestamp
+  updatedAt          DateTime       @updatedAt @db.Timestamp
+
+  // Relations
+  author             User           @relation("NewsAuthor", fields: [authorId], references: [id])
+
+  @@map("news")
+}
+
+model Announcement {
+  id         String        @id @default(uuid()) @db.Uuid
+  title      String        @db.VarChar(255)
+  date       DateTime      @db.Date
+  location   String?       @db.VarChar(255)
+  content    String        @db.Text
+  priority   PriorityLevel
+  linkFile   String?       @map("link_file") @db.VarChar(255)
+
+  // Timestamps
+  createdAt  DateTime      @default(now()) @db.Timestamp
+  updatedAt  DateTime      @updatedAt @db.Timestamp
+
+  @@map("announcements")
+}
+
+model SchoolActivity {
+  id              String       @id @default(uuid()) @db.Uuid
+  title           String       @db.VarChar(255)
+  date            DateTime     @db.Date
+  information     String       @db.Text
+  semester        SemesterType
+  tahunPelajaran  String       @map("tahun_pelajaran") @db.VarChar(20)
+  createdBy       String       @map("created_by") @db.Uuid
+
+  // Timestamps
+  createdAt       DateTime     @default(now()) @db.Timestamp
+  updatedAt       DateTime     @updatedAt @db.Timestamp
+
+  // Relations
+  creator         User         @relation("ActivityCreator", fields: [createdBy], references: [id])
+
+  @@map("school_activities")
+}
+
+model StudentAchievement {
+  id                 String         @id @default(uuid()) @db.Uuid
+  siswaId            String         @map("siswa_id") @db.Uuid
+  title              String         @db.VarChar(100)
+  description        String?        @db.Text
+  image              String?        @db.VarChar(255)
+  statusPersetujuan  StatusApproval @map("status_persetujuan")
+  category           String?        @db.VarChar(50) // akademik, olahraga, seni, dll
+  level              String?        @db.VarChar(50) // sekolah, kecamatan, provinsi, dll
+  achievementDate    DateTime?      @map("achievement_date") @db.Date
+
+  // Timestamps
+  createdAt          DateTime       @default(now()) @db.Timestamp
+  updatedAt          DateTime       @updatedAt @db.Timestamp
+
+  // Relations
+  siswa              Siswa          @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+
+  @@map("student_achievements")
+}
+
+model StudentWork {
+  id                 String         @id @default(uuid()) @db.Uuid
+  siswaId            String         @map("siswa_id") @db.Uuid
+  title              String         @db.VarChar(100)
+  description        String?        @db.Text
+  workType           WorkType       @map("work_type")
+  mediaUrl           String?        @map("media_url") @db.VarChar(500) // For photos (Cloudinary URL)
+  videoLink          String?        @map("video_link") @db.VarChar(500) // For YouTube/GDrive links
+  category           String?        @db.VarChar(50) // seni, teknologi, tulis, dll
+  subject            String?        @db.VarChar(50) // mata pelajaran terkait
+  statusPersetujuan  StatusApproval @map("status_persetujuan")
+  rejectionNote      String?        @map("rejection_note") @db.Text
+
+  // Timestamps
+  createdAt          DateTime       @default(now()) @db.Timestamp
+  updatedAt          DateTime       @updatedAt @db.Timestamp
+
+  // Relations
+  siswa              Siswa          @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+
+  @@map("student_works")
+}
+
+// =============================================
+// SCHOOL FACILITIES & EXTRACURRICULARS
+// =============================================
+
+model Facility {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String   @db.VarChar(100)
+  description String?  @db.Text
+  image       String?  @db.VarChar(255)
+
+  // Timestamps
+  createdAt   DateTime @default(now()) @db.Timestamp
+  updatedAt   DateTime @updatedAt @db.Timestamp
+
+  @@map("facilities")
+}
+
+model Extracurricular {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String   @db.VarChar(100)
+  description String?  @db.Text
+  image       String?  @db.VarChar(255)
+  schedule    String?  @db.VarChar(100)
+
+  // Timestamps
+  createdAt   DateTime @default(now()) @db.Timestamp
+  updatedAt   DateTime @updatedAt @db.Timestamp
+
+  @@map("extracurriculars")
+}
+
+// =============================================
+// ENUMS (Sesuai dengan dbdiagram Anda)
+// =============================================
+
+enum UserRole {
+  ADMIN          @map("admin")
+  SISWA          @map("siswa")
+  OSIS           @map("osis")
+  KESISWAAN      @map("kesiswaan")
+  PPDB_STAFF     @map("ppdb_staff")
+
+  @@map("user_role")
+}
+
+enum GenderType {
+  MALE   @map("male")
+  FEMALE @map("female")
+
+  @@map("gender_type")
+}
+
+enum PPDBStatus {
+  PENDING    @map("pending")
+  ACCEPTED   @map("accepted")
+  REJECTED   @map("rejected")
+
+  @@map("ppdb_status")
+}
+
+enum BeritaKategori {
+  ACHIEVEMENT @map("achievement")
+  ACTIVITY    @map("activity")
+
+  @@map("berita_kategori")
+}
+
+enum StatusApproval {
+  APPROVED @map("approved")
+  REJECTED @map("rejected")
+  PENDING  @map("pending")
+
+  @@map("status_approval")
+}
+
+enum PriorityLevel {
+  HIGH   @map("high")
+  MEDIUM @map("medium")
+  LOW    @map("low")
+
+  @@map("priority_level")
+}
+
+enum WorkType {
+  PHOTO @map("photo")
+  VIDEO @map("video")
+
+  @@map("work_type")
+}
+
+enum SemesterType {
+  GANJIL @map("ganjil")
+  GENAP  @map("genap")
+
+  @@map("semester_type")
+}
+
+enum NotificationType {
+  ACHIEVEMENT_APPROVED    @map("achievement_approved")
+  ACHIEVEMENT_REJECTED    @map("achievement_rejected")
+  WORK_APPROVED          @map("work_approved")
+  WORK_REJECTED          @map("work_rejected")
+  GENERAL_INFO           @map("general_info")
+  PPDB_UPDATE            @map("ppdb_update")
+  SYSTEM_ANNOUNCEMENT    @map("system_announcement")
+
+  @@map("notification_type")
+}
+
+// =============================================
+// SECURITY & AUDIT LOGGING
+// =============================================
+
+model LoginAttempt {
+  id            String   @id @default(uuid()) @db.Uuid
+  ip            String   @db.VarChar(45) // IPv6 can be up to 45 chars
+  username      String   @db.VarChar(100)
+  userAgent     String   @db.VarChar(500)
+  success       Boolean  @default(false)
+  failureReason String?  @db.VarChar(255)
+  resolved      Boolean  @default(false) // Mark failed attempts as resolved after successful login
+  createdAt     DateTime @default(now()) @db.Timestamp
+
+  // Indexes for performance
+  @@index([ip, createdAt])
+  @@index([username, createdAt])
+  @@index([success, createdAt])
+  @@index([resolved, createdAt])
+  @@map("login_attempts")
+}
+
+// =============================================
+// NOTIFICATION SYSTEM
+// =============================================
+
+model Notification {
+  id          String           @id @default(uuid()) @db.Uuid
+  userId      String           @db.Uuid
+  type        NotificationType
+  title       String           @db.VarChar(255)
+  message     String           @db.Text
+  data        Json?            // Additional data (e.g., achievementId, workId)
+  read        Boolean          @default(false)
+  createdAt   DateTime         @default(now()) @db.Timestamp
+  updatedAt   DateTime         @updatedAt @db.Timestamp
+
+  // Relations
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read, createdAt])
+  @@map("notifications")
+}

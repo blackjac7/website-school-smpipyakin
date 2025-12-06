@@ -1,8 +1,3 @@
-/**
- * StructuredData component.
- * Injects JSON-LD structured data for SEO purposes, defining the organization as a School.
- * @returns {JSX.Element} The rendered script tag with JSON-LD content.
- */
 export default function StructuredData() {
   const schema = {
     "@context": "https://schema.org ",

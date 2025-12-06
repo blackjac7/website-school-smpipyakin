@@ -1,6 +1,4 @@
-/**
- * Export all components and types from the student affairs dashboard module.
- */
+// Export all components
 export { default as Sidebar } from "./Sidebar";
 export { default as Header } from "./Header";
 export { default as StatsCards } from "./StatsCards";
