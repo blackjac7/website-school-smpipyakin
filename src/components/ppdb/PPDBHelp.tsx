@@ -4,6 +4,13 @@ interface PPDBHelpProps {
   onWhatsAppChat: () => void;
 }
 
+/**
+ * PPDBHelp component.
+ * Displays a help section with FAQs, contact methods, office location, and a call-to-action for WhatsApp support.
+ * @param {PPDBHelpProps} props - The component props.
+ * @param {function} props.onWhatsAppChat - Callback function to initiate a WhatsApp chat.
+ * @returns {JSX.Element} The rendered PPDBHelp component.
+ */
 export default function PPDBHelp({ onWhatsAppChat }: PPDBHelpProps) {
   const faqs = [
     {

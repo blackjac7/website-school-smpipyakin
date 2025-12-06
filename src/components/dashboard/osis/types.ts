@@ -1,11 +1,17 @@
 import { LucideIcon } from "lucide-react";
 
+/**
+ * Interface representing a menu item in the OSIS sidebar.
+ */
 export interface MenuItem {
   id: string;
   label: string;
   icon: LucideIcon;
 }
 
+/**
+ * Interface representing an OSIS activity.
+ */
 export interface Activity {
   id: number;
   title: string;
@@ -19,6 +25,9 @@ export interface Activity {
   organizer: string;
 }
 
+/**
+ * Interface representing a notification for the OSIS dashboard.
+ */
 export interface Notification {
   id: number;
   type: string;
@@ -28,6 +37,9 @@ export interface Notification {
   read: boolean;
 }
 
+/**
+ * Interface representing the validation status of activities.
+ */
 export interface ValidationStatus {
   label: string;
   count: number;

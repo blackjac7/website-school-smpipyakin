@@ -55,6 +55,14 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "your-super-secret-key-change-this-in-production"
 );
 
+/**
+ * API Route Handler for user login.
+ * Handles POST requests to authenticate users.
+ * Validates credentials, creates a JWT token, and sets it in a secure HTTP-only cookie.
+ *
+ * @param {NextRequest} request - The incoming request object.
+ * @returns {Promise<NextResponse>} JSON response indicating success or failure.
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

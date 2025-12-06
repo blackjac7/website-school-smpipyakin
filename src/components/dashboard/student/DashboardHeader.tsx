@@ -12,6 +12,17 @@ interface DashboardHeaderProps {
   unreadCount: number;
 }
 
+/**
+ * DashboardHeader component for the student dashboard.
+ * Displays the dashboard title, user profile, and notifications dropdown.
+ * @param {DashboardHeaderProps} props - The component props.
+ * @param {Notification[]} props.notifications - List of notifications.
+ * @param {boolean} props.showNotifications - Whether to show the notifications dropdown.
+ * @param {function} props.setShowNotifications - Function to toggle notification dropdown visibility.
+ * @param {function} props.markAsRead - Function to mark a notification as read.
+ * @param {number} props.unreadCount - Number of unread notifications.
+ * @returns {JSX.Element} The rendered DashboardHeader component.
+ */
 export default function DashboardHeader({
   notifications,
   showNotifications,

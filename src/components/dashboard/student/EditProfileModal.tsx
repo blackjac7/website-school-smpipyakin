@@ -11,6 +11,17 @@ interface EditProfileModalProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
+/**
+ * EditProfileModal component.
+ * Displays a modal form for editing student profile information.
+ * @param {EditProfileModalProps} props - The component props.
+ * @param {boolean} props.isOpen - Whether the modal is open.
+ * @param {function} props.onClose - Callback function to close the modal.
+ * @param {ProfileData} props.profileData - The current profile data.
+ * @param {function} props.onInputChange - Callback function to handle input changes.
+ * @param {function} props.onSubmit - Callback function to handle form submission.
+ * @returns {JSX.Element | null} The rendered EditProfileModal component or null if not open.
+ */
 export default function EditProfileModal({
   isOpen,
   onClose,

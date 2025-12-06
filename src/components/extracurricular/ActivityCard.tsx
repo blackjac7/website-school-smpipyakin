@@ -1,5 +1,9 @@
 import Image from "next/image";
 import { Calendar } from "lucide-react";
+
+/**
+ * Interface representing an extracurricular activity.
+ */
 export interface ExtracurricularActivity {
   id: string;
   name: string;
@@ -8,11 +12,22 @@ export interface ExtracurricularActivity {
   image: string;
 }
 
+/**
+ * Props for the ActivityCard component.
+ */
 interface ActivityCardProps {
   activity: ExtracurricularActivity;
   onImageClick: (image: string, title: string) => void;
 }
 
+/**
+ * ActivityCard component.
+ * Displays information about an extracurricular activity, including its image, name, description, and schedule.
+ * @param {ActivityCardProps} props - The component props.
+ * @param {ExtracurricularActivity} props.activity - The activity data to display.
+ * @param {function} props.onImageClick - Callback function to handle image clicks (e.g., for opening a modal).
+ * @returns {JSX.Element} The rendered ActivityCard component.
+ */
 const ActivityCard: React.FC<ActivityCardProps> = ({
   activity,
   onImageClick,

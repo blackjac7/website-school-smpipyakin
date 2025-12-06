@@ -2,9 +2,9 @@ import bcrypt from "bcryptjs";
 
 /**
  * Hash a password using bcrypt
- * @param password - Plain text password
- * @param saltRounds - Number of salt rounds (default: 12)
- * @returns Promise<string> - Hashed password
+ * @param {string} password - Plain text password
+ * @param {number} [saltRounds=12] - Number of salt rounds (default: 12)
+ * @returns {Promise<string>} - Hashed password
  */
 export async function hashPassword(
   password: string,
@@ -15,9 +15,9 @@ export async function hashPassword(
 
 /**
  * Verify a password against a hash
- * @param password - Plain text password
- * @param hash - Hashed password
- * @returns Promise<boolean> - True if password matches
+ * @param {string} password - Plain text password
+ * @param {string} hash - Hashed password
+ * @returns {Promise<boolean>} - True if password matches
  */
 export async function verifyPassword(
   password: string,
@@ -44,7 +44,11 @@ async function generateHashes() {
 generateHashes();
 */
 
-// Export utilities
+/**
+ * Object containing password utility functions.
+ * @property {function} hashPassword - Function to hash a password.
+ * @property {function} verifyPassword - Function to verify a password against a hash.
+ */
 const passwordUtils = {
   hashPassword,
   verifyPassword,

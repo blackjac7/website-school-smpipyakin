@@ -7,6 +7,14 @@ interface CalendarProps {
   setCurrentMonth: (date: Date) => void;
 }
 
+/**
+ * Calendar component.
+ * Displays a monthly calendar for the OSIS dashboard, highlighting event days.
+ * @param {CalendarProps} props - The component props.
+ * @param {Date} props.currentMonth - The currently displayed month.
+ * @param {function} props.setCurrentMonth - Function to update the displayed month.
+ * @returns {JSX.Element} The rendered Calendar component.
+ */
 export default function Calendar({
   currentMonth,
   setCurrentMonth,

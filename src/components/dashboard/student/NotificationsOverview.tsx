@@ -6,6 +6,13 @@ interface NotificationsOverviewProps {
   notifications: Notification[];
 }
 
+/**
+ * NotificationsOverview component.
+ * Displays a summary of the latest notifications for the student.
+ * @param {NotificationsOverviewProps} props - The component props.
+ * @param {Notification[]} props.notifications - The array of notifications to display.
+ * @returns {JSX.Element} The rendered NotificationsOverview component.
+ */
 export default function NotificationsOverview({
   notifications,
 }: NotificationsOverviewProps) {

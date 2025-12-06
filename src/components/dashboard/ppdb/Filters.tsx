@@ -10,6 +10,17 @@ interface FiltersProps {
   onExportData: () => void;
 }
 
+/**
+ * Filters component.
+ * Displays search and filter inputs for the PPDB applicant list, along with an export button.
+ * @param {FiltersProps} props - The component props.
+ * @param {string} props.searchTerm - The current search term.
+ * @param {function} props.setSearchTerm - Function to update the search term.
+ * @param {string} props.statusFilter - The current status filter.
+ * @param {function} props.setStatusFilter - Function to update the status filter.
+ * @param {function} props.onExportData - Callback function to trigger data export.
+ * @returns {JSX.Element} The rendered Filters component.
+ */
 export default function Filters({
   searchTerm,
   setSearchTerm,

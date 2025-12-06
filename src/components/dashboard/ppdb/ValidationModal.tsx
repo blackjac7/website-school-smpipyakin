@@ -11,6 +11,17 @@ interface ValidationModalProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
+/**
+ * ValidationModal component.
+ * Displays a modal form for approving or rejecting a PPDB applicant.
+ * @param {ValidationModalProps} props - The component props.
+ * @param {boolean} props.isOpen - Whether the modal is open.
+ * @param {Applicant | null} props.applicant - The applicant being validated.
+ * @param {string} props.validationAction - The action being performed ("approve" or "reject").
+ * @param {function} props.onClose - Callback function to close the modal.
+ * @param {function} props.onSubmit - Callback function to handle form submission.
+ * @returns {JSX.Element | null} The rendered ValidationModal component or null if not open.
+ */
 export default function ValidationModal({
   isOpen,
   applicant,

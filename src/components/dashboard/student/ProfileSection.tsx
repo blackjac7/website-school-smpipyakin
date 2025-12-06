@@ -8,6 +8,15 @@ interface ProfileSectionProps {
   onEditClick: () => void;
 }
 
+/**
+ * ProfileSection component.
+ * Displays the student's profile information, including photo, name, class, and cohort year.
+ * Includes an edit button to open the profile edit modal.
+ * @param {ProfileSectionProps} props - The component props.
+ * @param {ProfileData} props.profileData - The student's profile data.
+ * @param {function} props.onEditClick - Callback function to trigger the edit profile modal.
+ * @returns {JSX.Element} The rendered ProfileSection component.
+ */
 export default function ProfileSection({
   profileData,
   onEditClick,

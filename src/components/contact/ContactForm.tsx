@@ -12,13 +12,18 @@ import {
   sanitizeInput,
   isValidEmail,
   isValidPhone,
-  createHoneypot,
   getClientIP,
 } from "@/utils/security";
 
 // Initialize rate limiter
 const rateLimiter = new RateLimiter(3, 86400000); // 3 submissions per day
 
+/**
+ * ContactForm component.
+ * Allows users to send messages to the school via email.
+ * Includes validation, rate limiting, anti-spam (honeypot + CAPTCHA), and success/error handling.
+ * @returns {JSX.Element} The rendered ContactForm component.
+ */
 const ContactForm = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -39,7 +44,9 @@ const ContactForm = () => {
   const [captcha, setCaptcha] = useState({ num1: 0, num2: 0, answer: 0 });
   const [userCaptchaAnswer, setUserCaptchaAnswer] = useState("");
 
-  // Generate new captcha
+  /**
+   * Generates a new simple math CAPTCHA.
+   */
   const generateCaptcha = () => {
     const num1 = Math.floor(Math.random() * 10) + 1;
     const num2 = Math.floor(Math.random() * 10) + 1;
@@ -53,6 +60,10 @@ const ContactForm = () => {
     generateCaptcha();
   }, []);
 
+  /**
+   * Validates the form inputs, including honeypot, rate limiting, email format, phone format, required fields, and CAPTCHA.
+   * @returns {boolean} True if the form is valid, false otherwise.
+   */
   const validateForm = (): boolean => {
     // Honeypot check
     if (honeypot) {
@@ -103,6 +114,11 @@ const ContactForm = () => {
     return true;
   };
 
+  /**
+   * Handles the form submission.
+   * Validates the form, sanitizes input, sends the email using EmailJS, and handles the response.
+   * @param {React.FormEvent} e - The form submission event.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
@@ -157,6 +173,10 @@ const ContactForm = () => {
     }
   };
 
+  /**
+   * Handles input changes for text inputs and textareas.
+   * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>} e - The change event.
+   */
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement

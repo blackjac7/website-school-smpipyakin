@@ -5,6 +5,9 @@ import Chatbot from "@/components/script/Chatbot";
 import { LoadingProvider } from "@/components/shared";
 import { AuthProvider } from "@/components/shared/AuthProvider";
 
+/**
+ * Metadata for the application, including SEO, Open Graph, and Twitter card information.
+ */
 export const metadata: Metadata = {
   icons: {
     icon: [
@@ -45,6 +48,12 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * RootLayout component that wraps the entire application.
+ * It sets up the HTML structure, metadata, global styles, and providers.
+ * @param {Readonly<{ children: React.ReactNode }>} props - The component props.
+ * @returns {JSX.Element} The rendered root layout.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

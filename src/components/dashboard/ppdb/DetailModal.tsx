@@ -10,6 +10,17 @@ interface DetailModalProps {
   onValidation: (action: string, applicant: Applicant) => void;
 }
 
+/**
+ * DetailModal component.
+ * Displays detailed information about a PPDB applicant, including personal info, parent info, grades, and document status.
+ * Allows validation (approve/reject) if the status is "Menunggu".
+ * @param {DetailModalProps} props - The component props.
+ * @param {boolean} props.isOpen - Whether the modal is open.
+ * @param {Applicant | null} props.applicant - The applicant to display details for.
+ * @param {function} props.onClose - Callback function to close the modal.
+ * @param {function} props.onValidation - Callback function to handle validation actions.
+ * @returns {JSX.Element | null} The rendered DetailModal component or null if not open.
+ */
 export default function DetailModal({
   isOpen,
   applicant,

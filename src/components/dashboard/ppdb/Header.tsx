@@ -21,6 +21,14 @@ const getHeaderTitle = (activeMenu: string) => {
   }
 };
 
+/**
+ * Header component for the PPDB dashboard.
+ * Displays the dashboard title based on the active menu and the user profile/logout section.
+ * @param {HeaderProps} props - The component props.
+ * @param {string} props.activeMenu - The ID of the currently active menu.
+ * @param {function} [props.onToggleSidebar] - Function to toggle the sidebar (for mobile).
+ * @returns {JSX.Element} The rendered Header component.
+ */
 export default function Header({ activeMenu, onToggleSidebar }: HeaderProps) {
   return (
     <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-4">

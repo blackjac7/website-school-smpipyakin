@@ -6,6 +6,13 @@ interface StatsCardsProps {
   stats: Stat[];
 }
 
+/**
+ * StatsCards component.
+ * Displays a grid of statistic cards for the PPDB dashboard.
+ * @param {StatsCardsProps} props - The component props.
+ * @param {Stat[]} props.stats - The array of statistics to display.
+ * @returns {JSX.Element} The rendered StatsCards component.
+ */
 export default function StatsCards({ stats }: StatsCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

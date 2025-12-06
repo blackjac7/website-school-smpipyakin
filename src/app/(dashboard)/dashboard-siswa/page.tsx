@@ -12,6 +12,12 @@ import {
 } from "@/components/dashboard/student";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
+/**
+ * SiswaDashboard component.
+ * Provides the main interface for the student dashboard.
+ * Allows students to view their profile, notifications, and achievements, as well as upload new achievements and edit their profile.
+ * @returns {JSX.Element} The rendered SiswaDashboard component.
+ */
 function SiswaDashboard() {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -30,6 +36,7 @@ function SiswaDashboard() {
     parentPhone: "081987654321",
   });
 
+  // ... (Data definitions for notifications, achievements remain the same)
   const notifications = [
     {
       id: 1,
@@ -195,7 +202,12 @@ function SiswaDashboard() {
   );
 }
 
-// Wrap with protected route for admin, kesiswaan, and siswa
+/**
+ * SiswaDashboardPage component.
+ * Main entry point for the student dashboard.
+ * Protects the route to ensure only users with the 'siswa' role can access it.
+ * @returns {JSX.Element} The rendered SiswaDashboardPage component.
+ */
 export default function SiswaDashboardPage() {
   return (
     <ProtectedRoute requiredRoles={["siswa"]}>

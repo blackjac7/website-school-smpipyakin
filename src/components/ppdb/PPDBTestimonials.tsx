@@ -1,5 +1,10 @@
 import { Star, Quote } from "lucide-react";
 
+/**
+ * PPDBTestimonials component.
+ * Displays testimonials from parents and key statistics about the school.
+ * @returns {JSX.Element} The rendered PPDBTestimonials component.
+ */
 export default function PPDBTestimonials() {
   const testimonials = [
     {

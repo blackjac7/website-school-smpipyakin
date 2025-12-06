@@ -9,6 +9,15 @@ interface AchievementsSectionProps {
   getStatusColor: (status: string) => string;
 }
 
+/**
+ * AchievementsSection component.
+ * Displays a list of the student's achievements with status indicators and an option to upload new achievements.
+ * @param {AchievementsSectionProps} props - The component props.
+ * @param {Achievement[]} props.achievements - The array of achievements to display.
+ * @param {function} props.onUploadClick - Callback function to trigger the upload modal.
+ * @param {function} props.getStatusColor - Function to determine the color class based on status.
+ * @returns {JSX.Element} The rendered AchievementsSection component.
+ */
 export default function AchievementsSection({
   achievements,
   onUploadClick,
