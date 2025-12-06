@@ -12,17 +12,6 @@ interface LogoutConfirmModalProps {
   isLoading?: boolean;
 }
 
-/**
- * LogoutConfirmModal component.
- * Displays a modal asking the user to confirm their logout action.
- * @param {LogoutConfirmModalProps} props - The component props.
- * @param {boolean} props.isOpen - Whether the modal is open.
- * @param {function} props.onClose - Callback function to close the modal.
- * @param {function} props.onConfirm - Callback function to confirm the logout.
- * @param {string} [props.userName="User"] - The name of the user logging out.
- * @param {boolean} [props.isLoading=false] - Whether the logout process is in progress.
- * @returns {JSX.Element | null} The rendered LogoutConfirmModal component or null if not open.
- */
 export default function LogoutConfirmModal({
   isOpen,
   onClose,
@@ -39,12 +28,12 @@ export default function LogoutConfirmModal({
   if (!isOpen || !mounted) return null;
 
   const modalContent = (
-    <div 
+    <div
       className="fixed inset-0 z-[9999] backdrop-blur-sm flex items-center justify-center"
       onClick={onClose}
     >
       {/* Modal */}
-      <div 
+      <div
         className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-100"
         onClick={(e) => e.stopPropagation()}
       >

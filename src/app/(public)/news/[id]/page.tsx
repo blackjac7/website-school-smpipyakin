@@ -1,27 +1,15 @@
-"use client";
-
 import { newsData } from "@/shared/data/news";
 import { Calendar, Share2 } from "lucide-react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
-/**
- * Props for the NewsDetail component.
- */
 interface NewsDetailProps {
-  /** The route parameters, including the news ID. */
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-/**
- * NewsDetail component.
- * Displays the full details of a specific news item, including title, date, image, and content.
- * Allows users to share the news item.
- * @param {NewsDetailProps} props - The component props.
- * @returns {JSX.Element} The rendered NewsDetail component.
- */
-export default function NewsDetail({ params }: NewsDetailProps) {
-  const news = newsData.find((item) => item.id === params.id);
+export default async function NewsDetail({ params }: NewsDetailProps) {
+  const { id } = await params;
+  const news = newsData.find((item) => item.id === id);
 
   if (!news) return notFound();
 

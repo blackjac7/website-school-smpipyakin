@@ -7,16 +7,6 @@ interface PPDBStatusProps {
   onStatusCheck: () => void;
 }
 
-/**
- * PPDBStatus component.
- * Allows users to check their registration status by entering their NISN.
- * Displays information about the status check process and possible outcomes.
- * @param {PPDBStatusProps} props - The component props.
- * @param {string} props.statusNISN - The current NISN value entered by the user.
- * @param {function} props.onNISNChange - Callback function to update the NISN value.
- * @param {function} props.onStatusCheck - Callback function to trigger the status check.
- * @returns {JSX.Element} The rendered PPDBStatus component.
- */
 export default function PPDBStatus({ statusNISN, onNISNChange, onStatusCheck }: PPDBStatusProps) {
   return (
     <section className="max-w-4xl mx-auto px-4 py-16">

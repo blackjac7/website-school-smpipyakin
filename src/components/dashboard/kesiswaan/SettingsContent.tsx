@@ -1,8 +1,3 @@
-/**
- * SettingsContent component.
- * Displays configuration settings for the validation system in the student affairs dashboard.
- * @returns {JSX.Element} The rendered SettingsContent component.
- */
 export default function SettingsContent() {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

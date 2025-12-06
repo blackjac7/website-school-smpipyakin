@@ -2,9 +2,6 @@ import { Metadata } from "next";
 import { GraduationCap } from "lucide-react";
 import Image from "next/image";
 
-/**
- * Metadata for the Teachers & Staff page.
- */
 export const metadata: Metadata = {
   title: "Profil Guru & Staff | SMP IP Yakin Jakarta",
   description:
@@ -66,11 +63,6 @@ const teachers = [
   },
 ];
 
-/**
- * GuruStaffPage component.
- * Displays a list of teachers and staff members with their photos and descriptions.
- * @returns {JSX.Element} The rendered GuruStaffPage component.
- */
 export default function GuruStaffPage() {
   return (
     <div className="space-y-6">

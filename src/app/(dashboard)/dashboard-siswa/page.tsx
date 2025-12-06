@@ -1,217 +1,571 @@
 "use client";
 
-import { useState } from "react";
-import { Trophy, Medal, Award, CheckCircle, Clock, Bell } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Trophy, Medal, Award, LucideIcon, Home, BookOpen } from "lucide-react";
 import {
-  DashboardHeader,
-  ProfileSection,
-  NotificationsOverview,
   AchievementsSection,
-  EditProfileModal,
   UploadAchievementModal,
+  WorksSection,
+  UploadWorkModal,
+  StudentSidebar,
+  StudentHeader,
+  DashboardOverview,
+  QuickEditModal,
+  FullProfileModal,
+  MenuItem,
 } from "@/components/dashboard/student";
+import EditWorkModal from "@/components/dashboard/student/EditWorkModal";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
+import { NotificationAPIService } from "@/hooks/useNotifications";
+import { FormattedNotification } from "@/utils/notificationHelpers";
+import toast from "react-hot-toast";
 
-/**
- * SiswaDashboard component.
- * Provides the main interface for the student dashboard.
- * Allows students to view their profile, notifications, and achievements, as well as upload new achievements and edit their profile.
- * @returns {JSX.Element} The rendered SiswaDashboard component.
- */
+interface AchievementFormData {
+  title: string;
+  description: string;
+  category: string;
+  level: string;
+  achievementDate: string;
+  image: string;
+}
+
+interface ProfileData {
+  name: string;
+  class: string;
+  year: string;
+  nisn: string;
+  email: string;
+  phone: string;
+  address: string;
+  birthDate: string;
+  birthPlace: string;
+  parentName: string;
+  parentPhone: string;
+  profileImage: string;
+  username?: string;
+  gender?: string;
+}
+
+interface Work {
+  id: string;
+  title: string;
+  description: string;
+  workType: string;
+  mediaUrl: string;
+  videoLink: string;
+  category: string;
+  subject: string;
+  status: string;
+  rejectionNote: string;
+  createdAt: string;
+}
+
 function SiswaDashboard() {
+  const [activeMenu, setActiveMenu] = useState("dashboard");
   const [showUploadForm, setShowUploadForm] = useState(false);
-  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showUploadWork, setShowUploadWork] = useState(false);
+  const [showQuickEdit, setShowQuickEdit] = useState(false);
+  const [showFullProfile, setShowFullProfile] = useState(false);
+  const [showEditWork, setShowEditWork] = useState(false);
+  const [selectedWork, setSelectedWork] = useState<Work | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [profileData, setProfileData] = useState({
-    name: "Ahmad Rizki Pratama",
-    class: "XII IPA 1",
-    year: "2025",
-    nisn: "1234567890",
-    email: "ahmad.rizki@student.smpipyakin.sch.id",
-    phone: "081234567890",
-    address: "Jl. Pendidikan No. 123, Jakarta",
-    birthDate: "2007-05-15",
-    birthPlace: "Jakarta",
-    parentName: "Budi Pratama",
-    parentPhone: "081987654321",
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const confirmModal = useToastConfirm();
+
+  const menuItems: MenuItem[] = [
+    { id: "dashboard", label: "Dashboard", icon: Home },
+    { id: "achievements", label: "Prestasi", icon: Trophy },
+    { id: "works", label: "Karya", icon: BookOpen },
+  ];
+  const [profileData, setProfileData] = useState<ProfileData>({
+    name: "",
+    class: "",
+    year: "",
+    nisn: "",
+    email: "",
+    phone: "",
+    address: "",
+    birthDate: "",
+    birthPlace: "",
+    parentName: "",
+    parentPhone: "",
+    profileImage: "",
   });
 
-  // ... (Data definitions for notifications, achievements remain the same)
-  const notifications = [
-    {
-      id: 1,
-      type: "success",
-      message: 'Prestasi "Juara 1 Olimpiade Matematika" telah disetujui',
-      detail: "Feedback: Selamat atas pencapaian yang luar biasa!",
-      icon: CheckCircle,
-      color: "text-green-600",
-      time: "2 jam yang lalu",
-      read: false,
-    },
-    {
-      id: 2,
-      type: "pending",
-      message: 'Prestasi "Juara 2 Debat Bahasa Inggris" sedang dalam review',
-      detail: "Mohon tunggu konfirmasi dari admin",
-      icon: Clock,
-      color: "text-yellow-600",
-      time: "5 jam yang lalu",
-      read: false,
-    },
-    {
-      id: 3,
-      type: "info",
-      message: "Pengumuman: Lomba Karya Tulis Ilmiah dibuka",
-      detail: "Pendaftaran dibuka hingga 30 Januari 2025",
-      icon: Bell,
-      color: "text-blue-600",
-      time: "1 hari yang lalu",
-      read: true,
-    },
-    {
-      id: 4,
-      type: "success",
-      message: "Sertifikat Programming telah diverifikasi",
-      detail: "Sertifikat Anda telah berhasil diverifikasi oleh admin",
-      icon: CheckCircle,
-      color: "text-green-600",
-      time: "2 hari yang lalu",
-      read: true,
-    },
-  ];
+  const [achievements, setAchievements] = useState<
+    Array<{
+      id: string;
+      title: string;
+      description: string;
+      date: string;
+      status: string;
+      icon: LucideIcon;
+      color: string;
+      image?: string;
+      category?: string;
+      level?: string;
+    }>
+  >([]);
 
-  const achievements = [
-    {
-      id: 1,
-      title: "Juara 1 Olimpiade Matematika",
-      description:
-        "Meraih juara pertama dalam Olimpiade Matematika tingkat provinsi dengan skor tertinggi",
-      date: "15 Januari 2025",
-      status: "Approved",
-      icon: Trophy,
-      color: "bg-yellow-100 text-yellow-700",
-    },
-    {
-      id: 2,
-      title: "Juara 2 Debat Bahasa Inggris",
-      description:
-        "Meraih juara kedua dalam kompetisi debat bahasa Inggris antar sekolah",
-      date: "20 Januari 2025",
-      status: "Pending",
-      icon: Medal,
-      color: "bg-orange-100 text-orange-700",
-    },
-    {
-      id: 3,
-      title: "Sertifikat Kursus Programming",
-      description: "Menyelesaikan kursus pemrograman Python dengan nilai A",
-      date: "10 Januari 2025",
-      status: "Approved",
-      icon: Award,
-      color: "bg-blue-100 text-blue-700",
-    },
-  ];
+  const [works, setWorks] = useState<Work[]>([]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Approved":
-        return "bg-green-100 text-green-700";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "Rejected":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
+  const [notifications, setNotifications] = useState<FormattedNotification[]>(
+    []
+  );
+
+  // Load profile data from API
+  const loadProfileData = async () => {
+    try {
+      const response = await fetch("/api/student/profile");
+      const result = await response.json();
+
+      if (result.success) {
+        setProfileData(result.data);
+      } else {
+        console.error("Failed to load profile:", result.error);
+      }
+    } catch (error) {
+      console.error("Failed to load profile:", error);
     }
   };
 
-  const handleUploadSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowUploadForm(false);
-    // Handle form submission
+  // Load achievements from API
+  const loadAchievements = async () => {
+    try {
+      const response = await fetch("/api/student/achievements");
+      const result = await response.json();
+
+      if (result.success) {
+        // Format achievements for UI
+        const formattedAchievements = result.data.map(
+          (achievement: {
+            id: string;
+            title: string;
+            description: string;
+            date: string;
+            status: string;
+            category: string;
+            level: string;
+            image: string;
+          }) => ({
+            id: achievement.id,
+            title: achievement.title,
+            description: achievement.description,
+            date: achievement.date,
+            status: achievement.status,
+            image: achievement.image,
+            category: achievement.category,
+            level: achievement.level,
+            icon:
+              achievement.category === "akademik"
+                ? Trophy
+                : achievement.category === "olahraga"
+                  ? Medal
+                  : Award,
+            color:
+              achievement.status === "approved"
+                ? "text-green-600"
+                : achievement.status === "pending"
+                  ? "text-yellow-600"
+                  : "text-red-600",
+          })
+        );
+        setAchievements(formattedAchievements);
+      }
+    } catch (error) {
+      console.error("Failed to load achievements:", error);
+    }
   };
 
-  const handleProfileSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowEditProfile(false);
-    // Handle profile update
+  // Load works from API
+  const loadWorks = async () => {
+    try {
+      const response = await fetch("/api/student/works");
+      const result = await response.json();
+
+      if (result.success) {
+        setWorks(result.data);
+      }
+    } catch (error) {
+      console.error("Failed to load works:", error);
+    }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setProfileData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  useEffect(() => {
+    const initializeData = async () => {
+      setLoading(true);
+      await Promise.all([
+        loadProfileData(),
+        loadAchievements(),
+        loadWorks(),
+        loadNotifications(),
+      ]);
+      setLoading(false);
+    };
+
+    initializeData();
+  }, []);
+
+  // Load notifications from API using modular system
+  const loadNotifications = async () => {
+    try {
+      // Only load 5 notifications for header dropdown
+      const result = await NotificationAPIService.fetchAllNotifications({
+        page: 1,
+      });
+
+      if (result.success) {
+        // Take only first 5 notifications for header
+        setNotifications(result.data.slice(0, 5));
+      }
+    } catch (error) {
+      console.error("Failed to load notifications:", error);
+    }
   };
 
-  const markAsRead = (id: number) => {
-    // Mark notification as read
-    console.log("Mark as read:", id);
+  // Mark notification as read using modular system
+  const markAsRead = async (notificationId: string) => {
+    const result =
+      await NotificationAPIService.markNotificationAsRead(notificationId);
+
+    if (result.success) {
+      // Update local state
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === notificationId
+            ? { ...notification, read: true }
+            : notification
+        )
+      );
+    }
   };
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  // Handle profile update for both quick and full modal
+  const handleProfileUpdate = async (updates: Partial<ProfileData>) => {
+    try {
+      const response = await fetch("/api/student/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setProfileData(result.data);
+        return Promise.resolve();
+      } else {
+        console.error("Failed to update profile:", result.error);
+        throw new Error(result.error || "Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      throw error;
+    }
+  };
+
+  const handleSubmitForm = async (data: AchievementFormData) => {
+    try {
+      console.log("Achievement data:", data);
+
+      const response = await fetch("/api/student/achievements", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          level: data.level,
+          achievementDate: data.achievementDate,
+          image: data.image,
+        }),
+      });
+
+      if (response.ok) {
+        console.log("Achievement uploaded successfully");
+        toast.success("Prestasi berhasil diunggah!");
+        setShowUploadForm(false);
+        await loadAchievements(); // Reload achievements
+      } else {
+        const errorData = await response.json();
+        console.error("Failed to upload achievement:", errorData);
+
+        // Handle specific error for pending limit
+        if (errorData.error === "Limit reached") {
+          toast.error(errorData.message);
+        } else {
+          toast.error("Gagal mengunggah prestasi. Silakan coba lagi.");
+        }
+      }
+    } catch (error) {
+      console.error("Error uploading achievement:", error);
+      toast.error("Terjadi kesalahan. Silakan coba lagi.");
+    }
+  };
+
+  // Handle work update
+  const handleUpdateWork = async (workId: string, data: Partial<Work>) => {
+    try {
+      const response = await fetch("/api/student/works", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: workId,
+          ...data,
+        }),
+      });
+
+      if (response.ok) {
+        await loadWorks(); // Reload works
+        return Promise.resolve();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update work");
+      }
+    } catch (error) {
+      console.error("Failed to update work:", error);
+      throw error;
+    }
+  };
+
+  // Handle work deletion with confirmation
+  const handleDeleteWork = async (workId: string) => {
+    confirmModal.showConfirm(
+      {
+        title: "Hapus Karya",
+        message: "Apakah Anda yakin ingin menghapus karya ini?",
+        description:
+          "Tindakan ini tidak dapat dibatalkan dan karya akan dihapus secara permanen.",
+        type: "danger",
+        confirmText: "Ya, Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
+        try {
+          const response = await fetch(`/api/student/works?id=${workId}`, {
+            method: "DELETE",
+          });
+
+          if (response.ok) {
+            toast.success("Karya berhasil dihapus!");
+            await loadWorks(); // Reload works
+          } else {
+            const errorData = await response.json();
+            toast.error(
+              errorData.error || "Gagal menghapus karya. Silakan coba lagi."
+            );
+          }
+        } catch (error) {
+          console.error("Failed to delete work:", error);
+          toast.error("Terjadi kesalahan. Silakan coba lagi.");
+        }
+      }
+    );
+  };
+
+  // Handle edit work
+  const handleEditWork = (work: Work) => {
+    setSelectedWork(work);
+    setShowEditWork(true);
+  };
+
+  if (loading) {
+    return (
+      <ProtectedRoute requiredRoles={["siswa"]}>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="animate-pulse">
+            <div className="text-center">
+              <div className="h-8 bg-gray-200 rounded w-48 mx-auto mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  const renderContent = () => {
+    switch (activeMenu) {
+      case "dashboard":
+        return (
+          <DashboardOverview
+            profileData={profileData}
+            achievements={achievements}
+            works={works}
+            onQuickEdit={() => setShowQuickEdit(true)}
+            onUploadAchievement={() => setShowUploadForm(true)}
+            onUploadWork={() => setShowUploadWork(true)}
+          />
+        );
+      case "achievements":
+        return (
+          <AchievementsSection
+            achievements={achievements}
+            onUploadClick={() => setShowUploadForm(true)}
+            getStatusColor={(status) =>
+              status === "approved"
+                ? "text-green-600"
+                : status === "pending"
+                  ? "text-yellow-600"
+                  : "text-red-600"
+            }
+          />
+        );
+      case "works":
+        return (
+          <WorksSection
+            works={works}
+            onUploadClick={() => setShowUploadWork(true)}
+            onEditClick={handleEditWork}
+            onDeleteClick={handleDeleteWork}
+            getStatusColor={(status) =>
+              status === "approved"
+                ? "bg-green-100 text-green-800"
+                : status === "pending"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-red-100 text-red-800"
+            }
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardHeader
-        notifications={notifications}
-        showNotifications={showNotifications}
-        setShowNotifications={setShowNotifications}
-        markAsRead={markAsRead}
-        unreadCount={unreadCount}
-      />
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <ProfileSection
-          profileData={profileData}
-          onEditClick={() => setShowEditProfile(true)}
+    <ProtectedRoute requiredRoles={["siswa"]}>
+      <div className="flex h-screen bg-gray-50">
+        <StudentSidebar
+          menuItems={menuItems}
+          activeMenu={activeMenu}
+          setActiveMenu={setActiveMenu}
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
         />
 
-        <NotificationsOverview notifications={notifications} />
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col">
+          <StudentHeader
+            notifications={notifications}
+            showNotifications={showNotifications}
+            setShowNotifications={setShowNotifications}
+            unreadCount={notifications.filter((n) => !n.read).length}
+            onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+            markAsRead={markAsRead}
+            onEditProfile={() => setShowFullProfile(true)}
+          />
 
-        <AchievementsSection
-          achievements={achievements}
-          onUploadClick={() => setShowUploadForm(true)}
-          getStatusColor={getStatusColor}
-        />
+          {/* Content */}
+          <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+            {renderContent()}
+          </main>
+        </div>
 
-        <EditProfileModal
-          isOpen={showEditProfile}
-          onClose={() => setShowEditProfile(false)}
-          profileData={profileData}
-          onInputChange={handleInputChange}
-          onSubmit={handleProfileSubmit}
-        />
-
+        {/* Modals */}
         <UploadAchievementModal
           isOpen={showUploadForm}
           onClose={() => setShowUploadForm(false)}
-          onSubmit={handleUploadSubmit}
+          onSubmit={handleSubmitForm}
+          pendingCount={
+            achievements.filter((a) => a.status === "pending").length
+          }
         />
-      </main>
 
-      {/* Click outside to close notifications */}
-      {showNotifications && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setShowNotifications(false)}
-        ></div>
-      )}
-    </div>
-  );
-}
+        <UploadWorkModal
+          isOpen={showUploadWork}
+          onClose={() => setShowUploadWork(false)}
+          pendingCount={works.filter((w) => w.status === "pending").length}
+          onSubmit={async (data) => {
+            try {
+              const response = await fetch("/api/student/works", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+              });
 
-/**
- * SiswaDashboardPage component.
- * Main entry point for the student dashboard.
- * Protects the route to ensure only users with the 'siswa' role can access it.
- * @returns {JSX.Element} The rendered SiswaDashboardPage component.
- */
-export default function SiswaDashboardPage() {
-  return (
-    <ProtectedRoute requiredRoles={["siswa"]}>
-      <SiswaDashboard />
+              const result = await response.json();
+
+              if (result.success) {
+                toast.success("Karya berhasil diunggah!");
+                await loadWorks(); // Reload works
+                setShowUploadWork(false);
+              } else {
+                console.error("Failed to create work:", result.error);
+
+                // Handle specific error for pending limit
+                if (result.error === "Limit reached") {
+                  toast.error(result.message);
+                } else {
+                  toast.error("Gagal mengunggah karya. Silakan coba lagi.");
+                }
+              }
+            } catch (error) {
+              console.error("Failed to create work:", error);
+              toast.error("Terjadi kesalahan. Silakan coba lagi.");
+            }
+          }}
+        />
+
+        <QuickEditModal
+          isOpen={showQuickEdit}
+          onClose={() => setShowQuickEdit(false)}
+          profileData={profileData}
+          onUpdate={handleProfileUpdate}
+        />
+
+        <FullProfileModal
+          isOpen={showFullProfile}
+          onClose={() => setShowFullProfile(false)}
+          profileData={profileData}
+          onUpdate={handleProfileUpdate}
+        />
+
+        <EditWorkModal
+          isOpen={showEditWork}
+          onClose={() => {
+            setShowEditWork(false);
+            setSelectedWork(null);
+          }}
+          work={selectedWork}
+          onUpdate={handleUpdateWork}
+        />
+
+        {/* Toast Confirm Modal */}
+        <ToastConfirmModal
+          isOpen={confirmModal.isOpen}
+          title={confirmModal.options.title}
+          message={confirmModal.options.message}
+          description={confirmModal.options.description}
+          type={confirmModal.options.type}
+          confirmText={confirmModal.options.confirmText}
+          cancelText={confirmModal.options.cancelText}
+          isLoading={confirmModal.isLoading}
+          showCloseButton={confirmModal.options.showCloseButton}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={confirmModal.onCancel}
+        />
+
+        {/* Click outside to close notifications */}
+        {showNotifications && (
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setShowNotifications(false)}
+          ></div>
+        )}
+      </div>
     </ProtectedRoute>
   );
 }
+
+export default SiswaDashboard;

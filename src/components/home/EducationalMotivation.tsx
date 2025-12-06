@@ -1,10 +1,5 @@
 import { BookOpen, Brain, Heart, Star } from "lucide-react";
 
-/**
- * EducationalMotivation component.
- * Displays educational pillars and core values with motivational text.
- * @returns {JSX.Element} The rendered EducationalMotivation component.
- */
 export default function EducationalMotivation() {
   const pillars = [
     {

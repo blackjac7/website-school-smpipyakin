@@ -1,6 +1,11 @@
-/**
- * Interface representing student profile data.
- */
+import { LucideIcon } from "lucide-react";
+
+export interface MenuItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+}
+
 export interface ProfileData {
   name: string;
   class: string;
@@ -13,33 +18,44 @@ export interface ProfileData {
   birthPlace: string;
   parentName: string;
   parentPhone: string;
+  profileImage?: string;
 }
 
-/**
- * Interface representing a notification in the student dashboard.
- */
 export interface Notification {
-  id: number;
+  id: string;
   type: string;
+  title: string;
   message: string;
   detail: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  icon: any;
+  icon: LucideIcon;
   color: string;
   time: string;
   read: boolean;
 }
 
-/**
- * Interface representing a student achievement.
- */
 export interface Achievement {
-  id: number;
+  id: string;
   title: string;
   description: string;
   date: string;
   status: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  icon: any;
+  icon: LucideIcon;
   color: string;
+  image?: string;
+  category?: string;
+  level?: string;
+}
+
+export interface Work {
+  id: string;
+  title: string;
+  description: string;
+  workType: "photo" | "video";
+  mediaUrl: string;
+  videoLink: string;
+  category: string;
+  subject: string;
+  status: "pending" | "approved" | "rejected";
+  rejectionNote: string;
+  createdAt: string;
 }

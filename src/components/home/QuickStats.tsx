@@ -1,10 +1,5 @@
 import { GraduationCap, Users, Award, Activity } from "lucide-react";
 
-/**
- * QuickStats component.
- * Displays a row of key statistics (active students, qualified teachers, achievements, extracurriculars) with icons.
- * @returns {JSX.Element} The rendered QuickStats component.
- */
 export default function QuickStats() {
   const stats = [
     {

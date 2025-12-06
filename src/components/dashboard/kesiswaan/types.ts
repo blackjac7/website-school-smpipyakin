@@ -1,8 +1,5 @@
 import { LucideIcon } from "lucide-react";
 
-/**
- * Interface representing a menu item in the sidebar.
- */
 export interface MenuItem {
   id: string;
   label: string;
@@ -10,9 +7,6 @@ export interface MenuItem {
   badge?: number;
 }
 
-/**
- * Interface representing a content item (e.g., student achievement, activity proposal).
- */
 export interface ContentItem {
   id: number;
   title: string;
@@ -27,21 +21,18 @@ export interface ContentItem {
   content: string;
 }
 
-/**
- * Interface representing a notification in the dashboard.
- */
 export interface Notification {
   id: number;
   type: "success" | "pending" | "info";
+  title?: string;
+  icon?: unknown;
+  color?: string;
   message: string;
   detail: string;
   time: string;
   read: boolean;
 }
 
-/**
- * Interface representing statistics for reports.
- */
 export interface ReportStats {
   monthly: Array<{
     month: string;

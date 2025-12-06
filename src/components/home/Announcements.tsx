@@ -1,11 +1,6 @@
 import { Bell } from "lucide-react";
 import Link from "next/link";
 
-/**
- * Announcements component.
- * Displays a list of recent school announcements with their titles, dates, and links to details.
- * @returns {JSX.Element} The rendered Announcements component.
- */
 export default function Announcements() {
   const data = [
     {

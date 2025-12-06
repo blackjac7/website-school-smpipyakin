@@ -104,7 +104,7 @@ interface Notification {
 
 ### Tailwind CSS Classes
 - **Primary Colors**: `bg-gray-900`, `text-gray-900`
-- **Status Colors**: 
+- **Status Colors**:
   - Success: `bg-green-100 text-green-800`
   - Pending: `bg-yellow-100 text-yellow-800`
   - Error: `bg-red-100 text-red-800`

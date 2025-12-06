@@ -10,11 +10,6 @@ import AcademicCalendar from "@/components/home/AcademicCalender";
 import EducationalMotivation from "@/components/home/EducationalMotivation";
 import InstagramEmbed from "@/components/home/InstagramEmbed";
 
-/**
- * HomePage component.
- * Displays the main landing page of the application, including the hero carousel, stats, announcements, news, events, academic calendar, motivation, and Instagram feed.
- * @returns {JSX.Element} The rendered HomePage component.
- */
 export default function HomePage() {
   useEffect(() => {
     document.title = "SMP IP Yakin Jakarta";

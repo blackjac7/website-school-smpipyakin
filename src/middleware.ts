@@ -6,7 +6,6 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 
 // Define protected routes and their required permissions
-// Each role can only access their own dashboard
 const PROTECTED_ROUTES = {
   "/dashboard-admin": ["admin"],
   "/dashboard-kesiswaan": ["kesiswaan"],
@@ -15,17 +14,49 @@ const PROTECTED_ROUTES = {
   "/dashboard-ppdb": ["ppdb-officer"],
 };
 
-/**
- * Middleware function for handling authentication and authorization.
- * Checks if the request is for a protected route, verifies the JWT token,
- * and ensures the user has the required role to access the route.
- * Redirects to login or unauthorized pages as needed.
- *
- * @param {NextRequest} request - The incoming request object.
- * @returns {Promise<NextResponse>} The response, potentially a redirect or modified headers.
- */
+// Security headers
+function addSecurityHeaders(response: NextResponse): NextResponse {
+  // Prevent XSS attacks
+  response.headers.set("X-XSS-Protection", "1; mode=block");
+
+  // Prevent clickjacking
+  response.headers.set("X-Frame-Options", "DENY");
+
+  // Prevent MIME type sniffing
+  response.headers.set("X-Content-Type-Options", "nosniff");
+
+  // Referrer policy
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+
+  // Content Security Policy
+  if (process.env.NODE_ENV === "production") {
+    response.headers.set(
+      "Content-Security-Policy",
+      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.emailjs.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' api.emailjs.com;"
+    );
+  }
+
+  return response;
+}
+
+// Get client IP for additional security
+function getClientIP(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  const real = request.headers.get("x-real-ip");
+
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
+  }
+  if (real) {
+    return real;
+  }
+
+  return "127.0.0.1";
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const clientIP = getClientIP(request);
 
   // Check if the route is protected
   const protectedRoute = Object.keys(PROTECTED_ROUTES).find((route) =>
@@ -37,23 +68,69 @@ export async function middleware(request: NextRequest) {
     const token = request.cookies.get("auth-token")?.value;
 
     if (!token) {
+      // Log suspicious activity
+      console.log(
+        `[SECURITY] Unauthorized access attempt to ${pathname} from IP: ${clientIP}`
+      );
+
       // Redirect to login if no token
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(loginUrl);
+      loginUrl.searchParams.set("error", "authentication_required");
+
+      const response = NextResponse.redirect(loginUrl);
+      return addSecurityHeaders(response);
     }
 
     try {
       // Verify token
       const { payload: decoded } = await jwtVerify(token, JWT_SECRET);
 
+      // Additional security checks
+
+      // Check token age (optional: force re-login after certain time)
+      const tokenAge = Date.now() / 1000 - (decoded.iat as number);
+      if (tokenAge > 24 * 60 * 60) {
+        // 24 hours
+        console.log(
+          `[SECURITY] Expired token access attempt from IP: ${clientIP}`
+        );
+
+        const loginUrl = new URL("/login", request.url);
+        loginUrl.searchParams.set("error", "token_expired");
+
+        const response = NextResponse.redirect(loginUrl);
+        response.cookies.delete("auth-token");
+        return addSecurityHeaders(response);
+      }
+
+      // IP validation (optional: bind token to IP)
+      // Note: Commented out for development, enable in production if needed
+      /*
+      if (decoded.ip && decoded.ip !== clientIP) {
+        console.log(`[SECURITY] IP mismatch detected. Token IP: ${decoded.ip}, Request IP: ${clientIP}`);
+
+        const loginUrl = new URL("/login", request.url);
+        loginUrl.searchParams.set("error", "security_violation");
+
+        const response = NextResponse.redirect(loginUrl);
+        response.cookies.delete("auth-token");
+        return addSecurityHeaders(response);
+      }
+      */
+
       // Check if user has required role
       const allowedRoles =
         PROTECTED_ROUTES[protectedRoute as keyof typeof PROTECTED_ROUTES];
       if (!allowedRoles.includes(decoded.role as string)) {
+        console.log(
+          `[SECURITY] Unauthorized role access: ${decoded.role} tried to access ${pathname} from IP: ${clientIP}`
+        );
+
         // Redirect to unauthorized page
         const unauthorizedUrl = new URL("/unauthorized", request.url);
-        return NextResponse.redirect(unauthorizedUrl);
+        const response = NextResponse.redirect(unauthorizedUrl);
+        return addSecurityHeaders(response);
       }
 
       // Add user info to headers for use in components
@@ -65,13 +142,20 @@ export async function middleware(request: NextRequest) {
         JSON.stringify(decoded.permissions)
       );
 
-      return response;
+      return addSecurityHeaders(response);
     } catch (error) {
-      console.error("Token verification error in middleware:", error);
+      console.error(
+        `[SECURITY] Token verification error from IP ${clientIP}:`,
+        error
+      );
+
       // Redirect to login if token is invalid
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("error", "invalid_token");
-      return NextResponse.redirect(loginUrl);
+
+      const response = NextResponse.redirect(loginUrl);
+      response.cookies.delete("auth-token");
+      return addSecurityHeaders(response);
     }
   }
 
@@ -85,21 +169,25 @@ export async function middleware(request: NextRequest) {
 
         // Redirect to appropriate dashboard based on role
         const dashboardUrl = `/dashboard-${decoded.role}`;
-        return NextResponse.redirect(new URL(dashboardUrl, request.url));
+        const response = NextResponse.redirect(
+          new URL(dashboardUrl, request.url)
+        );
+        return addSecurityHeaders(response);
       } catch (error) {
         // Token is invalid, let them access login page
         console.error("Token verification error:", error);
+
+        const response = NextResponse.next();
+        response.cookies.delete("auth-token");
+        return addSecurityHeaders(response);
       }
     }
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  return addSecurityHeaders(response);
 }
 
-/**
- * Configuration for the middleware matcher.
- * Specifies which paths trigger the middleware.
- */
 export const config = {
   matcher: [
     "/dashboard-admin/:path*",
@@ -108,5 +196,6 @@ export const config = {
     "/dashboard-osis/:path*",
     "/dashboard-ppdb/:path*",
     "/login",
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };

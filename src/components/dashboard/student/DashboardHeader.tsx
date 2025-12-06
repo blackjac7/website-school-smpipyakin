@@ -8,7 +8,7 @@ interface DashboardHeaderProps {
   notifications: Notification[];
   showNotifications: boolean;
   setShowNotifications: (show: boolean) => void;
-  markAsRead: (id: number) => void;
+  markAsRead: (id: string) => void;
   unreadCount: number;
 }
 
