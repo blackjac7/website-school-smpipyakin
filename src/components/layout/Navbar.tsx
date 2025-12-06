@@ -3,22 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import logo from "@/assets/logo.svg";
 
-/**
- * Navbar component for the application.
- * Displays the main navigation links and a responsive mobile menu.
- * @returns {JSX.Element} The rendered Navbar component.
- */
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
-  /**
-   * Array of navigation items with name and href.
-   */
   const navigation = [
     { name: "Beranda", href: "/" },
     { name: "Profil Sekolah", href: "/profile" },
@@ -30,11 +22,6 @@ export default function Navbar() {
     { name: "Login", href: "/login" },
   ];
 
-  /**
-   * Checks if a given path is active.
-   * @param {string} href - The path to check.
-   * @returns {boolean} - True if the path is active, false otherwise.
-   */
   const isActive = (href: string) => {
     if (href === "/profile") {
       return pathname.startsWith("/profile");

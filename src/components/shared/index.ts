@@ -4,6 +4,7 @@ export { default as LogoutConfirmModal } from "./LogoutConfirmModal";
 export { default as SidebarLogout } from "./SidebarLogout";
 export { default as ToastNotification } from "./ToastNotification";
 export { default as LogoutAnimation } from "./LogoutAnimation";
+export { default as LoginAnimation } from "./LoginAnimation";
 export { default as LogoutDemo } from "./LogoutDemo";
 export { default as LogoutSuccessMessage } from "./LogoutSuccessMessage";
 export { AuthProvider, useAuth } from "./AuthProvider";

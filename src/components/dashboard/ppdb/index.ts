@@ -1,13 +1,12 @@
-/**
- * Export all components and types from the PPDB dashboard module.
- */
-export { default as Sidebar } from './Sidebar';
-export { default as Header } from './Header';
-export { default as StatsCards } from './StatsCards';
-export { default as Filters } from './Filters';
-export { default as ApplicantsTable } from './ApplicantsTable';
-export { default as ValidationContent } from './ValidationContent';
-export { default as ReportsContent } from './ReportsContent';
-export { default as DetailModal } from './DetailModal';
-export { default as ValidationModal } from './ValidationModal';
-export * from './types';
+export { default as Sidebar } from "./Sidebar";
+export { default as Header } from "./Header";
+export { default as StatsCards } from "./StatsCards";
+export { default as Filters } from "./Filters";
+export { default as ApplicantsTable } from "./ApplicantsTable";
+export { default as ValidationContent } from "./ValidationContent";
+export { default as ReportsContent } from "./ReportsContent";
+export { default as SettingsContent } from "./SettingsContent";
+export { default as DetailModal } from "./DetailModal";
+export { default as ValidationModal } from "./ValidationModal";
+export { default as ApplicantDetailModal } from "./ApplicantDetailModal";
+export * from "./types";

@@ -1,45 +1,76 @@
 "use client";
 
 import { GraduationCap, Calendar, Users, Award } from "lucide-react";
+import toast from "react-hot-toast";
 
-/**
- * PPDBHero component.
- * Displays the hero section of the PPDB page with title, subtitle, CTA buttons, and highlights.
- * @returns {JSX.Element} The rendered PPDBHero component.
- */
 export default function PPDBHero() {
   const highlights = [
     {
       icon: <Calendar className="w-6 h-6" />,
       title: "Pendaftaran Online",
-      desc: "24/7 Mudah & Cepat"
+      desc: "24/7 Mudah & Cepat",
     },
     {
       icon: <Users className="w-6 h-6" />,
       title: "Tenaga Pendidik",
-      desc: "Profesional & Berpengalaman"
+      desc: "Profesional & Berpengalaman",
     },
     {
       icon: <Award className="w-6 h-6" />,
       title: "Prestasi Unggul",
-      desc: "100+ Penghargaan"
+      desc: "100+ Penghargaan",
     },
     {
       icon: <GraduationCap className="w-6 h-6" />,
       title: "Fasilitas Lengkap",
-      desc: "Laboratorium Modern"
-    }
+      desc: "Laboratorium Modern",
+    },
   ];
+
+  const scrollToForm = () => {
+    const formSection = document.getElementById("ppdb-form");
+    if (formSection) {
+      formSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
+
+  const downloadGuide = () => {
+    // Simulate PDF download dengan toast notification
+    toast.success(
+      "📖 Panduan PPDB akan segera diunduh. File PDF akan tersimpan di folder Download Anda.",
+      {
+        duration: 5000,
+        style: {
+          background: "#10b981",
+          color: "white",
+        },
+      }
+    );
+
+    // Optional: Actual PDF download if you have the file
+    // const link = document.createElement('a');
+    // link.href = '/panduan-ppdb.pdf';
+    // link.download = 'Panduan-PPDB-SMP-IP-Yakin.pdf';
+    // document.body.appendChild(link);
+    // link.click();
+    // document.body.removeChild(link);
+  };
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 pt-20">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='7' cy='7' r='7'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }}></div>
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='7' cy='7' r='7'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        ></div>
       </div>
-      
+
       <div className="relative max-w-7xl mx-auto px-4 py-20">
         <div className="text-center text-white">
           <div className="mb-6 animate-fade-in-up">
@@ -48,16 +79,22 @@ export default function PPDBHero() {
               <span className="block text-yellow-300">(PPDB)</span>
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
-              Bergabunglah dengan keluarga besar SMP IP Yakin Jakarta! 
-              Wujudkan masa depan gemilang bersama pendidikan berkualitas.
+              Bergabunglah dengan keluarga besar SMP IP Yakin Jakarta! Wujudkan
+              masa depan gemilang bersama pendidikan berkualitas.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in-up animation-delay-200">
-            <button className="bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+            <button
+              onClick={scrollToForm}
+              className="bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
               Daftar Sekarang
             </button>
-            <button className="border-2 border-white text-white hover:bg-white hover:text-blue-700 font-bold py-4 px-8 rounded-full text-lg transition-all duration-300">
+            <button
+              onClick={downloadGuide}
+              className="border-2 border-white text-white hover:bg-white hover:text-blue-700 font-bold py-4 px-8 rounded-full text-lg transition-all duration-300"
+            >
               Panduan PPDB
             </button>
           </div>
@@ -84,8 +121,8 @@ export default function PPDBHero() {
       {/* Wave Bottom */}
       <div className="absolute bottom-0 left-0 right-0">
         <svg viewBox="0 0 1440 120" className="w-full h-auto">
-          <path 
-            fill="#f9fafb" 
+          <path
+            fill="#f9fafb"
             d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"
           />
         </svg>

@@ -3,11 +3,6 @@
 import { Users } from "lucide-react";
 import Image from "next/image";
 
-/**
- * StrukturPage component.
- * Displays the organizational structure of the school, including the Principal, Vice Principals, Coordinators, and Staff.
- * @returns {JSX.Element} The rendered StrukturPage component.
- */
 export default function StrukturPage() {
   const wakilKepala = [
     {

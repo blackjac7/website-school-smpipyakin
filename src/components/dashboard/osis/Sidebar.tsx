@@ -3,6 +3,7 @@
 import { User, X } from "lucide-react";
 import { MenuItem } from "./types";
 import { SidebarLogout } from "@/components/shared";
+import { useAuth } from "@/components/shared/AuthProvider";
 
 interface SidebarProps {
   menuItems: MenuItem[];
@@ -12,18 +13,6 @@ interface SidebarProps {
   setIsSidebarOpen?: (open: boolean) => void;
 }
 
-/**
- * Sidebar component.
- * Displays the navigation sidebar for the OSIS dashboard.
- * Supports mobile responsive behavior with overlay and close button.
- * @param {SidebarProps} props - The component props.
- * @param {MenuItem[]} props.menuItems - Array of menu items to display.
- * @param {string} props.activeMenu - The ID of the currently active menu item.
- * @param {function} props.setActiveMenu - Function to set the active menu item.
- * @param {boolean} [props.isSidebarOpen=true] - Whether the sidebar is open (for mobile).
- * @param {function} [props.setIsSidebarOpen] - Function to toggle the sidebar (for mobile).
- * @returns {JSX.Element} The rendered Sidebar component.
- */
 export default function Sidebar({
   menuItems,
   activeMenu,
@@ -31,6 +20,7 @@ export default function Sidebar({
   isSidebarOpen = true,
   setIsSidebarOpen,
 }: SidebarProps) {
+  const { user } = useAuth();
   return (
     <>
       {/* Mobile Overlay */}
@@ -89,7 +79,10 @@ export default function Sidebar({
           ))}
         </nav>
 
-        <SidebarLogout userName="OSIS Member" userRole="Organisasi Siswa" />
+        <SidebarLogout
+          userName={user?.name || user?.username || "OSIS Member"}
+          userRole="Organisasi Siswa"
+        />
       </div>
     </>
   );

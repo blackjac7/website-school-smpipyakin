@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
 
-/**
- * User interface representing the authenticated user.
- */
 interface User {
   id: string;
   username: string;
@@ -12,9 +9,6 @@ interface User {
   permissions: string[];
 }
 
-/**
- * Interface for the return value of useAuth hook.
- */
 interface UseAuthReturn {
   user: User | null;
   loading: boolean;
@@ -25,11 +19,6 @@ interface UseAuthReturn {
   hasRole: (role: string | string[]) => boolean;
 }
 
-/**
- * Custom hook for handling authentication.
- * Manages user state, login, logout, and permission checking.
- * @returns {UseAuthReturn} Authentication object containing user state and methods.
- */
 export function useAuth(): UseAuthReturn {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,9 +37,6 @@ export function useAuth(): UseAuthReturn {
     }
   }, []);
 
-  /**
-   * Checks if the user is currently authenticated by verifying the token with the server.
-   */
   const checkAuth = async () => {
     try {
       setLoading(true);
@@ -78,13 +64,6 @@ export function useAuth(): UseAuthReturn {
     }
   };
 
-  /**
-   * Logs in a user with the provided credentials.
-   * @param {string} username - The username of the user.
-   * @param {string} password - The password of the user.
-   * @param {string} role - The role the user is logging in as.
-   * @returns {Promise<boolean>} - True if login was successful, false otherwise.
-   */
   const login = async (
     username: string,
     password: string,
@@ -121,10 +100,6 @@ export function useAuth(): UseAuthReturn {
     }
   };
 
-  /**
-   * Logs out the current user.
-   * @returns {Promise<void>}
-   */
   const logout = async () => {
     try {
       setLoading(true);
@@ -144,20 +119,10 @@ export function useAuth(): UseAuthReturn {
     }
   };
 
-  /**
-   * Checks if the current user has a specific permission.
-   * @param {string} permission - The permission to check.
-   * @returns {boolean} - True if the user has the permission, false otherwise.
-   */
   const hasPermission = (permission: string): boolean => {
     return user?.permissions?.includes(permission) || false;
   };
 
-  /**
-   * Checks if the current user has a specific role or one of a list of roles.
-   * @param {string | string[]} roles - The role or array of roles to check.
-   * @returns {boolean} - True if the user has the role (or one of the roles), false otherwise.
-   */
   const hasRole = (roles: string | string[]): boolean => {
     if (!user) return false;
 

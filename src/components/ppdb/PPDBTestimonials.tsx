@@ -1,10 +1,5 @@
 import { Star, Quote } from "lucide-react";
 
-/**
- * PPDBTestimonials component.
- * Displays testimonials from parents and key statistics about the school.
- * @returns {JSX.Element} The rendered PPDBTestimonials component.
- */
 export default function PPDBTestimonials() {
   const testimonials = [
     {
@@ -40,7 +35,7 @@ export default function PPDBTestimonials() {
             Apa Kata Orang Tua Siswa?
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Dengarkan pengalaman langsung dari para orang tua yang telah mempercayakan 
+            Dengarkan pengalaman langsung dari para orang tua yang telah mempercayakan
             pendidikan putra-putri mereka kepada kami
           </p>
         </div>

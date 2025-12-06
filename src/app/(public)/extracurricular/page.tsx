@@ -88,30 +88,15 @@ const activities = [
   },
 ];
 
-/**
- * ExtracurricularPage component.
- * Displays a list of extracurricular activities available at the school.
- * Users can view details and see images of each activity.
- * @returns {JSX.Element} The rendered ExtracurricularPage component.
- */
 export default function ExtracurricularPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedTitle, setSelectedTitle] = useState<string | null>(null);
 
-  /**
-   * Handles the click event on an activity image.
-   * Opens the modal with the selected image and title.
-   * @param {string} image - The URL of the selected image.
-   * @param {string} title - The title of the activity.
-   */
   const handleImageClick = (image: string, title: string) => {
     setSelectedImage(image);
     setSelectedTitle(title);
   };
 
-  /**
-   * Closes the image modal.
-   */
   const handleCloseModal = () => {
     setSelectedImage(null);
     setSelectedTitle(null);
