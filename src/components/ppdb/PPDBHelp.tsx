@@ -47,8 +47,8 @@ export default function PPDBHelp({ onWhatsAppChat }: PPDBHelpProps) {
       icon: <Mail className="w-6 h-6" />,
       title: "Email",
       desc: "Kirim pertanyaan via email",
-      value: "ppdb@smpipyakinjakarta.sch.id",
-      action: () => window.open("mailto:ppdb@smpipyakinjakarta.sch.id"),
+      value: "ppdb@smpipyakin.sch.id",
+      action: () => window.open("mailto:ppdb@smpipyakin.sch.id"),
       color: "bg-purple-500 hover:bg-purple-600",
       textColor: "text-purple-700"
     }

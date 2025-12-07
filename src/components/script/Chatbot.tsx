@@ -84,7 +84,7 @@ const Chatbot = () => {
             textColor: "#303235",
             text: "Developed by",
             company: "SMP IP Yakin Jakarta",
-            companyLink: "https://www.smpipyakinjakarta.sch.id",
+            companyLink: "https://www.smpipyakin.sch.id",
           },
         },
       }}

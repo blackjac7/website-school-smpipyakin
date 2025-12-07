@@ -5,8 +5,8 @@ export default function StructuredData() {
     name: "SMP IP Yakin Jakarta",
     description:
       "Sekolah Menengah Pertama dengan pendidikan berkualitas dan program pembelajaran inovatif.",
-    url: "https://smpipyakinjakarta.sch.id",
-    logo: "https://www.smpipyakinjakarta.sch.id/logo.png",
+    url: "https://smpipyakin.sch.id",
+    logo: "https://www.smpipyakin.sch.id/logo.png",
     address: {
       "@type": "PostalAddress",
       streetAddress: "Jl. Bangun Nusa Raya No. 10",
