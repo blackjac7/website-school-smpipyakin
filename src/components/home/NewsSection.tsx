@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Calendar } from "lucide-react";
+import { motion } from "framer-motion";
 
 const dummyNews = [
   {
@@ -9,6 +12,7 @@ const dummyNews = [
     image:
       "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
     date: "10 Mar 2024",
+    category: "Prestasi",
   },
   {
     id: "2",
@@ -16,6 +20,7 @@ const dummyNews = [
     image:
       "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733055884/hero3_gigw1x.webp",
     date: "8 Mar 2024",
+    category: "Kegiatan",
   },
   {
     id: "3",
@@ -23,42 +28,70 @@ const dummyNews = [
     image:
       "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
     date: "5 Mar 2024",
+    category: "Teknologi",
   },
 ];
 
 export default function NewsSection() {
   return (
-    <section className="bg-gray-50 py-16">
-      <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center text-primary mb-12">
-          Berita Terbaru
-        </h2>
+    <section className="bg-white py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+        >
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-4">
+              Berita Terbaru
+            </h2>
+            <div className="h-1 w-24 bg-yellow-500 mx-auto rounded-full" />
+            <p className="mt-4 text-xl text-gray-500">
+                Ikuti perkembangan terkini dari SMP IP Yakin
+            </p>
+        </motion.div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {dummyNews.map((news) => (
-            <div
+          {dummyNews.map((news, index) => (
+            <motion.div
               key={news.id}
-              className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ y: -10 }}
+              className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 flex flex-col h-full group"
             >
-              <div className="relative w-full h-48">
+              <div className="relative w-full h-56 overflow-hidden">
                 <Image
                   src={news.image}
                   alt={news.title}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 33vw"
-                  className="object-cover"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
+                <div className="absolute top-4 left-4 bg-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                    {news.category}
+                </div>
               </div>
-              <div className="p-6">
-                <div className="text-sm text-gray-500 mb-2">{news.date}</div>
-                <h3 className="text-xl font-semibold mb-2">{news.title}</h3>
-                <Link
-                  href={`/news/${news.id}`}
-                  className="inline-flex items-center text-blue-500 font-medium hover:text-orange-500 transition"
-                >
-                  Baca selengkapnya <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+              <div className="p-6 flex flex-col flex-grow">
+                <div className="flex items-center text-sm text-gray-500 mb-3 gap-2">
+                    <Calendar className="w-4 h-4" />
+                    {news.date}
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-gray-900 line-clamp-2 group-hover:text-yellow-600 transition-colors">
+                    {news.title}
+                </h3>
+                <div className="mt-auto pt-4">
+                    <Link
+                    href={`/news/${news.id}`}
+                    className="inline-flex items-center text-yellow-600 font-bold hover:text-yellow-700 transition"
+                    >
+                    Baca selengkapnya <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
