@@ -15,7 +15,7 @@ async function main() {
     update: {},
     create: {
       username: "admin",
-      email: "admin@smpipyakinjakarta.sch.id",
+      email: "admin@smpipyakin.sch.id",
       password: hashedPassword,
       role: "ADMIN",
     },
@@ -27,7 +27,7 @@ async function main() {
     update: {},
     create: {
       username: "kesiswaan",
-      email: "kesiswaan@smpipyakinjakarta.sch.id",
+      email: "kesiswaan@smpipyakin.sch.id",
       password: hashedPassword,
       role: "KESISWAAN",
     },
@@ -52,7 +52,7 @@ async function main() {
     update: {},
     create: {
       username: "siswa001",
-      email: "siswa001@smpipyakinjakarta.sch.id",
+      email: "siswa001@smpipyakin.sch.id",
       password: hashedPassword,
       role: "SISWA",
     },
@@ -86,7 +86,7 @@ async function main() {
     update: {},
     create: {
       username: "osis001",
-      email: "osis001@smpipyakinjakarta.sch.id",
+      email: "osis001@smpipyakin.sch.id",
       password: hashedPassword,
       role: "OSIS",
     },
@@ -120,7 +120,7 @@ async function main() {
     update: {},
     create: {
       username: "ppdb001",
-      email: "ppdb001@smpipyakinjakarta.sch.id",
+      email: "ppdb001@smpipyakin.sch.id",
       password: hashedPassword,
       role: "PPDB_STAFF",
     },

@@ -81,7 +81,7 @@ const ContactForm = () => {
         phone: sanitizeInput(formData.phone),
         subject: sanitizeInput(formData.subject),
         message: sanitizeInput(formData.message),
-        to_email: "info@smpipyakinjakarta.sch.id", // Your school email
+        to_email: "info@smpipyakin.sch.id", // Your school email
       };
 
       // Send email using EmailJS

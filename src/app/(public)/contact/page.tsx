@@ -47,7 +47,7 @@ export default function ContactPage() {
                 <Mail className="h-6 w-6 text-blue-600 mr-3 mt-1" />
                 <div>
                   <h3 className="font-semibold">Email</h3>
-                  <p className="text-gray-600">info@smpipyakinjakarta.sch.id</p>
+                  <p className="text-gray-600">info@smpipyakin.sch.id</p>
                 </div>
               </div>
 

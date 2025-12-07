@@ -6,7 +6,7 @@ import { AuthProvider } from "@/components/shared/AuthProvider";
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.smpipyakinjakarta.sch.id"),
+  metadataBase: new URL("https://www.smpipyakin.sch.id"),
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   authors: [{ name: "SMP IP Yakin Jakarta" }],
   robots: "index, follow",
   alternates: {
-    canonical: "https://www.smpipyakinjakarta.sch.id",
+    canonical: "https://www.smpipyakin.sch.id",
   },
   verification: {
     google: "4sneV0C9--1COSlSa37T4GUITi8mTQz1RGIeS6Hn_W0",
@@ -32,11 +32,11 @@ export const metadata: Metadata = {
     title: "SMP IP Yakin Jakarta",
     description:
       "Sekolah Menengah Pertama dengan pendidikan berkualitas dan program pembelajaran inovatif.",
-    url: "https://smpipyakinjakarta.sch.id",
+    url: "https://smpipyakin.sch.id",
     siteName: "SMP IP Yakin Jakarta",
     images: [
       {
-        url: "https://www.smpipyakinjakarta.sch.id/logo.png",
+        url: "https://www.smpipyakin.sch.id/logo.png",
         width: 800,
         height: 600,
       },
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     title: "SMP IP Yakin Jakarta",
     description:
       "Sekolah Menengah Pertama dengan pendidikan berkualitas dan program pembelajaran inovatif.",
-    images: ["https://www.smpipyakinjakarta.sch.id/logo.png"],
+    images: ["https://www.smpipyakin.sch.id/logo.png"],
   },
 };
 
