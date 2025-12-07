@@ -1,9 +1,11 @@
 import Image from "next/image";
 import { User } from "lucide-react";
+import { Metadata } from "next";
 
-export const metadata = {
-  title: "Sambutan Kepala Sekolah",
-  description: "Sambutan Kepala SMP IP Yakin Jakarta",
+export const metadata: Metadata = {
+  title: "Sambutan Kepala Sekolah | SMP IP Yakin Jakarta",
+  description:
+    "Sambutan dari Kepala Sekolah SMP IP Yakin Jakarta, Muhamad Abduh, S.T., mengenai visi dan komitmen pendidikan sekolah.",
 };
 
 export default function SambutanPage() {
@@ -18,7 +20,7 @@ export default function SambutanPage() {
         <div className="relative w-full md:w-64 h-64">
           <Image
             src="https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/v1732849619/kepsek_oiueq4.jpg"
-            alt="Kepala Sekolah"
+            alt="Kepala Sekolah SMP IP Yakin Jakarta"
             fill
             className="object-cover rounded-lg shadow-lg"
             sizes="(min-width: 768px) 256px, 100vw"
