@@ -96,7 +96,7 @@ export async function loginAction(prevState: unknown, formData: FormData) {
 
   if (!validationResult.success) {
     // If honeypot failed, log it as a bot attempt
-    const honeypotError = validationResult.error.errors.find(e => e.path.includes("honeypot"));
+    const honeypotError = validationResult.error.issues.find(e => e.path.includes("honeypot"));
     if (honeypotError) {
       await logSecurityEvent("BOT_DETECTED", { ip: clientIP, userAgent, reason: "Honeypot filled" });
       return { success: false, error: "Security check failed" };
@@ -104,7 +104,7 @@ export async function loginAction(prevState: unknown, formData: FormData) {
 
     return {
       success: false,
-      error: validationResult.error.errors[0].message,
+      error: validationResult.error.issues[0].message,
     };
   }
 
@@ -234,7 +234,7 @@ export async function loginAction(prevState: unknown, formData: FormData) {
         username: user.username,
         role: role,
         name: user.siswa?.name || user.kesiswaan?.name || user.username,
-        permissions: permissions
+        permissions: Array.from(permissions)
       }
     };
 
