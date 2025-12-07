@@ -114,7 +114,7 @@ Buat 2 template untuk sistem yang lebih profesional:
       Jl. Bangun Nusa Raya No. 10, Cengkareng Timur, Jakarta Barat 11730
     </p>
     <p style="margin: 5px 0 0 0;">
-      📞 +62 21 6194 381 | 📧 info@smpipyakinjakarta.sch.id
+      📞 +62 21 6194 381 | 📧 info@smpipyakin.sch.id
     </p>
   </div>
 </div>
@@ -182,7 +182,7 @@ Buat 2 template untuk sistem yang lebih profesional:
         <strong>Kantor:</strong> +62 21 6194 381
       </p>
       <p style="margin: 5px 0; color: #374151;">
-        <strong>Email:</strong> info@smpipyakinjakarta.sch.id
+        <strong>Email:</strong> info@smpipyakin.sch.id
       </p>
       <p style="margin: 5px 0; color: #374151;">
         <strong>Alamat:</strong> Jl. Bangun Nusa Raya No. 10, Cengkareng Timur,
