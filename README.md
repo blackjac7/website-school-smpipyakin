@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SMP IP Yakin Website
 
-## Getting Started
+A modern, secure, and comprehensive school management system built for SMP IP Yakin. This project leverages the latest web technologies to provide a seamless experience for students, teachers, administrators, and the public.
 
-First, run the development server:
+## 🚀 Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Database**: [PostgreSQL](https://www.postgresql.org/) with [Prisma ORM](https://www.prisma.io/)
+- **Authentication**: Custom JWT (Jose) + HttpOnly Cookies
+- **Storage**: Cloudinary
+- **Email**: EmailJS
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ✨ Key Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Role-Based Dashboards**: Dedicated areas for Admin, Kesiswaan, OSIS, PPDB, and Students.
+- **Secure Authentication**: Robust login system with database-backed rate limiting and IP binding.
+- **PPDB System**: Digital student admission process with document management.
+- **Anti-Bot Security**: Integrated Math Captcha, Honeypot fields, and intelligent rate limiting.
+- **Responsive Design**: Mobile-first architecture ensuring accessibility on all devices.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📚 Documentation
 
-## Learn More
+For detailed technical information, including setup instructions, security architecture, and database schema, please refer to the **[Technical Documentation](TECHNICAL_DOCS.md)**.
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠️ Getting Started
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1.  **Clone the repository**
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
+3.  **Setup Environment**:
+    Copy `.env.example` to `.env` and fill in the required credentials (Database, Cloudinary, etc.).
+4.  **Initialize Database**:
+    ```bash
+    npm run db:generate
+    npm run db:migrate
+    npm run db:seed
+    ```
+5.  **Run Development Server**:
+    ```bash
+    npm run dev
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🔐 Default Accounts (Development)
 
-## Deploy on Vercel
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | `admin` | `admin123` |
+| Student | `siswa001` | `admin123` |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+*Refer to `TECHNICAL_DOCS.md` for the full list of default accounts.*
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📄 License
+
+Private - SMP IP Yakin
