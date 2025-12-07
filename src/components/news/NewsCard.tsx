@@ -2,6 +2,7 @@
 
 import { Calendar, Award, Users } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface News {
   id: string;
@@ -22,11 +23,15 @@ export default function NewsCard({ news }: NewsCardProps) {
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
       {news.image && (
-        <img
-          src={news.image}
-          alt={news.title}
-          className="w-full h-48 object-cover"
-        />
+        <div className="relative w-full h-48">
+          <Image
+            src={news.image}
+            alt={news.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
       )}
       <div className="p-6">
         <div className="flex items-center gap-2 text-sm text-blue-500 mb-2">

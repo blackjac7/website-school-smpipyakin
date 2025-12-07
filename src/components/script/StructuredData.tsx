@@ -1,17 +1,24 @@
 export default function StructuredData() {
   const schema = {
-    "@context": "https://schema.org ",
+    "@context": "https://schema.org",
     "@type": "School",
     name: "SMP IP Yakin Jakarta",
     description:
-      "Sekolah Menengah Pertama dengan pendidikan berkualitas dan program pembelajaran inovatif",
-    url: "https://smpipyakinjakarta.sch.id ",
-    logo: "https://www.smpipyakinjakarta.sch.id/logo.png ",
+      "Sekolah Menengah Pertama dengan pendidikan berkualitas dan program pembelajaran inovatif.",
+    url: "https://smpipyakinjakarta.sch.id",
+    logo: "https://www.smpipyakinjakarta.sch.id/logo.png",
     address: {
       "@type": "PostalAddress",
-      addressLocality: "Jakarta",
+      streetAddress: "Jl. Bangun Nusa Raya No. 10",
+      addressLocality: "Cengkareng Timur",
       addressRegion: "DKI Jakarta",
+      postalCode: "11730",
       addressCountry: "ID",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: "-6.1554",
+      longitude: "106.7364",
     },
     contactPoint: {
       "@type": "ContactPoint",
@@ -20,7 +27,7 @@ export default function StructuredData() {
       areaServed: "ID",
       availableLanguage: ["Indonesian", "English"],
     },
-    sameAs: ["https://www.instagram.com/smpyakinku "],
+    sameAs: ["https://www.instagram.com/smpyakinku"],
   };
 
   return (

@@ -6,6 +6,7 @@ import { AuthProvider } from "@/components/shared/AuthProvider";
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.smpipyakinjakarta.sch.id"),
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -18,18 +19,24 @@ export const metadata: Metadata = {
   description:
     "SMP IP Yakin Jakarta: Sekolah unggulan dengan pendidikan berkualitas, program inovatif, dan pembentukan generasi berkarakter.",
   keywords:
-    "SMP IP Yakin Jakarta, sekolah Islam, sekolah unggulan, pendidikan berkualitas, sekolah menengah Jakarta",
+    "SMP IP Yakin Jakarta, SMP Swasta Jakarta, SMP Terbaik Cengkareng, Sekolah Berkarakter, Kurikulum Merdeka, PPDB SMP Jakarta, Sekolah Unggulan Jakarta",
   authors: [{ name: "SMP IP Yakin Jakarta" }],
   robots: "index, follow",
+  alternates: {
+    canonical: "https://www.smpipyakinjakarta.sch.id",
+  },
+  verification: {
+    google: "4sneV0C9--1COSlSa37T4GUITi8mTQz1RGIeS6Hn_W0",
+  },
   openGraph: {
     title: "SMP IP Yakin Jakarta",
     description:
       "Sekolah Menengah Pertama dengan pendidikan berkualitas dan program pembelajaran inovatif.",
-    url: "https://smpipyakinjakarta.sch.id ",
+    url: "https://smpipyakinjakarta.sch.id",
     siteName: "SMP IP Yakin Jakarta",
     images: [
       {
-        url: "https://www.smpipyakinjakarta.sch.id/logo.png ",
+        url: "https://www.smpipyakinjakarta.sch.id/logo.png",
         width: 800,
         height: 600,
       },
@@ -41,7 +48,7 @@ export const metadata: Metadata = {
     title: "SMP IP Yakin Jakarta",
     description:
       "Sekolah Menengah Pertama dengan pendidikan berkualitas dan program pembelajaran inovatif.",
-    images: ["https://www.smpipyakinjakarta.sch.id/logo.png "],
+    images: ["https://www.smpipyakinjakarta.sch.id/logo.png"],
   },
 };
 
@@ -56,7 +63,7 @@ export default function RootLayout({
         {/* Preload images for desktop */}
         <link
           rel="preload"
-          href="https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1024/q_auto/f_auto/v1733055889/hero1_qjwkk1.webp "
+          href="https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1024/q_auto/f_auto/v1733055889/hero1_qjwkk1.webp"
           as="image"
           type="image/webp"
           crossOrigin="anonymous"
@@ -66,17 +73,11 @@ export default function RootLayout({
         {/* Preload images for mobile */}
         <link
           rel="preload"
-          href="https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_640/q_auto/f_auto/v1733055889/hero1_qjwkk1.webp "
+          href="https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_640/q_auto/f_auto/v1733055889/hero1_qjwkk1.webp"
           as="image"
           type="image/webp"
           crossOrigin="anonymous"
           media="(max-width: 1023px)"
-        />
-        <link rel="canonical" href="https://www.smpipyakinjakarta.sch.id " />
-        <meta name="robots" content="index, follow" />
-        <meta
-          name="google-site-verification"
-          content="4sneV0C9--1COSlSa37T4GUITi8mTQz1RGIeS6Hn_W0"
         />
         <StructuredData />
       </head>
