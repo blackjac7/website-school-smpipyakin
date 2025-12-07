@@ -1,7 +1,11 @@
-import { Bell, Menu } from "lucide-react";
+import { Bell, Menu, User } from "lucide-react";
 import { LogoutButton } from "@/components/shared";
 import { useAuth } from "@/components/shared/AuthProvider";
 import { Notification } from "./types";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import * as React from "react";
 
 interface HeaderProps {
   showNotifications: boolean;
@@ -20,88 +24,107 @@ export default function Header({
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-4">
+    <header className="bg-card border-b border-border px-4 md:px-6 py-4 sticky top-0 z-40">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           {/* Mobile Menu Button */}
           {onToggleSidebar && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onToggleSidebar}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="lg:hidden"
             >
-              <Menu className="w-5 h-5 text-gray-600" />
-            </button>
+              <Menu className="w-5 h-5" />
+            </Button>
           )}
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight">
             Dashboard Admin
           </h2>
         </div>
         <div className="flex items-center gap-3">
           {/* Notification Bell */}
           <div className="relative">
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <Bell className="w-5 h-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
+             <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative"
+              >
+                <Bell className="w-5 h-5" />
+                 {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center animate-pulse">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
 
             {/* Notifications Dropdown */}
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-[90vw] sm:w-80 max-w-sm bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                <div className="p-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Notifikasi
-                  </h3>
-                </div>
-                <div className="max-h-64 overflow-y-auto">
-                  {notifications.map((notification) => (
+              <Card className="absolute right-0 mt-2 w-[90vw] sm:w-80 bg-popover border-border z-50 shadow-lg">
+                <CardHeader className="p-4 border-b border-border pb-2">
+                   <CardTitle className="text-sm font-semibold">Notifikasi</CardTitle>
+                </CardHeader>
+                <div className="max-h-[300px] overflow-y-auto">
+                  {notifications.length === 0 ? (
+                      <div className="p-4 text-center text-sm text-muted-foreground">Tidak ada notifikasi baru</div>
+                  ) : (
+                      notifications.map((notification) => (
                     <div
                       key={notification.id}
-                      className={`p-4 border-b border-gray-100 hover:bg-gray-50 ${!notification.read ? "bg-blue-50" : ""}`}
+                      className={cn(
+                          "p-4 border-b border-border last:border-0 hover:bg-accent/50 transition-colors cursor-pointer",
+                           !notification.read && "bg-primary/5"
+                      )}
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className={`w-2 h-2 rounded-full mt-2 ${
+                          className={cn("w-2 h-2 rounded-full mt-1.5 shrink-0",
                             notification.type === "alert"
-                              ? "bg-red-500"
+                              ? "bg-destructive"
                               : notification.type === "success"
                                 ? "bg-green-500"
                                 : "bg-blue-500"
-                          }`}
-                        ></div>
-                        <div className="flex-1">
-                          <p
-                            className={`text-sm ${!notification.read ? "font-medium" : ""} text-gray-900`}
-                          >
+                          )}
+                        />
+                        <div className="flex-1 space-y-1">
+                          <p className={cn("text-sm leading-none", !notification.read ? "font-semibold text-foreground" : "text-muted-foreground")}>
                             {notification.title || notification.type}
                           </p>
-                          <p className="text-sm text-gray-600 mt-1">
+                          <p className="text-xs text-muted-foreground line-clamp-2">
                             {notification.message}
                           </p>
-                          <p className="text-xs text-gray-500 mt-2">
+                          <p className="text-[10px] text-muted-foreground/70">
                             {notification.time}
                           </p>
                         </div>
                       </div>
                     </div>
-                  ))}
+                  ))
+                  )}
                 </div>
-              </div>
+              </Card>
             )}
           </div>
 
-          <LogoutButton
-            variant="profile"
-            userName={user?.name || user?.username || "Admin System"}
-            userRole={user?.role || "Administrator"}
-            className="ml-2"
-          />
+          <div className="h-6 w-px bg-border mx-1" />
+
+          {/* User Profile */}
+          <div className="flex items-center gap-2">
+              <div className="hidden md:block text-right">
+                  <p className="text-sm font-medium leading-none">{user?.name || user?.username || "Admin"}</p>
+                  <p className="text-xs text-muted-foreground">Administrator</p>
+              </div>
+              <div className="rounded-full bg-primary/10 p-1">
+                 <LogoutButton
+                    variant="ghost"
+                    userName=""
+                    userRole=""
+                    className="h-8 w-8 p-0 rounded-full"
+                    icon={<User className="h-5 w-5"/>}
+                  />
+              </div>
+          </div>
         </div>
       </div>
     </header>
