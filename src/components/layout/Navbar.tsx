@@ -20,6 +20,8 @@ import {
 export default function Navbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const isHome = pathname === "/";
+  const showSolid = isScrolled || !isHome;
 
   // Handle scroll effect
   React.useEffect(() => {
@@ -50,7 +52,7 @@ export default function Navbar() {
     <nav
       className={cn(
         "fixed top-0 z-50 w-full transition-all duration-300",
-        isScrolled
+        showSolid
           ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-border/40 py-2"
           : "bg-transparent py-4"
       )}
@@ -71,7 +73,7 @@ export default function Navbar() {
             <span
               className={cn(
                 "text-lg font-bold leading-none tracking-tight transition-colors",
-                isScrolled ? "text-foreground" : "text-white drop-shadow-md"
+                showSolid ? "text-foreground" : "text-white drop-shadow-md"
               )}
             >
               SMP IP Yakin
@@ -79,7 +81,7 @@ export default function Navbar() {
             <span
               className={cn(
                 "text-xs font-medium uppercase tracking-wider opacity-90",
-                isScrolled ? "text-muted-foreground" : "text-white/90 drop-shadow-sm"
+                showSolid ? "text-muted-foreground" : "text-white/90 drop-shadow-sm"
               )}
             >
               Jakarta
@@ -97,8 +99,8 @@ export default function Navbar() {
                 "px-4 py-2 text-sm font-medium transition-colors hover:text-primary rounded-full",
                 isActive(item.href)
                   ? "text-primary font-bold"
-                  : isScrolled
-                  ? "text-muted-foreground"
+                  : showSolid
+                  ? "text-muted-foreground hover:text-foreground"
                   : "text-white/90 hover:text-white"
               )}
             >
@@ -109,7 +111,7 @@ export default function Navbar() {
 
         {/* CTA Buttons (Desktop) */}
         <div className="hidden md:flex items-center gap-2">
-          <Button asChild variant={isScrolled ? "outline" : "secondary"} size="sm" className={cn(!isScrolled && "bg-white/10 text-white hover:bg-white/20 border-white/20")}>
+          <Button asChild variant={showSolid ? "outline" : "secondary"} size="sm" className={cn(!showSolid && "bg-white/10 text-white hover:bg-white/20 border-white/20")}>
              <Link href="/login">Login</Link>
           </Button>
           <Button asChild size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-lg shadow-primary/20">
@@ -126,7 +128,7 @@ export default function Navbar() {
                 size="icon"
                 className={cn(
                   "hover:bg-primary/10",
-                  !isScrolled && "text-white hover:text-white hover:bg-white/10"
+                  !showSolid && "text-white hover:text-white hover:bg-white/10"
                 )}
               >
                 <Menu className="h-6 w-6" />
