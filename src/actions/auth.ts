@@ -10,7 +10,7 @@ import { headers } from "next/headers";
 // Define schema for validation
 const LoginSchema = z.object({
   username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
   role: z.enum(["admin", "kesiswaan", "siswa", "osis", "ppdb-officer"]),
   honeypot: z.string().max(0, "Spam detected"), // Must be empty
   // Note: Captcha validation is client-side for UX in this implementation.
@@ -19,6 +19,7 @@ const LoginSchema = z.object({
 });
 
 // Role mapping
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ROLE_MAPPING = {
   ADMIN: "admin",
   KESISWAAN: "kesiswaan",
@@ -78,7 +79,7 @@ async function logSecurityEvent(
 }
 
 // Main Login Action
-export async function loginAction(prevState: any, formData: FormData) {
+export async function loginAction(prevState: unknown, formData: FormData) {
   const rawData = {
     username: formData.get("username"),
     password: formData.get("password"),
@@ -243,5 +244,16 @@ export async function loginAction(prevState: any, formData: FormData) {
       success: false,
       error: "An unexpected error occurred",
     };
+  }
+}
+
+export async function logoutAction() {
+  try {
+    const cookieStore = await cookies();
+    cookieStore.delete("auth-token");
+    return { success: true, message: "Logged out successfully" };
+  } catch (error) {
+    console.error("Logout error:", error);
+    return { success: false, error: "Failed to logout" };
   }
 }

@@ -4,10 +4,15 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+// Connection Pooling for Serverless (Vercel)
+// Ensure your DATABASE_URL in .env points to the connection pool (e.g., Supabase Transaction Pooler or Neon Pooling URL)
+// For Prisma, we don't need explicit pool config in the client constructor if the URL handles it,
+// but using a global singleton is critical to prevent exhausting connections during hot reloads.
+
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: ["query"],
+    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
   });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
