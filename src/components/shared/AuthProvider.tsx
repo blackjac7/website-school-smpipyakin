@@ -38,6 +38,7 @@ interface AuthContextType {
   hasPermission: (permission: string) => boolean;
   hasRole: (role: string | string[]) => boolean;
   showToast: (toast: Omit<Toast, "id">) => void;
+  setUser: (user: User | null) => void; // Added setUser to context interface
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -281,6 +282,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         hasPermission,
         hasRole,
         showToast,
+        setUser, // Exposed setUser
       }}
     >
       {children}

@@ -8,6 +8,7 @@ import { useAuth } from "@/components/shared/AuthProvider";
 import LoginAnimation from "@/components/shared/LoginAnimation";
 import { useAntiBot } from "@/hooks/useAntiBot";
 import AntiBotComponents from "@/components/shared/AntiBotComponents";
+import { loginAction } from "@/actions/auth";
 
 import siswaIllustration from "@/assets/siswa-illustration.jpg";
 import kesiswaanIllustration from "@/assets/kesiswaan-illustration.jpg";
@@ -31,11 +32,11 @@ const LoginForm = () => {
     enableRateLimit: true,
   });
 
-  const { login, showToast } = useAuth();
+  const { setUser, showToast } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const handleSubmit = async (e: { preventDefault: () => void }) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!username || !password) {
@@ -63,23 +64,29 @@ const LoginForm = () => {
     setIsSubmitting(true);
 
     try {
-      // Sanitize input data
-      const sanitizedData = antiBot.sanitizeFormData({
-        username,
-        password,
-        role,
-      });
+      // Create FormData for Server Action
+      const formData = new FormData();
+      formData.append("username", username);
+      formData.append("password", password);
+      formData.append("role", role);
 
-      const success = await login(
-        sanitizedData.username as string,
-        sanitizedData.password as string,
-        role
-      );
+      // Call Server Action
+      const result = await loginAction(null, formData);
 
-      if (success) {
+      if (result.success && result.user) {
+        // Update AuthProvider state
+        setUser(result.user);
+
         // Show login animation
         setShowLoginAnimation(true);
         // Note: The redirect will be handled after animation completes
+      } else {
+        showToast({
+          type: "error",
+          message: "Login gagal",
+          description: result.error || "Terjadi kesalahan",
+          duration: 5000,
+        });
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -128,8 +135,17 @@ const LoginForm = () => {
     const redirectTo = searchParams.get("redirect");
     if (redirectTo) {
       router.push(redirectTo);
+    } else {
+      // Default redirect based on role
+      const dashboardRoutes = {
+        admin: "/dashboard-admin",
+        kesiswaan: "/dashboard-kesiswaan",
+        siswa: "/dashboard-siswa",
+        osis: "/dashboard-osis",
+        "ppdb-officer": "/dashboard-ppdb",
+      };
+      router.push(dashboardRoutes[role]);
     }
-    // If no redirect URL, AuthProvider will handle the default redirect
   };
 
   return (
