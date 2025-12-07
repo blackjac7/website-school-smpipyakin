@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowLeft } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const heroSlides = [
   {
@@ -48,87 +49,117 @@ export default function HeroCarousel() {
     return () => clearInterval(timer);
   }, []);
 
+  const nextSlide = () => {
+    setCurrent((prev) => (prev + 1) % heroSlides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrent((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+  };
+
   return (
-    <section className="relative h-[600px] overflow-hidden">
-      {heroSlides.map((slide, index) => (
-        <div
-          key={index}
-          className={`absolute inset-0 transition-opacity duration-1000 ${
-            current === index ? "opacity-100" : "opacity-0"
-          }`}
+    <section className="relative h-[100dvh] min-h-[600px] overflow-hidden bg-black">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={current}
+          className="absolute inset-0"
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
         >
           <Image
-            src={slide.image.small}
-            alt={slide.title}
+            src={heroSlides[current].image.small}
+            alt={heroSlides[current].title}
             fill
             sizes="100vw"
             className="object-cover md:hidden"
-            priority={index === 0}
+            priority={true}
           />
           <Image
-            src={slide.image.medium}
-            alt={slide.title}
+            src={heroSlides[current].image.medium}
+            alt={heroSlides[current].title}
             fill
             sizes="100vw"
             className="object-cover hidden md:block"
-            priority={index === 0}
+            priority={true}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50" />
-        </div>
-      ))}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+        </motion.div>
+      </AnimatePresence>
 
       <div className="relative h-full max-w-7xl mx-auto px-4 flex items-center">
-        <div className="text-white max-w-2xl animate-fadeIn">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">
-            {heroSlides[current].title}
-          </h1>
-          <p className="text-xl mb-8">{heroSlides[current].subtitle}</p>
-          <div className="flex gap-4">
-            <Link
-              href="/Profile"
-              className="inline-flex items-center bg-accent text-white px-6 py-3 rounded-lg bg-blue-500 hover:bg-orange-500 hover:text-white transition"
-            >
-              Pelajari Lebih Lanjut <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-            <Link
-              href="/PPDB"
-              className="inline-flex items-center text-blue-500 bg-white text-primary px-6 py-3 rounded-lg hover:bg-orange-500 hover:text-white transition"
-            >
-              Pendaftaran
-            </Link>
-          </div>
+        <div className="text-white max-w-2xl z-10">
+          <AnimatePresence mode="wait">
+             <motion.div
+                key={current}
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 50 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+             >
+                <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-lg">
+                    {heroSlides[current].title}
+                </h1>
+                <p className="text-xl md:text-2xl mb-10 text-gray-200 font-light drop-shadow-md">
+                    {heroSlides[current].subtitle}
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4">
+                    <Link href="/profile" className="group">
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-yellow-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-400 transition shadow-[0_0_20px_rgba(245,158,11,0.5)]"
+                        >
+                            Pelajari Lebih Lanjut
+                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </motion.button>
+                    </Link>
+                    <Link href="/ppdb">
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-lg border-2 border-white text-white hover:bg-white hover:text-black transition"
+                        >
+                            Pendaftaran PPDB
+                        </motion.button>
+                    </Link>
+                </div>
+             </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
+      {/* Indicators */}
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-3 z-20">
         {heroSlides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrent(index)}
-            className={`w-3 h-3 rounded-full transition-all ${
-              current === index ? "bg-white w-8" : "bg-white/50"
+            className={`h-2 rounded-full transition-all duration-300 ${
+              current === index ? "bg-yellow-500 w-8" : "bg-white/30 w-2 hover:bg-white/60"
             }`}
+            aria-label={`Go to slide ${index + 1}`}
           />
         ))}
       </div>
 
-      <button
-        onClick={() =>
-          setCurrent(
-            (prev) => (prev - 1 + heroSlides.length) % heroSlides.length
-          )
-        }
-        className="hidden md:block absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 p-2 rounded-full backdrop-blur-sm"
-      >
-        <ArrowLeft className="text-white h-6 w-6" />
-      </button>
-
-      <button
-        onClick={() => setCurrent((prev) => (prev + 1) % heroSlides.length)}
-        className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 p-2 rounded-full backdrop-blur-sm"
-      >
-        <ArrowRight className="text-white h-6 w-6" />
-      </button>
+      {/* Navigation Arrows */}
+      <div className="absolute inset-0 hidden md:flex items-center justify-between px-4 pointer-events-none">
+          <button
+            onClick={prevSlide}
+            className="pointer-events-auto p-3 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:scale-110 transition-all border border-white/20"
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="pointer-events-auto p-3 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:scale-110 transition-all border border-white/20"
+          >
+            <ArrowRight className="h-6 w-6" />
+          </button>
+      </div>
     </section>
   );
 }

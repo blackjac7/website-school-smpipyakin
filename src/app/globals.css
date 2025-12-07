@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+@theme {
+  --color-school-yellow: #F59E0B; /* Golden Yellow */
+  --color-school-blue: #1E3A8A; /* Deep Blue for contrast */
+  --color-primary: var(--color-school-yellow);
+  --color-secondary: var(--color-school-blue);
+
+  --color-background: #FAFAFA;
+  --color-foreground: #171717;
+
+  --font-sans: var(--font-inter); /* Assuming Inter or similar is used, usually defined in layout */
+}
+
 /* Custom animations untuk extracurricular page */
 @keyframes fadeIn {
   from {
