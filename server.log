@@ -7,12 +7,13 @@
    - Network:      http://192.168.0.2:3000
 
  ✓ Starting...
- ✓ Ready in 2.1s
+ ✓ Ready in 2s
  ○ Compiling /middleware ...
- ✓ Compiled /middleware in 1180ms (180 modules)
- ○ Compiling /test-loading ...
- ✓ Compiled /test-loading in 11.3s (1562 modules)
- GET /test-loading 200 in 14274ms
+ ✓ Compiled /middleware in 1051ms (180 modules)
+ ○ Compiling /news/[id] ...
+ ✓ Compiled /news/[id] in 12.3s (1590 modules)
+ GET /news/1 200 in 16553ms
  ○ Compiling /api/auth/verify ...
- ✓ Compiled /api/auth/verify in 2.9s (1655 modules)
- ✓ Compiled in 904ms (869 modules)
+ ✓ Compiled /api/auth/verify in 2.3s (1683 modules)
+ GET /api/auth/verify 401 in 2623ms
+ GET /news/avatarAI.png 200 in 2177ms
