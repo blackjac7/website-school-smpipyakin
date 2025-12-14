@@ -3,25 +3,11 @@
 import { Bell } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { mockAnnouncements, formatDate } from "@/lib/dummy-data";
 
 export default function Announcements() {
-  const data = [
-    {
-      title: "Pendaftaran Siswa Baru 2024/2025",
-      date: "15 Mar 2024",
-      priority: "high",
-    },
-    {
-      title: "Jadwal Ujian Tengah Semester",
-      date: "12 Mar 2024",
-      priority: "medium",
-    },
-    {
-      title: "Pekan Olahraga dan Seni",
-      date: "20 Mar 2024",
-      priority: "normal",
-    },
-  ];
+  // Use first 3 items from mock data
+  const data = mockAnnouncements.slice(0, 3);
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-16 bg-gray-50/50">
@@ -43,7 +29,7 @@ export default function Announcements() {
             <div className="space-y-6">
             {data.map((announcement, index) => (
                 <motion.div
-                key={index}
+                key={announcement.id}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -55,12 +41,12 @@ export default function Announcements() {
                         {announcement.title}
                     </h3>
                     <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full whitespace-nowrap">
-                        {announcement.date}
+                        {formatDate(announcement.date!)}
                     </span>
                 </div>
                 <div className="mt-2">
                     <Link
-                        href={`/news`}
+                        href={`/announcements/${announcement.id}`}
                         className="inline-flex items-center text-sm font-semibold text-yellow-600 hover:text-yellow-700 transition-colors"
                     >
                         Lihat detail
@@ -72,7 +58,7 @@ export default function Announcements() {
             </div>
 
             <div className="mt-8 text-center">
-                 <Link href="/news">
+                 <Link href="/announcements">
                     <button className="px-6 py-2 border-2 border-yellow-500 text-yellow-600 rounded-full font-bold hover:bg-yellow-500 hover:text-white transition-all">
                         Lihat Semua Pengumuman
                     </button>

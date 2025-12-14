@@ -6,7 +6,28 @@ import Link from "next/link";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const heroSlides = [
+export interface HeroSlide {
+  image: {
+    small: string;
+    medium: string;
+  };
+  title: string;
+  subtitle: string;
+  linkPrimary?: {
+    text: string;
+    href: string;
+  };
+  linkSecondary?: {
+    text: string;
+    href: string;
+  };
+}
+
+interface HeroCarouselProps {
+  slides?: HeroSlide[];
+}
+
+const defaultSlides: HeroSlide[] = [
   {
     image: {
       small:
@@ -16,6 +37,8 @@ const heroSlides = [
     },
     title: "Selamat Datang di SMP IP Yakin Jakarta",
     subtitle: "Membentuk Generasi Unggul, Berakhlak, dan Berprestasi",
+    linkPrimary: { text: "Pelajari Lebih Lanjut", href: "/profile" },
+    linkSecondary: { text: "Pendaftaran PPDB", href: "/ppdb" },
   },
   {
     image: {
@@ -26,6 +49,8 @@ const heroSlides = [
     },
     title: "Fasilitas Pembelajaran Modern",
     subtitle: "Mendukung Pengembangan Potensi Siswa",
+    linkPrimary: { text: "Lihat Fasilitas", href: "/facilities" },
+    linkSecondary: { text: "Hubungi Kami", href: "/contact" },
   },
   {
     image: {
@@ -36,25 +61,27 @@ const heroSlides = [
     },
     title: "Prestasi Membanggakan",
     subtitle: "Raih Masa Depan Cemerlang Bersama Kami",
+    linkPrimary: { text: "Berita & Prestasi", href: "/news" },
+    linkSecondary: { text: "Ekstrakurikuler", href: "/extracurricular" },
   },
 ];
 
-export default function HeroCarousel() {
+export default function HeroCarousel({ slides = defaultSlides }: HeroCarouselProps) {
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % heroSlides.length);
+      setCurrent((prev) => (prev + 1) % slides.length);
     }, 7000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   const nextSlide = () => {
-    setCurrent((prev) => (prev + 1) % heroSlides.length);
+    setCurrent((prev) => (prev + 1) % slides.length);
   };
 
   const prevSlide = () => {
-    setCurrent((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+    setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
   return (
@@ -69,16 +96,16 @@ export default function HeroCarousel() {
           transition={{ duration: 1.5, ease: "easeOut" }}
         >
           <Image
-            src={heroSlides[current].image.small}
-            alt={heroSlides[current].title}
+            src={slides[current].image.small}
+            alt={slides[current].title}
             fill
             sizes="100vw"
             className="object-cover md:hidden"
             priority={true}
           />
           <Image
-            src={heroSlides[current].image.medium}
-            alt={heroSlides[current].title}
+            src={slides[current].image.medium}
+            alt={slides[current].title}
             fill
             sizes="100vw"
             className="object-cover hidden md:block"
@@ -89,7 +116,7 @@ export default function HeroCarousel() {
       </AnimatePresence>
 
       <div className="relative h-full max-w-7xl mx-auto px-4 flex items-center">
-        <div className="text-white max-w-2xl z-10">
+        <div className="text-white max-w-2xl z-10 pb-20 md:pb-0">
           <AnimatePresence mode="wait">
              <motion.div
                 key={current}
@@ -99,41 +126,45 @@ export default function HeroCarousel() {
                 transition={{ duration: 0.8, delay: 0.3 }}
              >
                 <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-lg">
-                    {heroSlides[current].title}
+                    {slides[current].title}
                 </h1>
                 <p className="text-xl md:text-2xl mb-10 text-gray-200 font-light drop-shadow-md">
-                    {heroSlides[current].subtitle}
+                    {slides[current].subtitle}
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4">
-                    <Link href="/profile" className="group">
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-yellow-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-400 transition shadow-[0_0_20px_rgba(245,158,11,0.5)]"
-                        >
-                            Pelajari Lebih Lanjut
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                        </motion.button>
-                    </Link>
-                    <Link href="/ppdb">
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-lg border-2 border-white text-white hover:bg-white hover:text-black transition"
-                        >
-                            Pendaftaran PPDB
-                        </motion.button>
-                    </Link>
+                    {slides[current].linkPrimary && (
+                        <Link href={slides[current].linkPrimary!.href} className="group">
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-yellow-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-400 transition shadow-[0_0_20px_rgba(245,158,11,0.5)]"
+                            >
+                                {slides[current].linkPrimary!.text}
+                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            </motion.button>
+                        </Link>
+                    )}
+                    {slides[current].linkSecondary && (
+                        <Link href={slides[current].linkSecondary!.href}>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-lg border-2 border-white text-white hover:bg-white hover:text-black transition"
+                            >
+                                {slides[current].linkSecondary!.text}
+                            </motion.button>
+                        </Link>
+                    )}
                 </div>
              </motion.div>
           </AnimatePresence>
         </div>
       </div>
 
-      {/* Indicators */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-3 z-20">
-        {heroSlides.map((_, index) => (
+      {/* Indicators - Adjusted positioning to avoid overlap with QuickStats */}
+      <div className="absolute bottom-28 md:bottom-20 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+        {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrent(index)}
