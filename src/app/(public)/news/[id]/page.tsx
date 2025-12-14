@@ -1,5 +1,6 @@
 import { newsData } from "@/shared/data/news";
-import { Calendar, Share2 } from "lucide-react";
+import ShareButton from "@/components/news/ShareButton";
+import { Calendar } from "lucide-react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
@@ -45,19 +46,7 @@ export default async function NewsDetail({ params }: NewsDetailProps) {
         </div>
 
         <div className="flex justify-center mt-8">
-          <button
-            onClick={() =>
-              navigator.share?.({
-                title: news.title,
-                text: news.title,
-                url: window.location.href,
-              })
-            }
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
-          >
-            <Share2 className="h-4 w-4" />
-            Bagikan Berita
-          </button>
+          <ShareButton title={news.title} />
         </div>
       </div>
     </div>
