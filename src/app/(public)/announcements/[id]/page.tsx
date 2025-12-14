@@ -1,8 +1,10 @@
 
-import { mockAnnouncements, formatDate } from "@/lib/dummy-data";
+import { MOCK_ANNOUNCEMENTS } from "@/lib/data/homepage";
 import { Calendar, MapPin, Share2, ArrowLeft, Bell } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { format } from "date-fns";
+import { id as idLocale } from "date-fns/locale";
 
 interface AnnouncementDetailProps {
   params: Promise<{ id: string }>;
@@ -10,7 +12,7 @@ interface AnnouncementDetailProps {
 
 export default async function AnnouncementDetail({ params }: AnnouncementDetailProps) {
   const { id } = await params;
-  const announcement = mockAnnouncements.find((item) => item.id === id);
+  const announcement = MOCK_ANNOUNCEMENTS.find((item) => item.id === id);
 
   if (!announcement) return notFound();
 
@@ -45,7 +47,7 @@ export default async function AnnouncementDetail({ params }: AnnouncementDetailP
                     </div>
                     <div>
                         <p className="text-xs text-gray-500 font-semibold uppercase">Tanggal</p>
-                        <p className="text-sm font-medium">{formatDate(announcement.date!)}</p>
+                        <p className="text-sm font-medium">{format(new Date(announcement.date), "dd MMMM yyyy", { locale: idLocale })}</p>
                     </div>
                 </div>
 
