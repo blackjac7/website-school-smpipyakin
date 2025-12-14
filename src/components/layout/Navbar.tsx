@@ -38,6 +38,7 @@ export default function Navbar() {
   const navigation = [
     { name: "Beranda", href: "/" },
     { name: "Profil Sekolah", href: "/profile" },
+    { name: "Akademik", href: "/academic-calendar" },
     { name: "Fasilitas", href: "/facilities" },
     { name: "Ekstrakurikuler", href: "/extracurricular" },
     { name: "Berita", href: "/news" },

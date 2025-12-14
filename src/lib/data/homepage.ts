@@ -20,7 +20,7 @@ export interface HomepageData {
 
 // MOCK DATA for when DB is unavailable
 // This mirrors the data we intended to seed
-const MOCK_NEWS: News[] = [
+export const MOCK_NEWS: News[] = [
   {
     id: "mock-news-1",
     title: "Prestasi Gemilang Siswa SMP IP Yakin",
@@ -59,7 +59,7 @@ const MOCK_NEWS: News[] = [
   },
 ];
 
-const MOCK_ANNOUNCEMENTS: Announcement[] = [
+export const MOCK_ANNOUNCEMENTS: Announcement[] = [
   {
     id: "mock-ann-1",
     title: "Pengumuman Jadwal UTS Semester Ganjil",
@@ -95,7 +95,7 @@ const MOCK_ANNOUNCEMENTS: Announcement[] = [
   },
 ];
 
-const MOCK_ACTIVITIES: SchoolActivity[] = [
+export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "mock-act-1",
     title: "Pekan Olahraga dan Seni",
@@ -151,7 +151,7 @@ export type SerializableActivity = Omit<SchoolActivity, "date" | "createdAt" | "
 };
 
 
-function serializeNews(news: News[]): SerializableNews[] {
+export function serializeNews(news: News[]): SerializableNews[] {
   return news.map(item => ({
     ...item,
     date: item.date.toISOString(),
@@ -160,7 +160,7 @@ function serializeNews(news: News[]): SerializableNews[] {
   }));
 }
 
-function serializeAnnouncements(items: Announcement[]): SerializableAnnouncement[] {
+export function serializeAnnouncements(items: Announcement[]): SerializableAnnouncement[] {
   return items.map(item => ({
     ...item,
     date: item.date.toISOString(),
@@ -169,7 +169,7 @@ function serializeAnnouncements(items: Announcement[]): SerializableAnnouncement
   }));
 }
 
-function serializeActivities(items: SchoolActivity[]): SerializableActivity[] {
+export function serializeActivities(items: SchoolActivity[]): SerializableActivity[] {
   return items.map(item => ({
     ...item,
     date: item.date.toISOString(),
