@@ -4,35 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
-
-const dummyNews = [
-  {
-    id: "1",
-    title: "Juara 2 Tari Tingkat Nasional",
-    image:
-      "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
-    date: "10 Mar 2024",
-    category: "Prestasi",
-  },
-  {
-    id: "2",
-    title: "Perayaan Hari Guru",
-    image:
-      "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733055884/hero3_gigw1x.webp",
-    date: "8 Mar 2024",
-    category: "Kegiatan",
-  },
-  {
-    id: "3",
-    title: "Kompetisi Robotik",
-    image:
-      "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
-    date: "5 Mar 2024",
-    category: "Teknologi",
-  },
-];
+import { mockNews, formatDate } from "@/lib/dummy-data";
 
 export default function NewsSection() {
+  // Use first 3 news items from shared mock data
+  const data = mockNews.slice(0, 3);
+
   return (
     <section className="bg-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -52,7 +29,7 @@ export default function NewsSection() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {dummyNews.map((news, index) => (
+          {data.map((news, index) => (
             <motion.div
               key={news.id}
               initial={{ opacity: 0, y: 50 }}
@@ -64,20 +41,20 @@ export default function NewsSection() {
             >
               <div className="relative w-full h-56 overflow-hidden">
                 <Image
-                  src={news.image}
-                  alt={news.title}
+                  src={news.image!}
+                  alt={news.title!}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 33vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute top-4 left-4 bg-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-                    {news.category}
+                    {news.kategori}
                 </div>
               </div>
               <div className="p-6 flex flex-col flex-grow">
                 <div className="flex items-center text-sm text-gray-500 mb-3 gap-2">
                     <Calendar className="w-4 h-4" />
-                    {news.date}
+                    {formatDate(news.date!)}
                 </div>
                 <h3 className="text-xl font-bold mb-3 text-gray-900 line-clamp-2 group-hover:text-yellow-600 transition-colors">
                     {news.title}
@@ -93,6 +70,16 @@ export default function NewsSection() {
               </div>
             </motion.div>
           ))}
+        </div>
+
+        <div className="mt-12 text-center">
+            <Link
+                href="/news"
+                className="inline-flex items-center px-6 py-3 border-2 border-yellow-500 text-yellow-600 rounded-full font-bold hover:bg-yellow-500 hover:text-white transition-all"
+            >
+                Lihat Semua Berita
+                <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
         </div>
       </div>
     </section>
