@@ -2,20 +2,7 @@
 
 import { memo, useState, useEffect } from "react";
 import Image from "next/image";
-import dynamic from "next/dynamic";
-
-// Dynamic import untuk Lottie Player agar aman untuk SSR
-const Player = dynamic(
-  () => import("@lottiefiles/react-lottie-player").then((mod) => ({ default: mod.Player })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center w-full h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    ),
-  }
-);
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 interface LoadingEffectProps {
   message?: string;
@@ -29,7 +16,6 @@ const LoadingEffect = memo(
     size = "md",
     showMessage = true,
   }: LoadingEffectProps) => {
-    const [isLoaded, setIsLoaded] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
 
     const sizeClasses = {
@@ -41,10 +27,6 @@ const LoadingEffect = memo(
     useEffect(() => {
       setIsMounted(true);
     }, []);
-
-    const handleEvent = () => {
-      setIsLoaded(true);
-    };
 
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -63,23 +45,13 @@ const LoadingEffect = memo(
 
           {/* Loading Animation */}
           <div className={`${sizeClasses[size]} relative`}>
-            {/* Fallback spinner yang selalu tampil */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-
             {/* Lottie animation - hanya render di client */}
             {isMounted && (
-              <Player
-                autoplay
+              <DotLottieReact
+                src="https://lottie.host/6b5b6fa9-6cb3-40a7-bb9e-aebbcec63c85/lHn0J6xc5S.lottie"
                 loop
-                src="https://lottie.host/bfe8cfb2-c676-4ae0-901b-621be1bbe4b0/y4SXjX8YUR.json"
+                autoplay
                 className="w-full h-full relative z-10"
-                onEvent={handleEvent}
-                style={{
-                  opacity: isLoaded ? 1 : 0,
-                  transition: 'opacity 0.3s ease-in-out'
-                }}
               />
             )}
           </div>
