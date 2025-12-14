@@ -95,11 +95,13 @@ export default function NewsSection({ news }: NewsSectionProps) {
         )}
 
         <div className="mt-12 text-center">
-             <Link href="/news">
-                <button className="px-8 py-3 bg-yellow-500 text-white rounded-full font-bold hover:bg-yellow-600 transition-all shadow-lg hover:shadow-yellow-500/30">
-                    Lihat Arsip Berita
-                </button>
-             </Link>
+            <Link
+                href="/news"
+                className="inline-flex items-center px-6 py-3 border-2 border-yellow-500 text-yellow-600 rounded-full font-bold hover:bg-yellow-500 hover:text-white transition-all"
+            >
+                Lihat Semua Berita
+                <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
         </div>
       </div>
     </section>

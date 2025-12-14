@@ -64,7 +64,7 @@ export default function Announcements({ announcements }: AnnouncementsProps) {
                     )}
                     <div className="mt-2">
                         <Link
-                            href={`/news`}
+                            href={`/announcements/${announcement.id}`}
                             className="inline-flex items-center text-sm font-bold text-yellow-600 hover:text-yellow-800 transition-colors"
                         >
                             Lihat detail
@@ -81,7 +81,7 @@ export default function Announcements({ announcements }: AnnouncementsProps) {
             </div>
 
             <div className="mt-8 text-center">
-                 <Link href="/news">
+                 <Link href="/announcements">
                     <button className="px-6 py-2 border-2 border-yellow-500 text-yellow-700 rounded-full font-bold hover:bg-yellow-500 hover:text-white transition-all">
                         Lihat Semua Pengumuman
                     </button>
