@@ -134,7 +134,7 @@ async function main() {
         date: new Date("2024-12-01"),
         content:
           "Siswa SMP IP Yakin meraih juara 1 dalam olimpiade matematika tingkat Jakarta.",
-        image: "/images/news/prestasi1.jpg",
+        image: "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
         kategori: "ACHIEVEMENT",
         statusPersetujuan: "APPROVED",
         authorId: adminUser.id,
@@ -144,8 +144,28 @@ async function main() {
         date: new Date("2024-11-15"),
         content:
           "Ekstrakurikuler robotika mengadakan workshop pembuatan robot sederhana.",
-        image: "/images/news/robotika.jpg",
+        image: "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733055884/hero3_gigw1x.webp",
         kategori: "ACTIVITY",
+        statusPersetujuan: "APPROVED",
+        authorId: kesiswaanUser.id,
+      },
+       {
+        title: "Kunjungan Belajar ke Museum Nasional",
+        date: new Date("2024-10-20"),
+        content:
+          "Siswa kelas VII melakukan kunjungan belajar sejarah ke Museum Nasional.",
+        image: "https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1024/q_auto/f_auto/v1733055889/hero2_oa2prx.webp",
+        kategori: "ACTIVITY",
+        statusPersetujuan: "APPROVED",
+        authorId: adminUser.id,
+      },
+       {
+        title: "Juara Harapan Lomba Pidato Bahasa Inggris",
+        date: new Date("2024-09-10"),
+        content:
+          "Selamat kepada siswa kami yang meraih juara harapan dalam lomba pidato.",
+        image: "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
+        kategori: "ACHIEVEMENT",
         statusPersetujuan: "APPROVED",
         authorId: kesiswaanUser.id,
       },
@@ -170,6 +190,13 @@ async function main() {
         content: "Sekolah libur pada tanggal 10-15 April 2024.",
         priority: "MEDIUM",
       },
+      {
+        title: "Pendaftaran Ekstrakurikuler Baru",
+        date: new Date("2024-07-20"),
+        location: "Ruang Kesiswaan",
+        content: "Pendaftaran ekstrakurikuler untuk siswa baru dibuka mulai Senin depan.",
+        priority: "LOW",
+      },
     ],
     skipDuplicates: true,
   });
@@ -193,6 +220,14 @@ async function main() {
         semester: "GANJIL",
         tahunPelajaran: "2024/2025",
         createdBy: osisUser.id,
+      },
+       {
+        title: "Seminar Anti-Bullying",
+        date: new Date("2024-08-15"),
+        information: "Seminar wajib bagi seluruh siswa kelas VII.",
+        semester: "GANJIL",
+        tahunPelajaran: "2024/2025",
+        createdBy: kesiswaanUser.id,
       },
     ],
     skipDuplicates: true,
