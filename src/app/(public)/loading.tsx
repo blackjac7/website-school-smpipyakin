@@ -1,5 +1,5 @@
-import SimpleLoading from "@/components/shared/SimpleLoading";
+import LoadingEffect from "@/components/shared/LoadingEffect";
 
 export default function Loading() {
-  return <SimpleLoading message="Memuat halaman sekolah..." />;
+  return <LoadingEffect message="Memuat halaman sekolah..." />;
 }

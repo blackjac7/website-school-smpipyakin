@@ -11,6 +11,5 @@ export { AuthProvider, useAuth } from "./AuthProvider";
 
 // Loading components
 export { default as LoadingEffect } from "./LoadingEffect";
-export { default as SimpleLoading } from "./SimpleLoading";
 export { LoadingProvider, useLoading } from "./LoadingProvider";
 export { usePageLoading, useAsyncLoading } from "./usePageLoading";

@@ -3,7 +3,7 @@
 import { useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/shared/AuthProvider";
-import { SimpleLoading } from "@/components/shared";
+import { LoadingEffect } from "@/components/shared";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -62,7 +62,7 @@ export function ProtectedRoute({
 
   // Show loading while checking authentication
   if (isLoading) {
-    return <SimpleLoading />;
+    return <LoadingEffect />;
   }
 
   // Don't render children if user is not authenticated or authorized
