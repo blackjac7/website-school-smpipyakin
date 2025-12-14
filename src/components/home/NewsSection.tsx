@@ -4,11 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
-import { mockNews, formatDate } from "@/lib/dummy-data";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
+import { SerializableNews } from "@/lib/data/homepage";
 
-export default function NewsSection() {
-  // Use first 3 news items from shared mock data
-  const data = mockNews.slice(0, 3);
+interface NewsSectionProps {
+  news: SerializableNews[];
+}
+
+export default function NewsSection({ news }: NewsSectionProps) {
+  // Use passed data or empty array
+  const newsList = news || [];
 
   return (
     <section className="bg-white py-20">
@@ -28,49 +34,65 @@ export default function NewsSection() {
             </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {data.map((news, index) => (
-            <motion.div
-              key={news.id}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -10 }}
-              className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 flex flex-col h-full group"
-            >
-              <div className="relative w-full h-56 overflow-hidden">
-                <Image
-                  src={news.image!}
-                  alt={news.title!}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 33vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute top-4 left-4 bg-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-                    {news.kategori}
+        {newsList.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {newsList.map((item, index) => (
+                <motion.div
+                key={item.id || index}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -10 }}
+                className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 flex flex-col h-full group"
+                >
+                <div className="relative w-full h-56 overflow-hidden bg-gray-200">
+                    {item.image ? (
+                         <Image
+                         src={item.image}
+                         alt={item.title}
+                         fill
+                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 33vw"
+                         className="object-cover transition-transform duration-500 group-hover:scale-110"
+                         />
+                    ) : (
+                        <div className="flex items-center justify-center h-full text-gray-400">
+                            No Image
+                        </div>
+                    )}
+
+                    <div className="absolute top-4 left-4 bg-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                        {item.kategori || "Berita"}
+                    </div>
                 </div>
-              </div>
-              <div className="p-6 flex flex-col flex-grow">
-                <div className="flex items-center text-sm text-gray-500 mb-3 gap-2">
-                    <Calendar className="w-4 h-4" />
-                    {formatDate(news.date!)}
+                <div className="p-6 flex flex-col flex-grow">
+                    <div className="flex items-center text-sm text-gray-500 mb-3 gap-2">
+                        <Calendar className="w-4 h-4" />
+                        {item.date ? format(new Date(item.date), "dd MMMM yyyy", { locale: id }) : "-"}
+                    </div>
+                    <h3 className="text-xl font-bold mb-3 text-gray-900 line-clamp-2 group-hover:text-yellow-700 transition-colors">
+                        {item.title}
+                    </h3>
+                    <p className="text-gray-600 line-clamp-3 mb-4 text-sm">
+                        {item.content}
+                    </p>
+                    <div className="mt-auto pt-4">
+                        <Link
+                        href={`/news/${item.id}`}
+                        className="inline-flex items-center text-yellow-600 font-bold hover:text-yellow-800 transition"
+                        >
+                        Baca selengkapnya <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                        </Link>
+                    </div>
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-gray-900 line-clamp-2 group-hover:text-yellow-600 transition-colors">
-                    {news.title}
-                </h3>
-                <div className="mt-auto pt-4">
-                    <Link
-                    href={`/news/${news.id}`}
-                    className="inline-flex items-center text-yellow-600 font-bold hover:text-yellow-700 transition"
-                    >
-                    Baca selengkapnya <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                </motion.div>
+            ))}
+            </div>
+        ) : (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+                <p className="text-gray-500">Belum ada berita yang diterbitkan.</p>
+            </div>
+        )}
 
         <div className="mt-12 text-center">
             <Link

@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Bell, Calendar, MapPin, ArrowRight } from "lucide-react";
-import { mockAnnouncements, formatDate } from "@/lib/dummy-data";
+import { MOCK_ANNOUNCEMENTS } from "@/lib/data/homepage";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 
 export default function AnnouncementsPage() {
   const container = {
@@ -47,7 +49,7 @@ export default function AnnouncementsPage() {
           animate="show"
           className="space-y-6"
         >
-          {mockAnnouncements.map((announcement) => (
+          {MOCK_ANNOUNCEMENTS.map((announcement) => (
             <motion.div
               key={announcement.id}
               variants={item}
@@ -71,7 +73,7 @@ export default function AnnouncementsPage() {
                     <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
                       <div className="flex items-center gap-1.5">
                         <Calendar className="w-4 h-4" />
-                        {formatDate(announcement.date!)}
+                        {format(new Date(announcement.date), "dd MMMM yyyy", { locale: id })}
                       </div>
                       {announcement.location && (
                         <div className="flex items-center gap-1.5">

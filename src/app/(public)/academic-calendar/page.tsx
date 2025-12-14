@@ -2,14 +2,14 @@
 
 import { Calendar } from "lucide-react";
 import { motion } from "framer-motion";
-import { mockActivities } from "@/lib/dummy-data";
+import { MOCK_ACTIVITIES } from "@/lib/data/homepage";
 import { useState } from "react";
 import { clsx } from "clsx";
 
 export default function AcademicCalendarPage() {
   const [filter, setFilter] = useState<"ALL" | "GANJIL" | "GENAP">("ALL");
 
-  const filteredActivities = mockActivities.filter(item => {
+  const filteredActivities = MOCK_ACTIVITIES.filter(item => {
     if (filter === "ALL") return true;
     return item.semester === filter;
   });
@@ -24,7 +24,7 @@ export default function AcademicCalendarPage() {
     }
     acc[monthYear].push(activity);
     return acc;
-  }, {} as Record<string, typeof mockActivities>);
+  }, {} as Record<string, typeof MOCK_ACTIVITIES>);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-32 pb-20">
