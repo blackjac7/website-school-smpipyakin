@@ -2,18 +2,17 @@
 > website-school-smpipyakin@0.1.0 dev
 > next dev
 
-   ▲ Next.js 15.5.7
+   ▲ Next.js 15.5.9
    - Local:        http://localhost:3000
    - Network:      http://192.168.0.2:3000
 
  ✓ Starting...
- ✓ Ready in 2s
+ ✓ Ready in 2.1s
  ○ Compiling /middleware ...
- ✓ Compiled /middleware in 1051ms (180 modules)
- ○ Compiling /news/[id] ...
- ✓ Compiled /news/[id] in 12.3s (1590 modules)
- GET /news/1 200 in 16553ms
+ ✓ Compiled /middleware in 1083ms (180 modules)
+ ○ Compiling /academic-calendar ...
+ ✓ Compiled /academic-calendar in 12.5s (1574 modules)
+ GET /academic-calendar 200 in 14975ms
  ○ Compiling /api/auth/verify ...
- ✓ Compiled /api/auth/verify in 2.3s (1683 modules)
- GET /api/auth/verify 401 in 2623ms
- GET /news/avatarAI.png 200 in 2177ms
+ ✓ Compiled /api/auth/verify in 2.6s (1666 modules)
+ GET /api/auth/verify 401 in 2879ms
