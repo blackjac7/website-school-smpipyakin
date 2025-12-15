@@ -5,7 +5,6 @@ import QuickStats from "@/components/home/QuickStats";
 import Announcements from "@/components/home/Announcements";
 import NewsSection from "@/components/home/NewsSection";
 import Events from "@/components/home/Events";
-import AcademicCalendar from "@/components/home/AcademicCalendar";
 import EducationalMotivation from "@/components/home/EducationalMotivation";
 import InstagramEmbed from "@/components/home/InstagramEmbed";
 import { getLatestNews, getUpcomingAnnouncements, getUpcomingActivities } from "@/lib/data/homepage";
@@ -43,11 +42,6 @@ export default async function HomePage() {
       {/* Events Section - Using Activities data for now */}
       <Suspense fallback={<div className="h-80 bg-gray-50 animate-pulse" />}>
         <Events events={upcomingActivities} />
-      </Suspense>
-
-      {/* Academic Calendar Section - Reusing Activities data or separate call if needed */}
-      <Suspense fallback={<div className="h-96 bg-white animate-pulse" />}>
-        <AcademicCalendar calendarItems={upcomingActivities} />
       </Suspense>
 
       <EducationalMotivation />
