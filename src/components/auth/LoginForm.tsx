@@ -9,6 +9,9 @@ import LoginAnimation from "@/components/shared/LoginAnimation";
 import { useAntiBot } from "@/hooks/useAntiBot";
 import AntiBotComponents from "@/components/shared/AntiBotComponents";
 import { loginAction } from "@/actions/auth";
+import LoginHeader from "./LoginHeader";
+import { motion, AnimatePresence } from "framer-motion";
+import { User, Lock, ChevronDown } from "lucide-react";
 
 import siswaIllustration from "@/assets/siswa-illustration.jpg";
 import kesiswaanIllustration from "@/assets/kesiswaan-illustration.jpg";
@@ -104,27 +107,32 @@ const LoginForm = () => {
   // Mapping role → ilustrasi dan judul
   const roleData: Record<
     Role,
-    { illustration: StaticImageData; title: string }
+    { illustration: StaticImageData; title: string; color: string }
   > = {
     siswa: {
       illustration: siswaIllustration,
       title: "Portal Siswa",
+      color: "bg-blue-50 text-blue-700",
     },
     osis: {
       illustration: osisIllustration,
       title: "Portal OSIS",
+      color: "bg-yellow-50 text-yellow-700",
     },
     kesiswaan: {
       illustration: kesiswaanIllustration,
       title: "Portal Kesiswaan",
+      color: "bg-green-50 text-green-700",
     },
     admin: {
       illustration: adminIllustration,
       title: "Portal Admin",
+      color: "bg-gray-50 text-gray-700",
     },
     "ppdb-officer": {
       illustration: ppdbIllustration,
-      title: "Portal PPDB Officer",
+      title: "Portal PPDB",
+      color: "bg-purple-50 text-purple-700",
     },
   };
 
@@ -154,62 +162,86 @@ const LoginForm = () => {
         isVisible={showLoginAnimation}
         onComplete={handleAnimationComplete}
       />
-      <div className="w-full max-w-4xl p-10 bg-white rounded-lg shadow-md border border-gray-200">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Judul Portal Sesuai Role */}
-          <h2 className="text-2xl font-bold text-center mb-4">
-            {currentRole.title}
-          </h2>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-white/20"
+      >
+        <div className="flex flex-col md:flex-row min-h-[600px]">
+          {/* Kolom Kiri: Form Login */}
+          <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center relative z-10">
+            <LoginHeader />
 
-          {/* Layout Dua Kolom: Form & Gambar */}
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Kolom Kiri: Form Login */}
-            <div className="w-full md:w-1/2 space-y-4">
-              {/* Username */}
-              <label htmlFor="username" className="block text-sm font-medium">
-                Username
-              </label>
-              <input
-                type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Masukkan username"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-indigo-500"
-              />
+            <form onSubmit={handleSubmit} className="space-y-5 mt-2">
+              <div className="space-y-4">
+                {/* Username */}
+                <div className="space-y-1">
+                  <label htmlFor="username" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">
+                    Username
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#1E3A8A] transition-colors">
+                      <User size={18} />
+                    </div>
+                    <input
+                      type="text"
+                      id="username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Masukkan username anda"
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/50 focus:border-[#F59E0B] transition-all text-gray-700 placeholder-gray-400 font-medium text-sm"
+                    />
+                  </div>
+                </div>
 
-              {/* Password */}
-              <label htmlFor="password" className="block text-sm font-medium">
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Masukkan password"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-indigo-500"
-              />
+                {/* Password */}
+                <div className="space-y-1">
+                  <label htmlFor="password" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">
+                    Password
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#1E3A8A] transition-colors">
+                      <Lock size={18} />
+                    </div>
+                    <input
+                      type="password"
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Masukkan kata sandi"
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/50 focus:border-[#F59E0B] transition-all text-gray-700 placeholder-gray-400 font-medium text-sm"
+                    />
+                  </div>
+                </div>
 
-              {/* Role Selection */}
-              <label htmlFor="role" className="block text-sm font-medium">
-                Masuk Sebagai:
-              </label>
-              <select
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value as Role)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-indigo-500"
-              >
-                <option value="siswa">Siswa</option>
-                <option value="osis">OSIS</option>
-                <option value="kesiswaan">Kesiswaan</option>
-                <option value="ppdb-officer">PPDB Officer</option>
-                <option value="admin">Admin</option>
-              </select>
+                {/* Role Selection */}
+                <div className="space-y-1">
+                  <label htmlFor="role" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">
+                    Masuk Sebagai
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500">
+                      <ChevronDown size={18} />
+                    </div>
+                    <select
+                      id="role"
+                      value={role}
+                      onChange={(e) => setRole(e.target.value as Role)}
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/50 focus:border-[#F59E0B] transition-all text-gray-700 appearance-none font-medium text-sm cursor-pointer"
+                    >
+                      <option value="siswa">Siswa</option>
+                      <option value="osis">Pengurus OSIS</option>
+                      <option value="kesiswaan">Staf Kesiswaan</option>
+                      <option value="ppdb-officer">Petugas PPDB</option>
+                      <option value="admin">Administrator</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
 
               {/* Anti-Bot Components */}
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-2">
                 <AntiBotComponents
                   captcha={antiBot.captcha}
                   userCaptchaAnswer={antiBot.userCaptchaAnswer}
@@ -230,31 +262,80 @@ const LoginForm = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`mt-2 w-full px-4 py-2 rounded-md transition duration-300 ${
+                className={`mt-4 w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider shadow-lg transform transition-all duration-200 hover:shadow-xl active:scale-[0.98] ${
                   isSubmitting
-                    ? "bg-gray-400 cursor-not-allowed text-gray-600"
-                    : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                    ? "bg-gray-300 cursor-not-allowed text-gray-500 shadow-none"
+                    : "bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-white"
                 }`}
               >
-                {isSubmitting ? "Memproses..." : "Masuk"}
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Memproses...
+                  </span>
+                ) : (
+                  "Masuk ke Portal"
+                )}
               </button>
+            </form>
+          </div>
+
+          {/* Kolom Kanan: Ilustrasi Gambar Dinamis */}
+          <div className="w-full md:w-1/2 bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center p-8 border-t md:border-t-0 md:border-l border-gray-100">
+            {/* Background Pattern for Illustration Side */}
+            <div className="absolute inset-0 z-0 opacity-10">
+               <svg className="h-full w-full text-[#1E3A8A]" width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+                 <path d="M0 100 C 20 0 50 0 100 100 Z" fill="currentColor" />
+               </svg>
             </div>
 
-            {/* Kolom Kanan: Ilustrasi Gambar Dinamis */}
-            <div className="w-full md:w-1/2 flex items-center justify-center">
-              <div className="overflow-hidden rounded-2xl">
-                <Image
-                  src={currentRole.illustration}
-                  alt={`${currentRole.title} Illustration`}
-                  width={400}
-                  height={400}
-                  className="object-contain"
-                />
-              </div>
+            <div className="relative z-10 w-full max-w-sm text-center">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={role}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-col items-center"
+                >
+                  <div className="w-64 h-64 md:w-80 md:h-80 relative mb-6">
+                    <div className="absolute inset-0 bg-[#F59E0B] rounded-full opacity-10 blur-2xl animate-pulse"></div>
+                    <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-2xl ring-4 ring-white">
+                      <Image
+                        src={currentRole.illustration}
+                        alt={`${currentRole.title} Illustration`}
+                        fill
+                        className="object-cover"
+                        priority
+                      />
+                    </div>
+                  </div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <h3 className="text-2xl font-bold text-gray-800 mb-2">{currentRole.title}</h3>
+                    <p className="text-gray-500 text-sm">
+                      Silakan login untuk mengakses dashboard {role === 'siswa' ? 'akademik dan informasi sekolah' : role}.
+                    </p>
+                  </motion.div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Footer Text */}
+            <div className="absolute bottom-4 text-center w-full z-10">
+              <p className="text-xs text-gray-400">© {new Date().getFullYear()} SMP IP YAKIN. All rights reserved.</p>
             </div>
           </div>
-        </form>
-      </div>
+        </div>
+      </motion.div>
     </>
   );
 };
