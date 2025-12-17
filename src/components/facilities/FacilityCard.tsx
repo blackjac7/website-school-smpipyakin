@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Facility } from "@/app/(public)/facilities/page";
+import { Facility } from "@/lib/data/facilities";
 import { useState } from "react";
 
 interface FacilityCardProps {
