@@ -35,7 +35,7 @@ const FacilitiesPage = () => {
         title="Fasilitas Sekolah"
         description="SMP IP Yakin Jakarta menyediakan fasilitas modern dan lengkap untuk mendukung proses pembelajaran dan pengembangan potensi siswa."
         breadcrumbs={[{ label: "Fasilitas", href: "/facilities" }]}
-        image="https://res.cloudinary.com/dvnyimxmi/image/upload/v1733055889/hero2_oa2prx.webp"
+        image="https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=1920&auto=format&fit=crop"
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">

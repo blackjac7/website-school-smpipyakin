@@ -42,7 +42,7 @@ export default function ExtracurricularPage() {
         title="Program Ekstrakurikuler"
         description="Mengembangkan bakat dan minat siswa melalui berbagai kegiatan positif di luar jam pelajaran reguler."
         breadcrumbs={[{ label: "Ekstrakurikuler", href: "/extracurricular" }]}
-        image="https://res.cloudinary.com/dvnyimxmi/image/upload/v1732802973/Seni_Musik_qnbwpd.webp"
+        image="https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1920&auto=format&fit=crop"
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
