@@ -1,15 +1,9 @@
 import Image from "next/image";
 import { Calendar } from "lucide-react";
-export interface ExtracurricularActivity {
-  id: string;
-  name: string;
-  description: string;
-  schedule: string | string[];
-  image: string;
-}
+import { Activity } from "@/lib/data/extracurricular";
 
 interface ActivityCardProps {
-  activity: ExtracurricularActivity;
+  activity: Activity;
   onImageClick: (image: string, title: string) => void;
 }
 
