@@ -101,10 +101,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-ganjil-1",
     title: "Masa Pengenalan Lingkungan Sekolah (MPLS)",
-    date: new Date("2024-07-15"),
+    date: new Date("2025-07-15"),
     information: "Kegiatan pengenalan lingkungan sekolah bagi siswa baru kelas VII.",
     semester: "GANJIL" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-admin-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -112,10 +112,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-ganjil-2",
     title: "Upacara Hari Kemerdekaan RI",
-    date: new Date("2024-08-17"),
-    information: "Upacara bendera memperingati HUT Kemerdekaan RI ke-79 di lapangan sekolah.",
+    date: new Date("2025-08-17"),
+    information: "Upacara bendera memperingati HUT Kemerdekaan RI ke-80 di lapangan sekolah.",
     semester: "GANJIL" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-admin-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -123,10 +123,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-ganjil-3",
     title: "Penilaian Tengah Semester (PTS) Ganjil",
-    date: new Date("2024-09-23"),
+    date: new Date("2025-09-23"),
     information: "Pelaksanaan PTS Ganjil untuk seluruh jenjang kelas.",
     semester: "GANJIL" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-admin-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -134,10 +134,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-ganjil-4",
     title: "Peringatan Bulan Bahasa",
-    date: new Date("2024-10-28"),
+    date: new Date("2025-10-28"),
     information: "Lomba baca puisi, pidato, dan mading dalam rangka Bulan Bahasa.",
     semester: "GANJIL" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-kesiswaan-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -145,10 +145,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-ganjil-5",
     title: "Peringatan Hari Guru Nasional",
-    date: new Date("2024-11-25"),
+    date: new Date("2025-11-25"),
     information: "Upacara dan apresiasi untuk guru oleh OSIS.",
     semester: "GANJIL" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-osis-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -156,10 +156,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-ganjil-6",
     title: "Penilaian Akhir Semester (PAS) Ganjil",
-    date: new Date("2024-12-02"),
+    date: new Date("2025-12-02"),
     information: "Ujian akhir semester ganjil untuk menentukan nilai rapor semester 1.",
     semester: "GANJIL" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-admin-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -167,10 +167,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-ganjil-7",
     title: "Class Meeting",
-    date: new Date("2024-12-16"),
+    date: new Date("2025-12-16"),
     information: "Perlombaan olahraga dan seni antar kelas setelah PAS.",
     semester: "GANJIL" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-osis-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -178,10 +178,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-ganjil-8",
     title: "Pembagian Rapor Semester Ganjil",
-    date: new Date("2024-12-20"),
+    date: new Date("2025-12-20"),
     information: "Penyerahan hasil belajar siswa kepada orang tua/wali.",
     semester: "GANJIL" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-admin-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -191,10 +191,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-genap-1",
     title: "Hari Pertama Masuk Sekolah Semester Genap",
-    date: new Date("2025-01-06"),
+    date: new Date("2026-01-06"),
     information: "Awal kegiatan belajar mengajar semester genap.",
     semester: "GENAP" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-admin-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -202,10 +202,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-genap-2",
     title: "Peringatan Isra Mi'raj",
-    date: new Date("2025-01-27"),
+    date: new Date("2026-01-27"),
     information: "Kegiatan keagamaan memperingati Isra Mi'raj Nabi Muhammad SAW.",
     semester: "GENAP" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-kesiswaan-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -213,10 +213,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-genap-3",
     title: "Penilaian Tengah Semester (PTS) Genap",
-    date: new Date("2025-03-10"),
+    date: new Date("2026-03-10"),
     information: "Evaluasi tengah semester genap.",
     semester: "GENAP" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-admin-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -224,10 +224,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-genap-4",
     title: "Pesantren Kilat Ramadhan",
-    date: new Date("2025-03-15"),
+    date: new Date("2026-03-15"),
     information: "Kegiatan pendalaman agama Islam selama bulan Ramadhan.",
     semester: "GENAP" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-kesiswaan-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -235,10 +235,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-genap-5",
     title: "Ujian Sekolah (Kelas IX)",
-    date: new Date("2025-05-12"),
+    date: new Date("2026-05-12"),
     information: "Ujian akhir kelulusan bagi siswa kelas IX.",
     semester: "GENAP" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-admin-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -246,10 +246,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-genap-6",
     title: "Penilaian Akhir Tahun (PAT)",
-    date: new Date("2025-06-09"),
+    date: new Date("2026-06-09"),
     information: "Ujian kenaikan kelas untuk kelas VII dan VIII.",
     semester: "GENAP" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-admin-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -257,10 +257,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-genap-7",
     title: "Wisuda Pelepasan Siswa Kelas IX",
-    date: new Date("2025-06-21"),
+    date: new Date("2026-06-21"),
     information: "Acara perpisahan dan wisuda siswa kelas IX.",
     semester: "GENAP" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-admin-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -268,10 +268,10 @@ export const MOCK_ACTIVITIES: SchoolActivity[] = [
   {
     id: "act-genap-8",
     title: "Pembagian Rapor Kenaikan Kelas",
-    date: new Date("2025-06-27"),
+    date: new Date("2026-06-27"),
     information: "Penyerahan rapor semester genap dan pengumuman kenaikan kelas.",
     semester: "GENAP" as SemesterType,
-    tahunPelajaran: "2024/2025",
+    tahunPelajaran: "2025/2026",
     createdBy: "mock-admin-id",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -375,17 +375,40 @@ export async function getUpcomingAnnouncements(): Promise<SerializableAnnounceme
  */
 export async function getUpcomingActivities(): Promise<SerializableActivity[]> {
   try {
+    const today = new Date();
+    // Reset time to beginning of day to include events happening today
+    today.setHours(0, 0, 0, 0);
+
     const activities = await prisma.schoolActivity.findMany({
+      where: {
+        date: {
+          gte: today,
+        },
+      },
       orderBy: {
         date: "asc",
       },
       take: 3,
     });
 
-    const result = activities.length === 0 ? MOCK_ACTIVITIES : activities;
+    // Filtering logic for mock data fallback
+    const result = activities.length > 0
+      ? activities
+      : MOCK_ACTIVITIES
+          .filter(activity => activity.date >= today)
+          .sort((a, b) => a.date.getTime() - b.date.getTime())
+          .slice(0, 3);
+
     return serializeActivities(result);
   } catch (error) {
     console.warn("Database connection failed, using mock data for Activities:", error);
-    return serializeActivities(MOCK_ACTIVITIES);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const result = MOCK_ACTIVITIES
+      .filter(activity => activity.date >= today)
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
+      .slice(0, 3);
+    return serializeActivities(result);
   }
 }
