@@ -47,7 +47,7 @@ export default function ContactPage() {
         title="Hubungi Kami"
         description="Kami siap membantu dan menjawab pertanyaan Anda seputar SMP IP Yakin Jakarta."
         breadcrumbs={[{ label: "Kontak", href: "/contact" }]}
-        image="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2670&auto=format&fit=crop"
+        image="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1920&auto=format&fit=crop"
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
