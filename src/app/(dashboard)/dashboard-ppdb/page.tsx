@@ -1,183 +1,155 @@
 "use client";
 
-import { useState } from "react";
-import { Users, FileText, Settings, Check, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Users, FileText } from "lucide-react";
 import {
-  Sidebar,
   Header,
-  ValidationContent,
-  ReportsContent,
-  DetailModal,
-  ValidationModal,
+  // SettingsContent, // Disabled untuk pengembangan selanjutnya
   MenuItem,
-  Stat,
-  Applicant,
-  ReportData,
+  ApplicantDetailModal,
 } from "@/components/dashboard/ppdb";
+import { DashboardSidebar } from "@/components/dashboard/layout";
+import DashboardOverviewEnhanced from "@/components/dashboard/ppdb/DashboardOverviewEnhanced";
+import ValidationContentEnhanced from "@/components/dashboard/ppdb/ValidationContentEnhanced";
+import ReportsContentEnhanced from "@/components/dashboard/ppdb/ReportsContentEnhanced";
+
+// Enhanced Applicant type for validation content - Updated to match database schema
+interface EnhancedApplicant {
+  id: string;
+  name: string;
+  nisn: string;
+  gender: string | null;
+  birthPlace: string | null;
+  birthDate: Date | null;
+  address: string | null;
+  asalSekolah: string | null;
+  parentContact: string | null;
+  parentName: string | null;
+  parentEmail: string | null;
+  status: string;
+  statusColor?: string;
+  feedback: string | null;
+  documents?: {
+    ijazah: boolean;
+    akta: boolean;
+    kk: boolean;
+    foto: boolean;
+  };
+  documentUrls?: {
+    ijazahUrl: string | null;
+    aktaKelahiranUrl: string | null;
+    kartuKeluargaUrl: string | null;
+    pasFotoUrl: string | null;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { NotificationAPIService } from "@/hooks/useNotifications";
+import { FormattedNotification } from "@/utils/notificationHelpers";
+import toast from "react-hot-toast";
 
-/**
- * PPDBDashboard component.
- * Provides the main interface for the PPDB (New Student Admission) dashboard.
- * Allows officers to validate applicants, view reports, and manage settings.
- * @returns {JSX.Element} The rendered PPDBDashboard component.
- */
 function PPDBDashboard() {
-  const [activeMenu, setActiveMenu] = useState("validation");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("Semua Status");
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(
-    null
-  );
-  const [showValidationModal, setShowValidationModal] = useState(false);
-  const [validationAction, setValidationAction] = useState("");
+  const [activeMenu, setActiveMenu] = useState("dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<FormattedNotification[]>(
+    []
+  );
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedApplicant, setSelectedApplicant] =
+    useState<EnhancedApplicant | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // ... (Data definitions for menuItems, stats, applicants, reportData remain the same)
   const menuItems: MenuItem[] = [
+    { id: "dashboard", label: "Dashboard", icon: Users },
     { id: "validation", label: "Validasi Pendaftar", icon: Users },
     { id: "reports", label: "Laporan", icon: FileText },
-    { id: "settings", label: "Pengaturan", icon: Settings },
+    // { id: "settings", label: "Pengaturan", icon: Settings }, // Disabled untuk pengembangan selanjutnya
   ];
 
-  const stats: Stat[] = [
-    {
-      label: "Total Pendaftar",
-      value: "1,247",
-      color: "bg-blue-100 text-blue-700",
-      icon: Users,
-    },
-    {
-      label: "Diterima",
-      value: "856",
-      color: "bg-green-100 text-green-700",
-      icon: Check,
-    },
-    {
-      label: "Ditolak",
-      value: "123",
-      color: "bg-red-100 text-red-700",
-      icon: X,
-    },
-  ];
+  // Load notifications from API
+  const loadNotifications = async () => {
+    try {
+      // Only load 5 notifications for header dropdown
+      const result = await NotificationAPIService.fetchAllNotifications({
+        page: 1,
+        userRole: "ppdb-officer",
+      });
 
-  const applicants: Applicant[] = [
-    {
-      id: 1,
-      name: "Ahmad Rizki Pratama",
-      nisn: "1234567890",
-      status: "Menunggu",
-      statusColor: "bg-yellow-100 text-yellow-700",
-      date: "15 Jan 2025",
-      email: "ahmad.rizki@email.com",
-      phone: "081234567890",
-      address: "Jl. Pendidikan No. 123, Jakarta",
-      birthDate: "2010-05-15",
-      birthPlace: "Jakarta",
-      parentName: "Budi Pratama",
-      parentPhone: "081987654321",
-      previousSchool: "SD Negeri 01 Jakarta",
-      grade: 85.5,
-      documents: {
-        ijazah: true,
-        akta: true,
-        kk: true,
-        foto: true,
-        raport: true,
-      },
-    },
-    {
-      id: 2,
-      name: "Siti Nurhaliza",
-      nisn: "0987654321",
-      status: "Diterima",
-      statusColor: "bg-green-100 text-green-700",
-      date: "14 Jan 2025",
-      email: "siti.nur@email.com",
-      phone: "081234567891",
-      address: "Jl. Merdeka No. 456, Jakarta",
-      birthDate: "2010-03-20",
-      birthPlace: "Bandung",
-      parentName: "Sari Nurhaliza",
-      parentPhone: "081987654322",
-      previousSchool: "SD Negeri 02 Jakarta",
-      grade: 88.2,
-      documents: {
-        ijazah: true,
-        akta: true,
-        kk: true,
-        foto: true,
-        raport: true,
-      },
-    },
-    {
-      id: 3,
-      name: "Budi Santoso",
-      nisn: "1122334455",
-      status: "Ditolak",
-      statusColor: "bg-red-100 text-red-700",
-      date: "13 Jan 2025",
-      email: "budi.santoso@email.com",
-      phone: "081234567892",
-      address: "Jl. Kemerdekaan No. 789, Jakarta",
-      birthDate: "2010-07-10",
-      birthPlace: "Surabaya",
-      parentName: "Andi Santoso",
-      parentPhone: "081987654323",
-      previousSchool: "SD Negeri 03 Jakarta",
-      grade: 75.8,
-      documents: {
-        ijazah: true,
-        akta: false,
-        kk: true,
-        foto: true,
-        raport: true,
-      },
-    },
-  ];
-
-  const reportData: ReportData = {
-    monthly: [
-      { month: "Jan", pendaftar: 247, diterima: 156, ditolak: 23 },
-      { month: "Feb", pendaftar: 189, diterima: 134, ditolak: 18 },
-      { month: "Mar", pendaftar: 156, diterima: 98, ditolak: 15 },
-      { month: "Apr", pendaftar: 203, diterima: 145, ditolak: 20 },
-      { month: "Mei", pendaftar: 178, diterima: 123, ditolak: 17 },
-      { month: "Jun", pendaftar: 274, diterima: 200, ditolak: 30 },
-    ],
-    byRegion: [
-      { region: "Jakarta Pusat", count: 345, percentage: 27.7 },
-      { region: "Jakarta Selatan", count: 298, percentage: 23.9 },
-      { region: "Jakarta Timur", count: 234, percentage: 18.8 },
-      { region: "Jakarta Barat", count: 201, percentage: 16.1 },
-      { region: "Jakarta Utara", count: 169, percentage: 13.5 },
-    ],
-    byGrade: [
-      { range: "90-100", count: 156, percentage: 12.5 },
-      { range: "80-89", count: 423, percentage: 33.9 },
-      { range: "70-79", count: 512, percentage: 41.1 },
-      { range: "60-69", count: 156, percentage: 12.5 },
-    ],
+      if (result.success) {
+        // Take only first 5 notifications for header
+        setNotifications(result.data.slice(0, 5));
+      }
+    } catch (error) {
+      console.error("Failed to load notifications:", error);
+    }
   };
 
-  const handleViewDetail = (applicant: Applicant) => {
+  // Mark notification as read
+  const markAsRead = async (notificationId: string) => {
+    const result = await NotificationAPIService.markNotificationAsReadByRole(
+      notificationId,
+      "ppdb-officer"
+    );
+
+    if (result.success) {
+      // Update local state
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === notificationId
+            ? { ...notification, read: true }
+            : notification
+        )
+      );
+      toast.success("Notifikasi ditandai sudah dibaca");
+    }
+  };
+
+  useEffect(() => {
+    const initializeData = async () => {
+      await loadNotifications();
+    };
+
+    initializeData();
+  }, []);
+
+  const handleViewDetail = (applicant: EnhancedApplicant) => {
     setSelectedApplicant(applicant);
     setShowDetailModal(true);
   };
 
-  const handleValidation = (action: string, applicant: Applicant) => {
-    setSelectedApplicant(applicant);
-    setValidationAction(action);
-    setShowValidationModal(true);
-  };
+  const handleStatusUpdate = async (
+    id: string,
+    status: string,
+    feedback: string
+  ) => {
+    try {
+      const response = await fetch(`/api/ppdb/applications/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status, feedback }),
+      });
 
-  const handleValidationSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowValidationModal(false);
-    setShowDetailModal(false);
-    // Handle validation logic
-    console.log(`${validationAction} applicant:`, selectedApplicant?.id);
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success(
+          `Status berhasil diperbarui menjadi ${status.toLowerCase()}`
+        );
+        // Trigger refresh pada ValidationContentEnhanced
+        setRefreshTrigger((prev) => prev + 1);
+        setShowDetailModal(false);
+        setSelectedApplicant(null);
+      } else {
+        toast.error(result.error || "Gagal memperbarui status");
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Terjadi kesalahan saat memperbarui status");
+    }
   };
 
   const handleExportData = () => {
@@ -189,52 +161,62 @@ function PPDBDashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar
+    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-amber-50">
+      <DashboardSidebar
         menuItems={menuItems}
         activeMenu={activeMenu}
         setActiveMenu={setActiveMenu}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
+        title="PPDB Center"
+        subtitle="OFFICER AREA"
+        userRole="PPDB Staff"
       />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        <Header activeMenu={activeMenu} onToggleSidebar={handleToggleSidebar} />
+        <Header
+          activeMenu={activeMenu}
+          onToggleSidebar={handleToggleSidebar}
+          notifications={notifications}
+          showNotifications={showNotifications}
+          setShowNotifications={setShowNotifications}
+          unreadCount={notifications.filter((n) => !n.read).length}
+          markAsRead={markAsRead}
+        />
 
         {/* Content */}
         <main className="flex-1 p-6 overflow-y-auto">
+          {activeMenu === "dashboard" && <DashboardOverviewEnhanced />}
+
           {activeMenu === "validation" && (
-            <ValidationContent
-              stats={stats}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-              applicants={applicants}
+            <ValidationContentEnhanced
               onViewDetail={handleViewDetail}
               onExportData={handleExportData}
+              refreshTrigger={refreshTrigger}
             />
           )}
 
-          {activeMenu === "reports" && (
-            <ReportsContent reportData={reportData} />
-          )}
+          {activeMenu === "reports" && <ReportsContentEnhanced />}
 
-          {activeMenu === "settings" && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Pengaturan PPDB
-              </h3>
-              <p className="text-gray-600">
-                Fitur pengaturan akan segera tersedia.
-              </p>
-            </div>
-          )}
+          {/* Settings disabled untuk pengembangan selanjutnya */}
+          {/* {activeMenu === "settings" && <SettingsContent />} */}
         </main>
       </div>
 
       {/* Modals */}
+      <ApplicantDetailModal
+        isOpen={showDetailModal}
+        applicant={selectedApplicant}
+        onClose={() => {
+          setShowDetailModal(false);
+          setSelectedApplicant(null);
+        }}
+        onStatusUpdate={handleStatusUpdate}
+      />
+
+      {/* Old modals - Temporarily disabled for enhanced UI focus */}
+      {/*
       <DetailModal
         isOpen={showDetailModal}
         applicant={selectedApplicant}
@@ -249,16 +231,12 @@ function PPDBDashboard() {
         onClose={() => setShowValidationModal(false)}
         onSubmit={handleValidationSubmit}
       />
+      */}
     </div>
   );
 }
 
-/**
- * PPDBDashboardPage component.
- * Main entry point for the PPDB dashboard.
- * Protects the route to ensure only users with the 'ppdb-officer' role can access it.
- * @returns {JSX.Element} The rendered PPDBDashboardPage component.
- */
+// Wrap with protected route for admin and ppdb-officer only
 export default function PPDBDashboardPage() {
   return (
     <ProtectedRoute requiredRoles={["ppdb-officer"]}>
