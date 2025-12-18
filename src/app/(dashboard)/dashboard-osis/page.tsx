@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Home, Plus, Calendar as CalendarIcon } from "lucide-react";
 import {
-  Sidebar,
   Header,
   StatsCards,
   ActivitiesList,
@@ -17,6 +16,7 @@ import {
   ValidationStatus,
 } from "@/components/dashboard/osis";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { DashboardSidebar } from "@/components/dashboard/layout";
 
 function OSISDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
@@ -178,12 +178,15 @@ function OSISDashboard() {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar
+      <DashboardSidebar
         menuItems={menuItems}
         activeMenu={activeMenu}
         setActiveMenu={setActiveMenu}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
+        title="OSIS Center"
+        subtitle="STUDENT COUNCIL"
+        userRole="Pengurus OSIS"
       />
 
       {/* Main Content */}
