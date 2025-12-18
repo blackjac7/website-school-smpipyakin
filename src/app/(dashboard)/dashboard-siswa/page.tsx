@@ -7,13 +7,13 @@ import {
   UploadAchievementModal,
   WorksSection,
   UploadWorkModal,
-  StudentSidebar,
   StudentHeader,
   DashboardOverview,
   QuickEditModal,
   FullProfileModal,
   MenuItem,
 } from "@/components/dashboard/student";
+import { DashboardSidebar } from "@/components/dashboard/layout";
 import EditWorkModal from "@/components/dashboard/student/EditWorkModal";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
@@ -437,12 +437,15 @@ function SiswaDashboard() {
   return (
     <ProtectedRoute requiredRoles={["siswa"]}>
       <div className="flex h-screen bg-gray-50">
-        <StudentSidebar
+        <DashboardSidebar
           menuItems={menuItems}
           activeMenu={activeMenu}
           setActiveMenu={setActiveMenu}
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
+          title="Dashboard"
+          subtitle="SISWA AREA"
+          userRole="Siswa"
         />
 
         {/* Main Content */}
