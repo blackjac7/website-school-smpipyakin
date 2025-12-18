@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { CheckCircle, FileText, Settings } from "lucide-react";
 import {
-  Sidebar,
   Header,
   AlertCard,
   ContentList,
@@ -17,6 +16,7 @@ import {
   ReportStats,
 } from "@/components/dashboard/kesiswaan";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { DashboardSidebar } from "@/components/dashboard/layout";
 
 function KesiswaanDashboard() {
   const [activeMenu, setActiveMenu] = useState("validation");
@@ -169,10 +169,13 @@ function KesiswaanDashboard() {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar
+      <DashboardSidebar
         menuItems={menuItems}
         activeMenu={activeMenu}
         setActiveMenu={setActiveMenu}
+        title="Kesiswaan"
+        subtitle="MANAGEMENT AREA"
+        userRole="Kesiswaan"
       />
 
       {/* Main Content */}
