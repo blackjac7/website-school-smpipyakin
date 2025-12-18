@@ -7,70 +7,53 @@ import {
   ChevronRight,
   AlertCircle,
   Filter,
+  Trophy,
 } from "lucide-react";
 import Image from "next/image";
 import { Achievement } from "./types";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface AchievementsSectionProps {
   achievements: Achievement[];
   onUploadClick: () => void;
-  getStatusColor: (status: string) => string;
+  // getStatusColor removed as we use internal styling
 }
 
 export default function AchievementsSection({
   achievements,
   onUploadClick,
-  getStatusColor,
 }: AchievementsSectionProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [levelFilter, setLevelFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
-  const itemsPerPage = 6; // 2 rows of 3 items each for consistency with works
+  const itemsPerPage = 6;
 
-  // Reset pagination when achievements change
   useEffect(() => {
     setCurrentPage(1);
-  }, [achievements]);
+  }, [achievements, statusFilter, categoryFilter, levelFilter]);
 
-  // Count pending achievements
   const pendingCount = achievements.filter(
     (achievement) => achievement.status === "pending"
   ).length;
 
-  // Check if upload should be disabled (max 2 pending)
   const isUploadDisabled = pendingCount >= 2;
 
-  // Filter logic
   const filteredAchievements = achievements.filter((achievement) => {
-    // Status filter
-    const matchesStatus =
-      statusFilter === "all" || achievement.status === statusFilter;
-
-    // Category filter
-    const matchesCategory =
-      categoryFilter === "all" || achievement.category === categoryFilter;
-
-    // Level filter
-    const matchesLevel =
-      levelFilter === "all" || achievement.level === levelFilter;
-
+    const matchesStatus = statusFilter === "all" || achievement.status === statusFilter;
+    const matchesCategory = categoryFilter === "all" || achievement.category === categoryFilter;
+    const matchesLevel = levelFilter === "all" || achievement.level === levelFilter;
     return matchesStatus && matchesCategory && matchesLevel;
   });
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredAchievements.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentAchievements = filteredAchievements.slice(startIndex, endIndex);
 
-  // Reset page when filters change
-  const resetPage = () => {
-    setCurrentPage(1);
-  };
+  const resetPage = () => setCurrentPage(1);
 
-  // Clear all filters
   const clearFilters = () => {
     setStatusFilter("all");
     setCategoryFilter("all");
@@ -78,21 +61,7 @@ export default function AchievementsSection({
     setCurrentPage(1);
   };
 
-  // Check if any filters are active
-  const hasActiveFilters =
-    statusFilter !== "all" || categoryFilter !== "all" || levelFilter !== "all";
-
-  // Ensure currentPage doesn't exceed totalPages
-  useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
-  const goToPage = (page: number) => {
-    const newPage = Math.max(1, Math.min(page, totalPages));
-    setCurrentPage(newPage);
-  };
+  const hasActiveFilters = statusFilter !== "all" || categoryFilter !== "all" || levelFilter !== "all";
 
   const getCategoryLabel = (category: string) => {
     const categories: { [key: string]: string } = {
@@ -114,334 +83,297 @@ export default function AchievementsSection({
     return levels[level] || level;
   };
 
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
-      <div className="p-4 sm:p-6 border-b border-gray-200">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-          <div className="flex-1">
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-              Prestasi Saya
-            </h3>
-            {achievements.length > 0 && (
-              <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                Total: {achievements.length} prestasi | Ditampilkan:{" "}
-                {filteredAchievements.length} prestasi | Menunggu persetujuan:{" "}
-                {pendingCount}
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-white">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">Prestasi Saya</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Kelola semua pencapaian akademik dan non-akademik Anda
               </p>
-            )}
-          </div>
+            </div>
 
-          {/* Upload Button - Always visible but conditionally disabled */}
-          <div className="flex flex-col gap-2 w-full sm:w-auto">
-            {isUploadDisabled && (
-              <div className="flex items-center gap-2 text-amber-600 text-xs bg-amber-50 px-3 py-2 rounded-lg">
-                <AlertCircle className="w-3 h-3 flex-shrink-0" />
-                <span className="text-center sm:text-left">
-                  Maksimal 2 prestasi pending
-                </span>
-              </div>
-            )}
-            <button
-              onClick={onUploadClick}
-              disabled={isUploadDisabled}
-              className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isUploadDisabled
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
-              }`}
-              title={
-                isUploadDisabled
-                  ? "Anda sudah memiliki 2 prestasi yang menunggu persetujuan"
-                  : "Unggah prestasi baru"
-              }
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah Prestasi</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Filter Section */}
-      {achievements.length > 0 && (
-        <div className="px-4 sm:px-6 pb-4 border-b border-gray-200">
-          {/* Filter Toggle and Clear Filters */}
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                  showFilters || hasActiveFilters
-                    ? "bg-amber-100 text-amber-800 border border-amber-200"
-                    : "bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200"
-                }`}
-              >
-                <Filter className="w-4 h-4" />
-                Filter
-                {hasActiveFilters && (
-                  <span className="bg-amber-500 text-white text-xs rounded-full px-1.5 py-0.5">
-                    {
-                      [
-                        statusFilter !== "all" && 1,
-                        categoryFilter !== "all" && 1,
-                        levelFilter !== "all" && 1,
-                      ].filter(Boolean).length
-                    }
-                  </span>
-                )}
-              </button>
-
-              {hasActiveFilters && (
-                <button
-                  onClick={clearFilters}
-                  className="px-3 py-2 text-xs sm:text-sm text-gray-600 hover:text-red-600 transition-colors"
-                >
-                  Reset Filter
-                </button>
-              )}
+            <div className="flex items-center gap-3">
+               {isUploadDisabled && (
+                  <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 px-3 py-2 rounded-lg border border-amber-100">
+                     <AlertCircle className="w-3.5 h-3.5" />
+                     Limit pending tercapai
+                  </div>
+               )}
+               <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={onUploadClick}
+                  disabled={isUploadDisabled}
+                  className={`
+                     flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-all
+                     ${isUploadDisabled
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                        : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md hover:ring-2 hover:ring-blue-500/20"}
+                  `}
+               >
+                  <Plus className="w-4 h-4" />
+                  Tambah Prestasi
+               </motion.button>
             </div>
           </div>
 
-          {/* Filter Options */}
-          {showFilters && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
-              {/* Status Filter */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-2">
-                  Status
-                </label>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value);
-                    resetPage();
-                  }}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                >
-                  <option value="all">Semua Status</option>
-                  <option value="pending">Menunggu</option>
-                  <option value="approved">Disetujui</option>
-                  <option value="rejected">Ditolak</option>
-                </select>
-              </div>
-
-              {/* Category Filter */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-2">
-                  Kategori
-                </label>
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => {
-                    setCategoryFilter(e.target.value);
-                    resetPage();
-                  }}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                >
-                  <option value="all">Semua Kategori</option>
-                  <option value="akademik">Akademik</option>
-                  <option value="olahraga">Olahraga</option>
-                  <option value="seni">Seni & Kreativitas</option>
-                </select>
-              </div>
-
-              {/* Level Filter */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-2">
-                  Tingkat
-                </label>
-                <select
-                  value={levelFilter}
-                  onChange={(e) => {
-                    setLevelFilter(e.target.value);
-                    resetPage();
-                  }}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                >
-                  <option value="all">Semua Tingkat</option>
-                  <option value="sekolah">Sekolah</option>
-                  <option value="kecamatan">Kecamatan</option>
-                  <option value="kabupaten">Kabupaten</option>
-                  <option value="provinsi">Provinsi</option>
-                  <option value="nasional">Nasional</option>
-                </select>
-              </div>
-            </div>
+          {/* Mobile Warning */}
+          {isUploadDisabled && (
+             <div className="sm:hidden mt-4 flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 px-3 py-2 rounded-lg border border-amber-100">
+                <AlertCircle className="w-3.5 h-3.5" />
+                Maksimal 2 prestasi pending
+             </div>
           )}
         </div>
-      )}
 
-      <div className="p-4 sm:p-6">
-        {achievements.length === 0 ? (
-          <div className="text-center py-8 sm:py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Plus className="w-8 h-8 text-gray-400" />
-            </div>
-            <h4 className="text-lg font-medium text-gray-900 mb-2">
-              Belum Ada Prestasi
-            </h4>
-            <p className="text-gray-500 mb-6 text-sm sm:text-base max-w-sm mx-auto">
-              Mulai unggah prestasi akademik, olahraga, atau seni Anda untuk
-              membangun portofolio yang mengesankan.
-            </p>
-            <button
-              onClick={onUploadClick}
-              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all text-sm sm:text-base font-medium flex items-center gap-2 mx-auto cursor-pointer shadow-lg hover:shadow-xl"
-            >
-              <Plus className="w-4 h-4" />
-              Unggah Prestasi Pertama
-            </button>
+        {/* Filter Bar */}
+        <div className="px-6 py-4 bg-gray-50/50 border-b border-gray-200">
+          <div className="flex flex-wrap items-center gap-3">
+             <button
+               onClick={() => setShowFilters(!showFilters)}
+               className={`
+                  flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all
+                  ${showFilters || hasActiveFilters
+                     ? "bg-white text-blue-700 shadow-sm ring-1 ring-blue-200"
+                     : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}
+               `}
+             >
+               <Filter className="w-4 h-4" />
+               Filter
+               {hasActiveFilters && (
+                 <span className="flex items-center justify-center bg-blue-600 text-white text-[10px] h-5 w-5 rounded-full ml-1">
+                   {[statusFilter !== "all", categoryFilter !== "all", levelFilter !== "all"].filter(Boolean).length}
+                 </span>
+               )}
+             </button>
+
+             {/* Quick Status Filters (Desktop) */}
+             <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-gray-200">
+                {['all', 'pending', 'approved', 'rejected'].map((status) => (
+                   <button
+                      key={status}
+                      onClick={() => {
+                         setStatusFilter(status);
+                         setCurrentPage(1);
+                      }}
+                      className={`
+                         px-3 py-1.5 rounded-full text-xs font-medium transition-colors capitalize
+                         ${statusFilter === status
+                            ? (status === 'all' ? 'bg-gray-800 text-white' :
+                               status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                               status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
+                               'bg-red-100 text-red-700')
+                            : 'text-gray-500 hover:bg-gray-100'}
+                      `}
+                   >
+                      {status === 'all' ? 'Semua' :
+                       status === 'pending' ? 'Menunggu' :
+                       status === 'approved' ? 'Disetujui' : 'Ditolak'}
+                   </button>
+                ))}
+             </div>
+
+             {hasActiveFilters && (
+               <button onClick={clearFilters} className="ml-auto text-xs font-medium text-red-600 hover:text-red-700">
+                 Reset Filter
+               </button>
+             )}
           </div>
-        ) : filteredAchievements.length === 0 ? (
-          <div className="text-center py-8 sm:py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Filter className="w-8 h-8 text-gray-400" />
-            </div>
-            <h4 className="text-lg font-medium text-gray-900 mb-2">
-              Tidak Ada Prestasi Ditemukan
-            </h4>
-            <p className="text-gray-500 mb-6 text-sm sm:text-base max-w-sm mx-auto">
-              Tidak ada prestasi yang sesuai dengan filter yang dipilih. Coba
-              ubah kriteria filter Anda.
-            </p>
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all text-sm sm:text-base font-medium cursor-pointer shadow-lg hover:shadow-xl"
+
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div
+                 initial={{ height: 0, opacity: 0 }}
+                 animate={{ height: "auto", opacity: 1 }}
+                 exit={{ height: 0, opacity: 0 }}
+                 className="overflow-hidden"
               >
-                Reset Filter
-              </button>
+                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 mt-2 border-t border-gray-200/50">
+                    <div>
+                       <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Kategori</label>
+                       <select
+                          value={categoryFilter}
+                          onChange={(e) => { setCategoryFilter(e.target.value); resetPage(); }}
+                          className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                       >
+                          <option value="all">Semua Kategori</option>
+                          <option value="akademik">Akademik</option>
+                          <option value="olahraga">Olahraga</option>
+                          <option value="seni">Seni & Kreativitas</option>
+                       </select>
+                    </div>
+                    <div>
+                       <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tingkat</label>
+                       <select
+                          value={levelFilter}
+                          onChange={(e) => { setLevelFilter(e.target.value); resetPage(); }}
+                          className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                       >
+                          <option value="all">Semua Tingkat</option>
+                          <option value="sekolah">Sekolah</option>
+                          <option value="kecamatan">Kecamatan</option>
+                          <option value="kabupaten">Kabupaten</option>
+                          <option value="provinsi">Provinsi</option>
+                          <option value="nasional">Nasional</option>
+                       </select>
+                    </div>
+                    {/* Mobile Status Select */}
+                    <div className="sm:hidden">
+                       <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Status</label>
+                       <select
+                          value={statusFilter}
+                          onChange={(e) => { setStatusFilter(e.target.value); resetPage(); }}
+                          className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                       >
+                          <option value="all">Semua Status</option>
+                          <option value="pending">Menunggu</option>
+                          <option value="approved">Disetujui</option>
+                          <option value="rejected">Ditolak</option>
+                       </select>
+                    </div>
+                 </div>
+              </motion.div>
             )}
-          </div>
-        ) : (
-          <>
-            {/* Achievements Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          </AnimatePresence>
+        </div>
+
+        {/* Content Area */}
+        <div className="p-6 bg-gray-50 min-h-[400px]">
+          {filteredAchievements.length === 0 ? (
+            <motion.div
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               className="flex flex-col items-center justify-center h-64 text-center"
+            >
+               <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4">
+                  <Trophy className="w-8 h-8 text-gray-300" />
+               </div>
+               <h4 className="text-gray-900 font-medium text-lg">Tidak ada data</h4>
+               <p className="text-gray-500 text-sm mt-1 max-w-xs">
+                  {achievements.length === 0
+                     ? "Belum ada prestasi yang diunggah. Mulai bangun portofoliomu sekarang!"
+                     : "Tidak ada prestasi yang sesuai dengan filter yang dipilih."}
+               </p>
+               {achievements.length > 0 && hasActiveFilters && (
+                  <button
+                     onClick={clearFilters}
+                     className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-700"
+                  >
+                     Hapus semua filter
+                  </button>
+               )}
+            </motion.div>
+          ) : (
+            <motion.div
+               variants={container}
+               initial="hidden"
+               animate="show"
+               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
               {currentAchievements.map((achievement) => (
-                <div
+                <motion.div
                   key={achievement.id}
-                  className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                  variants={item}
+                  className="group bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1"
                 >
-                  {/* Achievement Image */}
-                  <div className="aspect-video bg-gray-100 relative">
+                  <div className="aspect-video bg-gray-100 relative overflow-hidden">
                     {achievement.image ? (
                       <Image
                         src={achievement.image}
                         alt={achievement.title}
-                        width={400}
-                        height={225}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                     ) : (
-                      <div
-                        className={`w-full h-full flex items-center justify-center ${achievement.color} bg-opacity-10`}
-                      >
-                        <achievement.icon className="w-12 h-12 text-gray-400" />
+                      <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100`}>
+                        <achievement.icon className="w-10 h-10 text-gray-300" />
                       </div>
                     )}
 
-                    {/* Status Badge */}
-                    <div className="absolute top-2 right-2">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(achievement.status)}`}
-                      >
-                        {achievement.status === "approved"
-                          ? "Disetujui"
-                          : achievement.status === "pending"
-                            ? "Menunggu"
-                            : "Ditolak"}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                    <div className="absolute top-3 right-3 z-10">
+                      <span className={`
+                         px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide shadow-sm
+                         ${achievement.status === 'approved' ? 'bg-emerald-500 text-white' :
+                           achievement.status === 'pending' ? 'bg-amber-500 text-white' :
+                           'bg-red-500 text-white'}
+                      `}>
+                        {achievement.status === 'approved' ? 'Disetujui' : achievement.status === 'pending' ? 'Pending' : 'Ditolak'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4">
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <span className="text-[10px] font-semibold px-2 py-1 bg-blue-50 text-blue-700 rounded-md border border-blue-100 uppercase">
+                        {getCategoryLabel(achievement.category || '')}
+                      </span>
+                      <span className="text-[10px] font-semibold px-2 py-1 bg-gray-50 text-gray-600 rounded-md border border-gray-200 uppercase">
+                        {getLevelLabel(achievement.level || '')}
                       </span>
                     </div>
 
-                    {/* Category and Level Badges */}
-                    {achievement.category && achievement.level && (
-                      <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
-                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                          {getCategoryLabel(achievement.category)}
-                        </span>
-                        <span className="text-xs px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
-                          {getLevelLabel(achievement.level)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-3 sm:p-4">
-                    <h4 className="font-semibold text-gray-900 mb-2 line-clamp-1 text-sm sm:text-base">
+                    <h4 className="font-bold text-gray-900 mb-1.5 line-clamp-1 group-hover:text-blue-600 transition-colors">
                       {achievement.title}
                     </h4>
 
-                    <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-3">
+                    <p className="text-sm text-gray-500 line-clamp-2 mb-4 h-10">
                       {achievement.description}
                     </p>
 
-                    <p className="text-xs sm:text-sm text-gray-500">
-                      <span className="font-medium">Tanggal:</span>{" "}
-                      {achievement.date}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4 pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-500 text-center sm:text-left">
-                  Menampilkan {startIndex + 1}-
-                  {Math.min(endIndex, filteredAchievements.length)} dari{" "}
-                  {filteredAchievements.length} prestasi
-                  {hasActiveFilters && ` (${achievements.length} total)`}
-                </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => goToPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-
-                  {/* Show current page on mobile, all pages on desktop */}
-                  <div className="flex items-center gap-1">
-                    {/* Mobile: Show only current page */}
-                    <span className="sm:hidden px-3 py-1 text-sm font-medium">
-                      {currentPage} / {totalPages}
-                    </span>
-
-                    {/* Desktop: Show all page numbers */}
-                    <div className="hidden sm:flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                        (page) => (
-                          <button
-                            key={page}
-                            onClick={() => goToPage(page)}
-                            className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                              currentPage === page
-                                ? "bg-gray-800 text-white"
-                                : "text-gray-600 hover:text-blue-600 cursor-pointer"
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        )
-                      )}
+                    <div className="pt-3 border-t border-gray-100 flex items-center text-xs text-gray-400 font-medium">
+                       <span>{achievement.date}</span>
                     </div>
                   </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
 
-                  <button
-                    onClick={() => goToPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-1 flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4 text-gray-600" />
+                </button>
+
+                <span className="px-4 text-sm font-medium text-gray-700">
+                  {currentPage} / {totalPages}
+                </span>
+
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4 text-gray-600" />
+                </button>
               </div>
-            )}
-          </>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
