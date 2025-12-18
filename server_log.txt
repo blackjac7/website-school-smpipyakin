@@ -1,0 +1,379 @@
+   ▲ Next.js 15.5.9
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.2:3000
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ✓ Ready in 2.1s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1117ms (180 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 13.8s (2735 modules)
+prisma:error
+Invalid `prisma.news.findMany()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   |
+ 9 |   provider = "postgresql"
+10 |   url      = env("DATABASE_URL")
+   |
+
+Validation Error Count: 1
+prisma:error
+Invalid `prisma.announcement.findMany()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   |
+ 9 |   provider = "postgresql"
+10 |   url      = env("DATABASE_URL")
+   |
+
+Validation Error Count: 1
+prisma:error
+Invalid `prisma.schoolActivity.findMany()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   |
+ 9 |   provider = "postgresql"
+10 |   url      = env("DATABASE_URL")
+   |
+
+Validation Error Count: 1
+Database connection failed, using mock data for News: Error [PrismaClientInitializationError]:
+Invalid `prisma.news.findMany()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   |
+ 9 |   provider = "postgresql"
+10 |   url      = env("DATABASE_URL")
+   |
+
+Validation Error Count: 1
+    at <unknown> (-->  schema.prisma:10)
+    at async getLatestNews (src/lib/data/homepage.ts:445:18)
+    at async HomePage (src/app/(public)/page.tsx:20:67)
+  443 | export async function getLatestNews(): Promise<SerializableNews[]> {
+  444 |   try {
+> 445 |     const news = await prisma.news.findMany({
+      |                  ^
+  446 |       where: {
+  447 |         statusPersetujuan: "APPROVED",
+  448 |       }, {
+  clientVersion: '6.19.0',
+  errorCode: undefined,
+  retryable: undefined
+}
+Database connection failed, using mock data for Announcements: Error [PrismaClientInitializationError]:
+Invalid `prisma.announcement.findMany()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   |
+ 9 |   provider = "postgresql"
+10 |   url      = env("DATABASE_URL")
+   |
+
+Validation Error Count: 1
+    at <unknown> (-->  schema.prisma:10)
+    at async getUpcomingAnnouncements (src/lib/data/homepage.ts:468:27)
+    at async HomePage (src/app/(public)/page.tsx:20:67)
+  466 | export async function getUpcomingAnnouncements(): Promise<SerializableAnnouncement[]> {
+  467 |   try {
+> 468 |     const announcements = await prisma.announcement.findMany({
+      |                           ^
+  469 |       orderBy: {
+  470 |         date: "desc", // Most recent first
+  471 |       }, {
+  clientVersion: '6.19.0',
+  errorCode: undefined,
+  retryable: undefined
+}
+Database connection failed, using mock data for Activities: Error [PrismaClientInitializationError]:
+Invalid `prisma.schoolActivity.findMany()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   |
+ 9 |   provider = "postgresql"
+10 |   url      = env("DATABASE_URL")
+   |
+
+Validation Error Count: 1
+    at <unknown> (-->  schema.prisma:10)
+    at async getUpcomingActivities (src/lib/data/homepage.ts:496:24)
+    at async HomePage (src/app/(public)/page.tsx:20:67)
+  494 |     today.setHours(0, 0, 0, 0);
+  495 |
+> 496 |     const activities = await prisma.schoolActivity.findMany({
+      |                        ^
+  497 |       where: {
+  498 |         date: {
+  499 |           gte: today, {
+  clientVersion: '6.19.0',
+  errorCode: undefined,
+  retryable: undefined
+}
+ GET / 200 in 17580ms
+ ✓ Compiled in 3.9s (1282 modules)
+ ✓ Compiled in 323ms (1282 modules)
+ ✓ Compiled in 296ms (1282 modules)
+ ✓ Compiled in 247ms (1282 modules)
+ ✓ Compiled in 224ms (1282 modules)
+ ✓ Compiled in 236ms (1282 modules)
+ ✓ Compiled in 257ms (1282 modules)
+ ✓ Compiled in 268ms (1282 modules)
+ ✓ Compiled in 270ms (1282 modules)
+ ✓ Compiled in 236ms (1282 modules)
+ ✓ Compiled in 224ms (1282 modules)
+ ✓ Compiled in 227ms (1282 modules)
+ ✓ Compiled in 254ms (1282 modules)
+ ✓ Compiled in 271ms (1282 modules)
+ ✓ Compiled in 260ms (1282 modules)
+ ✓ Compiled in 313ms (1282 modules)
+ ✓ Compiled in 321ms (1282 modules)
+ ✓ Compiled in 346ms (1282 modules)
+ ✓ Compiled in 354ms (1282 modules)
+ ✓ Compiled in 355ms (1282 modules)
+ ✓ Compiled in 410ms (1282 modules)
+ ✓ Compiled in 341ms (1282 modules)
+ ✓ Compiled in 261ms (1282 modules)
+ ✓ Compiled in 243ms (1282 modules)
+ ✓ Compiled in 224ms (1282 modules)
+ ✓ Compiled in 236ms (1282 modules)
+ ✓ Compiled in 243ms (1282 modules)
+ ✓ Compiled in 232ms (1282 modules)
+ ✓ Compiled in 229ms (1282 modules)
+ ✓ Compiled in 214ms (1282 modules)
+ ✓ Compiled in 214ms (1282 modules)
+ ✓ Compiled in 235ms (1282 modules)
+ ✓ Compiled in 221ms (1282 modules)
+ ✓ Compiled in 226ms (1282 modules)
+ ✓ Compiled in 210ms (1282 modules)
+ ✓ Compiled in 219ms (1282 modules)
+ ✓ Compiled in 223ms (1282 modules)
+ ✓ Compiled in 229ms (1282 modules)
+ ✓ Compiled in 226ms (1282 modules)
+ ✓ Compiled in 247ms (1282 modules)
+ ✓ Compiled in 235ms (1282 modules)
+ ✓ Compiled in 268ms (1282 modules)
+ ✓ Compiled in 532ms (1282 modules)
+ ✓ Compiled in 283ms (1282 modules)
+prisma:error
+Invalid `prisma.news.findMany()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   |
+ 9 |   provider = "postgresql"
+10 |   url      = env("DATABASE_URL")
+   |
+
+Validation Error Count: 1
+prisma:error
+Invalid `prisma.announcement.findMany()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   |
+ 9 |   provider = "postgresql"
+10 |   url      = env("DATABASE_URL")
+   |
+
+Validation Error Count: 1
+prisma:error
+Invalid `prisma.schoolActivity.findMany()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   |
+ 9 |   provider = "postgresql"
+10 |   url      = env("DATABASE_URL")
+   |
+
+Validation Error Count: 1
+Database connection failed, using mock data for News: Error [PrismaClientInitializationError]:
+Invalid `prisma.news.findMany()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   |
+ 9 |   provider = "postgresql"
+10 |   url      = env("DATABASE_URL")
+   |
+
+Validation Error Count: 1
+    at <unknown> (-->  schema.prisma:10)
+    at async getLatestNews (src/lib/data/homepage.ts:445:18)
+    at async HomePage (src/app/(public)/page.tsx:20:67)
+  443 | export async function getLatestNews(): Promise<SerializableNews[]> {
+  444 |   try {
+> 445 |     const news = await prisma.news.findMany({
+      |                  ^
+  446 |       where: {
+  447 |         statusPersetujuan: "APPROVED",
+  448 |       }, {
+  clientVersion: '6.19.0',
+  errorCode: undefined,
+  retryable: undefined
+}
+Database connection failed, using mock data for Announcements: Error [PrismaClientInitializationError]:
+Invalid `prisma.announcement.findMany()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   |
+ 9 |   provider = "postgresql"
+10 |   url      = env("DATABASE_URL")
+   |
+
+Validation Error Count: 1
+    at <unknown> (-->  schema.prisma:10)
+    at async getUpcomingAnnouncements (src/lib/data/homepage.ts:468:27)
+    at async HomePage (src/app/(public)/page.tsx:20:67)
+  466 | export async function getUpcomingAnnouncements(): Promise<SerializableAnnouncement[]> {
+  467 |   try {
+> 468 |     const announcements = await prisma.announcement.findMany({
+      |                           ^
+  469 |       orderBy: {
+  470 |         date: "desc", // Most recent first
+  471 |       }, {
+  clientVersion: '6.19.0',
+  errorCode: undefined,
+  retryable: undefined
+}
+Database connection failed, using mock data for Activities: Error [PrismaClientInitializationError]:
+Invalid `prisma.schoolActivity.findMany()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:10
+   |
+ 9 |   provider = "postgresql"
+10 |   url      = env("DATABASE_URL")
+   |
+
+Validation Error Count: 1
+    at <unknown> (-->  schema.prisma:10)
+    at async getUpcomingActivities (src/lib/data/homepage.ts:496:24)
+    at async HomePage (src/app/(public)/page.tsx:20:67)
+  494 |     today.setHours(0, 0, 0, 0);
+  495 |
+> 496 |     const activities = await prisma.schoolActivity.findMany({
+      |                        ^
+  497 |       where: {
+  498 |         date: {
+  499 |           gte: today, {
+  clientVersion: '6.19.0',
+  errorCode: undefined,
+  retryable: undefined
+}
+ ✓ Compiled in 831ms (1282 modules)
+ ✓ Compiled in 396ms (1282 modules)
+ GET / 200 in 1668ms
+ ✓ Compiled in 334ms (1282 modules)
+ ✓ Compiled in 302ms (1282 modules)
+ ✓ Compiled in 335ms (1282 modules)
+ ✓ Compiled in 286ms (1282 modules)
+ ✓ Compiled in 299ms (1282 modules)
+ ✓ Compiled in 265ms (1282 modules)
+ ✓ Compiled in 280ms (1282 modules)
+ ✓ Compiled in 252ms (1282 modules)
+ ✓ Compiled in 248ms (1282 modules)
+ ✓ Compiled in 232ms (1282 modules)
+ ✓ Compiled in 224ms (1282 modules)
+ ✓ Compiled in 244ms (1282 modules)
+ ✓ Compiled in 254ms (1282 modules)
+ ✓ Compiled in 240ms (1282 modules)
+ ✓ Compiled in 345ms (1282 modules)
+ ✓ Compiled in 346ms (1282 modules)
+ ✓ Compiled in 272ms (1282 modules)
+ ✓ Compiled in 259ms (1282 modules)
+ ✓ Compiled in 241ms (1282 modules)
+ ✓ Compiled in 249ms (1282 modules)
+ ✓ Compiled in 300ms (1282 modules)
+ ○ Compiling /announcements ...
+ ✓ Compiled /announcements in 8.3s (2753 modules)
+ ✓ Compiled in 1027ms (1291 modules)
+ GET /announcements 200 in 9518ms
+ ✓ Compiled in 297ms (1291 modules)
+ ✓ Compiled in 286ms (1291 modules)
+ ✓ Compiled in 237ms (1291 modules)
+ ✓ Compiled in 223ms (1291 modules)
+ ✓ Compiled in 235ms (1291 modules)
+ ✓ Compiled in 248ms (1291 modules)
+ ✓ Compiled in 245ms (1291 modules)
+ ✓ Compiled in 220ms (1291 modules)
+ ✓ Compiled in 258ms (1291 modules)
+ ✓ Compiled in 227ms (1291 modules)
+ ✓ Compiled in 228ms (1291 modules)
+ ✓ Compiled in 228ms (1291 modules)
+ ✓ Compiled in 245ms (1291 modules)
+ ✓ Compiled in 250ms (1291 modules)
+ ✓ Compiled in 225ms (1291 modules)
+ ✓ Compiled in 278ms (1291 modules)
+ ✓ Compiled in 423ms (1291 modules)
+ ✓ Compiled in 261ms (1291 modules)
+ ✓ Compiled in 245ms (1291 modules)
+ ✓ Compiled in 244ms (1291 modules)
+ ✓ Compiled in 244ms (1291 modules)
+ ✓ Compiled in 223ms (1291 modules)
+ ✓ Compiled in 234ms (1291 modules)
+ ✓ Compiled in 234ms (1291 modules)
+ ✓ Compiled in 230ms (1291 modules)
+ ✓ Compiled in 230ms (1291 modules)
+ ✓ Compiled in 232ms (1291 modules)
+ ✓ Compiled in 230ms (1291 modules)
+ ✓ Compiled in 226ms (1291 modules)
+ ✓ Compiled in 224ms (1291 modules)
+ ✓ Compiled in 227ms (1291 modules)
+ ✓ Compiled in 219ms (1291 modules)
+ ✓ Compiled in 228ms (1291 modules)
+ ✓ Compiled in 241ms (1291 modules)
+ ✓ Compiled in 262ms (1291 modules)
+ ✓ Compiled in 226ms (1291 modules)
+ ✓ Compiled in 257ms (1291 modules)
+ ✓ Compiled in 418ms (1291 modules)
+ ✓ Compiled in 274ms (1291 modules)
+ ✓ Compiled in 336ms (1291 modules)
+ ✓ Compiled in 356ms (1291 modules)
+ ✓ Compiled in 373ms (1291 modules)
+ ✓ Compiled in 348ms (1291 modules)
+ ✓ Compiled in 308ms (1291 modules)
+ ✓ Compiled in 365ms (1291 modules)
+ ✓ Compiled in 344ms (1291 modules)
+ ✓ Compiled in 402ms (1291 modules)
+ ✓ Compiled in 489ms (1291 modules)
+ ✓ Compiled in 395ms (1291 modules)
+ ✓ Compiled in 351ms (1291 modules)
+ ✓ Compiled in 290ms (1291 modules)
+ ✓ Compiled in 358ms (1291 modules)
+ ✓ Compiled in 377ms (1291 modules)
+ ✓ Compiled in 506ms (1291 modules)
+ ✓ Compiled in 449ms (1291 modules)
+ ✓ Compiled in 414ms (1291 modules)
+ ✓ Compiled in 446ms (1291 modules)
+ ✓ Compiled in 495ms (1291 modules)
+ ✓ Compiled in 666ms (1291 modules)
+ ✓ Compiled in 293ms (1291 modules)
+ ✓ Compiled in 249ms (1291 modules)
+ ✓ Compiled in 267ms (1291 modules)
+ ✓ Compiled in 266ms (1291 modules)

@@ -93,6 +93,116 @@ export const MOCK_ANNOUNCEMENTS: Announcement[] = [
     createdAt: new Date(),
     updatedAt: new Date(),
   },
+  {
+    id: "mock-ann-4",
+    title: "Rapat Orang Tua Siswa Kelas VII",
+    date: new Date("2024-07-15"),
+    location: "Aula Sekolah",
+    content: "Mengundang seluruh orang tua/wali murid kelas VII untuk hadir dalam rapat awal tahun pelajaran.",
+    priority: "HIGH" as PriorityLevel,
+    linkFile: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "mock-ann-5",
+    title: "Kegiatan Porseni Antar Kelas",
+    date: new Date("2024-12-10"),
+    location: "Lapangan Olahraga",
+    content: "Pekan Olahraga dan Seni (Porseni) akan diadakan setelah ujian akhir semester.",
+    priority: "MEDIUM" as PriorityLevel,
+    linkFile: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "mock-ann-6",
+    title: "Vaksinasi COVID-19 Tahap 3",
+    date: new Date("2024-02-15"),
+    location: "UKS",
+    content: "Jadwal vaksinasi booster untuk siswa yang belum menerima.",
+    priority: "HIGH" as PriorityLevel,
+    linkFile: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "mock-ann-7",
+    title: "Lomba Kebersihan Kelas",
+    date: new Date("2024-08-05"),
+    location: "Lingkungan Sekolah",
+    content: "Dalam rangka menyambut HUT RI, diadakan lomba kebersihan dan menghias kelas.",
+    priority: "LOW" as PriorityLevel,
+    linkFile: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "mock-ann-8",
+    title: "Sosialisasi Bahaya Narkoba",
+    date: new Date("2024-09-12"),
+    location: "Aula Sekolah",
+    content: "Bekerjasama dengan BNN, sekolah mengadakan penyuluhan anti narkoba.",
+    priority: "HIGH" as PriorityLevel,
+    linkFile: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "mock-ann-9",
+    title: "Pengumpulan Zakat Fitrah",
+    date: new Date("2024-03-25"),
+    location: "Masjid Sekolah",
+    content: "Panitia Amaliah Ramadhan menerima penyaluran zakat fitrah siswa.",
+    priority: "MEDIUM" as PriorityLevel,
+    linkFile: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "mock-ann-10",
+    title: "Perubahan Jadwal Masuk Sekolah",
+    date: new Date("2024-01-05"),
+    location: "SMP IP Yakin Jakarta",
+    content: "Mulai semester genap, jam masuk sekolah dimajukan 15 menit menjadi pukul 06.45 WIB.",
+    priority: "HIGH" as PriorityLevel,
+    linkFile: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "mock-ann-11",
+    title: "Peminjaman Buku Paket Semester Genap",
+    date: new Date("2024-01-08"),
+    location: "Perpustakaan",
+    content: "Jadwal peminjaman buku paket untuk semester genap telah ditempel di mading.",
+    priority: "LOW" as PriorityLevel,
+    linkFile: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "mock-ann-12",
+    title: "Try Out Ujian Nasional Ke-1",
+    date: new Date("2024-11-20"),
+    location: "Ruang Kelas IX",
+    content: "Try Out pertama untuk kelas IX akan dilaksanakan minggu depan.",
+    priority: "HIGH" as PriorityLevel,
+    linkFile: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "mock-ann-13",
+    title: "Bazar Kewirausahaan Siswa",
+    date: new Date("2024-05-20"),
+    location: "Halaman Sekolah",
+    content: "Siswa kelas VIII akan mengadakan bazar makanan dan kerajinan tangan.",
+    priority: "MEDIUM" as PriorityLevel,
+    linkFile: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
 ];
 
 // Expanded Mock Activities for Full Academic Calendar
@@ -362,11 +472,15 @@ export async function getUpcomingAnnouncements(): Promise<SerializableAnnounceme
       take: 3,
     });
 
-    const result = announcements.length === 0 ? MOCK_ANNOUNCEMENTS : announcements;
+    // Ensure we only return 3 items even if falling back to mock data
+    const result = announcements.length === 0
+      ? MOCK_ANNOUNCEMENTS.slice(0, 3)
+      : announcements;
+
     return serializeAnnouncements(result);
   } catch (error) {
     console.warn("Database connection failed, using mock data for Announcements:", error);
-    return serializeAnnouncements(MOCK_ANNOUNCEMENTS);
+    return serializeAnnouncements(MOCK_ANNOUNCEMENTS.slice(0, 3));
   }
 }
 
