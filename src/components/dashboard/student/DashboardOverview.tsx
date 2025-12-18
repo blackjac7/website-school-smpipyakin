@@ -8,10 +8,15 @@ import {
   LucideIcon,
   Edit3,
   User,
+  ArrowRight,
+  Clock,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import Image from "next/image";
 import { ProfileData } from "./types";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
 
 interface DashboardOverviewProps {
   profileData: ProfileData;
@@ -62,11 +67,10 @@ export default function DashboardOverview({
   const pendingWorks = works.filter((w) => w.status === "pending");
   const approvedWorks = works.filter((w) => w.status === "approved");
 
-  // Handler functions with pending count validation
   const handleUploadAchievement = () => {
     if (pendingAchievements.length >= 2) {
       toast.error(
-        "Anda sudah memiliki 2 prestasi yang sedang menunggu persetujuan. Silakan tunggu hingga ada yang disetujui atau ditolak sebelum mengunggah prestasi baru."
+        "Anda memiliki 2 prestasi pending. Mohon tunggu persetujuan."
       );
       return;
     }
@@ -76,7 +80,7 @@ export default function DashboardOverview({
   const handleUploadWork = () => {
     if (pendingWorks.length >= 2) {
       toast.error(
-        "Anda sudah memiliki 2 karya yang sedang menunggu persetujuan. Silakan tunggu hingga ada yang disetujui atau ditolak sebelum mengunggah karya baru."
+        "Anda memiliki 2 karya pending. Mohon tunggu persetujuan."
       );
       return;
     }
@@ -88,23 +92,25 @@ export default function DashboardOverview({
       title: "Total Prestasi",
       value: approvedAchievements.length,
       icon: Trophy,
-      color: "bg-gradient-to-br from-amber-400 to-yellow-500",
-      subtitle: `${pendingAchievements.length} menunggu persetujuan`,
+      color: "bg-blue-50 text-blue-600",
+      border: "border-blue-100",
+      subtitle: `${pendingAchievements.length} sedang ditinjau`,
     },
     {
       title: "Total Karya",
       value: approvedWorks.length,
       icon: BookOpen,
-      color: "bg-gradient-to-br from-blue-500 to-indigo-600",
-      subtitle: `${pendingWorks.length} menunggu persetujuan`,
+      color: "bg-amber-50 text-amber-600",
+      border: "border-amber-100",
+      subtitle: `${pendingWorks.length} sedang ditinjau`,
     },
     {
-      title: "Prestasi Akademik",
-      value: approvedAchievements.filter((a) => a.category === "akademik")
-        .length,
+      title: "Akademik",
+      value: approvedAchievements.filter((a) => a.category === "akademik").length,
       icon: Award,
-      color: "bg-gradient-to-br from-emerald-500 to-teal-600",
-      subtitle: "Prestasi dibidang akademik",
+      color: "bg-emerald-50 text-emerald-600",
+      border: "border-emerald-100",
+      subtitle: "Prestasi akademik",
     },
     {
       title: "Aktivitas Bulan Ini",
@@ -126,8 +132,9 @@ export default function DashboardOverview({
           );
         }).length,
       icon: TrendingUp,
-      color: "bg-gradient-to-br from-amber-500 to-orange-500",
-      subtitle: "Prestasi & karya bulan ini",
+      color: "bg-indigo-50 text-indigo-600",
+      border: "border-indigo-100",
+      subtitle: "Total aktivitas",
     },
   ];
 
@@ -138,6 +145,7 @@ export default function DashboardOverview({
       title: achievement.title,
       status: achievement.status,
       date: achievement.date,
+      category: achievement.category
     })),
     ...works.slice(0, 2).map((work) => ({
       id: work.id,
@@ -145,245 +153,264 @@ export default function DashboardOverview({
       title: work.title,
       status: work.status,
       date: work.createdAt,
+      category: work.category
     })),
   ]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 5);
 
-  return (
-    <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-teal-500 rounded-xl p-6 text-white shadow-lg">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">
-              Selamat Datang, {profileData.name}!
-            </h1>
-            <p className="text-blue-100 mt-1">
-              Kelas {profileData.class} - {profileData.year}
-            </p>
-            <p className="text-blue-100 text-sm mt-2">
-              NISN: {profileData.nisn}
-            </p>
-          </div>
-          <div className="hidden md:block">
-            {profileData.profileImage ? (
-              <Image
-                src={profileData.profileImage}
-                alt="Profile"
-                width={80}
-                height={80}
-                className="w-20 h-20 rounded-full border-4 border-white shadow-xl object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-full bg-white/20 border-4 border-white flex items-center justify-center shadow-xl hover:scale-105 transition-transform duration-300 cursor-pointer">
-                <User className="w-10 h-10 text-white" />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, index) => (
-          <div
-            key={index}
-            className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer group"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 group-hover:text-gray-800 transition-colors">
-                  {stat.title}
-                </p>
-                <p className="text-3xl font-bold text-gray-900 mt-1 group-hover:text-blue-600 transition-colors">
-                  {stat.value}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">{stat.subtitle}</p>
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
+  return (
+    <motion.div
+      className="space-y-8 max-w-7xl mx-auto"
+      variants={container}
+      initial="hidden"
+      animate="show"
+    >
+      {/* Welcome Banner */}
+      <motion.div
+        variants={item}
+        className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm p-6 sm:p-8"
+      >
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full translate-x-1/3 -translate-y-1/3 opacity-50 blur-3xl" />
+        <div className="absolute bottom-0 right-20 w-40 h-40 bg-amber-50 rounded-full opacity-50 blur-2xl" />
+
+        <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-amber-500 rounded-full opacity-75 group-hover:opacity-100 transition duration-300 blur-sm" />
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-white bg-gray-100">
+                {profileData.profileImage ? (
+                  <Image
+                    src={profileData.profileImage}
+                    alt="Profile"
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-400">
+                    <User className="w-10 h-10" />
+                  </div>
+                )}
               </div>
-              <div
-                className={`${stat.color} p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300`}
-              >
-                <stat.icon className="w-6 h-6 text-white" />
+            </div>
+
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+                Halo, <span className="text-blue-700">{profileData.name}</span> 👋
+              </h1>
+              <p className="text-gray-500 mt-1 text-lg">
+                Kelas {profileData.class} • {profileData.year}
+              </p>
+              <div className="flex flex-wrap gap-2 mt-3">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                  NISN: {profileData.nisn}
+                </span>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                  Siswa Aktif
+                </span>
               </div>
             </div>
           </div>
+
+          <div className="flex gap-3 w-full md:w-auto">
+             <button
+                onClick={onQuickEdit}
+                className="flex-1 md:flex-none items-center justify-center inline-flex gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm"
+              >
+                <Edit3 className="w-4 h-4" />
+                Edit Profil
+              </button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat, index) => (
+          <motion.div
+            key={index}
+            variants={item}
+            className={`
+              bg-white rounded-xl p-5 border shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1
+              ${stat.border}
+            `}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className={`p-3 rounded-lg ${stat.color}`}>
+                <stat.icon className="w-6 h-6" />
+              </div>
+              {index === 0 && <div className="w-2 h-2 rounded-full bg-blue-500" />}
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-gray-900 tracking-tight">{stat.value}</p>
+              <p className="text-sm font-medium text-gray-600 mt-1">{stat.title}</p>
+              <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                {stat.subtitle}
+              </p>
+            </div>
+          </motion.div>
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <button
-            onClick={onQuickEdit}
-            className="p-4 border border-gray-200 rounded-xl hover:bg-gradient-to-br hover:from-blue-50 hover:to-purple-50 hover:border-blue-400 hover:shadow-md transition-all duration-300 text-left group cursor-pointer"
-          >
-            <div className="text-gray-600 group-hover:text-blue-600 mb-2 transition-colors">
-              <Edit3 className="w-6 h-6" />
-            </div>
-            <h3 className="font-medium text-gray-900 group-hover:text-blue-900">
-              Edit Cepat
-            </h3>
-            <p className="text-sm text-gray-600 mt-1 group-hover:text-blue-700">
-              Edit informasi dasar profil
-            </p>
-          </button>
-
-          <button
-            onClick={handleUploadAchievement}
-            disabled={pendingAchievements.length >= 2}
-            className={`p-4 border rounded-xl transition-all duration-300 text-left group relative ${
-              pendingAchievements.length >= 2
-                ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
-                : "border-gray-200 hover:bg-gradient-to-br hover:from-amber-50 hover:to-yellow-50 hover:border-amber-400 hover:shadow-md cursor-pointer"
-            }`}
-          >
-            <div
-              className={`mb-2 transition-colors ${
-                pendingAchievements.length >= 2
-                  ? "text-gray-400"
-                  : "text-gray-600 group-hover:text-amber-600"
-              }`}
-            >
-              <Trophy className="w-6 h-6" />
-            </div>
-            <h3
-              className={`font-medium transition-colors ${
-                pendingAchievements.length >= 2
-                  ? "text-gray-500"
-                  : "text-gray-900 group-hover:text-amber-900"
-              }`}
-            >
-              Upload Prestasi
-            </h3>
-            <p
-              className={`text-sm mt-1 transition-colors ${
-                pendingAchievements.length >= 2
-                  ? "text-gray-400"
-                  : "text-gray-600 group-hover:text-amber-700"
-              }`}
-            >
-              {pendingAchievements.length >= 2
-                ? "Maksimal 2 prestasi pending"
-                : "Tambahkan prestasi terbaru Anda"}
-            </p>
-            {pendingAchievements.length >= 2 && (
-              <div className="absolute top-2 right-2 bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">
-                {pendingAchievements.length}/2
-              </div>
-            )}
-          </button>
-
-          <button
-            onClick={handleUploadWork}
-            disabled={pendingWorks.length >= 2}
-            className={`p-4 border rounded-xl transition-all duration-300 text-left group relative ${
-              pendingWorks.length >= 2
-                ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
-                : "border-gray-200 hover:bg-gradient-to-br hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-400 hover:shadow-md cursor-pointer"
-            }`}
-          >
-            <div
-              className={`mb-2 transition-colors ${
-                pendingWorks.length >= 2
-                  ? "text-gray-400"
-                  : "text-gray-600 group-hover:text-emerald-600"
-              }`}
-            >
-              <BookOpen className="w-6 h-6" />
-            </div>
-            <h3
-              className={`font-medium transition-colors ${
-                pendingWorks.length >= 2
-                  ? "text-gray-500"
-                  : "text-gray-900 group-hover:text-emerald-900"
-              }`}
-            >
-              Upload Karya
-            </h3>
-            <p
-              className={`text-sm mt-1 transition-colors ${
-                pendingWorks.length >= 2
-                  ? "text-gray-400"
-                  : "text-gray-600 group-hover:text-emerald-700"
-              }`}
-            >
-              {pendingWorks.length >= 2
-                ? "Maksimal 2 karya pending"
-                : "Bagikan karya terbaik Anda"}
-            </p>
-            {pendingWorks.length >= 2 && (
-              <div className="absolute top-2 right-2 bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">
-                {pendingWorks.length}/2
-              </div>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Recent Activities */}
-      {recentActivities.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Aktivitas Terbaru
-          </h2>
-          <div className="space-y-3">
-            {recentActivities.map((activity) => (
-              <div
-                key={`${activity.type}-${activity.id}`}
-                className="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:bg-gray-50 hover:border-gray-200 transition-all duration-200 cursor-pointer group"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`p-2 rounded-xl group-hover:scale-105 transition-transform duration-200 ${
-                      activity.type === "achievement"
-                        ? "bg-gradient-to-br from-amber-100 to-yellow-100"
-                        : "bg-gradient-to-br from-blue-100 to-indigo-100"
-                    }`}
-                  >
-                    {activity.type === "achievement" ? (
-                      <Trophy
-                        className={`w-4 h-4 ${
-                          activity.type === "achievement"
-                            ? "text-amber-600"
-                            : "text-blue-600"
-                        }`}
-                      />
-                    ) : (
-                      <BookOpen className="w-4 h-4 text-blue-600" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 group-hover:text-blue-900 transition-colors">
-                      {activity.title}
-                    </p>
-                    <p className="text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
-                      {activity.type === "achievement" ? "Prestasi" : "Karya"} •{" "}
-                      {new Date(activity.date).toLocaleDateString("id-ID")}
-                    </p>
-                  </div>
-                </div>
-                <span
-                  className={`px-3 py-1 text-xs rounded-full font-medium shadow-sm ${
-                    activity.status === "approved"
-                      ? "bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800"
-                      : activity.status === "pending"
-                        ? "bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800"
-                        : "bg-gradient-to-r from-red-100 to-rose-100 text-red-800"
-                  }`}
-                >
-                  {activity.status === "approved"
-                    ? "Disetujui"
-                    : activity.status === "pending"
-                      ? "Menunggu"
-                      : "Ditolak"}
-                </span>
-              </div>
-            ))}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Quick Actions */}
+        <motion.div variants={item} className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-gray-900">Aksi Cepat</h2>
           </div>
-        </div>
-      )}
-    </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button
+              onClick={handleUploadAchievement}
+              disabled={pendingAchievements.length >= 2}
+              className={`
+                group relative overflow-hidden p-6 rounded-2xl text-left border transition-all duration-300
+                ${pendingAchievements.length >= 2
+                  ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-75"
+                  : "bg-white border-blue-100 hover:border-blue-300 hover:shadow-md hover:bg-blue-50/30"}
+              `}
+            >
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Trophy className="w-24 h-24 text-blue-600 transform rotate-12 translate-x-4 -translate-y-4" />
+              </div>
+
+              <div className="relative z-10">
+                <div className={`
+                  w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors
+                  ${pendingAchievements.length >= 2 ? "bg-gray-200" : "bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white"}
+                `}>
+                  <Trophy className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">Upload Prestasi</h3>
+                <p className="text-sm text-gray-500 mb-4 line-clamp-2">
+                  Tambahkan pencapaian barumu dan biarkan sekolah mengapresiasi.
+                </p>
+
+                <div className="flex items-center justify-between mt-auto">
+                   <span className={`text-xs font-semibold px-2 py-1 rounded-md ${pendingAchievements.length >= 2 ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-700'}`}>
+                      {pendingAchievements.length}/2 Pending
+                   </span>
+                   <div className={`p-2 rounded-full ${pendingAchievements.length >= 2 ? 'bg-gray-200' : 'bg-white shadow-sm group-hover:translate-x-1 transition-transform'}`}>
+                      <ArrowRight className="w-4 h-4 text-gray-600" />
+                   </div>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={handleUploadWork}
+              disabled={pendingWorks.length >= 2}
+              className={`
+                group relative overflow-hidden p-6 rounded-2xl text-left border transition-all duration-300
+                ${pendingWorks.length >= 2
+                  ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-75"
+                  : "bg-white border-amber-100 hover:border-amber-300 hover:shadow-md hover:bg-amber-50/30"}
+              `}
+            >
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <BookOpen className="w-24 h-24 text-amber-600 transform rotate-12 translate-x-4 -translate-y-4" />
+              </div>
+
+              <div className="relative z-10">
+                <div className={`
+                  w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors
+                  ${pendingWorks.length >= 2 ? "bg-gray-200" : "bg-amber-100 text-amber-600 group-hover:bg-amber-600 group-hover:text-white"}
+                `}>
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">Upload Karya</h3>
+                <p className="text-sm text-gray-500 mb-4 line-clamp-2">
+                  Bagikan karya kreatifmu, baik foto maupun video pembelajaran.
+                </p>
+
+                <div className="flex items-center justify-between mt-auto">
+                   <span className={`text-xs font-semibold px-2 py-1 rounded-md ${pendingWorks.length >= 2 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'}`}>
+                      {pendingWorks.length}/2 Pending
+                   </span>
+                   <div className={`p-2 rounded-full ${pendingWorks.length >= 2 ? 'bg-gray-200' : 'bg-white shadow-sm group-hover:translate-x-1 transition-transform'}`}>
+                      <ArrowRight className="w-4 h-4 text-gray-600" />
+                   </div>
+                </div>
+              </div>
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Recent Activity Feed */}
+        <motion.div variants={item} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col h-full">
+          <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+            <h3 className="font-bold text-gray-900">Aktivitas Terbaru</h3>
+            <span className="text-xs text-gray-500 font-medium">Terakhir diupdate</span>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-2">
+            {recentActivities.length > 0 ? (
+              <div className="space-y-1">
+                {recentActivities.map((activity, idx) => (
+                  <div
+                    key={`${activity.type}-${activity.id}-${idx}`}
+                    className="group flex gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-default"
+                  >
+                    <div className={`
+                      w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5
+                      ${activity.type === 'achievement' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'}
+                    `}>
+                      {activity.type === 'achievement' ? <Trophy className="w-5 h-5" /> : <BookOpen className="w-5 h-5" />}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start">
+                         <h4 className="text-sm font-semibold text-gray-900 line-clamp-1">{activity.title}</h4>
+                         <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2">
+                            {new Date(activity.date).toLocaleDateString("id-ID", { day: 'numeric', month: 'short' })}
+                         </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-2 capitalize">{activity.category || (activity.type === 'achievement' ? 'Prestasi' : 'Karya')}</p>
+
+                      <div className="flex items-center gap-2">
+                        <span className={`
+                          inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border
+                          ${activity.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                            activity.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
+                            'bg-red-50 text-red-700 border-red-100'}
+                        `}>
+                          {activity.status === 'approved' && <CheckCircle2 className="w-3 h-3" />}
+                          {activity.status === 'pending' && <Clock className="w-3 h-3" />}
+                          {activity.status === 'rejected' && <XCircle className="w-3 h-3" />}
+                          {activity.status === 'approved' ? 'Disetujui' : activity.status === 'pending' ? 'Menunggu' : 'Ditolak'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="h-40 flex flex-col items-center justify-center text-center p-4">
+                 <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+                    <Clock className="w-6 h-6 text-gray-300" />
+                 </div>
+                 <p className="text-sm font-medium text-gray-900">Belum ada aktivitas</p>
+                 <p className="text-xs text-gray-500 mt-1 max-w-[200px]">Mulai upload prestasi atau karyamu untuk melihat riwayat aktivitas di sini.</p>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
   );
 }

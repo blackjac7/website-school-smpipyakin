@@ -411,13 +411,6 @@ function SiswaDashboard() {
           <AchievementsSection
             achievements={achievements}
             onUploadClick={() => setShowUploadForm(true)}
-            getStatusColor={(status) =>
-              status === "approved"
-                ? "text-green-600"
-                : status === "pending"
-                  ? "text-yellow-600"
-                  : "text-red-600"
-            }
           />
         );
       case "works":
@@ -429,9 +422,9 @@ function SiswaDashboard() {
             onDeleteClick={handleDeleteWork}
             getStatusColor={(status) =>
               status === "approved"
-                ? "bg-green-100 text-green-800"
+                ? "bg-emerald-100 text-emerald-800"
                 : status === "pending"
-                  ? "bg-yellow-100 text-yellow-800"
+                  ? "bg-amber-100 text-amber-800"
                   : "bg-red-100 text-red-800"
             }
           />
