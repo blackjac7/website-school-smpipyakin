@@ -24,6 +24,22 @@ export const teachers: Teacher[] = [
     experience: "15"
   },
   {
+    id: "23",
+    name: "Edy Supandi",
+    position: "Kepala Tata Usaha",
+    category: "Staff",
+    photo: MAN_AVATAR,
+    description: "Mengelola administrasi sekolah dengan profesional."
+  },
+  {
+    id: "24",
+    name: "Santi",
+    position: "Operator Sekolah",
+    category: "Staff",
+    photo: WOMAN_AVATAR,
+    description: "Menangani pendataan dan sistem informasi sekolah."
+  },
+  {
     id: "2",
     name: "Reti Sibagariang, S.Pd.",
     position: "Guru Mata Pelajaran",
