@@ -63,7 +63,24 @@ interface Work {
 }
 
 function SiswaDashboard() {
-  const [activeMenu, setActiveMenu] = useState("dashboard");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const validTabs = ["dashboard", "achievements", "works"];
+  const tabParam = searchParams.get("tab");
+  const currentTab = validTabs.includes(tabParam || "") ? tabParam || "dashboard" : "dashboard";
+
+  // Sync state with URL
+  const [activeMenu, setActiveMenu] = useState(currentTab);
+
+  useEffect(() => {
+    setActiveMenu(currentTab);
+  }, [currentTab]);
+
+  const handleMenuChange = (menuId: string) => {
+    setActiveMenu(menuId);
+    router.push(`?tab=${menuId}`);
+  };
+
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [showUploadWork, setShowUploadWork] = useState(false);
   const [showQuickEdit, setShowQuickEdit] = useState(false);
@@ -433,7 +450,7 @@ function SiswaDashboard() {
         <DashboardSidebar
           menuItems={menuItems}
           activeMenu={activeMenu}
-          setActiveMenu={setActiveMenu}
+          setActiveMenu={handleMenuChange}
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
           title="Dashboard"
