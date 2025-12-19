@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LogOut, Loader2 } from "lucide-react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 interface LogoutAnimationProps {
   isVisible: boolean;
@@ -19,9 +19,8 @@ export default function LogoutAnimation({
 
     const steps = [
       { delay: 0, action: () => setStep(1) }, // Show animation
-      { delay: 1000, action: () => setStep(2) }, // Show progress
-      { delay: 2000, action: () => setStep(3) }, // Show completion
-      { delay: 3000, action: () => onComplete?.() }, // Complete
+      { delay: 1500, action: () => setStep(2) }, // Show completion text
+      { delay: 2500, action: () => onComplete?.() }, // Complete
     ];
 
     const timers = steps.map(({ delay, action }) => setTimeout(action, delay));
@@ -34,61 +33,29 @@ export default function LogoutAnimation({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/95 backdrop-blur-sm">
       <div className="text-center">
-        {/* Step 1: Show logout icon */}
-        {step >= 1 && (
-          <div className="mb-8 animate-pulse">
-            <div className="w-20 h-20 mx-auto bg-white rounded-full flex items-center justify-center shadow-2xl">
-              <LogOut className="w-10 h-10 text-gray-800" />
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Show loading */}
-        {step >= 2 && (
-          <div className="mb-6 animate-fade-in">
-            <Loader2 className="w-8 h-8 mx-auto text-white animate-spin" />
-            <p className="text-white text-lg font-medium mt-4">
-              Mengakhiri sesi...
-            </p>
-            <div className="mt-4 w-64 mx-auto bg-gray-700 rounded-full h-2">
-              <div
-                className="bg-white h-2 rounded-full animate-pulse"
-                style={{
-                  width: step >= 3 ? "100%" : "60%",
-                  transition: "width 1s ease-in-out",
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Show completion */}
-        {step >= 3 && (
-          <div className="animate-bounce">
-            <p className="text-white text-lg font-medium">Logout berhasil!</p>
-            <p className="text-gray-300 text-sm mt-2">
-              Mengalihkan ke halaman login...
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Background particles */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 bg-white opacity-20 rounded-full animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 2}s`,
-              animationDuration: `${3 + Math.random() * 2}s`,
-            }}
+        {/* Animation */}
+        <div className="mb-4 h-48 w-48 mx-auto relative">
+          <DotLottieReact
+            src="/animations/school-loading.lottie"
+            loop
+            autoplay
+            className="w-full h-full"
           />
-        ))}
+        </div>
+
+        {/* Text Status */}
+        <div className="space-y-2 animate-fade-in">
+          <p className="text-blue-900 text-xl font-semibold">
+            {step < 2 ? "Mengakhiri sesi..." : "Logout Berhasil"}
+          </p>
+          <p className="text-blue-600 text-sm">
+            {step < 2
+              ? "Mohon tunggu sebentar"
+              : "Mengalihkan ke halaman login..."}
+          </p>
+        </div>
       </div>
     </div>
   );
