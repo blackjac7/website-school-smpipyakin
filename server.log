@@ -1,0 +1,20 @@
+
+> website-school-smpipyakin@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.5.9
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.2:3000
+
+ ✓ Starting...
+ ✓ Ready in 2.2s
+   Reload env: .env.local
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 928ms (180 modules)
+ ○ Compiling /contact ...
+ ✓ Compiled /contact in 8.8s (1772 modules)
+ GET /contact 200 in 10500ms
+ ○ Compiling /api/auth/verify ...
+ ✓ Compiled /api/auth/verify in 2.1s (1865 modules)
+ GET /api/auth/verify 401 in 2444ms
+ GET /contact 200 in 183ms
