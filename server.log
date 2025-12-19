@@ -1,0 +1,39 @@
+
+> website-school-smpipyakin@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.5.9
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.2:3000
+
+ ✓ Starting...
+ ✓ Ready in 3.1s
+ ✓ Compiled /middleware in 452ms (180 modules)
+ ○ Compiling /profile/visi-misi ...
+ ✓ Compiled /profile/visi-misi in 6.7s (1570 modules)
+ ✓ Compiled in 2.2s (714 modules)
+ GET /profile/visi-misi 200 in 9007ms
+ ○ Compiling /profile/sejarah ...
+ ✓ Compiled /profile/sejarah in 1032ms (1577 modules)
+ GET /profile/sejarah 200 in 1724ms
+ ○ Compiling /api/auth/verify ...
+ ✓ Compiled /_not-found in 1941ms (1675 modules)
+ GET /profile/avatarAI.png 404 in 1141ms
+ GET /api/auth/verify 401 in 2674ms
+ ○ Compiling /profile/struktur ...
+ ✓ Compiled /profile/struktur in 668ms (1688 modules)
+ GET /profile/struktur 200 in 1360ms
+ GET /api/auth/verify 401 in 69ms
+ GET /profile/avatarAI.png 404 in 83ms
+ ○ Compiling /profile/sambutan ...
+ ✓ Compiled /profile/sambutan in 1222ms (1702 modules)
+ GET /profile/sambutan 200 in 1910ms
+ GET /api/auth/verify 401 in 55ms
+ GET /profile/avatarAI.png 404 in 118ms
+ ○ Compiling /profile/guru ...
+ ✓ Compiled /profile/guru in 1054ms (1717 modules)
+ GET /profile/guru 200 in 1712ms
+ GET /api/auth/verify 401 in 60ms
+ GET /profile/avatarAI.png 404 in 89ms
+ ✓ Compiled in 1195ms (731 modules)
+ ✓ Compiled in 610ms (731 modules)

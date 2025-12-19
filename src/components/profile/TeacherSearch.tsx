@@ -13,9 +13,6 @@ interface TeacherSearchProps {
 
 export default function TeacherSearch({ initialTeachers }: TeacherSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Semua");
-
-  const categories = ["Semua", "Pimpinan", "Guru Mata Pelajaran", "Staff"];
 
   const filteredTeachers = useMemo(() => {
     return initialTeachers.filter((teacher) => {
@@ -25,21 +22,18 @@ export default function TeacherSearch({ initialTeachers }: TeacherSearchProps) {
         (teacher.subject &&
           teacher.subject.toLowerCase().includes(searchTerm.toLowerCase()));
 
-      const matchesCategory =
-        selectedCategory === "Semua" || teacher.category === selectedCategory;
-
-      return matchesSearch && matchesCategory;
+      return matchesSearch;
     });
-  }, [initialTeachers, searchTerm, selectedCategory]);
+  }, [initialTeachers, searchTerm]);
 
   return (
     <div className="space-y-8">
-      {/* Search and Filter Controls */}
+      {/* Search Controls */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div className="flex justify-center">
 
           {/* Search Input */}
-          <div className="relative w-full md:w-1/2">
+          <div className="relative w-full max-w-2xl">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-gray-400" />
             </div>
@@ -50,23 +44,6 @@ export default function TeacherSearch({ initialTeachers }: TeacherSearchProps) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </div>
-
-          {/* Category Filter Pills */}
-          <div className="flex flex-wrap gap-2 justify-center md:justify-end w-full md:w-auto">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
-                  selectedCategory === category
-                    ? "bg-school-blue text-white shadow-md"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
           </div>
         </div>
       </div>
@@ -98,7 +75,7 @@ export default function TeacherSearch({ initialTeachers }: TeacherSearchProps) {
         <div className="text-center py-12">
           <p className="text-xl text-gray-500">Tidak ada data yang ditemukan.</p>
           <button
-            onClick={() => {setSearchTerm(""); setSelectedCategory("Semua")}}
+            onClick={() => setSearchTerm("")}
             className="mt-4 text-school-blue hover:underline"
           >
             Reset Pencarian
