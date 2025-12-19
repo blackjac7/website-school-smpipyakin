@@ -1,73 +1,51 @@
 "use client";
 
-import { History } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function SejarahPage() {
+  const milestones = [
+    { year: "1974", title: "Pendirian Sekolah", description: "Didirikan oleh Bapak Dr. Usman Dadu, M.BA, sebagai wujud kepedulian terhadap pendidikan yang berkualitas di lingkungan sekitar." },
+    { year: "1976", title: "Resmi Menjadi SMP Swasta", description: "Mendapatkan izin operasional dengan angkatan pertama sebanyak 87 siswa dan fasilitas awal yang sederhana." },
+    { year: "1984", title: "Pengakuan Pemerintah", description: "Memperoleh status diakui dari Kementerian Pendidikan dan Kebudayaan pada tanggal 10 Maret 1984, menjadi tonggak penting legalitas sekolah." },
+    { year: "1990-an", title: "Pengembangan Infrastruktur", description: "Pembangunan gedung baru, penambahan ruang kelas, dan laboratorium IPA untuk mendukung pembelajaran sains." },
+    { year: "2015", title: "Era Digital", description: "Modernisasi fasilitas dengan laboratorium komputer dan perpustakaan digital untuk menghadapi tantangan teknologi." },
+    { year: "2024", title: "Transformasi Modern", description: "Peluncuran identitas baru, penguatan kurikulum merdeka, dan digitalisasi sistem informasi sekolah melalui website resmi." },
+  ];
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3 mb-6">
-        <History className="h-8 w-8 text-blue-600" />
-        <h2 className="text-2xl font-bold">Sejarah SMP IP Yakin Jakarta</h2>
+    <div className="space-y-10">
+      <div className="prose max-w-none text-gray-700">
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-lg leading-relaxed border-l-4 border-blue-600 pl-4 bg-blue-50 py-3 rounded-r-lg"
+        >
+          <span className="font-bold text-blue-700">SMP IP Yakin Jakarta</span> memiliki sejarah panjang dalam dunia pendidikan.
+          Dimulai dari visi sederhana pada tahun 1974, kini telah berkembang menjadi institusi pendidikan modern
+          yang tetap memegang teguh nilai-nilai luhur dan siap mencetak generasi unggul.
+        </motion.p>
       </div>
-      <div className="prose max-w-none text-gray-700 space-y-4">
-        <p>
-          SMP IP Yakin Jakarta didirikan pada tahun <strong>1974</strong> oleh
-          Bapak <strong>Dr. Usman Dadu, M.BA</strong>, sebagai upaya untuk
-          memberikan pendidikan menengah yang berkualitas kepada masyarakat
-          sekitar.
-        </p>
-        <p>
-          Pada tahun <strong>1976</strong>, SMP IP Yakin secara resmi
-          didaftarkan menjadi <strong>SMP Swasta</strong>, dengan fasilitas
-          sederhana dan siswa awal sebanyak <strong>87 orang</strong>.
-        </p>
-        <p>
-          Pada tanggal <strong>10 Maret 1984</strong>, memperoleh pengakuan dari
-          Kementerian Pendidikan dan Kebudayaan. Sejak itu sekolah terus
-          berkembang dari segi jumlah siswa, infrastruktur, dan kualitas
-          pendidikan.
-        </p>
-        <h3 className="text-xl font-semibold mt-6 mb-3">
-          Tonggak Sejarah Penting
-        </h3>
-        <ul className="space-y-4">
-          <li className="flex items-start">
-            <div className="min-w-[100px] font-semibold">1974</div>
-            <div>Didirikan oleh Bapak Dr. Usman Dadu, M.BA</div>
-          </li>
-          <li className="flex items-start">
-            <div className="min-w-[100px] font-semibold">1976</div>
-            <div>Resmi menjadi SMP Swasta dengan 87 siswa</div>
-          </li>
-          <li className="flex items-start">
-            <div className="min-w-[100px] font-semibold">1984</div>
-            <div>Mendapatkan pengakuan dari pemerintah</div>
-          </li>
-          <li className="flex items-start">
-            <div className="min-w-[100px] font-semibold">1990-an</div>
-            <div>Penambahan ruang kelas dan laboratorium</div>
-          </li>
-          <li className="flex items-start">
-            <div className="min-w-[100px] font-semibold">2000</div>
-            <div>Pengenalan teknologi dan komputer</div>
-          </li>
-          <li className="flex items-start">
-            <div className="min-w-[100px] font-semibold">2015</div>
-            <div>Perpustakaan digital dan multimedia</div>
-          </li>
-          <li className="flex items-start">
-            <div className="min-w-[100px] font-semibold">2020</div>
-            <div>Pembelajaran daring di masa pandemi</div>
-          </li>
-          <li className="flex items-start">
-            <div className="min-w-[100px] font-semibold">2024</div>
-            <div>Peluncuran website resmi</div>
-          </li>
-        </ul>
-        <p className="mt-6">
-          Sekolah terus berkomitmen pada pendidikan berkualitas berbasis nilai
-          Islam dan inovasi modern.
-        </p>
+
+      <div className="relative border-l-2 border-blue-100 ml-3 md:ml-6 space-y-10 py-4">
+        {milestones.map((item, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: idx * 0.1 }}
+            className="relative pl-8 md:pl-12 group"
+          >
+            <div className="absolute -left-[9px] top-1 h-5 w-5 rounded-full border-4 border-white bg-blue-300 group-hover:bg-blue-600 transition-colors shadow-sm" />
+            <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 mb-1">
+              <span className="text-xl font-bold text-blue-600 font-mono">{item.year}</span>
+              <h3 className="text-lg font-semibold text-gray-900">{item.title}</h3>
+            </div>
+            <p className="text-gray-600 leading-relaxed bg-white hover:bg-gray-50 p-2 rounded-lg transition-colors -ml-2">
+              {item.description}
+            </p>
+          </motion.div>
+        ))}
       </div>
     </div>
   );
