@@ -1,85 +1,89 @@
-import { MenuItem } from "./types";
-import { SidebarLogout } from "@/components/shared";
-import { X } from "lucide-react";
-import { useAuth } from "@/components/shared/AuthProvider";
+"use client";
+
+import { usePathname, useRouter } from "next/navigation";
+import {
+  Home,
+  Users,
+  FileText,
+  Calendar,
+  Layout,
+  Activity,
+  Settings,
+  Bell,
+  Newspaper
+} from "lucide-react";
+import DashboardSidebar from "@/components/dashboard/layout/DashboardSidebar";
+import { MenuItem } from "@/components/dashboard/layout/types";
 
 interface SidebarProps {
-  menuItems: MenuItem[];
-  activeMenu: string;
-  setActiveMenu: (menu: string) => void;
-  isOpen?: boolean;
-  onClose?: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  // Legacy props
+  menuItems?: MenuItem[];
+  activeMenu?: string;
+  setActiveMenu?: (id: string) => void;
 }
 
-export default function Sidebar({
-  menuItems,
-  activeMenu,
-  setActiveMenu,
-  isOpen = true,
-  onClose,
-}: SidebarProps) {
-  const { user } = useAuth();
-  const handleMenuClick = (menu: string) => {
-    setActiveMenu(menu);
-    // Close sidebar on mobile after selection
-    if (onClose) onClose();
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // Map active menu based on pathname
+  const getActiveMenu = () => {
+    if (pathname.includes('/hero')) return 'hero';
+    if (pathname.includes('/stats')) return 'stats';
+    if (pathname.includes('/news')) return 'news';
+    if (pathname.includes('/announcements')) return 'announcements';
+    if (pathname.includes('/calendar')) return 'calendar';
+    if (pathname.includes('/users')) return 'users';
+    return 'dashboard';
   };
 
+  const handleMenuClick = (id: string) => {
+    switch (id) {
+      case 'hero':
+        router.push('/dashboard-admin/hero');
+        break;
+      case 'stats':
+        router.push('/dashboard-admin/stats');
+        break;
+      case 'news':
+        router.push('/dashboard-admin/news');
+        break;
+      case 'announcements':
+        router.push('/dashboard-admin/announcements');
+        break;
+      case 'calendar':
+        router.push('/dashboard-admin/calendar');
+        break;
+      case 'users':
+        router.push('/dashboard-admin/users'); // Assuming this exists or will exist
+        break;
+      default:
+        // router.push('/dashboard-admin');
+        break;
+    }
+  };
+
+  const adminMenuItems: MenuItem[] = [
+    { id: "hero", label: "Hero Carousel", icon: Layout },
+    { id: "stats", label: "Quick Stats", icon: Activity },
+    { id: "news", label: "Berita Sekolah", icon: Newspaper },
+    { id: "announcements", label: "Pengumuman", icon: Bell },
+    { id: "calendar", label: "Kalender Akademik", icon: Calendar },
+    { id: "users", label: "Manajemen Pengguna", icon: Users },
+  ];
+
   return (
-    <>
-      {/* Mobile Overlay */}
-      {isOpen && onClose && (
-        <div
-          className="fixed inset-0 backdrop-blur-sm z-40 lg:hidden"
-          onClick={onClose}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div
-        className={`
-        fixed lg:static inset-y-0 left-0 z-50
-        w-64 bg-white border-r border-gray-200 flex flex-col
-        transform transition-transform duration-300 ease-in-out
-        ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-      `}
-      >
-        {/* Mobile Close Button */}
-        {onClose && (
-          <div className="lg:hidden flex justify-end p-4">
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <X className="w-5 h-5 text-gray-500" />
-            </button>
-          </div>
-        )}
-
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-900">
-            Selamat Datang, Admin
-          </h1>
-        </div>
-
-        <nav className="p-4 space-y-2 flex-1">
-          {menuItems.map((item) => (
-            <div
-              key={item.id}
-              className={`sidebar-item ${activeMenu === item.id ? "active" : ""}`}
-              onClick={() => handleMenuClick(item.id)}
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="text-sm font-medium">{item.label}</span>
-            </div>
-          ))}
-        </nav>
-
-        <SidebarLogout
-          userName={user?.name || user?.username || "Admin System"}
-          userRole="Administrator"
-        />
-      </div>
-    </>
+    <DashboardSidebar
+      menuItems={adminMenuItems}
+      activeMenu={getActiveMenu()}
+      setActiveMenu={handleMenuClick}
+      isSidebarOpen={isOpen}
+      setIsSidebarOpen={onClose}
+      title="Admin Dashboard"
+      subtitle="CONTENT MANAGEMENT"
+      userRole="Admin"
+    />
   );
 }
