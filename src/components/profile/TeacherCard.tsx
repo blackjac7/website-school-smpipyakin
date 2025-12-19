@@ -1,6 +1,7 @@
 
 import { Teacher } from "@/lib/data/teachers";
 import Image from "next/image";
+import { BookOpen } from "lucide-react";
 
 interface TeacherCardProps {
   teacher: Teacher;
@@ -30,9 +31,16 @@ export default function TeacherCard({ teacher }: TeacherCardProps) {
           <h3 className="font-bold text-lg text-gray-900 leading-tight mb-1">
             {teacher.name}
           </h3>
-          <p className="text-yellow-600 font-medium text-sm">
+          <p className="text-yellow-600 font-medium text-sm mb-3">
             {teacher.position}
           </p>
+
+          {teacher.subject && (
+            <div className="flex items-center text-gray-600 text-sm mt-2 pt-3 border-t border-gray-100">
+              <BookOpen className="w-4 h-4 mr-2 text-blue-600 flex-shrink-0" />
+              <span className="font-medium">{teacher.subject}</span>
+            </div>
+          )}
         </div>
 
       </div>
