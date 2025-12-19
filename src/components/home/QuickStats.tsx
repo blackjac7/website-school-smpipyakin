@@ -1,32 +1,38 @@
 "use client";
 
-import { GraduationCap, Users, Award, Activity } from "lucide-react";
+import { GraduationCap, Users, Award, Activity, LayoutGrid } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { motion, Variants } from "framer-motion";
+import { SchoolStat } from "@prisma/client";
 
-export default function QuickStats() {
-  const stats = [
-    {
-      label: "Siswa Aktif",
-      value: "450+",
-      icon: <GraduationCap className="w-8 h-8 text-yellow-500" />,
-    },
-    {
-      label: "Guru Berkualitas",
-      value: "23+",
-      icon: <Users className="w-8 h-8 text-yellow-500" />,
-    },
-    {
-      label: "Prestasi",
-      value: "100+",
-      icon: <Award className="w-8 h-8 text-yellow-500" />,
-    },
-    {
-      label: "Ekstrakurikuler",
-      value: "9+",
-      icon: <Activity className="w-8 h-8 text-yellow-500" />,
-    },
-  ];
+interface QuickStatsProps {
+  stats?: SchoolStat[];
+}
 
+const defaultStats = [
+  {
+    label: "Siswa Aktif",
+    value: "450+",
+    icon: <GraduationCap className="w-8 h-8 text-yellow-500" />,
+  },
+  {
+    label: "Guru Berkualitas",
+    value: "23+",
+    icon: <Users className="w-8 h-8 text-yellow-500" />,
+  },
+  {
+    label: "Prestasi",
+    value: "100+",
+    icon: <Award className="w-8 h-8 text-yellow-500" />,
+  },
+  {
+    label: "Ekstrakurikuler",
+    value: "9+",
+    icon: <Activity className="w-8 h-8 text-yellow-500" />,
+  },
+];
+
+export default function QuickStats({ stats }: QuickStatsProps) {
   const container: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -49,6 +55,18 @@ export default function QuickStats() {
     },
   };
 
+  // Helper to render dynamic icon
+  const renderIcon = (iconName: string) => {
+    const Icon = (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[iconName];
+    return Icon ? <Icon className="w-8 h-8 text-yellow-500" /> : <LayoutGrid className="w-8 h-8 text-yellow-500" />;
+  };
+
+  const displayStats = stats && stats.length > 0 ? stats.map(s => ({
+    label: s.label,
+    value: s.value,
+    icon: renderIcon(s.iconName)
+  })) : defaultStats;
+
   return (
     <section className="bg-white relative -mt-20 z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
       <motion.div
@@ -58,7 +76,7 @@ export default function QuickStats() {
         viewport={{ once: true, amount: 0.2 }}
         className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6"
       >
-        {stats.map((stat, index) => (
+        {displayStats.map((stat, index) => (
           <motion.div
             variants={item}
             key={index}
