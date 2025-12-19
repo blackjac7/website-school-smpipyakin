@@ -1,23 +1,90 @@
 "use client";
 
-import { Users, User, GraduationCap, School } from "lucide-react";
+import { User, GraduationCap, School, LucideIcon } from "lucide-react";
 import Image from "next/image";
 import { teachers } from "@/lib/data/teachers";
 import { motion } from "framer-motion";
 
+// Helper components for connectors
+const VerticalLine = ({ height = "h-8", className = "" }: { height?: string, className?: string }) => (
+  <div className={`w-0.5 bg-gray-300 mx-auto ${height} ${className}`} />
+);
+
+const HorizontalLine = ({ width = "w-full", className = "" }: { width?: string, className?: string }) => (
+  <div className={`h-0.5 bg-gray-300 mx-auto ${width} ${className}`} />
+);
+
+const OrgCard = ({
+  image,
+  name,
+  position,
+  color = "blue",
+  delay = 0
+}: {
+  image: string,
+  name: string,
+  position: string,
+  color?: "blue" | "gray",
+  delay?: number
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ delay }}
+    className={`flex flex-col items-center bg-white p-5 rounded-xl border ${color === "blue" ? "border-blue-200" : "border-gray-200"} shadow-sm hover:shadow-md transition-shadow relative z-10`}
+  >
+    <div className="relative w-20 h-20 mb-3">
+      <Image
+        src={image}
+        alt={name}
+        fill
+        className="rounded-full object-cover bg-gray-100"
+      />
+    </div>
+    <h3 className="font-bold text-gray-900 text-center text-sm leading-tight">{name}</h3>
+    <p className="text-gray-500 text-xs text-center mt-1 px-2">
+      {position}
+    </p>
+  </motion.div>
+);
+
+const SummaryCard = ({
+  icon: Icon,
+  title,
+  subtitle,
+  colorClass,
+  bgClass,
+  textClass
+}: {
+  icon: LucideIcon,
+  title: string,
+  subtitle: string,
+  colorClass: string,
+  bgClass: string,
+  textClass: string
+}) => (
+  <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      className={`bg-white p-6 rounded-xl border ${colorClass} shadow-sm flex flex-col items-center w-64 relative z-10`}
+  >
+      <div className={`w-12 h-12 ${bgClass} rounded-full flex items-center justify-center mb-3 ${textClass}`}>
+          <Icon className="w-6 h-6" />
+      </div>
+      <h3 className="font-bold text-gray-900">{title}</h3>
+      <p className="text-xs text-gray-500 mt-1 text-center">{subtitle}</p>
+  </motion.div>
+);
+
 export default function StrukturPage() {
   const kepsek = teachers.find((t) => t.position === "Kepala Sekolah");
-
-  // New Staff
   const kepalaTU = teachers.find((t) => t.position === "Kepala Tata Usaha");
   const operator = teachers.find((t) => t.position === "Operator Sekolah");
-
-  // Filter Wakil Kepala
   const wakaList = teachers.filter((t) => t.position.includes("Wakil Kepala"));
 
-  // Helper to count staff/teachers
   const guruCount = teachers.filter(t => t.category === "Guru Mata Pelajaran").length;
-  // Fallback for staff if not in DB fully
   const staffCount = teachers.filter(t => t.category === "Staff").length || 5;
 
   return (
@@ -32,16 +99,15 @@ export default function StrukturPage() {
       </motion.div>
 
       {/* Tree Diagram Layout */}
-      <div className="relative">
+      <div className="relative flex flex-col items-center">
 
         {/* Level 1: Kepala Sekolah */}
-        <div className="flex justify-center mb-12 relative">
-           <div className="absolute top-full left-1/2 w-px h-12 bg-gray-300 -translate-x-1/2"></div>
+        <div className="relative z-10 mb-8 flex flex-col items-center">
            {kepsek && (
              <motion.div
                initial={{ scale: 0.9, opacity: 0 }}
                animate={{ scale: 1, opacity: 1 }}
-               className="flex flex-col items-center bg-white p-6 rounded-2xl border-2 border-blue-600 shadow-lg max-w-[280px] z-10 relative"
+               className="flex flex-col items-center bg-white p-6 rounded-2xl border-2 border-blue-600 shadow-lg max-w-[280px] z-20 relative"
              >
                 <div className="relative w-28 h-28 mb-4">
                   <Image
@@ -55,197 +121,128 @@ export default function StrukturPage() {
                 <p className="text-blue-600 font-medium text-sm text-center mt-1">{kepsek.position}</p>
              </motion.div>
            )}
+           <VerticalLine height="h-12" />
+           <HorizontalLine width="w-[352px] hidden md:block" />
         </div>
 
-        {/* Level 2: Kepala TU & Operator Sekolah */}
-        <div className="flex justify-center mb-12 relative">
-            {/* Vertical connector from Level 1 */}
-            {/* The vertical line from Kepsek goes down 12px. We need a horizontal connector here if multiple items, or just vertical pass through?
-                User said: "dibawahnya baru Wakasek".
-                Let's arrange TU and Operator side by side.
-            */}
+        {/* Level 2: TU & Operator */}
+        <div className="relative w-full max-w-4xl px-4 mb-8">
+            {/* Mobile: Simple stack */}
+            <div className="md:hidden flex flex-col items-center space-y-8">
+               <VerticalLine height="h-8 -mt-8" />
+               {kepalaTU && <OrgCard image={kepalaTU.photo} name={kepalaTU.name} position={kepalaTU.position} color="gray" />}
+               <VerticalLine />
+               {operator && <OrgCard image={operator.photo} name={operator.name} position={operator.position} color="gray" />}
+               <VerticalLine />
+            </div>
 
-            <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8">
-                 {/* Connectors */}
-                 {/* Horizontal line above items */}
-                 <div className="absolute -top-12 left-[25%] right-[25%] h-px bg-gray-300 hidden md:block"></div>
-                 {/* Vertical line from Kepsek (center) to horizontal line */}
-                 <div className="absolute -top-12 left-1/2 w-px h-12 bg-gray-300 -translate-x-1/2 hidden md:block"></div>
-
-                 {/* Vertical lines dropping to items */}
-                 <div className="absolute -top-12 left-[25%] w-px h-12 bg-gray-300 hidden md:block"></div>
-                 <div className="absolute -top-12 right-[25%] w-px h-12 bg-gray-300 hidden md:block"></div>
-
-                 {/* Mobile connector */}
-                 <div className="absolute -top-12 left-1/2 w-px h-12 bg-gray-300 md:hidden"></div>
+            {/* Desktop: Grid */}
+            <div className="hidden md:flex justify-center gap-24 relative">
+                 {/* Connectors from top horizontal line */}
+                 <div className="absolute -top-8 left-[calc(50%-176px)] flex flex-col items-center">
+                    <VerticalLine height="h-8" />
+                 </div>
+                 <div className="absolute -top-8 right-[calc(50%-176px)] flex flex-col items-center">
+                    <VerticalLine height="h-8" />
+                 </div>
 
                  {kepalaTU && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex flex-col items-center bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative"
-                    >
-                         <div className="relative w-20 h-20 mb-3">
-                            <Image
-                            src={kepalaTU.photo}
-                            alt={kepalaTU.name}
-                            fill
-                            className="rounded-full object-cover bg-gray-100"
-                            />
-                        </div>
-                        <h3 className="font-bold text-gray-900 text-center text-sm leading-tight">{kepalaTU.name}</h3>
-                        <p className="text-gray-500 text-xs text-center mt-1">{kepalaTU.position}</p>
-
-                        {/* Connector to next level (Wakasek) */}
-                        {/* If we want to connect back to a single central line for Wakasek */}
-                         <div className="absolute top-full left-1/2 w-px h-12 bg-gray-300 hidden md:block"></div>
-                    </motion.div>
+                   <div className="w-64">
+                     <OrgCard image={kepalaTU.photo} name={kepalaTU.name} position={kepalaTU.position} color="gray" />
+                   </div>
                  )}
-
-                {operator && (
-                    <motion.div
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex flex-col items-center bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative"
-                    >
-                         <div className="relative w-20 h-20 mb-3">
-                            <Image
-                            src={operator.photo}
-                            alt={operator.name}
-                            fill
-                            className="rounded-full object-cover bg-gray-100"
-                            />
-                        </div>
-                        <h3 className="font-bold text-gray-900 text-center text-sm leading-tight">{operator.name}</h3>
-                        <p className="text-gray-500 text-xs text-center mt-1">{operator.position}</p>
-
-                         {/* Connector to next level */}
-                         <div className="absolute top-full left-1/2 w-px h-12 bg-gray-300 hidden md:block"></div>
-                    </motion.div>
+                 {operator && (
+                   <div className="w-64">
+                     <OrgCard image={operator.photo} name={operator.name} position={operator.position} color="gray" />
+                   </div>
                  )}
             </div>
 
-             {/* Central connector for mobile flow or regrouping */}
-             {/* We need to re-converge to center for Wakasek? Or Wakasek branches out again?
-                 Usually tree diagrams re-converge.
-                 Let's draw a horizontal line below TU/Operator to merge back to center.
-             */}
-             <div className="absolute bottom-[-24px] left-[25%] right-[25%] h-px bg-gray-300 hidden md:block"></div>
-             <div className="absolute bottom-[-48px] left-1/2 w-px h-6 bg-gray-300 hidden md:block"></div>
+            {/* Connector to merge back for Wakasek */}
+            <div className="hidden md:flex justify-center mt-8 relative">
+                 <div className="absolute -top-8 left-[calc(50%-176px)] w-0.5 h-8 bg-gray-300"></div>
+                 <div className="absolute -top-8 right-[calc(50%-176px)] w-0.5 h-8 bg-gray-300"></div>
+                 <div className="absolute top-0 w-[352px] h-0.5 bg-gray-300 left-1/2 -translate-x-1/2"></div>
+                 <VerticalLine height="h-12" className="mt-0" />
+            </div>
         </div>
 
-        {/* Level 3: Wakil Kepala */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative mt-12 md:mt-16">
-          {/* Connector from Level 2 (The merged line) */}
-          <div className="absolute -top-8 left-1/2 w-px h-8 bg-gray-300 -translate-x-1/2 md:block hidden"></div>
+        {/* Level 3: Wakasek */}
+        <div className="relative w-full max-w-5xl px-4 mb-12">
+           <div className="md:hidden flex flex-col items-center space-y-8">
+              {wakaList.map((waka) => (
+                <div key={waka.id} className="flex flex-col items-center">
+                  <OrgCard image={waka.photo} name={waka.name} position={waka.position} />
+                  <VerticalLine />
+                </div>
+              ))}
+           </div>
 
-          {/* Horizontal Line connecting Wakas (Only visible on MD+) */}
-          {wakaList.length > 1 && (
-             <div className="absolute -top-12 left-[16.66%] right-[16.66%] h-px bg-gray-300 hidden md:block translate-y-12"></div>
-          )}
+           <div className="hidden md:block">
+              <HorizontalLine width="w-2/3" />
+              <div className="grid grid-cols-3 gap-8 pt-8 relative">
+                 {/* Vertical lines from horizontal bar */}
+                 <VerticalLine height="h-8 absolute -top-0 left-[16.666%]" />
+                 <VerticalLine height="h-8 absolute -top-0 left-1/2 -translate-x-1/2" />
+                 <VerticalLine height="h-8 absolute -top-0 right-[16.666%]" />
 
-          {/* Vertical lines from horizontal to cards */}
-           <div className="absolute -top-12 left-[16.66%] w-px h-12 bg-gray-300 hidden md:block translate-y-12"></div>
-           <div className="absolute -top-12 left-1/2 w-px h-12 bg-gray-300 hidden md:block translate-y-12"></div>
-           <div className="absolute -top-12 right-[16.66%] w-px h-12 bg-gray-300 hidden md:block translate-y-12"></div>
-
-          {wakaList.map((staff, index) => (
-            <motion.div
-              key={staff.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="flex flex-col items-center bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow relative"
-            >
-              {/* Mobile connector */}
-              <div className="absolute -top-12 left-1/2 w-px h-12 bg-gray-300 md:hidden"></div>
-
-              <div className="relative w-20 h-20 mb-3">
-                <Image
-                  src={staff.photo}
-                  alt={staff.name}
-                  fill
-                  className="rounded-full object-cover bg-gray-100"
-                />
+                 {wakaList.map((waka, idx) => (
+                   <div key={waka.id} className="flex flex-col items-center">
+                     <OrgCard image={waka.photo} name={waka.name} position={waka.position} delay={idx * 0.1} />
+                   </div>
+                 ))}
               </div>
-              <h3 className="font-bold text-gray-900 text-center text-sm leading-tight">{staff.name}</h3>
-              <p className="text-gray-500 text-xs text-center mt-1 px-2 line-clamp-2">
-                {staff.position}
-              </p>
 
-              {/* Connector to next level (Converge again?)
-                  Ideally, Wakasek leads to Wali Kelas.
-                  We can merge all Wakasek to a single line down to Wali Kelas.
-              */}
-              <div className="absolute top-full left-1/2 w-px h-12 bg-gray-300 hidden md:block"></div>
-            </motion.div>
-          ))}
-           {/* Merge Wakasek lines at bottom */}
-           <div className="absolute -bottom-12 left-[16.66%] right-[16.66%] h-px bg-gray-300 hidden md:block"></div>
-           <div className="absolute -bottom-12 left-1/2 w-px h-12 bg-gray-300 hidden md:block translate-y-0"></div>
+              {/* Converge lines at bottom */}
+              <div className="relative mt-0 h-12">
+                  <div className="absolute bottom-0 left-[16.666%] right-[16.666%] h-0.5 bg-gray-300"></div>
+                  <VerticalLine height="h-full absolute bottom-0 left-[16.666%]" />
+                  <VerticalLine height="h-full absolute bottom-0 left-1/2 -translate-x-1/2" />
+                  <VerticalLine height="h-full absolute bottom-0 right-[16.666%]" />
+
+                  {/* Single line down from center of convergence */}
+                  <VerticalLine height="h-12 absolute top-full left-1/2 -translate-x-1/2" />
+              </div>
+           </div>
         </div>
 
-        {/* Level 4: Wali Kelas (Representative) */}
-        <div className="mt-24 flex justify-center relative">
-             <div className="absolute -top-12 left-1/2 w-px h-12 bg-gray-300 md:block hidden"></div>
-             {/* Mobile connector */}
-             <div className="absolute -top-12 left-1/2 w-px h-12 bg-gray-300 md:hidden"></div>
+        {/* Level 4, 5, 6: Stacked Central */}
+        <div className="flex flex-col items-center space-y-0 mt-12 md:mt-12">
+            {/* Wali Kelas */}
+            <SummaryCard
+                icon={User}
+                title="Wali Kelas"
+                subtitle="Membimbing & Memonitor Kelas"
+                colorClass="border-blue-200"
+                bgClass="bg-blue-100"
+                textClass="text-blue-600"
+            />
+            <VerticalLine height="h-12" />
 
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className="bg-white p-6 rounded-xl border border-blue-200 shadow-sm flex flex-col items-center w-64 relative z-10"
-            >
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3 text-blue-600">
-                    <User className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-gray-900">Wali Kelas</h3>
-                <p className="text-xs text-gray-500 mt-1 text-center">Membimbing & Memonitor Kelas</p>
+            {/* Dewan Guru */}
+            <SummaryCard
+                icon={GraduationCap}
+                title="Dewan Guru"
+                subtitle="Tenaga Pendidik Profesional"
+                colorClass="border-yellow-200"
+                bgClass="bg-yellow-100"
+                textClass="text-yellow-600"
+            />
+            <VerticalLine height="h-12" />
 
-                {/* Connector Down */}
-                <div className="absolute top-full left-1/2 w-px h-12 bg-gray-300"></div>
-            </motion.div>
+            {/* Siswa */}
+            <SummaryCard
+                icon={School}
+                title="Siswa / OSIS"
+                subtitle="Generasi Penerus Bangsa"
+                colorClass="border-green-200"
+                bgClass="bg-green-100"
+                textClass="text-green-600"
+            />
         </div>
 
-        {/* Level 5: Dewan Guru (Representative) */}
-        <div className="mt-12 flex justify-center relative">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className="bg-white p-6 rounded-xl border border-yellow-200 shadow-sm flex flex-col items-center w-64 relative z-10"
-            >
-                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mb-3 text-yellow-600">
-                    <GraduationCap className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-gray-900">Dewan Guru</h3>
-                <p className="text-xs text-gray-500 mt-1 text-center">Tenaga Pendidik Profesional</p>
-
-                {/* Connector Down */}
-                <div className="absolute top-full left-1/2 w-px h-12 bg-gray-300"></div>
-            </motion.div>
-        </div>
-
-        {/* Level 6: Siswa (Representative) */}
-        <div className="mt-12 flex justify-center relative">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className="bg-white p-6 rounded-xl border border-green-200 shadow-sm flex flex-col items-center w-64 relative z-10"
-            >
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3 text-green-600">
-                    <School className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-gray-900">Siswa / OSIS</h3>
-                <p className="text-xs text-gray-500 mt-1 text-center">Generasi Penerus Bangsa</p>
-            </motion.div>
-        </div>
-
-
-        {/* Summary Stats (Optional - kept for context but moved down) */}
-        <div className="mt-24 grid grid-cols-1 md:grid-cols-2 gap-6 pt-12 border-t border-gray-100">
+        {/* Stats Footer */}
+        <div className="mt-24 w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 pt-12 border-t border-gray-100">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -272,6 +269,7 @@ export default function StrukturPage() {
             <span className="text-4xl font-black text-yellow-200">{staffCount}</span>
           </motion.div>
         </div>
+
       </div>
     </div>
   );
