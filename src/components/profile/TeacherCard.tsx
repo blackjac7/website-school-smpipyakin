@@ -35,12 +35,6 @@ export default function TeacherCard({ teacher }: TeacherCardProps) {
           </p>
         </div>
 
-        {/* Placeholder for social links or detailed profile link if needed in future */}
-        <div className="mt-auto pt-4 border-t border-gray-100">
-           <p className="text-xs text-gray-500 italic">
-             Masa bakti: {teacher.experience || "5+"} tahun
-           </p>
-        </div>
       </div>
     </div>
   );
