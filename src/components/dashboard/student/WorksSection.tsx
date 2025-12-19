@@ -2,7 +2,6 @@
 
 import {
   Eye,
-  ExternalLink,
   Edit,
   Trash2,
   Plus,
@@ -118,9 +117,7 @@ export default function WorksSection({
   };
 
   const handleViewMedia = (work: Work) => {
-    if (work.workType === "photo" && work.mediaUrl) {
-      window.open(work.mediaUrl, "_blank");
-    } else if (work.workType === "video" && work.videoLink) {
+    if ((work.workType === "photo" && work.mediaUrl) || (work.workType === "video" && work.videoLink)) {
       setSelectedWork(work);
     }
   };
@@ -137,7 +134,6 @@ export default function WorksSection({
   };
 
   const isYouTubeUrl = (url: string) => url.includes("youtube.com") || url.includes("youtu.be");
-  const isGoogleDriveUrl = (url: string) => url.includes("drive.google.com");
 
   const getYouTubeThumbnail = (url: string) => {
     try {
@@ -145,21 +141,6 @@ export default function WorksSection({
       if (url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1].split("?")[0];
       else if (url.includes("youtube.com/watch?v=")) videoId = url.split("watch?v=")[1].split("&")[0];
       return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null;
-    } catch { return null; }
-  };
-
-  const getGoogleDriveInfo = (url: string) => {
-    try {
-      let fileId = "";
-      if (url.includes("/file/d/")) fileId = url.split("/file/d/")[1].split("/")[0];
-      else if (url.includes("id=")) fileId = url.split("id=")[1].split("&")[0];
-      if (fileId) return {
-        fileId,
-        thumbnailUrl: `https://drive.google.com/thumbnail?id=${fileId}&sz=w400-h225`,
-        embedUrl: `https://drive.google.com/file/d/${fileId}/preview`,
-        directUrl: url,
-      };
-      return null;
     } catch { return null; }
   };
 
@@ -386,7 +367,13 @@ export default function WorksSection({
                         onClick={() => handleViewMedia(work)}
                      >
                         {work.workType === 'photo' && work.mediaUrl ? (
-                           <Image src={work.mediaUrl} alt={work.title} fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
+                           <Image
+                             src={work.mediaUrl}
+                             alt={work.title}
+                             fill
+                             className="object-cover transition-transform duration-500 group-hover:scale-110"
+                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                           />
                         ) : work.workType === 'video' && work.videoLink ? (
                            <div className="w-full h-full relative">
                               {/* Thumbnail Logic reuse */}
@@ -550,7 +537,13 @@ export default function WorksSection({
                   {/* Media Display Area */}
                   <div className="bg-gray-900 rounded-xl overflow-hidden aspect-video relative flex items-center justify-center">
                      {selectedWork.workType === 'photo' && selectedWork.mediaUrl ? (
-                        <Image src={selectedWork.mediaUrl} alt={selectedWork.title} fill className="object-contain" />
+                        <Image
+                          src={selectedWork.mediaUrl}
+                          alt={selectedWork.title}
+                          fill
+                          className="object-contain"
+                          sizes="(max-width: 768px) 100vw, 800px"
+                        />
                      ) : selectedWork.workType === 'video' ? (
                         <iframe
                            src={getYouTubeEmbedUrl(selectedWork.videoLink) || selectedWork.videoLink}
