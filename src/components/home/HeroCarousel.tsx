@@ -66,22 +66,24 @@ const defaultSlides: HeroSlide[] = [
   },
 ];
 
-export default function HeroCarousel({ slides = defaultSlides }: HeroCarouselProps) {
+export default function HeroCarousel({ slides }: HeroCarouselProps) {
+  // Use passed slides, or default slides if passed slides are empty or undefined
+  const activeSlides = slides && slides.length > 0 ? slides : defaultSlides;
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
+      setCurrent((prev) => (prev + 1) % activeSlides.length);
     }, 7000);
     return () => clearInterval(timer);
-  }, [slides.length]);
+  }, [activeSlides.length]);
 
   const nextSlide = () => {
-    setCurrent((prev) => (prev + 1) % slides.length);
+    setCurrent((prev) => (prev + 1) % activeSlides.length);
   };
 
   const prevSlide = () => {
-    setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
+    setCurrent((prev) => (prev - 1 + activeSlides.length) % activeSlides.length);
   };
 
   return (
@@ -96,16 +98,16 @@ export default function HeroCarousel({ slides = defaultSlides }: HeroCarouselPro
           transition={{ duration: 1.5, ease: "easeOut" }}
         >
           <Image
-            src={slides[current].image.small}
-            alt={slides[current].title}
+            src={activeSlides[current].image.small}
+            alt={activeSlides[current].title}
             fill
             sizes="100vw"
             className="object-cover md:hidden"
             priority={true}
           />
           <Image
-            src={slides[current].image.medium}
-            alt={slides[current].title}
+            src={activeSlides[current].image.medium}
+            alt={activeSlides[current].title}
             fill
             sizes="100vw"
             className="object-cover hidden md:block"
@@ -126,33 +128,33 @@ export default function HeroCarousel({ slides = defaultSlides }: HeroCarouselPro
                 transition={{ duration: 0.8, delay: 0.3 }}
              >
                 <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-lg">
-                    {slides[current].title}
+                    {activeSlides[current].title}
                 </h1>
                 <p className="text-xl md:text-2xl mb-10 text-gray-200 font-light drop-shadow-md">
-                    {slides[current].subtitle}
+                    {activeSlides[current].subtitle}
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4">
-                    {slides[current].linkPrimary && (
-                        <Link href={slides[current].linkPrimary!.href} className="group">
+                    {activeSlides[current].linkPrimary && (
+                        <Link href={activeSlides[current].linkPrimary!.href} className="group">
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 className="w-full sm:w-auto flex items-center justify-center gap-2 bg-yellow-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-400 transition shadow-[0_0_20px_rgba(245,158,11,0.5)]"
                             >
-                                {slides[current].linkPrimary!.text}
+                                {activeSlides[current].linkPrimary!.text}
                                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </motion.button>
                         </Link>
                     )}
-                    {slides[current].linkSecondary && (
-                        <Link href={slides[current].linkSecondary!.href}>
+                    {activeSlides[current].linkSecondary && (
+                        <Link href={activeSlides[current].linkSecondary!.href}>
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-lg border-2 border-white text-white hover:bg-white hover:text-black transition"
                             >
-                                {slides[current].linkSecondary!.text}
+                                {activeSlides[current].linkSecondary!.text}
                             </motion.button>
                         </Link>
                     )}
@@ -164,7 +166,7 @@ export default function HeroCarousel({ slides = defaultSlides }: HeroCarouselPro
 
       {/* Indicators - Adjusted positioning to avoid overlap with QuickStats */}
       <div className="absolute bottom-28 md:bottom-20 left-1/2 -translate-x-1/2 flex gap-3 z-20">
-        {slides.map((_, index) => (
+        {activeSlides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrent(index)}

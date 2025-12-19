@@ -161,6 +161,39 @@ model Announcement {
   @@map("announcements")
 }
 
+model HeroSlide {
+  id                String   @id @default(uuid()) @db.Uuid
+  title             String   @db.VarChar(255)
+  subtitle          String   @db.VarChar(255)
+  imageSmall        String   @map("image_small") @db.VarChar(500)
+  imageMedium       String   @map("image_medium") @db.VarChar(500)
+  linkPrimaryText   String?  @map("link_primary_text") @db.VarChar(50)
+  linkPrimaryHref   String?  @map("link_primary_href") @db.VarChar(255)
+  linkSecondaryText String?  @map("link_secondary_text") @db.VarChar(50)
+  linkSecondaryHref String?  @map("link_secondary_href") @db.VarChar(255)
+  isActive          Boolean  @default(true) @map("is_active")
+  sortOrder         Int      @default(0) @map("sort_order")
+
+  createdAt         DateTime @default(now()) @db.Timestamp
+  updatedAt         DateTime @updatedAt @db.Timestamp
+
+  @@map("hero_slides")
+}
+
+model SchoolStat {
+  id        String   @id @default(uuid()) @db.Uuid
+  label     String   @db.VarChar(100)
+  value     String   @db.VarChar(50)
+  iconName  String   @map("icon_name") @db.VarChar(50)
+  isActive  Boolean  @default(true) @map("is_active")
+  sortOrder Int      @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @db.Timestamp
+  updatedAt DateTime @updatedAt @db.Timestamp
+
+  @@map("school_stats")
+}
+
 model SchoolActivity {
   id              String       @id @default(uuid()) @db.Uuid
   title           String       @db.VarChar(255)
