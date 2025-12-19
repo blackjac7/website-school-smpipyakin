@@ -19,7 +19,9 @@ export const teachers: Teacher[] = [
     position: "Kepala Sekolah",
     category: "Pimpinan",
     subject: "Informatika",
-    photo: MAN_AVATAR
+    photo: MAN_AVATAR,
+    description: "Memimpin dengan inovasi teknologi dan hati.",
+    experience: "15"
   },
   {
     id: "2",
@@ -35,7 +37,8 @@ export const teachers: Teacher[] = [
     position: "Wakil Kepala Sekolah Bidang Kesiswaan",
     category: "Pimpinan",
     subject: "PAI",
-    photo: MAN_AVATAR
+    photo: MAN_AVATAR,
+    description: "Membentuk karakter siswa yang berakhlak mulia."
   },
   {
     id: "4",
@@ -43,7 +46,8 @@ export const teachers: Teacher[] = [
     position: "Wakil Kepala Sekolah Bidang Kurikulum",
     category: "Pimpinan",
     subject: "Matematika",
-    photo: WOMAN_AVATAR
+    photo: WOMAN_AVATAR,
+    description: "Menyusun kurikulum yang adaptif dan progresif."
   },
   {
     id: "5",
@@ -106,7 +110,7 @@ export const teachers: Teacher[] = [
     name: "Petra",
     position: "Guru Mata Pelajaran",
     category: "Guru Mata Pelajaran",
-    subject: "Seni Budaya",
+    subject: "Seni",
     photo: WOMAN_AVATAR
   },
   {
@@ -147,7 +151,8 @@ export const teachers: Teacher[] = [
     position: "Wakil Kepala Sekolah Bidang Pembina OSIS",
     category: "Pimpinan",
     subject: "PJOK",
-    photo: MAN_AVATAR
+    photo: MAN_AVATAR,
+    description: "Mengembangkan potensi kepemimpinan siswa."
   },
   {
     id: "18",

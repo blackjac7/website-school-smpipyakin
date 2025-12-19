@@ -37,3 +37,57 @@
  GET /profile/avatarAI.png 404 in 89ms
  ✓ Compiled in 1195ms (731 modules)
  ✓ Compiled in 610ms (731 modules)
+ ✓ Compiled in 9.3s (1625 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1292ms (1616 modules)
+ ⨯ Error: ENOENT: no such file or directory, open '/app/.next/server/vendor-chunks/next.js'
+    at <unknown> (.next/server/app/_not-found/page.js:524:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:527:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/app/.next/server/vendor-chunks/next.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/app/.next/server/vendor-chunks/next.js'
+    at <unknown> (.next/server/app/(public)/profile/guru/page.js:780:47)
+    at Object.<anonymous> (.next/server/app/(public)/profile/guru/page.js:783:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/app/.next/server/vendor-chunks/next.js',
+  page: '/profile/guru'
+}
+ ○ Compiling /_error ...
+ GET /profile/guru 500 in 3251ms
+ ✓ Compiled /_error in 3.3s (1955 modules)
+ ⨯ Error: ENOENT: no such file or directory, open '/app/.next/server/vendor-chunks/lucide-react.js'
+    at <unknown> (.next/server/app/(public)/profile/guru/page.js:780:47)
+    at Object.<anonymous> (.next/server/app/(public)/profile/guru/page.js:783:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/app/.next/server/vendor-chunks/lucide-react.js',
+  page: '/profile/guru'
+}
+ GET /profile/guru 500 in 1827ms
+ ⨯ Error: ENOENT: no such file or directory, open '/app/.next/server/vendor-chunks/lucide-react.js'
+    at <unknown> (.next/server/app/(public)/profile/guru/page.js:780:47)
+    at Object.<anonymous> (.next/server/app/(public)/profile/guru/page.js:783:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/app/.next/server/vendor-chunks/lucide-react.js',
+  page: '/profile/guru'
+}
+ GET /profile/guru 500 in 509ms
+ ⨯ Error: ENOENT: no such file or directory, open '/app/.next/server/vendor-chunks/lucide-react.js'
+    at <unknown> (.next/server/app/(public)/profile/struktur/page.js:758:47)
+    at Object.<anonymous> (.next/server/app/(public)/profile/struktur/page.js:761:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/app/.next/server/vendor-chunks/lucide-react.js',
+  page: '/profile/struktur'
+}
+ GET /profile/struktur 500 in 294ms
+[?25h
