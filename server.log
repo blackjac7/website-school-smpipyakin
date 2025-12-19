@@ -7,87 +7,19 @@
    - Network:      http://192.168.0.2:3000
 
  ✓ Starting...
- ✓ Ready in 3.1s
- ✓ Compiled /middleware in 452ms (180 modules)
- ○ Compiling /profile/visi-misi ...
- ✓ Compiled /profile/visi-misi in 6.7s (1570 modules)
- ✓ Compiled in 2.2s (714 modules)
- GET /profile/visi-misi 200 in 9007ms
- ○ Compiling /profile/sejarah ...
- ✓ Compiled /profile/sejarah in 1032ms (1577 modules)
- GET /profile/sejarah 200 in 1724ms
- ○ Compiling /api/auth/verify ...
- ✓ Compiled /_not-found in 1941ms (1675 modules)
- GET /profile/avatarAI.png 404 in 1141ms
- GET /api/auth/verify 401 in 2674ms
- ○ Compiling /profile/struktur ...
- ✓ Compiled /profile/struktur in 668ms (1688 modules)
- GET /profile/struktur 200 in 1360ms
- GET /api/auth/verify 401 in 69ms
- GET /profile/avatarAI.png 404 in 83ms
- ○ Compiling /profile/sambutan ...
- ✓ Compiled /profile/sambutan in 1222ms (1702 modules)
- GET /profile/sambutan 200 in 1910ms
- GET /api/auth/verify 401 in 55ms
- GET /profile/avatarAI.png 404 in 118ms
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ✓ Ready in 2.1s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1011ms (180 modules)
  ○ Compiling /profile/guru ...
- ✓ Compiled /profile/guru in 1054ms (1717 modules)
- GET /profile/guru 200 in 1712ms
- GET /api/auth/verify 401 in 60ms
- GET /profile/avatarAI.png 404 in 89ms
- ✓ Compiled in 1195ms (731 modules)
- ✓ Compiled in 610ms (731 modules)
- ✓ Compiled in 9.3s (1625 modules)
- ○ Compiling /_not-found ...
- ✓ Compiled /_not-found in 1292ms (1616 modules)
- ⨯ Error: ENOENT: no such file or directory, open '/app/.next/server/vendor-chunks/next.js'
-    at <unknown> (.next/server/app/_not-found/page.js:524:47)
-    at Object.<anonymous> (.next/server/app/_not-found/page.js:527:3) {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/app/.next/server/vendor-chunks/next.js'
-}
- ⨯ Error: ENOENT: no such file or directory, open '/app/.next/server/vendor-chunks/next.js'
-    at <unknown> (.next/server/app/(public)/profile/guru/page.js:780:47)
-    at Object.<anonymous> (.next/server/app/(public)/profile/guru/page.js:783:3) {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/app/.next/server/vendor-chunks/next.js',
-  page: '/profile/guru'
-}
- ○ Compiling /_error ...
- GET /profile/guru 500 in 3251ms
- ✓ Compiled /_error in 3.3s (1955 modules)
- ⨯ Error: ENOENT: no such file or directory, open '/app/.next/server/vendor-chunks/lucide-react.js'
-    at <unknown> (.next/server/app/(public)/profile/guru/page.js:780:47)
-    at Object.<anonymous> (.next/server/app/(public)/profile/guru/page.js:783:3) {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/app/.next/server/vendor-chunks/lucide-react.js',
-  page: '/profile/guru'
-}
- GET /profile/guru 500 in 1827ms
- ⨯ Error: ENOENT: no such file or directory, open '/app/.next/server/vendor-chunks/lucide-react.js'
-    at <unknown> (.next/server/app/(public)/profile/guru/page.js:780:47)
-    at Object.<anonymous> (.next/server/app/(public)/profile/guru/page.js:783:3) {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/app/.next/server/vendor-chunks/lucide-react.js',
-  page: '/profile/guru'
-}
- GET /profile/guru 500 in 509ms
- ⨯ Error: ENOENT: no such file or directory, open '/app/.next/server/vendor-chunks/lucide-react.js'
-    at <unknown> (.next/server/app/(public)/profile/struktur/page.js:758:47)
-    at Object.<anonymous> (.next/server/app/(public)/profile/struktur/page.js:761:3) {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/app/.next/server/vendor-chunks/lucide-react.js',
-  page: '/profile/struktur'
-}
- GET /profile/struktur 500 in 294ms
-[?25h
+ ✓ Compiled /profile/guru in 11.7s (1588 modules)
+ GET /profile/guru 200 in 14480ms
+ ○ Compiling /api/auth/verify ...
+ ✓ Compiled /_not-found in 3.2s (1672 modules)
+ GET /api/auth/verify 401 in 3954ms
+ GET /profile/avatarAI.png 404 in 3266ms
+ GET /profile/guru 200 in 125ms
