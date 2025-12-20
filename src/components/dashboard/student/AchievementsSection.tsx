@@ -299,6 +299,7 @@ export default function AchievementsSection({
                         alt={achievement.title}
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                     ) : (
                       <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100`}>
