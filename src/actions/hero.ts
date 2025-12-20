@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 export async function getHeroSlides() {
   try {
     const slides = await prisma.heroSlide.findMany({
-      orderBy: { order: "asc" },
+      orderBy: { sortOrder: "asc" },
     });
     return slides;
   } catch (error) {

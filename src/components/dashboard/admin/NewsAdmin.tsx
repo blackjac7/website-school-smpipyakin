@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Tag, Image as ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Image as ImageIcon } from "lucide-react";
 import { motion } from "framer-motion";
-import { getAllNews, createNews, updateNews, deleteNews } from "@/actions/news";
+import { createNews, updateNews, deleteNews } from "@/actions/news";
 import { News, BeritaKategori, StatusApproval } from "@prisma/client";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
-import { id } from "date-fns/locale";
+import { id as localeId } from "date-fns/locale";
 
 interface NewsPageProps {
   news: News[];
@@ -31,15 +31,21 @@ export default function NewsAdmin({ news }: NewsPageProps) {
       title: formData.get("title") as string,
       date: date,
       content: formData.get("content") as string,
+      excerpt: formData.get("content")?.slice(0, 150) as string, // Manual excerpt
       image: formData.get("image") as string,
-      kategori: formData.get("kategori") as BeritaKategori,
-      statusPersetujuan: "APPROVED" as StatusApproval, // Auto approve for admin
-      authorId: "admin-id", // In real app, get from session
+      category: formData.get("kategori") as BeritaKategori, // Mapped to expected arg
+      author: "", // Handled by action
     };
 
     try {
       if (editingItem) {
-        await updateNews(editingItem.id, data);
+        await updateNews(editingItem.id, {
+            title: data.title,
+            date: data.date,
+            content: data.content,
+            image: data.image,
+            kategori: data.category
+        });
         toast.success("News updated");
       } else {
         await createNews(data);
@@ -104,7 +110,7 @@ export default function NewsAdmin({ news }: NewsPageProps) {
             <div className="p-4 flex flex-col flex-1">
               <div className="text-xs text-gray-500 mb-2 flex items-center gap-1">
                   <CalendarIcon size={12} />
-                  {format(new Date(item.date), "dd MMMM yyyy", { locale: id })}
+                  {format(new Date(item.date), "dd MMMM yyyy", { locale: localeId })}
               </div>
 
               <h3 className="font-bold text-lg mb-2 line-clamp-2">{item.title}</h3>
