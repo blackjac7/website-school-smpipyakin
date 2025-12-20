@@ -13,13 +13,13 @@ import {
   Newspaper
 } from "lucide-react";
 import DashboardSidebar from "@/components/dashboard/layout/DashboardSidebar";
-import { MenuItem } from "@/components/dashboard/layout/types";
+import { DashboardMenuItem } from "@/components/dashboard/layout/types";
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
   // Legacy props
-  menuItems?: MenuItem[];
+  menuItems?: DashboardMenuItem[];
   activeMenu?: string;
   setActiveMenu?: (id: string) => void;
 }
@@ -65,7 +65,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   };
 
-  const adminMenuItems: MenuItem[] = [
+  const adminMenuItems: DashboardMenuItem[] = [
     { id: "hero", label: "Hero Carousel", icon: Layout },
     { id: "stats", label: "Quick Stats", icon: Activity },
     { id: "news", label: "Berita Sekolah", icon: Newspaper },
