@@ -8,6 +8,7 @@ export { default as ReportsContent } from "./ReportsContent";
 export { default as SettingsContent } from "./SettingsContent";
 export { default as PreviewModal } from "./PreviewModal";
 export { default as ValidationModal } from "./ValidationModal";
+export { default as StudentList } from "./StudentList";
 
 // Export types
 export type {
@@ -15,4 +16,5 @@ export type {
   ContentItem,
   Notification,
   ReportStats,
+  StudentItem,
 } from "./types";
