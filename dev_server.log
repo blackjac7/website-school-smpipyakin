@@ -1,0 +1,120 @@
+
+> website-school-smpipyakin@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.5.9
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.2:3000
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ✓ Ready in 2.1s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1128ms (180 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 24s (5933 modules)
+ ⨯ Error: @prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.
+    at eval (src/lib/prisma.ts:14:3)
+    at <unknown> (rsc)/./src/lib/prisma.ts (/app/.next/server/app/(public)/page.js:446:1)
+    at eval (webpack-internal:///(rsc)/./src/lib/data/homepage.ts:13:69)
+    at <unknown> (rsc)/./src/lib/data/homepage.ts (/app/.next/server/app/(public)/page.js:435:1)
+    at eval (webpack-internal:///(rsc)/./src/app/(public)/page.tsx:17:76)
+    at <unknown> (rsc)/./src/app/(public)/page.tsx (/app/.next/server/app/(public)/page.js:138:1)
+  12 | export const prisma =
+  13 |   globalForPrisma.prisma ??
+> 14 |   new PrismaClient({
+     |   ^
+  15 |     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+  16 |   });
+  17 |
+ ⨯ Error: @prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.
+    at eval (src/lib/prisma.ts:14:3)
+    at <unknown> (rsc)/./src/lib/prisma.ts (/app/.next/server/app/(public)/page.js:446:1)
+    at eval (webpack-internal:///(rsc)/./src/lib/data/homepage.ts:13:69)
+    at <unknown> (rsc)/./src/lib/data/homepage.ts (/app/.next/server/app/(public)/page.js:435:1)
+    at eval (webpack-internal:///(rsc)/./src/app/(public)/page.tsx:17:76)
+    at <unknown> (rsc)/./src/app/(public)/page.tsx (/app/.next/server/app/(public)/page.js:138:1)
+  12 | export const prisma =
+  13 |   globalForPrisma.prisma ??
+> 14 |   new PrismaClient({
+     |   ^
+  15 |     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+  16 |   });
+  17 | {
+  page: '/'
+}
+ GET / 500 in 29147ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 10.9s (6272 modules)
+ ⨯ Error: @prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.
+    at eval (src/lib/prisma.ts:14:3)
+    at <unknown> (rsc)/./src/lib/prisma.ts (/app/.next/server/app/(public)/page.js:446:1)
+    at eval (webpack-internal:///(rsc)/./src/lib/data/homepage.ts:13:69)
+    at <unknown> (rsc)/./src/lib/data/homepage.ts (/app/.next/server/app/(public)/page.js:435:1)
+    at eval (webpack-internal:///(rsc)/./src/app/(public)/page.tsx:17:76)
+    at <unknown> (rsc)/./src/app/(public)/page.tsx (/app/.next/server/app/(public)/page.js:138:1)
+  12 | export const prisma =
+  13 |   globalForPrisma.prisma ??
+> 14 |   new PrismaClient({
+     |   ^
+  15 |     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+  16 |   });
+  17 |
+ ⨯ Error: @prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.
+    at eval (src/lib/prisma.ts:14:3)
+    at <unknown> (rsc)/./src/lib/prisma.ts (/app/.next/server/app/(public)/page.js:446:1)
+    at eval (webpack-internal:///(rsc)/./src/lib/data/homepage.ts:13:69)
+    at <unknown> (rsc)/./src/lib/data/homepage.ts (/app/.next/server/app/(public)/page.js:435:1)
+    at eval (webpack-internal:///(rsc)/./src/app/(public)/page.tsx:17:76)
+    at <unknown> (rsc)/./src/app/(public)/page.tsx (/app/.next/server/app/(public)/page.js:138:1)
+  12 | export const prisma =
+  13 |   globalForPrisma.prisma ??
+> 14 |   new PrismaClient({
+     |   ^
+  15 |     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+  16 |   });
+  17 | {
+  page: '/'
+}
+ GET / 500 in 7084ms
+ ✓ Compiled in 1068ms (3024 modules)
+ ✓ Compiled in 517ms (3024 modules)
+ ⨯ Error: @prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.
+    at eval (src/lib/prisma.ts:14:3)
+    at <unknown> (rsc)/./src/lib/prisma.ts (/app/.next/server/app/(public)/page.js:446:1)
+    at eval (webpack-internal:///(rsc)/./src/lib/data/homepage.ts:13:69)
+    at <unknown> (rsc)/./src/lib/data/homepage.ts (/app/.next/server/app/(public)/page.js:435:1)
+    at eval (webpack-internal:///(rsc)/./src/app/(public)/page.tsx:17:76)
+    at <unknown> (rsc)/./src/app/(public)/page.tsx (/app/.next/server/app/(public)/page.js:138:1)
+  12 | export const prisma =
+  13 |   globalForPrisma.prisma ??
+> 14 |   new PrismaClient({
+     |   ^
+  15 |     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+  16 |   });
+  17 |
+ ⨯ Error: @prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.
+    at eval (src/lib/prisma.ts:14:3)
+    at <unknown> (rsc)/./src/lib/prisma.ts (/app/.next/server/app/(public)/page.js:446:1)
+    at eval (webpack-internal:///(rsc)/./src/lib/data/homepage.ts:13:69)
+    at <unknown> (rsc)/./src/lib/data/homepage.ts (/app/.next/server/app/(public)/page.js:435:1)
+    at eval (webpack-internal:///(rsc)/./src/app/(public)/page.tsx:17:76)
+    at <unknown> (rsc)/./src/app/(public)/page.tsx (/app/.next/server/app/(public)/page.js:138:1)
+  12 | export const prisma =
+  13 |   globalForPrisma.prisma ??
+> 14 |   new PrismaClient({
+     |   ^
+  15 |     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+  16 |   });
+  17 | {
+  page: '/'
+}
+ GET / 500 in 1122ms
+ ✓ Compiled in 1321ms (3023 modules)
+ ✓ Compiled in 600ms (3023 modules)
+ ✓ Compiled in 535ms (3023 modules)
+[?25h
