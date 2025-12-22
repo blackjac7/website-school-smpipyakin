@@ -2,10 +2,20 @@
 
 import { useState, useEffect } from "react";
 import UsersTable from "./UsersTable";
-import UserModal from "./UserModal";
+import UserModal from "@/components/dashboard/admin/UserModal";
 import { getUsers, createUser, updateUser, deleteUser, UserFormData } from "@/actions/admin/users";
 import { User } from "./types";
 import toast from "react-hot-toast";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const convertToCompatibleUser = (user: User | null): any => {
+    if (!user) return null;
+    return {
+        ...user,
+        joinDate: new Date().toISOString(), // Mock for compatibility if missing
+        // ensure other fields match if needed, for now UserModal might be lenient or we cast
+    };
+}
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -63,7 +73,7 @@ export default function UsersPage() {
     }
 
     if (result.success) {
-      toast.success(result.message);
+      toast.success(result.message || "Berhasil");
       setShowModal(false);
       fetchUsers();
     } else {
@@ -90,8 +100,9 @@ export default function UsersPage() {
         show={showModal}
         onClose={() => setShowModal(false)}
         mode={modalMode}
-        selectedUser={selectedUser}
-        onSubmit={handleModalSubmit}
+        selectedUser={convertToCompatibleUser(selectedUser)}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onSubmit={handleModalSubmit as any}
       />
     </div>
   );

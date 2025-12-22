@@ -1,7 +1,7 @@
 "use client";
 
-import { GraduationCap, Calendar, Users, Award } from "lucide-react";
-import toast from "react-hot-toast";
+import { GraduationCap, Calendar, Users, Award, Search } from "lucide-react";
+import Link from "next/link";
 
 export default function PPDBHero() {
   const highlights = [
@@ -37,28 +37,6 @@ export default function PPDBHero() {
     }
   };
 
-  const downloadGuide = () => {
-    // Simulate PDF download dengan toast notification
-    toast.success(
-      "📖 Panduan PPDB akan segera diunduh. File PDF akan tersimpan di folder Download Anda.",
-      {
-        duration: 5000,
-        style: {
-          background: "#10b981",
-          color: "white",
-        },
-      }
-    );
-
-    // Optional: Actual PDF download if you have the file
-    // const link = document.createElement('a');
-    // link.href = '/panduan-ppdb.pdf';
-    // link.download = 'Panduan-PPDB-SMP-IP-Yakin.pdf';
-    // document.body.appendChild(link);
-    // link.click();
-    // document.body.removeChild(link);
-  };
-
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 pt-20">
       {/* Background Pattern */}
@@ -91,12 +69,13 @@ export default function PPDBHero() {
             >
               Daftar Sekarang
             </button>
-            <button
-              onClick={downloadGuide}
-              className="border-2 border-white text-white hover:bg-white hover:text-blue-700 font-bold py-4 px-8 rounded-full text-lg transition-all duration-300"
+            <Link
+              href="/ppdb/status"
+              className="border-2 border-white text-white hover:bg-white hover:text-blue-700 font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 flex items-center justify-center gap-2"
             >
-              Panduan PPDB
-            </button>
+              <Search className="w-5 h-5" />
+              Cek Status Pendaftaran
+            </Link>
           </div>
 
           {/* Highlights Grid */}
