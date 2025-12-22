@@ -168,7 +168,11 @@ export async function middleware(request: NextRequest) {
         const { payload: decoded } = await jwtVerify(token, JWT_SECRET);
 
         // Redirect to appropriate dashboard based on role
-        const dashboardUrl = `/dashboard-${decoded.role}`;
+        let dashboardUrl = `/dashboard-${decoded.role}`;
+        if (decoded.role === 'ppdb-officer') {
+          dashboardUrl = '/dashboard-ppdb';
+        }
+
         const response = NextResponse.redirect(
           new URL(dashboardUrl, request.url)
         );

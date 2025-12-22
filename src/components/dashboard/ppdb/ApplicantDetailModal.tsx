@@ -36,7 +36,7 @@ interface Applicant {
   nisn: string;
   gender: string | null;
   birthPlace: string | null;
-  birthDate: Date | null;
+  birthDate: string | null;
   address: string | null;
   asalSekolah: string | null;
   parentContact: string | null;
@@ -104,6 +104,48 @@ export default function ApplicantDetailModal({
 
     try {
       await onStatusUpdate(applicant.id, validationAction, feedback);
+
+      // Notification Simulation
+      toast.success(`Notifikasi email dikirim ke ${applicant.parentEmail || 'pemohon'}`, {
+         icon: '📧',
+         duration: 4000
+      });
+
+      // WhatsApp Prompt
+      if (applicant.parentContact) {
+          let phone = applicant.parentContact.replace(/\D/g, '');
+          if (phone.startsWith('0')) phone = '62' + phone.substring(1);
+
+          const message = encodeURIComponent(
+             `Yth. Bpk/Ibu ${applicant.parentName || 'Wali'}, status pendaftaran Calon Siswa ${applicant.name} telah diperbarui menjadi ${validationAction === 'ACCEPTED' ? 'DITERIMA' : validationAction === 'REJECTED' ? 'DITOLAK' : 'PENDING'}. ${feedback ? 'Catatan: ' + feedback : ''} - Panitia PPDB SMP IP Yakin`
+          );
+
+          const waLink = `https://wa.me/${phone}?text=${message}`;
+
+          toast((t) => (
+            <div className="flex flex-col gap-2">
+                <span>Kirim notifikasi WhatsApp?</span>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => {
+                            window.open(waLink, '_blank');
+                            toast.dismiss(t.id);
+                        }}
+                        className="bg-green-500 text-white px-2 py-1 rounded text-xs font-bold"
+                    >
+                        Kirim WA
+                    </button>
+                    <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="bg-gray-200 px-2 py-1 rounded text-xs"
+                    >
+                        Nanti
+                    </button>
+                </div>
+            </div>
+          ), { duration: 6000 });
+      }
+
       onClose();
     } catch (error) {
       console.error("Error updating status:", error);
