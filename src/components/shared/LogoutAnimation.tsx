@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface LogoutAnimationProps {
   isVisible: boolean;
@@ -12,51 +13,57 @@ export default function LogoutAnimation({
   isVisible,
   onComplete,
 }: LogoutAnimationProps) {
-  const [step, setStep] = useState(0);
-
   useEffect(() => {
     if (!isVisible) return;
 
-    const steps = [
-      { delay: 0, action: () => setStep(1) }, // Show animation
-      { delay: 1500, action: () => setStep(2) }, // Show completion text
-      { delay: 2500, action: () => onComplete?.() }, // Complete
-    ];
+    // Sequence:
+    // 0ms: Start (Loading)
+    // 2000ms: Complete (Redirect/Close)
 
-    const timers = steps.map(({ delay, action }) => setTimeout(action, delay));
+    const timer = setTimeout(() => {
+      onComplete?.();
+    }, 2000);
 
-    return () => {
-      timers.forEach(clearTimeout);
-    };
+    return () => clearTimeout(timer);
   }, [isVisible, onComplete]);
 
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/95 backdrop-blur-sm">
-      <div className="text-center">
-        {/* Animation */}
-        <div className="mb-4 h-48 w-48 mx-auto relative">
-          <DotLottieReact
-            src="/animations/school-loading.lottie"
-            loop
-            autoplay
-            className="w-full h-full"
-          />
-        </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-md transition-all duration-300"
+    >
+      <div className="w-full max-w-sm mx-auto p-6 flex flex-col items-center justify-center text-center">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="flex flex-col items-center"
+        >
+          {/* Animation */}
+          <div className="h-48 w-48 mb-4">
+            <DotLottieReact
+              src="/animations/school-loading.lottie"
+              loop
+              autoplay
+              className="w-full h-full"
+            />
+          </div>
 
-        {/* Text Status */}
-        <div className="space-y-2 animate-fade-in">
-          <p className="text-blue-900 text-xl font-semibold">
-            {step < 2 ? "Mengakhiri sesi..." : "Logout Berhasil"}
-          </p>
-          <p className="text-blue-600 text-sm">
-            {step < 2
-              ? "Mohon tunggu sebentar"
-              : "Mengalihkan ke halaman login..."}
-          </p>
-        </div>
+          {/* Text Status */}
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold text-blue-900">
+              Sampai Jumpa!
+            </h3>
+            <p className="text-gray-500 text-sm">
+              Sedang mengakhiri sesi anda...
+            </p>
+          </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
