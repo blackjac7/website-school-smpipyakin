@@ -133,9 +133,11 @@ export async function getStudents(search?: string) {
     const where: Prisma.SiswaWhereInput = search
       ? {
           OR: [
-            { name: { contains: search, mode: 'insensitive' } },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { name: { contains: search, mode: 'insensitive' } as any },
             { nisn: { contains: search } },
-            { class: { contains: search, mode: 'insensitive' } },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { class: { contains: search, mode: 'insensitive' } as any },
           ],
         }
       : {};

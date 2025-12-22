@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import PPDBHero from "@/components/ppdb/PPDBHero";
 import PPDBInfo from "@/components/ppdb/PPDBInfo";
 import PPDBForm from "@/components/ppdb/PPDBForm";
-import PPDBStatus from "@/components/ppdb/PPDBStatus";
 import { useAntiBot } from "@/hooks/useAntiBot";
 import toast from "react-hot-toast";
 
@@ -56,7 +55,6 @@ export default function PPDBPage() {
     },
   });
 
-  const [statusNISN, setStatusNISN] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
@@ -288,39 +286,6 @@ export default function PPDBPage() {
     }
   };
 
-  const handleStatusCheck = async () => {
-    if (!statusNISN.trim()) {
-      toast.error("Silakan masukkan NISN terlebih dahulu");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `/api/ppdb/status?nisn=${encodeURIComponent(statusNISN)}`
-      );
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Gagal mengecek status");
-      }
-
-      if (result.success) {
-        const { data } = result;
-        toast.success(
-          `Status NISN ${statusNISN}: ${data.statusMessage}${data.feedback ? `\n\nCatatan: ${data.feedback}` : ""}`,
-          { duration: 8000 }
-        );
-      }
-    } catch (error) {
-      console.error("Status check error:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Terjadi kesalahan saat mengecek status"
-      );
-    }
-  };
-
   const handleDownloadGuide = () => {
     // Simulate PDF download
     toast.success(
@@ -358,13 +323,6 @@ export default function PPDBPage() {
           }}
         />
       </div>
-
-      {/* Status Check Section */}
-      <PPDBStatus
-        statusNISN={statusNISN}
-        onNISNChange={setStatusNISN}
-        onStatusCheck={handleStatusCheck}
-      />
     </div>
   );
 }
