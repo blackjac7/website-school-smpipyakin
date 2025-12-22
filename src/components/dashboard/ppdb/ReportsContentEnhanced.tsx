@@ -15,6 +15,8 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react";
+import { getPPDBStats } from "@/actions/ppdb";
+import toast from "react-hot-toast";
 
 interface PPDBStats {
   overview: {
@@ -24,43 +26,42 @@ interface PPDBStats {
     rejected: number;
   };
   monthlyStats: Array<{
-    status: string;
-    _count: number;
+    name: string;
+    Total: number;
+    Diterima: number;
+    Pending: number;
+    Ditolak: number;
   }>;
   genderStats: Array<{
     gender: string | null;
     _count: number;
   }>;
-  monthlyApplications: Array<{
-    month: Date;
-    status: string;
-    count: number;
-  }>;
 }
 
-type ReportsContentEnhancedProps = object;
-
-export default function ReportsContentEnhanced({}: ReportsContentEnhancedProps) {
+export default function ReportsContentEnhanced() {
   const [stats, setStats] = useState<PPDBStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState("6months");
   const [reportType, setReportType] = useState("overview");
 
   useEffect(() => {
-    fetchStatistics();
+    loadStats();
   }, [selectedPeriod]);
 
-  const fetchStatistics = async () => {
+  const loadStats = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/ppdb/statistics");
-      const result = await response.json();
-
-      if (result.success) {
-        setStats(result.data);
+      const result = await getPPDBStats();
+      if (result.success && result.data) {
+        // Adapt result.data to PPDBStats interface if needed
+        // result.data has recentApplications which we don't need here but TS is fine with extra props
+        setStats(result.data as unknown as PPDBStats);
+      } else {
+        toast.error("Gagal memuat data laporan");
       }
     } catch (error) {
       console.error("Error fetching statistics:", error);
+      toast.error("Terjadi kesalahan sistem");
     } finally {
       setLoading(false);
     }
@@ -75,21 +76,21 @@ export default function ReportsContentEnhanced({}: ReportsContentEnhancedProps) 
       [
         "Menunggu Review",
         stats.overview.pending,
-        `${Math.round((stats.overview.pending / stats.overview.total) * 100)}%`,
+        stats.overview.total ? `${Math.round((stats.overview.pending / stats.overview.total) * 100)}%` : "0%",
       ],
       [
         "Diterima",
         stats.overview.accepted,
-        `${Math.round((stats.overview.accepted / stats.overview.total) * 100)}%`,
+        stats.overview.total ? `${Math.round((stats.overview.accepted / stats.overview.total) * 100)}%` : "0%",
       ],
       [
         "Ditolak",
         stats.overview.rejected,
-        `${Math.round((stats.overview.rejected / stats.overview.total) * 100)}%`,
+        stats.overview.total ? `${Math.round((stats.overview.rejected / stats.overview.total) * 100)}%` : "0%",
       ],
     ];
 
-    const csvContent = csvData.map((row) => row.join(",")).join("\\n");
+    const csvContent = csvData.map((row) => row.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -97,90 +98,66 @@ export default function ReportsContentEnhanced({}: ReportsContentEnhancedProps) 
     a.download = `laporan-ppdb-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
+    toast.success("Laporan berhasil diunduh");
   };
 
   const exportToPDF = () => {
-    // Placeholder for PDF export functionality
-    console.log("Export to PDF functionality would be implemented here");
+    toast.success("Sedang menyiapkan PDF...");
+    setTimeout(() => {
+        toast("Fitur PDF Export akan segera tersedia", { icon: "ℹ️" });
+    }, 1000);
   };
 
   if (loading) {
     return (
-      <div className="space-y-8">
-        {/* Header Skeleton */}
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200 animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-        </div>
-
-        {/* Charts Skeleton */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 animate-pulse"
-            >
-              <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-              <div className="h-40 bg-gray-200 rounded"></div>
-            </div>
-          ))}
+      <div className="space-y-8 animate-pulse">
+        <div className="h-40 bg-gray-200 rounded-xl"></div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
+            ))}
         </div>
       </div>
     );
   }
 
-  if (!stats) {
-    return (
-      <div className="text-center py-12">
-        <div className="text-red-500 mb-4">
-          <XCircle className="w-16 h-16 mx-auto" />
-        </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          Gagal Memuat Data Laporan
-        </h3>
-        <button
-          onClick={fetchStatistics}
-          className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
-        >
-          Coba Lagi
-        </button>
-      </div>
-    );
-  }
+  if (!stats) return null;
 
-  const acceptanceRate = Math.round(
+  const acceptanceRate = stats.overview.total ? Math.round(
     (stats.overview.accepted / stats.overview.total) * 100
-  );
-  const pendingRate = Math.round(
+  ) : 0;
+
+  const pendingRate = stats.overview.total ? Math.round(
     (stats.overview.pending / stats.overview.total) * 100
-  );
-  const rejectionRate = Math.round(
+  ) : 0;
+
+  const rejectionRate = stats.overview.total ? Math.round(
     (stats.overview.rejected / stats.overview.total) * 100
-  );
+  ) : 0;
 
   return (
     <div className="space-y-8">
       {/* Enhanced Header */}
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-8 border border-purple-200">
+      <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-white shadow-xl">
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-            <BarChart3 className="w-6 h-6 text-white" />
+          <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-inner">
+            <BarChart3 className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Laporan & Analytics PPDB
+            <h1 className="text-3xl font-bold">
+              Laporan & Analytics
             </h1>
-            <p className="text-gray-600">
-              Analisis mendalam data penerimaan peserta didik baru
+            <p className="text-purple-100 opacity-90 text-lg">
+              Analisis mendalam performa PPDB
             </p>
           </div>
         </div>
 
         {/* Controls */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <div className="flex gap-2">
             <select
-              className="px-4 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+              className="px-4 py-2 bg-white/10 border border-white/20 text-white rounded-xl focus:bg-white/20 focus:outline-none transition-colors backdrop-blur-sm cursor-pointer [&>option]:text-gray-900"
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
             >
@@ -191,7 +168,7 @@ export default function ReportsContentEnhanced({}: ReportsContentEnhancedProps) 
             </select>
 
             <select
-              className="px-4 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+              className="px-4 py-2 bg-white/10 border border-white/20 text-white rounded-xl focus:bg-white/20 focus:outline-none transition-colors backdrop-blur-sm cursor-pointer [&>option]:text-gray-900"
               value={reportType}
               onChange={(e) => setReportType(e.target.value)}
             >
@@ -205,14 +182,14 @@ export default function ReportsContentEnhanced({}: ReportsContentEnhancedProps) 
           <div className="flex gap-2 ml-auto">
             <button
               onClick={exportToCSV}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-white text-purple-700 rounded-xl hover:bg-gray-50 transition-colors font-medium shadow-sm"
             >
               <Download className="w-4 h-4" />
               CSV
             </button>
             <button
               onClick={exportToPDF}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:from-purple-600 hover:to-pink-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-purple-800/50 text-white rounded-xl hover:bg-purple-800/70 transition-colors border border-purple-400/30 backdrop-blur-sm"
             >
               <FileText className="w-4 h-4" />
               PDF
@@ -224,419 +201,181 @@ export default function ReportsContentEnhanced({}: ReportsContentEnhancedProps) 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Applications */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-gray-900">
-                {stats.overview.total}
-              </div>
-              <div className="text-sm text-gray-500">Total Pendaftar</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-green-600 font-medium">+15.3%</span>
-            <span className="text-gray-500">vs periode sebelumnya</span>
-          </div>
-        </div>
-
-        {/* Acceptance Rate */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
-              <Award className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-gray-900">
-                {acceptanceRate}%
-              </div>
-              <div className="text-sm text-gray-500">Tingkat Penerimaan</div>
-            </div>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full"
-              style={{ width: `${acceptanceRate}%` }}
-            ></div>
-          </div>
-        </div>
-
-        {/* Pending Review */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
-              <Clock className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-gray-900">
-                {stats.overview.pending}
-              </div>
-              <div className="text-sm text-gray-500">Menunggu Review</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <Activity className="w-4 h-4 text-orange-500" />
-            <span className="text-orange-600 font-medium">{pendingRate}%</span>
-            <span className="text-gray-500">perlu diproses</span>
-          </div>
-        </div>
-
-        {/* Conversion Rate */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
-              <Target className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-gray-900">
-                {Math.round(
-                  (stats.overview.accepted /
-                    (stats.overview.accepted + stats.overview.rejected)) *
-                    100
-                )}
-                %
-              </div>
-              <div className="text-sm text-gray-500">Conversion Rate</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <TrendingUp className="w-4 h-4 text-purple-500" />
-            <span className="text-purple-600 font-medium">Optimal</span>
-            <span className="text-gray-500">performance</span>
-          </div>
-        </div>
+        <MetricCard
+            title="Total Pendaftar"
+            value={stats.overview.total}
+            icon={Users}
+            color="blue"
+            trend="+15.3%"
+            trendUp={true}
+        />
+        <MetricCard
+            title="Tingkat Penerimaan"
+            value={`${acceptanceRate}%`}
+            icon={Award}
+            color="green"
+            progress={acceptanceRate}
+        />
+        <MetricCard
+            title="Menunggu Review"
+            value={stats.overview.pending}
+            icon={Clock}
+            color="orange"
+            subtext={`${pendingRate}% perlu diproses`}
+        />
+        <MetricCard
+            title="Conversion Rate"
+            value={`${Math.round((stats.overview.accepted / (stats.overview.accepted + stats.overview.rejected || 1)) * 100)}%`}
+            icon={Target}
+            color="purple"
+            trend="Optimal"
+        />
       </div>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Status Distribution Chart */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-              <PieChart className="w-4 h-4 text-white" />
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+              <PieChart className="w-5 h-5 text-blue-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              Distribusi Status Pendaftar
+            <h3 className="text-lg font-bold text-gray-900">
+              Distribusi Status
             </h3>
           </div>
 
-          {/* Donut Chart Simulation */}
-          <div className="relative">
-            <div className="w-48 h-48 mx-auto mb-6">
-              <svg
-                className="w-full h-full transform -rotate-90"
-                viewBox="0 0 100 100"
-              >
-                {/* Accepted */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8">
+            <div className="relative w-48 h-48">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" stroke="#E5E7EB" strokeWidth="10" fill="transparent" />
                 <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  stroke="#10B981"
-                  strokeWidth="10"
-                  fill="transparent"
+                  cx="50" cy="50" r="40"
+                  stroke="#10B981" strokeWidth="10" fill="transparent"
                   strokeDasharray={`${acceptanceRate * 2.51} 251.2`}
-                  strokeDashoffset="0"
+                  strokeLinecap="round"
                 />
-                {/* Pending */}
                 <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  stroke="#F59E0B"
-                  strokeWidth="10"
-                  fill="transparent"
+                  cx="50" cy="50" r="40"
+                  stroke="#F59E0B" strokeWidth="10" fill="transparent"
                   strokeDasharray={`${pendingRate * 2.51} 251.2`}
                   strokeDashoffset={`-${acceptanceRate * 2.51}`}
+                  strokeLinecap="round"
                 />
-                {/* Rejected */}
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  stroke="#EF4444"
-                  strokeWidth="10"
-                  fill="transparent"
-                  strokeDasharray={`${rejectionRate * 2.51} 251.2`}
-                  strokeDashoffset={`-${(acceptanceRate + pendingRate) * 2.51}`}
-                />
+                 {rejectionRate > 0 && (
+                    <circle
+                    cx="50" cy="50" r="40"
+                    stroke="#EF4444" strokeWidth="10" fill="transparent"
+                    strokeDasharray={`${rejectionRate * 2.51} 251.2`}
+                    strokeDashoffset={`-${(acceptanceRate + pendingRate) * 2.51}`}
+                    strokeLinecap="round"
+                    />
+                 )}
               </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">
-                    {stats.overview.total}
-                  </div>
-                  <div className="text-sm text-gray-500">Total</div>
-                </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-3xl font-bold text-gray-900">{stats.overview.total}</span>
+                <span className="text-xs text-gray-500 uppercase tracking-wide">Total</span>
               </div>
             </div>
 
-            {/* Legend */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-700">
-                    Diterima
-                  </span>
-                </div>
-                <span className="text-sm text-gray-600">
-                  {stats.overview.accepted} ({acceptanceRate}%)
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-700">
-                    Menunggu
-                  </span>
-                </div>
-                <span className="text-sm text-gray-600">
-                  {stats.overview.pending} ({pendingRate}%)
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-700">
-                    Ditolak
-                  </span>
-                </div>
-                <span className="text-sm text-gray-600">
-                  {stats.overview.rejected} ({rejectionRate}%)
-                </span>
-              </div>
+            <div className="space-y-4 w-full md:w-auto">
+              <LegendItem color="bg-green-500" label="Diterima" count={stats.overview.accepted} percentage={acceptanceRate} />
+              <LegendItem color="bg-yellow-500" label="Menunggu" count={stats.overview.pending} percentage={pendingRate} />
+              <LegendItem color="bg-red-500" label="Ditolak" count={stats.overview.rejected} percentage={rejectionRate} />
             </div>
           </div>
         </div>
 
         {/* Gender Distribution */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-gradient-to-br from-pink-400 to-pink-600 rounded-lg flex items-center justify-center">
-              <Users className="w-4 h-4 text-white" />
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 bg-pink-50 rounded-xl flex items-center justify-center">
+              <Users className="w-5 h-5 text-pink-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              Distribusi Gender
+            <h3 className="text-lg font-bold text-gray-900">
+              Demografi Gender
             </h3>
           </div>
 
           <div className="space-y-6">
             {stats.genderStats.map((item, index) => {
               const percentage = Math.round(
-                (item._count / stats.overview.total) * 100
+                (item._count / (stats.overview.total || 1)) * 100
               );
-              const genderLabel =
-                item.gender === "LAKI_LAKI"
-                  ? "Laki-laki"
-                  : item.gender === "PEREMPUAN"
-                    ? "Perempuan"
-                    : "Tidak diisi";
+              const label = item.gender === "LAKI_LAKI" ? "Laki-laki" : "Perempuan";
+              const color = item.gender === "LAKI_LAKI" ? "bg-blue-500" : "bg-pink-500";
+              const gradient = item.gender === "LAKI_LAKI"
+                ? "bg-gradient-to-r from-blue-400 to-blue-600"
+                : "bg-gradient-to-r from-pink-400 to-pink-600";
 
               return (
-                <div key={index} className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-4 h-4 rounded-full ${
-                          item.gender === "LAKI_LAKI"
-                            ? "bg-blue-500"
-                            : item.gender === "PEREMPUAN"
-                              ? "bg-pink-500"
-                              : "bg-gray-400"
-                        }`}
-                      ></div>
-                      <span className="font-medium text-gray-700">
-                        {genderLabel}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-bold text-gray-900">
-                        {item._count}
-                      </span>
-                      <span className="text-sm text-gray-500 ml-2">
-                        ({percentage}%)
-                      </span>
-                    </div>
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between items-center text-sm font-medium">
+                    <span className="text-gray-700">{label}</span>
+                    <span className="text-gray-900">{item._count} <span className="text-gray-400">({percentage}%)</span></span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div
-                      className={`h-3 rounded-full ${
-                        item.gender === "LAKI_LAKI"
-                          ? "bg-gradient-to-r from-blue-400 to-blue-600"
-                          : item.gender === "PEREMPUAN"
-                            ? "bg-gradient-to-r from-pink-400 to-pink-600"
-                            : "bg-gradient-to-r from-gray-400 to-gray-600"
-                      }`}
-                      style={{ width: `${percentage}%` }}
-                    ></div>
+                  <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div className={`h-full ${gradient} rounded-full transition-all duration-1000`} style={{ width: `${percentage}%` }}></div>
                   </div>
                 </div>
               );
             })}
           </div>
         </div>
-
-        {/* Application Trends */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-4 h-4 text-white" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              Tren Pendaftaran
-            </h3>
-          </div>
-
-          {/* Simple trend visualization */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
-              <div>
-                <div className="font-medium text-gray-900">
-                  Pendaftaran Pagi
-                </div>
-                <div className="text-sm text-gray-600">08:00 - 12:00</div>
-              </div>
-              <div className="text-right">
-                <div className="text-xl font-bold text-blue-600">35%</div>
-                <div className="text-xs text-gray-500">dari total</div>
-              </div>
-            </div>
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
-              <div>
-                <div className="font-medium text-gray-900">
-                  Pendaftaran Siang
-                </div>
-                <div className="text-sm text-gray-600">12:00 - 18:00</div>
-              </div>
-              <div className="text-right">
-                <div className="text-xl font-bold text-green-600">45%</div>
-                <div className="text-xs text-gray-500">dari total</div>
-              </div>
-            </div>
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
-              <div>
-                <div className="font-medium text-gray-900">
-                  Pendaftaran Malam
-                </div>
-                <div className="text-sm text-gray-600">18:00 - 23:00</div>
-              </div>
-              <div className="text-right">
-                <div className="text-xl font-bold text-purple-600">20%</div>
-                <div className="text-xs text-gray-500">dari total</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Performance Metrics */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
-              <Target className="w-4 h-4 text-white" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              Metrik Performa
-            </h3>
-          </div>
-
-          <div className="space-y-6">
-            {/* Processing Time */}
-            <div className="border-l-4 border-blue-500 pl-4">
-              <div className="font-medium text-gray-900">
-                Rata-rata Waktu Review
-              </div>
-              <div className="text-2xl font-bold text-blue-600">2.3 hari</div>
-              <div className="text-sm text-gray-500">Target: ≤ 3 hari</div>
-            </div>
-
-            {/* Response Rate */}
-            <div className="border-l-4 border-green-500 pl-4">
-              <div className="font-medium text-gray-900">Response Rate</div>
-              <div className="text-2xl font-bold text-green-600">98.5%</div>
-              <div className="text-sm text-gray-500">Excellent performance</div>
-            </div>
-
-            {/* Quality Score */}
-            <div className="border-l-4 border-purple-500 pl-4">
-              <div className="font-medium text-gray-900">Quality Score</div>
-              <div className="text-2xl font-bold text-purple-600">94/100</div>
-              <div className="text-sm text-gray-500">Above average</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Summary Report */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-600 rounded-lg flex items-center justify-center">
-            <FileText className="w-4 h-4 text-white" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900">
-            Ringkasan Laporan
-          </h3>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">Highlights</h4>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-500" />
-                Tingkat penerimaan {acceptanceRate}% (target tercapai)
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-500" />
-                Waktu review rata-rata dibawah target
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-500" />
-                Quality score diatas rata-rata
-              </li>
-            </ul>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">Areas for Improvement</h4>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-yellow-500" />
-                {stats.overview.pending} aplikasi masih pending
-              </li>
-              <li className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-blue-500" />
-                Optimalisasi proses screening
-              </li>
-              <li className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-purple-500" />
-                Peningkatan engagement rate
-              </li>
-            </ul>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">Recommendations</h4>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-green-500" />
-                Pertahankan kualitas review
-              </li>
-              <li className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-blue-500" />
-                Automasi proses screening
-              </li>
-              <li className="flex items-center gap-2">
-                <Award className="w-4 h-4 text-purple-500" />
-                Tingkatkan follow-up rate
-              </li>
-            </ul>
-          </div>
-        </div>
       </div>
     </div>
   );
+}
+
+function MetricCard({ title, value, icon: Icon, color, trend, trendUp, progress, subtext }: any) {
+    const colors: any = {
+        blue: "text-blue-600 bg-blue-50",
+        green: "text-green-600 bg-green-50",
+        orange: "text-orange-600 bg-orange-50",
+        purple: "text-purple-600 bg-purple-50",
+    };
+
+    return (
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex justify-between items-start mb-4">
+                <div className={`w-12 h-12 ${colors[color]} rounded-xl flex items-center justify-center`}>
+                    <Icon className="w-6 h-6" />
+                </div>
+                {trend && (
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${trendUp ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}`}>
+                        {trend}
+                    </span>
+                )}
+            </div>
+            <div>
+                <h4 className="text-gray-500 text-sm font-medium mb-1">{title}</h4>
+                <div className="text-2xl font-bold text-gray-900">{value}</div>
+            </div>
+            {progress !== undefined && (
+                <div className="mt-4">
+                    <div className="w-full bg-gray-100 rounded-full h-1.5">
+                        <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${progress}%` }}></div>
+                    </div>
+                </div>
+            )}
+            {subtext && (
+                <p className="text-xs text-gray-400 mt-3">{subtext}</p>
+            )}
+        </div>
+    );
+}
+
+function LegendItem({ color, label, count, percentage }: any) {
+    return (
+        <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+            <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 ${color} rounded-full shadow-sm`}></div>
+                <span className="text-sm font-medium text-gray-700">{label}</span>
+            </div>
+            <div className="text-right">
+                <span className="text-sm font-bold text-gray-900 block">{count}</span>
+                <span className="text-xs text-gray-500">{percentage}%</span>
+            </div>
+        </div>
+    );
 }
