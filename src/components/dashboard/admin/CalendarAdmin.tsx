@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Filter } from "lucide-react";
 import { motion } from "framer-motion";
-import { getAllActivities, createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from "@/actions/calendar";
+import { createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from "@/actions/calendar";
 import { SchoolActivity, SemesterType } from "@prisma/client";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
