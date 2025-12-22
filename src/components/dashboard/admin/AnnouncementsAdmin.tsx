@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Calendar as CalendarIcon, MapPin, AlertCircle, FileText } from "lucide-react";
+import { Plus, Pencil, Trash2, Calendar as CalendarIcon, MapPin, FileText } from "lucide-react";
 import { motion } from "framer-motion";
-import { getAllAnnouncements, createAnnouncement, updateAnnouncement, deleteAnnouncement } from "@/actions/announcements";
+import { createAnnouncement, updateAnnouncement, deleteAnnouncement } from "@/actions/announcements";
 import { Announcement, PriorityLevel } from "@prisma/client";
 import toast from "react-hot-toast";
 import { format } from "date-fns";

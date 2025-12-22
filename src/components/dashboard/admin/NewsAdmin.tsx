@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Image as ImageIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { createNews, updateNews, deleteNews } from "@/actions/news";
-import { News, BeritaKategori, StatusApproval } from "@prisma/client";
+import { News } from "@prisma/client";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
