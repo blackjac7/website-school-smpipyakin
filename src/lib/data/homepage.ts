@@ -10,6 +10,7 @@ import {
   SemesterType,
   BeritaKategori
 } from "@prisma/client";
+import { newsData } from "@/shared/data/news";
 
 // Define return types to ensure consistency even if we switch to real DB
 export interface HomepageData {
@@ -18,46 +19,39 @@ export interface HomepageData {
   activities: SchoolActivity[];
 }
 
-// MOCK DATA for when DB is unavailable
-// This mirrors the data we intended to seed
-export const MOCK_NEWS: News[] = [
-  {
-    id: "mock-news-1",
-    title: "Prestasi Gemilang Siswa SMP IP Yakin",
-    date: new Date("2024-12-01"),
-    content: "Siswa SMP IP Yakin meraih juara 1 dalam olimpiade matematika tingkat Jakarta.",
-    image: "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
-    kategori: "ACHIEVEMENT" as BeritaKategori,
-    statusPersetujuan: "APPROVED" as StatusApproval,
-    authorId: "mock-admin-id",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "mock-news-2",
-    title: "Kegiatan Ekstrakurikuler Robotika",
-    date: new Date("2024-11-15"),
-    content: "Ekstrakurikuler robotika mengadakan workshop pembuatan robot sederhana.",
-    image: "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733055884/hero3_gigw1x.webp",
-    kategori: "ACTIVITY" as BeritaKategori,
-    statusPersetujuan: "APPROVED" as StatusApproval,
-    authorId: "mock-kesiswaan-id",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "mock-news-3",
-    title: "Kunjungan Belajar ke Museum Nasional",
-    date: new Date("2024-10-20"),
-    content: "Siswa kelas VII melakukan kunjungan belajar sejarah ke Museum Nasional.",
-    image: "https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1024/q_auto/f_auto/v1733055889/hero2_oa2prx.webp",
-    kategori: "ACTIVITY" as BeritaKategori,
-    statusPersetujuan: "APPROVED" as StatusApproval,
-    authorId: "mock-admin-id",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-];
+const MONTH_MAP: Record<string, number> = {
+  Jan: 0, Feb: 1, Mar: 2, Apr: 3, Mei: 4, Jun: 5,
+  Jul: 6, Agu: 7, Sep: 8, Okt: 9, Nov: 10, Des: 11
+};
+
+function parseIndonesianDate(dateStr: string): Date {
+  try {
+    const parts = dateStr.split(' ');
+    if (parts.length !== 3) return new Date();
+    const day = parseInt(parts[0], 10);
+    const monthStr = parts[1];
+    const year = parseInt(parts[2], 10);
+    const month = MONTH_MAP[monthStr] ?? 0;
+    return new Date(year, month, day);
+  } catch (e) {
+    console.error("Error parsing date:", dateStr, e);
+    return new Date();
+  }
+}
+
+// Transform shared static data to match Prisma News model
+export const STATIC_NEWS: News[] = newsData.map((item, index) => ({
+  id: item.id || `static-news-${index}`,
+  title: item.title,
+  date: parseIndonesianDate(item.date),
+  content: item.content,
+  image: item.image,
+  kategori: (item.category === 'achievement' ? 'ACHIEVEMENT' : 'ACTIVITY') as BeritaKategori,
+  statusPersetujuan: "APPROVED" as StatusApproval,
+  authorId: "static-data",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+}));
 
 export const MOCK_ANNOUNCEMENTS: Announcement[] = [
   {
@@ -452,11 +446,11 @@ export async function getLatestNews(): Promise<SerializableNews[]> {
       take: 3,
     });
 
-    const result = news.length === 0 ? MOCK_NEWS : news;
+    const result = news.length === 0 ? STATIC_NEWS.slice(0, 3) : news;
     return serializeNews(result);
   } catch (error) {
-    console.warn("Database connection failed, using mock data for News:", error);
-    return serializeNews(MOCK_NEWS);
+    console.warn("Database connection failed, using static data for News:", error);
+    return serializeNews(STATIC_NEWS.slice(0, 3));
   }
 }
 
