@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Filter } from "lucide-react";
 import { motion } from "framer-motion";
-import { getAllActivities, createActivity, updateActivity, deleteActivity } from "@/actions/calendar";
+import { getAllActivities, createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from "@/actions/calendar";
 import { SchoolActivity, SemesterType } from "@prisma/client";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
@@ -32,21 +32,30 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
     const dateStr = formData.get("date") as string;
     const date = dateStr ? new Date(dateStr) : new Date();
 
+    // Map form data to match action expectations
     const data = {
       title: formData.get("title") as string,
       date: date,
-      information: formData.get("information") as string,
+      description: formData.get("information") as string, // Mapping information to description
       semester: formData.get("semester") as SemesterType,
       tahunPelajaran: formData.get("tahunPelajaran") as string,
-      createdBy: "admin-id", // In real app, get from session
+      category: "academic", // Default
+      isHoliday: false, // Default
+      createdBy: "", // Action handles this
     };
 
     try {
       if (editingItem) {
-        await updateActivity(editingItem.id, data);
+        await updateCalendarEvent(editingItem.id, {
+            title: data.title,
+            date: data.date,
+            information: data.description,
+            semester: data.semester,
+            tahunPelajaran: data.tahunPelajaran,
+        });
         toast.success("Activity updated");
       } else {
-        await createActivity(data);
+        await createCalendarEvent(data);
         toast.success("Activity created");
       }
       setIsModalOpen(false);
@@ -61,7 +70,7 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this activity?")) return;
     try {
-      await deleteActivity(id);
+      await deleteCalendarEvent(id);
       toast.success("Activity deleted");
     } catch (error) {
       toast.error("Failed to delete activity");

@@ -32,6 +32,7 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
       value: formData.get("value") as string,
       iconName: formData.get("iconName") as string,
       isActive: true,
+      sortOrder: 0, // Added to fix type error
     };
 
     try {

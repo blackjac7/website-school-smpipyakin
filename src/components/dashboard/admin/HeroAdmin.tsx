@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Link as LinkIcon, Image as ImageIcon } from "lucide-react";
 import { motion } from "framer-motion";
-import { getHeroSlides, createHeroSlide, updateHeroSlide, deleteHeroSlide } from "@/actions/hero";
+import { createHeroSlide, updateHeroSlide, deleteHeroSlide } from "@/actions/hero";
 import { HeroSlide } from "@prisma/client";
 import toast from "react-hot-toast";
 
@@ -30,6 +30,7 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
       linkSecondaryText: formData.get("linkSecondaryText") as string,
       linkSecondaryHref: formData.get("linkSecondaryHref") as string,
       isActive: true, // Default active
+      sortOrder: 0, // Default sort order
     };
 
     try {

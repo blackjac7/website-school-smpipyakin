@@ -34,16 +34,18 @@ export async function createAnnouncement(data: {
   content: string;
   date: Date;
   priority: PriorityLevel;
-  author: string;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  author?: string; // Optional since schema doesn't use it
 }) {
   try {
+    const { title, content, date, priority } = data;
+
     const announcement = await prisma.announcement.create({
       data: {
-        ...data,
-        slug: data.title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)+/g, ""),
+        title,
+        content,
+        date,
+        priority,
       },
     });
     revalidatePath("/announcements");

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Trophy, Medal, Award, LucideIcon, Home, BookOpen } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   AchievementsSection,
   UploadAchievementModal,
@@ -62,7 +63,7 @@ interface Work {
   createdAt: string;
 }
 
-function SiswaDashboard() {
+function SiswaDashboardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const validTabs = ["dashboard", "achievements", "works"];
@@ -397,16 +398,14 @@ function SiswaDashboard() {
 
   if (loading) {
     return (
-      <ProtectedRoute requiredRoles={["siswa"]}>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="animate-pulse">
-            <div className="text-center">
-              <div className="h-8 bg-gray-200 rounded w-48 mx-auto mb-4"></div>
-              <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
-            </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-pulse">
+          <div className="text-center">
+            <div className="h-8 bg-gray-200 rounded w-48 mx-auto mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
           </div>
         </div>
-      </ProtectedRoute>
+      </div>
     );
   }
 
@@ -445,133 +444,139 @@ function SiswaDashboard() {
   };
 
   return (
-    <ProtectedRoute requiredRoles={["siswa"]}>
-      <div className="flex h-screen bg-gray-50">
-        <DashboardSidebar
-          menuItems={menuItems}
-          activeMenu={activeMenu}
-          setActiveMenu={handleMenuChange}
-          isSidebarOpen={isSidebarOpen}
-          setIsSidebarOpen={setIsSidebarOpen}
-          title="Dashboard"
-          subtitle="SISWA AREA"
-          userRole="Siswa"
+    <div className="flex h-screen bg-gray-50">
+      <DashboardSidebar
+        menuItems={menuItems}
+        activeMenu={activeMenu}
+        setActiveMenu={handleMenuChange}
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+        title="Dashboard"
+        subtitle="SISWA AREA"
+        userRole="Siswa"
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        <StudentHeader
+          notifications={notifications}
+          showNotifications={showNotifications}
+          setShowNotifications={setShowNotifications}
+          unreadCount={notifications.filter((n) => !n.read).length}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          markAsRead={markAsRead}
+          onEditProfile={() => setShowFullProfile(true)}
         />
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col">
-          <StudentHeader
-            notifications={notifications}
-            showNotifications={showNotifications}
-            setShowNotifications={setShowNotifications}
-            unreadCount={notifications.filter((n) => !n.read).length}
-            onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-            markAsRead={markAsRead}
-            onEditProfile={() => setShowFullProfile(true)}
-          />
-
-          {/* Content */}
-          <main className="flex-1 p-4 md:p-6 overflow-y-auto">
-            {renderContent()}
-          </main>
-        </div>
-
-        {/* Modals */}
-        <UploadAchievementModal
-          isOpen={showUploadForm}
-          onClose={() => setShowUploadForm(false)}
-          onSubmit={handleSubmitForm}
-          pendingCount={
-            achievements.filter((a) => a.status === "pending").length
-          }
-        />
-
-        <UploadWorkModal
-          isOpen={showUploadWork}
-          onClose={() => setShowUploadWork(false)}
-          pendingCount={works.filter((w) => w.status === "pending").length}
-          onSubmit={async (data) => {
-            try {
-              const response = await fetch("/api/student/works", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-              });
-
-              const result = await response.json();
-
-              if (result.success) {
-                toast.success("Karya berhasil diunggah!");
-                await loadWorks(); // Reload works
-                setShowUploadWork(false);
-              } else {
-                console.error("Failed to create work:", result.error);
-
-                // Handle specific error for pending limit
-                if (result.error === "Limit reached") {
-                  toast.error(result.message);
-                } else {
-                  toast.error("Gagal mengunggah karya. Silakan coba lagi.");
-                }
-              }
-            } catch (error) {
-              console.error("Failed to create work:", error);
-              toast.error("Terjadi kesalahan. Silakan coba lagi.");
-            }
-          }}
-        />
-
-        <QuickEditModal
-          isOpen={showQuickEdit}
-          onClose={() => setShowQuickEdit(false)}
-          profileData={profileData}
-          onUpdate={handleProfileUpdate}
-        />
-
-        <FullProfileModal
-          isOpen={showFullProfile}
-          onClose={() => setShowFullProfile(false)}
-          profileData={profileData}
-          onUpdate={handleProfileUpdate}
-        />
-
-        <EditWorkModal
-          isOpen={showEditWork}
-          onClose={() => {
-            setShowEditWork(false);
-            setSelectedWork(null);
-          }}
-          work={selectedWork}
-          onUpdate={handleUpdateWork}
-        />
-
-        {/* Toast Confirm Modal */}
-        <ToastConfirmModal
-          isOpen={confirmModal.isOpen}
-          title={confirmModal.options.title}
-          message={confirmModal.options.message}
-          description={confirmModal.options.description}
-          type={confirmModal.options.type}
-          confirmText={confirmModal.options.confirmText}
-          cancelText={confirmModal.options.cancelText}
-          isLoading={confirmModal.isLoading}
-          showCloseButton={confirmModal.options.showCloseButton}
-          onConfirm={confirmModal.onConfirm}
-          onCancel={confirmModal.onCancel}
-        />
-
-        {/* Click outside to close notifications */}
-        {showNotifications && (
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setShowNotifications(false)}
-          ></div>
-        )}
+        {/* Content */}
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+          {renderContent()}
+        </main>
       </div>
-    </ProtectedRoute>
+
+      {/* Modals */}
+      <UploadAchievementModal
+        isOpen={showUploadForm}
+        onClose={() => setShowUploadForm(false)}
+        onSubmit={handleSubmitForm}
+        pendingCount={
+          achievements.filter((a) => a.status === "pending").length
+        }
+      />
+
+      <UploadWorkModal
+        isOpen={showUploadWork}
+        onClose={() => setShowUploadWork(false)}
+        pendingCount={works.filter((w) => w.status === "pending").length}
+        onSubmit={async (data) => {
+          try {
+            const response = await fetch("/api/student/works", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              toast.success("Karya berhasil diunggah!");
+              await loadWorks(); // Reload works
+              setShowUploadWork(false);
+            } else {
+              console.error("Failed to create work:", result.error);
+
+              // Handle specific error for pending limit
+              if (result.error === "Limit reached") {
+                toast.error(result.message);
+              } else {
+                toast.error("Gagal mengunggah karya. Silakan coba lagi.");
+              }
+            }
+          } catch (error) {
+            console.error("Failed to create work:", error);
+            toast.error("Terjadi kesalahan. Silakan coba lagi.");
+          }
+        }}
+      />
+
+      <QuickEditModal
+        isOpen={showQuickEdit}
+        onClose={() => setShowQuickEdit(false)}
+        profileData={profileData}
+        onUpdate={handleProfileUpdate}
+      />
+
+      <FullProfileModal
+        isOpen={showFullProfile}
+        onClose={() => setShowFullProfile(false)}
+        profileData={profileData}
+        onUpdate={handleProfileUpdate}
+      />
+
+      <EditWorkModal
+        isOpen={showEditWork}
+        onClose={() => {
+          setShowEditWork(false);
+          setSelectedWork(null);
+        }}
+        work={selectedWork}
+        onUpdate={handleUpdateWork}
+      />
+
+      {/* Toast Confirm Modal */}
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.options.title}
+        message={confirmModal.options.message}
+        description={confirmModal.options.description}
+        type={confirmModal.options.type}
+        confirmText={confirmModal.options.confirmText}
+        cancelText={confirmModal.options.cancelText}
+        isLoading={confirmModal.isLoading}
+        showCloseButton={confirmModal.options.showCloseButton}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+      />
+
+      {/* Click outside to close notifications */}
+      {showNotifications && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowNotifications(false)}
+        ></div>
+      )}
+    </div>
   );
 }
 
-export default SiswaDashboard;
+export default function SiswaDashboard() {
+  return (
+    <ProtectedRoute requiredRoles={["siswa"]}>
+      <Suspense fallback={<div>Loading...</div>}>
+        <SiswaDashboardContent />
+      </Suspense>
+    </ProtectedRoute>
+  );
+}
