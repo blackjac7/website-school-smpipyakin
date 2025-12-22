@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LogIn, Loader2, CheckCircle } from "lucide-react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { CheckCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface LoginAnimationProps {
   isVisible: boolean;
@@ -12,87 +14,89 @@ export default function LoginAnimation({
   isVisible,
   onComplete,
 }: LoginAnimationProps) {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState<"loading" | "success">("loading");
 
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible) {
+      setStep("loading"); // Reset state when closed
+      return;
+    }
 
-    const steps = [
-      { delay: 0, action: () => setStep(1) }, // Show animation
-      { delay: 1000, action: () => setStep(2) }, // Show progress
-      { delay: 2000, action: () => setStep(3) }, // Show completion
-      { delay: 3000, action: () => onComplete?.() }, // Complete
-    ];
+    // Sequence:
+    // 0ms: Start (Loading)
+    // 2000ms: Success
+    // 3500ms: Complete (Redirect)
 
-    const timers = steps.map(({ delay, action }) => setTimeout(action, delay));
+    const successTimer = setTimeout(() => {
+      setStep("success");
+    }, 2000);
+
+    const completeTimer = setTimeout(() => {
+      onComplete?.();
+    }, 3500);
 
     return () => {
-      timers.forEach(clearTimeout);
+      clearTimeout(successTimer);
+      clearTimeout(completeTimer);
     };
   }, [isVisible, onComplete]);
 
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900">
-      <div className="text-center">
-        {/* Step 1: Show login icon */}
-        {step >= 1 && (
-          <div className="mb-8 animate-pulse">
-            <div className="w-20 h-20 mx-auto bg-white rounded-full flex items-center justify-center shadow-2xl">
-              <LogIn className="w-10 h-10 text-blue-800" />
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Show loading */}
-        {step >= 2 && (
-          <div className="mb-6 animate-fade-in">
-            <Loader2 className="w-8 h-8 mx-auto text-white animate-spin" />
-            <p className="text-white text-lg font-medium mt-4">
-              Memverifikasi kredensial...
-            </p>
-            <div className="mt-4 w-64 mx-auto bg-blue-700 rounded-full h-2">
-              <div
-                className="bg-white h-2 rounded-full animate-pulse"
-                style={{
-                  width: step >= 3 ? "100%" : "60%",
-                  transition: "width 1s ease-in-out",
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Show completion */}
-        {step >= 3 && (
-          <div className="animate-bounce">
-            <div className="mb-4">
-              <CheckCircle className="w-12 h-12 mx-auto text-green-400" />
-            </div>
-            <p className="text-white text-lg font-medium">Login berhasil!</p>
-            <p className="text-blue-300 text-sm mt-2">
-              Mengalihkan ke dashboard...
-            </p>
-          </div>
-        )}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-md transition-all duration-300"
+    >
+      <div className="w-full max-w-sm mx-auto p-6 flex flex-col items-center justify-center text-center">
+        <AnimatePresence mode="wait">
+          {step === "loading" ? (
+            <motion.div
+              key="loading"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col items-center"
+            >
+              <div className="h-48 w-48 mb-4">
+                <DotLottieReact
+                  src="/animations/school-loading.lottie"
+                  loop
+                  autoplay
+                  className="w-full h-full"
+                />
+              </div>
+              <h3 className="text-xl font-bold text-blue-900 mb-2">
+                Memverifikasi...
+              </h3>
+              <p className="text-gray-500 text-sm">
+                Mohon tunggu, sedang memeriksa data anda.
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="success"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 20 }}
+              className="flex flex-col items-center"
+            >
+              <div className="h-24 w-24 bg-green-100 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-green-100/50">
+                <CheckCircle className="w-12 h-12 text-green-600" strokeWidth={3} />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                Login Berhasil!
+              </h3>
+              <p className="text-gray-500">
+                Mengalihkan anda ke dashboard...
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-
-      {/* Background particles */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 bg-blue-300 opacity-30 rounded-full animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 2}s`,
-              animationDuration: `${3 + Math.random() * 2}s`,
-            }}
-          />
-        ))}
-      </div>
-    </div>
+    </motion.div>
   );
 }
