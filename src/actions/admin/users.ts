@@ -66,7 +66,9 @@ export async function createUser(data: UserFormData) {
   const result = UserSchema.safeParse(data);
 
   if (!result.success) {
-    return { success: false, error: result.error.errors[0].message };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const error: any = result.error;
+    return { success: false, error: error.errors[0]?.message || "Validasi gagal" };
   }
 
   const { username, password, role, name, email, gender } = result.data;

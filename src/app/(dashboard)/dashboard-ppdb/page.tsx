@@ -20,7 +20,7 @@ interface EnhancedApplicant {
   nisn: string;
   gender: string | null;
   birthPlace: string | null;
-  birthDate: Date | null;
+  birthDate: Date | null | string;
   address: string | null;
   asalSekolah: string | null;
   parentContact: string | null;
@@ -207,7 +207,8 @@ function PPDBDashboard() {
       {/* Modals */}
       <ApplicantDetailModal
         isOpen={showDetailModal}
-        applicant={selectedApplicant}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        applicant={selectedApplicant as any}
         onClose={() => {
           setShowDetailModal(false);
           setSelectedApplicant(null);
