@@ -83,7 +83,14 @@ export default function StepParent({ formData, onInputChange }: StepParentProps)
                 type={field.type}
                 placeholder={field.placeholder}
                 value={formData[field.id as keyof Omit<FormData, "documents">] as string}
-                onChange={(e) => onInputChange(field.id, e.target.value)}
+                onChange={(e) => {
+                  if (field.id === "kontakOrtu") {
+                    const val = e.target.value.replace(/[^0-9]/g, "");
+                    onInputChange(field.id, val);
+                  } else {
+                    onInputChange(field.id, e.target.value);
+                  }
+                }}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 group-hover:border-gray-400"
                 required={field.required}
               />

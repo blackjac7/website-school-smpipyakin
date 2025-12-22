@@ -2,13 +2,10 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Home,
   Users,
-  FileText,
   Calendar,
   Layout,
   Activity,
-  Settings,
   Bell,
   Newspaper
 } from "lucide-react";
