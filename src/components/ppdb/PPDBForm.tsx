@@ -1,15 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   CheckCircle,
   AlertCircle,
   Loader2,
-  User,
-  Phone,
-  MapPin,
-  School,
-  Calendar,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
-import DocumentsSection from "./DocumentsSection";
+import StepIndicator from "./form/StepIndicator";
+import StepPersonal from "./form/StepPersonal";
+import StepParent from "./form/StepParent";
+import StepDocuments from "./form/StepDocuments";
+import toast from "react-hot-toast";
+
+// Import AntiBotComponents to use its type or value
 import AntiBotComponents from "@/components/shared/AntiBotComponents";
 
 interface FormData {
@@ -31,6 +34,21 @@ interface FormData {
   };
 }
 
+interface AntiBotProps {
+  captcha: {
+    num1: number;
+    num2: number;
+    answer: number;
+  };
+  userCaptchaAnswer: string;
+  setUserCaptchaAnswer: (answer: string) => void;
+  generateCaptcha: () => void;
+  honeypot: string;
+  setHoneypot: (value: string) => void;
+  honeypotFieldName: string;
+  isClient: boolean;
+}
+
 interface PPDBFormProps {
   formData: FormData;
   isSubmitting: boolean;
@@ -41,21 +59,10 @@ interface PPDBFormProps {
     documentType: keyof FormData["documents"],
     file: File | null
   ) => void;
-  // Anti-bot props
-  antiBot?: {
-    captcha: {
-      num1: number;
-      num2: number;
-      answer: number;
-    };
-    userCaptchaAnswer: string;
-    setUserCaptchaAnswer: (answer: string) => void;
-    generateCaptcha: () => void;
-    honeypot: string;
-    setHoneypot: (value: string) => void;
-    honeypotFieldName: string;
-    isClient: boolean;
-  };
+  antiBot?: AntiBotProps;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  AntiBotComponents?: React.ComponentType<any>;
+  uploadProgress?: { current: number; total: number; filename: string };
 }
 
 export default function PPDBForm({
@@ -66,94 +73,68 @@ export default function PPDBForm({
   onSubmit,
   onFileChange,
   antiBot,
+  uploadProgress,
 }: PPDBFormProps) {
-  const basicFields = [
-    {
-      id: "namaLengkap",
-      label: "Nama Lengkap",
-      type: "text",
-      placeholder: "Masukan nama lengkap siswa",
-      icon: <User className="w-5 h-5 text-gray-400" />,
-      required: true,
-    },
-    {
-      id: "nisn",
-      label: "NISN (Nomor Induk Siswa Nasional)",
-      type: "text",
-      placeholder: "Masukan NISN siswa",
-      icon: <User className="w-5 h-5 text-gray-400" />,
-      required: true,
-    },
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const steps = [
+    { id: 1, label: "Data Siswa" },
+    { id: 2, label: "Data Ortu" },
+    { id: 3, label: "Dokumen" },
   ];
 
-  const additionalFields = [
-    {
-      id: "tempatLahir",
-      label: "Tempat Lahir",
-      type: "text",
-      placeholder: "Tempat lahir siswa",
-      icon: <MapPin className="w-5 h-5 text-gray-400" />,
-      required: true,
-    },
-    {
-      id: "tanggalLahir",
-      label: "Tanggal Lahir",
-      type: "date",
-      placeholder: "",
-      icon: <Calendar className="w-5 h-5 text-gray-400" />,
-      required: true,
-    },
-    {
-      id: "asalSekolah",
-      label: "Asal Sekolah Sebelumnya",
-      type: "text",
-      placeholder: "Nama SD/MI tempat siswa bersekolah",
-      icon: <School className="w-5 h-5 text-gray-400" />,
-      required: true,
-    },
-  ];
+  const handleNext = () => {
+    // Validation for Step 1
+    if (currentStep === 1) {
+      if (
+        !formData.namaLengkap ||
+        !formData.nisn ||
+        !formData.jenisKelamin ||
+        !formData.tempatLahir ||
+        !formData.tanggalLahir ||
+        !formData.asalSekolah
+      ) {
+        toast.error("Mohon lengkapi semua data wajib pada langkah ini");
+        return;
+      }
+    }
 
-  const parentFields = [
-    {
-      id: "namaOrtu",
-      label: "Nama Orang Tua/Wali",
-      type: "text",
-      placeholder: "Nama lengkap orang tua/wali",
-      icon: <User className="w-5 h-5 text-gray-400" />,
-      required: true,
-    },
-    {
-      id: "kontakOrtu",
-      label: "Kontak Orang Tua/Wali",
-      type: "tel",
-      placeholder: "Contoh: 081234567890",
-      icon: <Phone className="w-5 h-5 text-gray-400" />,
-      required: true,
-    },
-    {
-      id: "emailOrtu",
-      label: "Email Orang Tua/Wali",
-      type: "email",
-      placeholder: "email@contoh.com",
-      icon: <User className="w-5 h-5 text-gray-400" />,
-      required: false,
-    },
-  ];
+    // Validation for Step 2
+    if (currentStep === 2) {
+      if (!formData.namaOrtu || !formData.kontakOrtu || !formData.alamatLengkap) {
+        toast.error("Mohon lengkapi data orang tua dan alamat");
+        return;
+      }
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setCurrentStep((prev) => Math.min(prev + 1, steps.length));
+  };
+
+  const handlePrev = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
 
   return (
     <section className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
-      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden min-h-[600px] flex flex-col">
         {/* Form Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 sm:p-8 text-white text-center">
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">
             Formulir Pendaftaran Siswa Baru
           </h2>
           <p className="text-blue-100 text-base sm:text-lg">
-            Lengkapi data dengan benar dan pastikan semua informasi akurat
+            Lengkapi data secara bertahap
           </p>
         </div>
 
-        <div className="p-6 sm:p-8">
+        <div className="p-6 sm:p-8 flex-1 flex flex-col">
+          {/* Stepper */}
+          <div className="mb-8">
+            <StepIndicator currentStep={currentStep} steps={steps} />
+          </div>
+
           {/* Success Message */}
           {submitStatus === "success" && (
             <div className="mb-8 p-6 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-2xl flex items-center gap-3 animate-pulse">
@@ -163,8 +144,7 @@ export default function PPDBForm({
                   Pendaftaran Berhasil!
                 </h4>
                 <p className="text-green-700 text-sm">
-                  Data Anda telah berhasil dikirim. Tim kami akan menghubungi
-                  Anda segera.
+                  Data Anda telah berhasil dikirim.
                 </p>
               </div>
             </div>
@@ -185,247 +165,76 @@ export default function PPDBForm({
             </div>
           )}
 
-          <form onSubmit={onSubmit} className="space-y-8">
-            {/* Basic Information */}
-            <div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                <User className="w-5 h-5 text-blue-600" />
-                Data Pribadi Siswa
-              </h3>
-              <div className="grid md:grid-cols-2 gap-6">
-                {basicFields.map((field) => (
-                  <div key={field.id} className="group">
-                    <label
-                      htmlFor={field.id}
-                      className="block text-gray-700 font-medium mb-2"
-                    >
-                      {field.label}{" "}
-                      {field.required && (
-                        <span className="text-red-500">*</span>
-                      )}
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        {field.icon}
-                      </div>
-                      <input
-                        id={field.id}
-                        type={field.type}
-                        placeholder={field.placeholder}
-                        value={
-                          formData[
-                            field.id as keyof Omit<FormData, "documents">
-                          ] as string
-                        }
-                        onChange={(e) =>
-                          onInputChange(field.id, e.target.value)
-                        }
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 group-hover:border-gray-400"
-                        required={field.required}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Gender */}
-            <div>
-              <label
-                htmlFor="jenisKelamin"
-                className="block text-gray-700 font-medium mb-2"
-              >
-                Jenis Kelamin <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="jenisKelamin"
-                value={formData.jenisKelamin}
-                onChange={(e) => onInputChange("jenisKelamin", e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                required
-              >
-                <option value="">Pilih jenis kelamin</option>
-                <option value="laki-laki">Laki-laki</option>
-                <option value="perempuan">Perempuan</option>
-              </select>
-            </div>
-
-            {/* Other Information */}
-            <div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-blue-600" />
-                Informasi Tambahan
-              </h3>
-              <div className="space-y-6">
-                {additionalFields.map((field) => (
-                  <div key={field.id} className="group">
-                    <label
-                      htmlFor={field.id}
-                      className="block text-gray-700 font-medium mb-2"
-                    >
-                      {field.label}{" "}
-                      {field.required && (
-                        <span className="text-red-500">*</span>
-                      )}
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        {field.icon}
-                      </div>
-                      <input
-                        id={field.id}
-                        type={field.type}
-                        placeholder={field.placeholder}
-                        value={
-                          formData[
-                            field.id as keyof Omit<FormData, "documents">
-                          ] as string
-                        }
-                        onChange={(e) =>
-                          onInputChange(field.id, e.target.value)
-                        }
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 group-hover:border-gray-400"
-                        required={field.required}
-                      />
-                    </div>
-                  </div>
-                ))}
-
-                {/* Address */}
-                <div className="group">
-                  <label
-                    htmlFor="alamatLengkap"
-                    className="block text-gray-700 font-medium mb-2"
-                  >
-                    Alamat Lengkap <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute top-3 left-3 pointer-events-none">
-                      <MapPin className="w-5 h-5 text-gray-400" />
-                    </div>
-                    <textarea
-                      id="alamatLengkap"
-                      placeholder="Masukan alamat lengkap tempat tinggal"
-                      value={formData.alamatLengkap}
-                      onChange={(e) =>
-                        onInputChange("alamatLengkap", e.target.value)
-                      }
-                      rows={4}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical transition-all duration-200 group-hover:border-gray-400"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Parent Information */}
-            <div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                <User className="w-5 h-5 text-blue-600" />
-                Data Orang Tua/Wali
-              </h3>
-              <div className="grid md:grid-cols-2 gap-6">
-                {parentFields.map((field) => (
-                  <div key={field.id} className="group">
-                    <label
-                      htmlFor={field.id}
-                      className="block text-gray-700 font-medium mb-2"
-                    >
-                      {field.label}{" "}
-                      {field.required && (
-                        <span className="text-red-500">*</span>
-                      )}
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        {field.icon}
-                      </div>
-                      <input
-                        id={field.id}
-                        type={field.type}
-                        placeholder={field.placeholder}
-                        value={
-                          formData[
-                            field.id as keyof Omit<FormData, "documents">
-                          ] as string
-                        }
-                        onChange={(e) =>
-                          onInputChange(field.id, e.target.value)
-                        }
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 group-hover:border-gray-400"
-                        required={field.required}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Documents Section */}
-            <DocumentsSection
-              documents={formData.documents}
-              onFileChange={onFileChange}
-            />
-
-            {/* Anti-Bot Section */}
-            {antiBot && (
-              <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl shadow-sm border border-amber-200 p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
-                    <AlertCircle className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-amber-900">
-                      Verifikasi Keamanan
-                    </h3>
-                    <p className="text-sm text-amber-700">
-                      Lengkapi verifikasi berikut untuk melindungi sistem dari
-                      spam
-                    </p>
-                  </div>
-                </div>
-
-                <AntiBotComponents
-                  captcha={antiBot.captcha}
-                  userCaptchaAnswer={antiBot.userCaptchaAnswer}
-                  onCaptchaAnswerChange={antiBot.setUserCaptchaAnswer}
-                  onCaptchaRefresh={antiBot.generateCaptcha}
-                  honeypot={antiBot.honeypot}
-                  onHoneypotChange={antiBot.setHoneypot}
-                  honeypotFieldName={antiBot.honeypotFieldName}
-                  isClient={antiBot.isClient}
-                  showCaptcha={true}
-                  showHoneypot={true}
-                  captchaLabel="Verifikasi Matematika"
-                  size="md"
-                />
-              </div>
+          {/* Form Content */}
+          <form onSubmit={onSubmit} className="space-y-8 flex-1">
+            {currentStep === 1 && (
+              <StepPersonal formData={formData} onInputChange={onInputChange} />
             )}
 
-            {/* Submit Button */}
-            <div className="pt-6">
+            {currentStep === 2 && (
+              <StepParent formData={formData} onInputChange={onInputChange} />
+            )}
+
+            {currentStep === 3 && (
+              <StepDocuments
+                documents={formData.documents}
+                onFileChange={onFileChange}
+                antiBot={antiBot!}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                AntiBotComponents={AntiBotComponents as any}
+              />
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-between pt-8 mt-auto border-t border-gray-100">
               <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-300 transform hover:scale-[1.02] disabled:scale-100 shadow-xl hover:shadow-2xl disabled:shadow-md flex items-center justify-center gap-3"
+                type="button"
+                onClick={handlePrev}
+                disabled={currentStep === 1 || isSubmitting}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
+                  currentStep === 1
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                }`}
               >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Mengirim Pendaftaran...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-5 h-5" />
-                    Kirim Pendaftaran
-                  </>
-                )}
+                <ChevronLeft className="w-5 h-5" />
+                Sebelumnya
               </button>
-              <p className="text-sm text-gray-500 text-center mt-4">
-                Dengan mengirim formulir ini, Anda menyetujui syarat dan
-                ketentuan yang berlaku
-              </p>
+
+              {currentStep < steps.length ? (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                >
+                  Selanjutnya
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-3 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      {uploadProgress ? (
+                        <span className="text-sm">
+                          Mengupload {uploadProgress.current}/{uploadProgress.total}...
+                        </span>
+                      ) : (
+                        "Memproses..."
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-5 h-5" />
+                      Kirim Pendaftaran
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </form>
         </div>
