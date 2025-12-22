@@ -170,7 +170,6 @@ async function main() {
         authorId: kesiswaanUser.id,
       },
     ],
-    skipDuplicates: true,
   });
 
   // Create sample announcements
@@ -198,7 +197,6 @@ async function main() {
         priority: "LOW",
       },
     ],
-    skipDuplicates: true,
   });
 
   // Create sample school activities
@@ -230,7 +228,6 @@ async function main() {
         createdBy: kesiswaanUser.id,
       },
     ],
-    skipDuplicates: true,
   });
 
   // Create sample facilities
@@ -254,7 +251,6 @@ async function main() {
         image: "/images/facilities/lapangan-basket.jpg",
       },
     ],
-    skipDuplicates: true,
   });
 
   // Create sample extracurriculars
@@ -282,7 +278,6 @@ async function main() {
         schedule: "Setiap Selasa & Kamis, 15:30-17:30",
       },
     ],
-    skipDuplicates: true,
   });
 
   // Create sample PPDB applications
@@ -330,7 +325,6 @@ async function main() {
           "Dokumen ijazah tidak lengkap. Silakan lengkapi dokumen dan daftar ulang.",
       },
     ],
-    skipDuplicates: true,
   });
 
   // Create sample student achievements
@@ -357,7 +351,6 @@ async function main() {
         statusPersetujuan: "APPROVED",
       },
     ],
-    skipDuplicates: true,
   });
 
   // Create sample student works
@@ -384,7 +377,6 @@ async function main() {
         statusPersetujuan: "PENDING",
       },
     ],
-    skipDuplicates: true,
   });
 
   // Create sample notifications
@@ -417,7 +409,6 @@ async function main() {
         read: false,
       },
     ],
-    skipDuplicates: true,
   });
 
   console.log("✅ Database seeded successfully!");
