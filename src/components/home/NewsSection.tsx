@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Calendar } from "lucide-react";
-import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { SerializableNews } from "@/lib/data/homepage";
@@ -19,12 +18,7 @@ export default function NewsSection({ news }: NewsSectionProps) {
   return (
     <section className="bg-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-        >
+        <div className="text-center mb-16">
             <h2 className="text-4xl font-extrabold text-gray-900 mb-4">
               Berita Terbaru
             </h2>
@@ -32,19 +26,14 @@ export default function NewsSection({ news }: NewsSectionProps) {
             <p className="mt-4 text-xl text-gray-500">
                 Ikuti perkembangan terkini dari SMP IP Yakin
             </p>
-        </motion.div>
+        </div>
 
         {newsList.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {newsList.map((item, index) => (
-                <motion.div
+                <div
                 key={item.id || index}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -10 }}
-                className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 flex flex-col h-full group"
+                className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 flex flex-col h-full group hover:-translate-y-2 transition-transform duration-300"
                 >
                 <div className="relative w-full h-56 overflow-hidden bg-gray-200">
                     {item.image ? (
@@ -85,7 +74,7 @@ export default function NewsSection({ news }: NewsSectionProps) {
                         </Link>
                     </div>
                 </div>
-                </motion.div>
+                </div>
             ))}
             </div>
         ) : (
