@@ -6,6 +6,8 @@ interface ReportsContentProps {
 }
 
 export default function ReportsContent({ reportStats }: ReportsContentProps) {
+  const totalItems = reportStats.summary.total;
+
   return (
     <div className="space-y-8">
       {/* Charts */}
@@ -13,41 +15,50 @@ export default function ReportsContent({ reportStats }: ReportsContentProps) {
         {/* Monthly Validation Chart */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Validasi Bulanan
+            Validasi Bulanan (6 Bulan Terakhir)
           </h3>
           <div className="space-y-4">
-            {reportStats.monthly.map((month, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium text-gray-700">
-                    {month.month}
-                  </span>
-                  <span className="text-gray-600">
-                    {month.validated + month.pending + month.rejected}
-                  </span>
-                </div>
-                <div className="flex h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="bg-green-500"
-                    style={{
-                      width: `${(month.validated / (month.validated + month.pending + month.rejected)) * 100}%`,
-                    }}
-                  ></div>
-                  <div
-                    className="bg-yellow-500"
-                    style={{
-                      width: `${(month.pending / (month.validated + month.pending + month.rejected)) * 100}%`,
-                    }}
-                  ></div>
-                  <div
-                    className="bg-red-500"
-                    style={{
-                      width: `${(month.rejected / (month.validated + month.pending + month.rejected)) * 100}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+            {reportStats.monthly.map((month, index) => {
+               const monthTotal = month.validated + month.pending + month.rejected;
+               return (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium text-gray-700">
+                        {month.month}
+                      </span>
+                      <span className="text-gray-600">
+                        {monthTotal}
+                      </span>
+                    </div>
+                    <div className="flex h-2 bg-gray-200 rounded-full overflow-hidden">
+                      {monthTotal > 0 ? (
+                        <>
+                          <div
+                            className="bg-green-500"
+                            style={{
+                              width: `${(month.validated / monthTotal) * 100}%`,
+                            }}
+                          ></div>
+                          <div
+                            className="bg-yellow-500"
+                            style={{
+                              width: `${(month.pending / monthTotal) * 100}%`,
+                            }}
+                          ></div>
+                          <div
+                            className="bg-red-500"
+                            style={{
+                              width: `${(month.rejected / monthTotal) * 100}%`,
+                            }}
+                          ></div>
+                        </>
+                      ) : (
+                         <div className="bg-gray-100 w-full h-full"></div>
+                      )}
+                    </div>
+                  </div>
+              );
+            })}
           </div>
           <div className="flex justify-center gap-6 mt-4 text-xs">
             <div className="flex items-center gap-1">
@@ -96,7 +107,7 @@ export default function ReportsContent({ reportStats }: ReportsContentProps) {
       {/* Status Overview */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Overview Status
+          Overview Status (Total: {totalItems})
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {reportStats.byStatus.map((status, index) => (
@@ -112,12 +123,7 @@ export default function ReportsContent({ reportStats }: ReportsContentProps) {
                 {status.status}
               </div>
               <div className="text-xs text-gray-500 mt-1">
-                {(
-                  (status.count /
-                    reportStats.byStatus.reduce((sum, s) => sum + s.count, 0)) *
-                  100
-                ).toFixed(1)}
-                %
+                {totalItems > 0 ? ((status.count / totalItems) * 100).toFixed(1) : 0}%
               </div>
             </div>
           ))}
@@ -130,15 +136,15 @@ export default function ReportsContent({ reportStats }: ReportsContentProps) {
           Export Laporan
         </h3>
         <div className="flex flex-wrap gap-3">
-          <button className="btn-primary flex items-center gap-2">
+          <button className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2 text-sm font-medium">
             <Download className="w-4 h-4" />
             Export PDF
           </button>
-          <button className="btn-secondary flex items-center gap-2">
+          <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm font-medium">
             <Download className="w-4 h-4" />
             Export Excel
           </button>
-          <button className="btn-secondary flex items-center gap-2">
+          <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm font-medium">
             <Download className="w-4 h-4" />
             Export CSV
           </button>

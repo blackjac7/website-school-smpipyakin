@@ -1,4 +1,6 @@
 import { LucideIcon } from "lucide-react";
+import { ValidationItem, DashboardStats } from "@/actions/kesiswaan";
+import { Siswa } from "@prisma/client";
 
 export interface MenuItem {
   id: string;
@@ -7,19 +9,8 @@ export interface MenuItem {
   badge?: number;
 }
 
-export interface ContentItem {
-  id: number;
-  title: string;
-  description: string;
-  author: string;
-  date: string;
-  status: "Prestasi" | "Kegiatan" | "Pengumuman";
-  type: "Pending" | "Approved" | "Rejected";
-  timeAgo: string;
-  priority: "high" | "medium" | "low";
-  attachments: string[];
-  content: string;
-}
+// Re-export ValidationItem for use in components
+export type ContentItem = ValidationItem;
 
 export interface Notification {
   id: number;
@@ -33,21 +24,6 @@ export interface Notification {
   read: boolean;
 }
 
-export interface ReportStats {
-  monthly: Array<{
-    month: string;
-    validated: number;
-    pending: number;
-    rejected: number;
-  }>;
-  byCategory: Array<{
-    category: string;
-    count: number;
-    percentage: number;
-  }>;
-  byStatus: Array<{
-    status: string;
-    count: number;
-    color: string;
-  }>;
-}
+export type ReportStats = DashboardStats;
+
+export type StudentItem = Siswa;
