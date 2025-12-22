@@ -118,7 +118,8 @@ export default function PPDBPage() {
     uploadFormData.append("documentType", documentType);
     uploadFormData.append("nisn", formData.nisn);
 
-    const response = await fetch("/api/ppdb/upload", {
+    // Use R2 endpoint instead of Cloudinary
+    const response = await fetch("/api/ppdb/upload-r2", {
       method: "POST",
       body: uploadFormData,
     });

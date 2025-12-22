@@ -7,14 +7,16 @@
    - Network:      http://192.168.0.2:3000
 
  ✓ Starting...
- ✓ Ready in 2.2s
-   Reload env: .env.local
+ ✓ Ready in 2.1s
  ○ Compiling /middleware ...
- ✓ Compiled /middleware in 928ms (180 modules)
- ○ Compiling /contact ...
- ✓ Compiled /contact in 8.8s (1772 modules)
- GET /contact 200 in 10500ms
+ ✓ Compiled /middleware in 1162ms (180 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 8.2s (669 modules)
+ GET /ppdb/register 404 in 9273ms
+ GET /ppdb/register 404 in 98ms
  ○ Compiling /api/auth/verify ...
- ✓ Compiled /api/auth/verify in 2.1s (1865 modules)
- GET /api/auth/verify 401 in 2444ms
- GET /contact 200 in 183ms
+ ✓ Compiled /api/auth/verify in 1402ms (748 modules)
+ GET /api/auth/verify 401 in 1833ms
+ GET /ppdb/register 404 in 383ms
+ GET /api/auth/verify 401 in 36ms
+[?25h
