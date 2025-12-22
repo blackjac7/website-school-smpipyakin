@@ -138,16 +138,42 @@ export async function loginAction(prevState: unknown, formData: FormData) {
       return { success: false, error: "Invalid role" };
     }
 
-    const user = await prisma.user.findFirst({
-      where: {
-        username: username,
-        role: dbRole,
-      },
-      include: {
-        siswa: true,
-        kesiswaan: true,
-      },
-    });
+    // Special logic for OSIS login:
+    // Allow if user is explicitly OSIS OR (user is SISWA AND has osisAccess)
+    let user;
+
+    if (role === "osis") {
+      user = await prisma.user.findFirst({
+        where: {
+          username: username,
+          OR: [
+            { role: "OSIS" },
+            {
+              role: "SISWA",
+              siswa: {
+                osisAccess: true
+              }
+            }
+          ]
+        },
+        include: {
+          siswa: true,
+          kesiswaan: true,
+        },
+      });
+    } else {
+      // Standard login for other roles
+      user = await prisma.user.findFirst({
+        where: {
+          username: username,
+          role: dbRole,
+        },
+        include: {
+          siswa: true,
+          kesiswaan: true,
+        },
+      });
+    }
 
     if (!user) {
       // Log failed attempt
