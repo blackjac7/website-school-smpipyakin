@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2, LayoutGrid } from "lucide-react";
 import { motion } from "framer-motion";
-import { getSchoolStats, createSchoolStat, updateSchoolStat, deleteSchoolStat } from "@/actions/stats";
+import { createSchoolStat, updateSchoolStat, deleteSchoolStat } from "@/actions/stats";
 import { SchoolStat } from "@prisma/client";
 import toast from "react-hot-toast";
 import * as LucideIcons from "lucide-react";
