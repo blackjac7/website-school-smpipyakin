@@ -44,6 +44,7 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
       setIsModalOpen(false);
       setEditingSlide(null);
     } catch (error) {
+      console.error(error);
       toast.error("Failed to save slide");
     } finally {
       setIsLoading(false);

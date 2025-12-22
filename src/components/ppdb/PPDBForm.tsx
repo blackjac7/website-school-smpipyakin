@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   CheckCircle,
   AlertCircle,
@@ -76,6 +76,7 @@ export default function PPDBForm({
   uploadProgress,
 }: PPDBFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const formRef = useRef<HTMLDivElement>(null);
 
   const steps = [
     { id: 1, label: "Data Siswa" },
@@ -107,17 +108,17 @@ export default function PPDBForm({
       }
     }
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    formRef.current?.scrollIntoView({ behavior: "smooth" });
     setCurrentStep((prev) => Math.min(prev + 1, steps.length));
   };
 
   const handlePrev = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    formRef.current?.scrollIntoView({ behavior: "smooth" });
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
   return (
-    <section className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
+    <section ref={formRef} className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
       <div className="bg-white rounded-3xl shadow-2xl overflow-hidden min-h-[600px] flex flex-col">
         {/* Form Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 sm:p-8 text-white text-center">
