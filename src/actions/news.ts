@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { News, NewsCategory } from "@prisma/client";
+import { News, BeritaKategori } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export async function getAllNews() {
@@ -36,17 +36,26 @@ export async function createNews(data: {
   content: string;
   image: string;
   date: Date;
-  category: NewsCategory;
+  category: BeritaKategori;
   author: string;
 }) {
   try {
+    // We need an authorId.
+    let authorId = "";
+    const admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
+    if (admin) authorId = admin.id;
+    else throw new Error("No author/admin found.");
+
+
     const news = await prisma.news.create({
       data: {
-        ...data,
-        slug: data.title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)+/g, ""),
+        title: data.title,
+        content: data.content,
+        image: data.image,
+        date: data.date,
+        kategori: data.category,
+        statusPersetujuan: "APPROVED",
+        authorId: authorId,
       },
     });
     revalidatePath("/news");

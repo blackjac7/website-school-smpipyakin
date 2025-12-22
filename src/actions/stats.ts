@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 export async function getSchoolStats() {
   try {
     const stats = await prisma.schoolStat.findMany({
-      orderBy: { order: "asc" },
+      orderBy: { sortOrder: "asc" },
     });
     return stats;
   } catch (error) {
@@ -16,7 +16,7 @@ export async function getSchoolStats() {
   }
 }
 
-export async function createStat(data: Omit<SchoolStat, "id" | "createdAt" | "updatedAt">) {
+export async function createSchoolStat(data: Omit<SchoolStat, "id" | "createdAt" | "updatedAt">) {
   try {
     const stat = await prisma.schoolStat.create({
       data,
@@ -29,7 +29,7 @@ export async function createStat(data: Omit<SchoolStat, "id" | "createdAt" | "up
   }
 }
 
-export async function updateStat(id: string, data: Partial<SchoolStat>) {
+export async function updateSchoolStat(id: string, data: Partial<SchoolStat>) {
   try {
     const stat = await prisma.schoolStat.update({
       where: { id },
@@ -43,7 +43,7 @@ export async function updateStat(id: string, data: Partial<SchoolStat>) {
   }
 }
 
-export async function deleteStat(id: string) {
+export async function deleteSchoolStat(id: string) {
   try {
     await prisma.schoolStat.delete({
       where: { id },

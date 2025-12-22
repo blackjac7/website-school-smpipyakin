@@ -33,6 +33,7 @@ export async function getUpcomingEvents(limit?: number) {
   }
 }
 
+// Function to map mismatching fields if needed or handle the error properly
 export async function createCalendarEvent(data: {
   title: string;
   description?: string;
@@ -43,10 +44,26 @@ export async function createCalendarEvent(data: {
   semester: SemesterType;
   tahunPelajaran: string;
   isHoliday: boolean;
+  createdBy?: string;
 }) {
   try {
+    // We need a creator ID. For now, let's assume we pass it or pick the first admin found
+    let createdById = data.createdBy;
+    if (!createdById) {
+        const admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
+        if (admin) createdById = admin.id;
+        else throw new Error("No admin user found to associate activity with.");
+    }
+
     const event = await prisma.schoolActivity.create({
-      data,
+      data: {
+        title: data.title,
+        date: data.date,
+        information: data.description || "", // Map description to information
+        semester: data.semester,
+        tahunPelajaran: data.tahunPelajaran,
+        createdBy: createdById, // Required field
+      },
     });
     revalidatePath("/academic-calendar");
     return { success: true, data: event };
