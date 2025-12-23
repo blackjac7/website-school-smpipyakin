@@ -1,23 +1,22 @@
 // src/app/(public)/login/page.tsx
 import LoginForm from "@/components/auth/LoginForm";
-import PageHeader from "@/components/layout/PageHeader";
+// import VulnerableForm from "@/components/auth/VulnerableForm";
 import { LogoutSuccessMessage } from "@/components/shared";
 
 const LoginPage = () => {
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-       <PageHeader
-        title="Login Portal"
-        description="Silakan masuk untuk mengakses sistem informasi akademik dan layanan sekolah."
-        breadcrumbs={[{ label: "Login", href: "/login" }]}
-        image="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1920&auto=format&fit=crop"
-      />
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#1E3A8A] to-[#111827] relative overflow-hidden p-4 pt-24">
+      {/* Background Shapes/Patterns for visual interest */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+         <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-[#F59E0B]/10 rounded-full blur-3xl" />
+         <div className="absolute top-[20%] right-[10%] w-[300px] h-[300px] bg-white/5 rounded-full blur-2xl" />
+         <div className="absolute -bottom-[10%] -right-[10%] w-[600px] h-[600px] bg-[#1E3A8A]/20 rounded-full blur-3xl" />
+      </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-20">
-        <div className="flex flex-col items-center gap-8">
-          <LoginForm />
-          <LogoutSuccessMessage />
-        </div>
+      <div className="z-10 w-full max-w-5xl flex flex-col items-center gap-8">
+        <LoginForm />
+        <LogoutSuccessMessage />
+        {/* <VulnerableForm /> */}
       </div>
     </div>
   );
