@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { Trophy, Medal, Award, LucideIcon, Home, BookOpen } from "lucide-react";
+import { Trophy, Medal, Award, LucideIcon, Home } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   AchievementsSection,
@@ -96,7 +96,7 @@ function SiswaDashboardContent() {
   const menuItems: MenuItem[] = [
     { id: "dashboard", label: "Dashboard", icon: Home },
     { id: "achievements", label: "Prestasi", icon: Trophy },
-    { id: "works", label: "Karya", icon: BookOpen },
+    // { id: "works", label: "Karya", icon: BookOpen }, // Feature temporarily disabled
   ];
   const [profileData, setProfileData] = useState<ProfileData>({
     name: "",
@@ -416,10 +416,10 @@ function SiswaDashboardContent() {
           <DashboardOverview
             profileData={profileData}
             achievements={achievements}
-            works={works}
+            // works={works}
             onQuickEdit={() => setShowQuickEdit(true)}
             onUploadAchievement={() => setShowUploadForm(true)}
-            onUploadWork={() => setShowUploadWork(true)}
+            // onUploadWork={() => setShowUploadWork(true)}
           />
         );
       case "achievements":
