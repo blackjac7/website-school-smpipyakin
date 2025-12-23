@@ -4,10 +4,12 @@ import {
   Bell,
   Menu,
   Calendar,
-  Users,
-  Award,
-  Megaphone,
+  FileText,
+  Newspaper,
+  Heart,
+  Home,
   BellOff,
+  LucideIcon,
 } from "lucide-react";
 import { LogoutButton } from "@/components/shared";
 import { useAuth } from "@/components/shared/AuthProvider";
@@ -24,37 +26,39 @@ interface HeaderProps {
 }
 
 // Get dynamic header info based on active tab
-const getHeaderInfo = (activeTab?: string) => {
+const getHeaderInfo = (
+  activeTab?: string
+): { icon: LucideIcon; title: string; subtitle: string } => {
   switch (activeTab) {
-    case "kegiatan":
+    case "activities":
+      return {
+        icon: FileText,
+        title: "Program Kerja",
+        subtitle: "Ajukan dan kelola program kerja OSIS",
+      };
+    case "news":
+      return {
+        icon: Newspaper,
+        title: "Berita & Kegiatan",
+        subtitle: "Upload berita dan dokumentasi kegiatan",
+      };
+    case "schedule":
       return {
         icon: Calendar,
-        title: "Manajemen Kegiatan",
-        subtitle: "Kelola jadwal dan kegiatan OSIS",
+        title: "Jadwal Kegiatan",
+        subtitle: "Lihat kalender kegiatan OSIS",
       };
-    case "anggota":
+    case "ibadah":
       return {
-        icon: Users,
-        title: "Manajemen Anggota",
-        subtitle: "Kelola data anggota OSIS",
-      };
-    case "prestasi":
-      return {
-        icon: Award,
-        title: "Manajemen Prestasi",
-        subtitle: "Dokumentasikan prestasi organisasi",
-      };
-    case "pengumuman":
-      return {
-        icon: Megaphone,
-        title: "Pengumuman OSIS",
-        subtitle: "Kelola pengumuman untuk siswa",
+        icon: Heart,
+        title: "Manajemen Ibadah",
+        subtitle: "Kelola jadwal adzan, karpet, dan menstruasi",
       };
     default:
       return {
-        icon: Calendar,
+        icon: Home,
         title: "Dashboard OSIS",
-        subtitle: "Kelola dan pantau kegiatan OSIS serta jadwal acara sekolah",
+        subtitle: "Pantau statistik dan kegiatan organisasi",
       };
   }
 };
