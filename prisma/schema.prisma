@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -319,9 +319,36 @@ model Extracurricular {
   @@map("extracurriculars")
 }
 
+model Teacher {
+  id          String          @id @default(uuid())
+  name        String
+  position    String
+  category    TeacherCategory
+  photo       String?
+  subject     String?
+  description String?
+  experience  String?
+  sortOrder   Int             @default(0) @map("sort_order")
+  isActive    Boolean         @default(true) @map("is_active")
+
+  // Timestamps
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("teachers")
+}
+
 // =============================================
 // ENUMS (Sesuai dengan dbdiagram Anda)
 // =============================================
+
+enum TeacherCategory {
+  PIMPINAN          @map("pimpinan")
+  GURU_MAPEL        @map("guru_mapel")
+  STAFF             @map("staff")
+
+  @@map("teacher_category")
+}
 
 enum UserRole {
   ADMIN          @map("admin")

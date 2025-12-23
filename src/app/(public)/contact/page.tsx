@@ -2,7 +2,16 @@
 
 import ContactForm from "@/components/contact/ContactForm";
 import PageHeader from "@/components/layout/PageHeader";
-import { Clock, Mail, MapPin, Phone, Facebook, Instagram, Youtube, MessageCircle } from "lucide-react";
+import {
+  Clock,
+  Mail,
+  MapPin,
+  Phone,
+  Facebook,
+  Instagram,
+  Youtube,
+  MessageCircle,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function ContactPage() {
@@ -52,7 +61,6 @@ export default function ContactPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-
           {/* LEFT COLUMN: Info + Map (Stack) */}
           <div className="lg:col-span-5 flex flex-col gap-6 lg:gap-8 order-1">
             {/* 1. Contact Info Card */}
@@ -62,7 +70,7 @@ export default function ContactPage() {
               transition={{ duration: 0.5 }}
               className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-gray-100 overflow-hidden relative h-fit"
             >
-               {/* Decorative Background Blob */}
+              {/* Decorative Background Blob */}
               <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-yellow-100/50 to-orange-100/30 rounded-bl-full -mr-10 -mt-10 z-0"></div>
 
               <div className="relative z-10">
@@ -74,16 +82,18 @@ export default function ContactPage() {
                 </h2>
 
                 <div className="space-y-5">
-                   {/* Address */}
-                   <div className="flex gap-4 group">
+                  {/* Address */}
+                  <div className="flex gap-4 group">
                     <div className="mt-1 shrink-0 text-gray-400 group-hover:text-blue-600 transition-colors">
                       <MapPin className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">Alamat</h3>
+                      <h3 className="font-semibold text-gray-900 text-sm">
+                        Alamat
+                      </h3>
                       <p className="text-gray-600 text-sm leading-relaxed mt-0.5">
-                        Jl. Bangun Nusa Raya No. 10 Cengkareng Timur,
-                        Jakarta Barat 11730
+                        Jl. Bangun Nusa Raya No. 10 Cengkareng Timur, Jakarta
+                        Barat 11730
                       </p>
                     </div>
                   </div>
@@ -93,11 +103,15 @@ export default function ContactPage() {
                   {/* Phone */}
                   <div className="flex gap-4 group">
                     <div className="mt-1 shrink-0 text-gray-400 group-hover:text-green-600 transition-colors">
-                       <Phone className="h-5 w-5" />
+                      <Phone className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">Telepon</h3>
-                      <p className="text-gray-600 text-sm font-medium mt-0.5">+62 21 6194 381</p>
+                      <h3 className="font-semibold text-gray-900 text-sm">
+                        Telepon
+                      </h3>
+                      <p className="text-gray-600 text-sm font-medium mt-0.5">
+                        +62 21 6194 381
+                      </p>
                     </div>
                   </div>
 
@@ -105,12 +119,17 @@ export default function ContactPage() {
 
                   {/* Email */}
                   <div className="flex gap-4 group">
-                     <div className="mt-1 shrink-0 text-gray-400 group-hover:text-purple-600 transition-colors">
+                    <div className="mt-1 shrink-0 text-gray-400 group-hover:text-purple-600 transition-colors">
                       <Mail className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">Email</h3>
-                      <a href="mailto:info@smpipyakin.sch.id" className="text-blue-600 hover:underline text-sm mt-0.5 block">
+                      <h3 className="font-semibold text-gray-900 text-sm">
+                        Email
+                      </h3>
+                      <a
+                        href="mailto:info@smpipyakin.sch.id"
+                        className="text-blue-600 hover:underline text-sm mt-0.5 block"
+                      >
                         info@smpipyakin.sch.id
                       </a>
                     </div>
@@ -118,16 +137,22 @@ export default function ContactPage() {
 
                   <div className="h-px bg-gray-50 w-full" />
 
-                   {/* Hours */}
-                   <div className="flex gap-4 group">
+                  {/* Hours */}
+                  <div className="flex gap-4 group">
                     <div className="mt-1 shrink-0 text-gray-400 group-hover:text-orange-600 transition-colors">
                       <Clock className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">Jam Kerja</h3>
+                      <h3 className="font-semibold text-gray-900 text-sm">
+                        Jam Kerja
+                      </h3>
                       <div className="text-sm text-gray-600 mt-0.5 space-y-1">
-                        <div className="flex justify-between gap-4"><span>Senin - Jumat</span> <span>07:00 - 15:00</span></div>
-                        <div className="flex justify-between gap-4"><span>Sabtu</span> <span>07:00 - 12:00</span></div>
+                        <div className="flex justify-between gap-4">
+                          <span>Senin - Jumat</span> <span>07:00 - 15:00</span>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <span>Sabtu</span> <span>07:00 - 12:00</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -135,7 +160,9 @@ export default function ContactPage() {
 
                 {/* Socials Inline */}
                 <div className="mt-8 pt-6 border-t border-gray-100">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Media Sosial</p>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                    Media Sosial
+                  </p>
                   <div className="flex gap-2">
                     {socialLinks.map((social) => (
                       <a
@@ -152,28 +179,29 @@ export default function ContactPage() {
               </div>
             </motion.div>
 
-             {/* 2. Map Card (Vertical Fill) */}
+            {/* 2. Map Card (Vertical Fill) */}
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="bg-white rounded-2xl shadow-xl p-2 border border-gray-100 flex-grow min-h-[300px] flex flex-col"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="bg-white rounded-2xl shadow-xl p-2 border border-gray-100 flex-grow min-h-[300px] flex flex-col"
             >
-                 <div className="rounded-xl overflow-hidden w-full h-full relative flex-grow bg-gray-100 group">
-                    <iframe
-                    src="https://www.google.com/maps/embed/v1/place?q=smp+ip+yakin&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0, minHeight: '300px' }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    className="w-full h-full grayscale-[50%] group-hover:grayscale-0 transition-all duration-700 ease-in-out"
-                    ></iframe>
-                     <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm text-xs font-semibold text-gray-700 pointer-events-none border border-white/50">
-                        📍 Lokasi Sekolah
-                    </div>
-                 </div>
+              <div className="rounded-xl overflow-hidden w-full h-full relative flex-grow bg-gray-100 group">
+                <iframe
+                  src="https://www.google.com/maps/embed/v1/place?q=smp+ip+yakin&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0, minHeight: "300px" }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Peta Lokasi SMP IP Yakin Jakarta"
+                  className="w-full h-full grayscale-[50%] group-hover:grayscale-0 transition-all duration-700 ease-in-out"
+                ></iframe>
+                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm text-xs font-semibold text-gray-700 pointer-events-none border border-white/50">
+                  📍 Lokasi Sekolah
+                </div>
+              </div>
             </motion.div>
           </div>
 
@@ -184,23 +212,25 @@ export default function ContactPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="lg:col-span-7 order-2 h-full"
           >
-             <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-gray-100 h-full flex flex-col relative overflow-hidden">
-                {/* Decorative Blob Right */}
-               <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-blue-50/50 rounded-full blur-3xl z-0 pointer-events-none"></div>
+            <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-gray-100 h-full flex flex-col relative overflow-hidden">
+              {/* Decorative Blob Right */}
+              <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-blue-50/50 rounded-full blur-3xl z-0 pointer-events-none"></div>
 
-               <div className="relative z-10 mb-2">
-                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Kirim Pesan</h2>
-                 <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-                   Ada pertanyaan? Silakan isi formulir di bawah ini. Tim kami akan segera merespons pesan Anda melalui email.
-                 </p>
-               </div>
+              <div className="relative z-10 mb-2">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                  Kirim Pesan
+                </h2>
+                <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+                  Ada pertanyaan? Silakan isi formulir di bawah ini. Tim kami
+                  akan segera merespons pesan Anda melalui email.
+                </p>
+              </div>
 
-               <div className="relative z-10 flex-grow">
-                 <ContactForm />
-               </div>
+              <div className="relative z-10 flex-grow">
+                <ContactForm />
+              </div>
             </div>
           </motion.div>
-
         </div>
       </div>
     </div>
