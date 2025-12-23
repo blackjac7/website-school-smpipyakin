@@ -23,7 +23,13 @@ import { NotificationAPIService } from "@/hooks/useNotifications";
 import { FormattedNotification } from "@/utils/notificationHelpers";
 import toast from "react-hot-toast";
 import { useSidebar } from "@/hooks/useSidebar";
-import { getStudentWorks, createWork, updateWork, deleteWork, WorkInput } from "@/actions/student/works";
+import {
+  getStudentWorks,
+  createWork,
+  updateWork,
+  deleteWork,
+  WorkInput,
+} from "@/actions/student/works";
 
 interface AchievementFormData {
   title: string;
@@ -70,7 +76,9 @@ function SiswaDashboardContent() {
   const router = useRouter();
   const validTabs = ["dashboard", "achievements", "works"];
   const tabParam = searchParams.get("tab");
-  const currentTab = validTabs.includes(tabParam || "") ? tabParam || "dashboard" : "dashboard";
+  const currentTab = validTabs.includes(tabParam || "")
+    ? tabParam || "dashboard"
+    : "dashboard";
 
   // Sync state with URL
   const [activeMenu, setActiveMenu] = useState(currentTab);
@@ -91,7 +99,8 @@ function SiswaDashboardContent() {
   const [showEditWork, setShowEditWork] = useState(false);
   const [selectedWork, setSelectedWork] = useState<Work | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
-  const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } = useSidebar(true);
+  const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } =
+    useSidebar(true);
   const [loading, setLoading] = useState(true);
   const confirmModal = useToastConfirm();
 
@@ -389,7 +398,9 @@ function SiswaDashboardContent() {
             toast.success("Karya berhasil dihapus!");
             await loadWorks(); // Reload works
           } else {
-            toast.error(result.error || "Gagal menghapus karya. Silakan coba lagi.");
+            toast.error(
+              result.error || "Gagal menghapus karya. Silakan coba lagi."
+            );
           }
         } catch (error) {
           console.error("Failed to delete work:", error);
@@ -475,6 +486,7 @@ function SiswaDashboardContent() {
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           markAsRead={markAsRead}
           onEditProfile={() => setShowFullProfile(true)}
+          activeTab={activeMenu}
         />
 
         {/* Content */}
@@ -488,9 +500,7 @@ function SiswaDashboardContent() {
         isOpen={showUploadForm}
         onClose={() => setShowUploadForm(false)}
         onSubmit={handleSubmitForm}
-        pendingCount={
-          achievements.filter((a) => a.status === "pending").length
-        }
+        pendingCount={achievements.filter((a) => a.status === "pending").length}
       />
 
       <UploadWorkModal
