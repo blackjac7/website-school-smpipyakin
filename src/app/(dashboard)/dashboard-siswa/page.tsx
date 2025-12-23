@@ -22,6 +22,7 @@ import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 import { NotificationAPIService } from "@/hooks/useNotifications";
 import { FormattedNotification } from "@/utils/notificationHelpers";
 import toast from "react-hot-toast";
+import { useSidebar } from "@/hooks/useSidebar";
 
 interface AchievementFormData {
   title: string;
@@ -89,7 +90,7 @@ function SiswaDashboardContent() {
   const [showEditWork, setShowEditWork] = useState(false);
   const [selectedWork, setSelectedWork] = useState<Work | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } = useSidebar(true);
   const [loading, setLoading] = useState(true);
   const confirmModal = useToastConfirm();
 
