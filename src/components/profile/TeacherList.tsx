@@ -142,7 +142,7 @@ export default function TeacherList({ initialTeachers }: TeacherListProps) {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group"
+                      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
                     >
                       <div className="relative h-48 bg-gradient-to-br from-blue-100 to-blue-50">
                         <Image

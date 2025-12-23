@@ -18,7 +18,7 @@ export default function InstagramEmbed() {
         <div className="rounded-xl overflow-hidden shadow-lg">
           <iframe
             src="https://www.instagram.com/smpyakinku/embed"
-            className="w-full h-[600px] border-none"
+            className="w-full h-[400px] md:h-[600px] border-none"
             loading="lazy"
             title="Instagram Feed SMP IP Yakin"
           />

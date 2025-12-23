@@ -54,7 +54,7 @@ export default function EducationalMotivation() {
         </div>
 
         {/* Nilai Karakter */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
           {values.map((value, index) => (
             <div
               key={index}
