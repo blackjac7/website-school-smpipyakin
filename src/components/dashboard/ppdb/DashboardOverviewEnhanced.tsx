@@ -6,21 +6,17 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  TrendingUp,
   FileText,
   BarChart3,
   Calendar,
   GraduationCap,
-  Target,
-  Award,
-  UserPlus,
   Activity,
-  ArrowRight
+  ArrowRight,
+  LucideIcon
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { getPPDBStats } from "@/actions/ppdb";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 
 const RegistrationChart = dynamic(() => import("./RegistrationChart"), {
   ssr: false,
@@ -306,10 +302,6 @@ export default function DashboardOverviewEnhanced() {
                 desc={`${stats.overview.pending} pendaftar menunggu`}
                 color="amber"
                 onClick={() => {
-                  // Trigger navigation via parent or context if needed,
-                  // or simpler: just visually represented here.
-                  // Ideally use Link if it was a real route, but this is a tabbed dashboard.
-                  // For now, it's visual.
                   document.getElementById('tab-validation')?.click();
                 }}
             />
@@ -333,15 +325,25 @@ export default function DashboardOverviewEnhanced() {
 
 // Sub-components
 
-function StatsCard({ title, value, icon: Icon, color, trend, subtext, progress }: any) {
-    const colors: any = {
+interface StatsCardProps {
+  title: string;
+  value: number;
+  icon: LucideIcon;
+  color: 'blue' | 'yellow' | 'green' | 'red';
+  trend?: string;
+  subtext?: string;
+  progress?: number;
+}
+
+function StatsCard({ title, value, icon: Icon, color, trend, subtext, progress }: StatsCardProps) {
+    const colors = {
         blue: "bg-blue-50 text-blue-600 border-blue-100",
         yellow: "bg-yellow-50 text-yellow-600 border-yellow-100",
         green: "bg-green-50 text-green-600 border-green-100",
         red: "bg-red-50 text-red-600 border-red-100",
     };
 
-    const iconColors: any = {
+    const iconColors = {
         blue: "bg-blue-600",
         yellow: "bg-[#F59E0B]",
         green: "bg-green-600",
@@ -382,8 +384,16 @@ function StatsCard({ title, value, icon: Icon, color, trend, subtext, progress }
     );
 }
 
-function QuickActionCard({ icon: Icon, title, desc, color, onClick }: any) {
-    const colors: any = {
+interface QuickActionCardProps {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+  color: 'amber' | 'blue' | 'green';
+  onClick?: () => void;
+}
+
+function QuickActionCard({ icon: Icon, title, desc, color, onClick }: QuickActionCardProps) {
+    const colors = {
         amber: "hover:border-amber-300 hover:bg-amber-50 group-hover:text-amber-600",
         blue: "hover:border-blue-300 hover:bg-blue-50 group-hover:text-blue-600",
         green: "hover:border-green-300 hover:bg-green-50 group-hover:text-green-600",
@@ -406,7 +416,7 @@ function QuickActionCard({ icon: Icon, title, desc, color, onClick }: any) {
 }
 
 function StatusBadge({ status }: { status: string }) {
-    const styles: any = {
+    const styles: Record<string, string> = {
         PENDING: "bg-yellow-100 text-yellow-700",
         ACCEPTED: "bg-green-100 text-green-700",
         REJECTED: "bg-red-100 text-red-700",

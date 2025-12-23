@@ -3,17 +3,14 @@
 import { useState, useEffect } from "react";
 import {
   BarChart3,
-  TrendingUp,
   Download,
   Users,
   Target,
   Award,
   FileText,
   PieChart,
-  Activity,
   Clock,
-  CheckCircle,
-  XCircle,
+  LucideIcon
 } from "lucide-react";
 import { getPPDBStats } from "@/actions/ppdb";
 import toast from "react-hot-toast";
@@ -53,8 +50,6 @@ export default function ReportsContentEnhanced() {
       setLoading(true);
       const result = await getPPDBStats();
       if (result.success && result.data) {
-        // Adapt result.data to PPDBStats interface if needed
-        // result.data has recentApplications which we don't need here but TS is fine with extra props
         setStats(result.data as unknown as PPDBStats);
       } else {
         toast.error("Gagal memuat data laporan");
@@ -303,7 +298,6 @@ export default function ReportsContentEnhanced() {
                 (item._count / (stats.overview.total || 1)) * 100
               );
               const label = item.gender === "LAKI_LAKI" ? "Laki-laki" : "Perempuan";
-              const color = item.gender === "LAKI_LAKI" ? "bg-blue-500" : "bg-pink-500";
               const gradient = item.gender === "LAKI_LAKI"
                 ? "bg-gradient-to-r from-blue-400 to-blue-600"
                 : "bg-gradient-to-r from-pink-400 to-pink-600";
@@ -327,8 +321,19 @@ export default function ReportsContentEnhanced() {
   );
 }
 
-function MetricCard({ title, value, icon: Icon, color, trend, trendUp, progress, subtext }: any) {
-    const colors: any = {
+interface MetricCardProps {
+  title: string;
+  value: string | number;
+  icon: LucideIcon;
+  color: 'blue' | 'green' | 'orange' | 'purple';
+  trend?: string;
+  trendUp?: boolean;
+  progress?: number;
+  subtext?: string;
+}
+
+function MetricCard({ title, value, icon: Icon, color, trend, trendUp, progress, subtext }: MetricCardProps) {
+    const colors: Record<string, string> = {
         blue: "text-blue-600 bg-blue-50",
         green: "text-green-600 bg-green-50",
         orange: "text-orange-600 bg-orange-50",
@@ -365,7 +370,14 @@ function MetricCard({ title, value, icon: Icon, color, trend, trendUp, progress,
     );
 }
 
-function LegendItem({ color, label, count, percentage }: any) {
+interface LegendItemProps {
+  color: string;
+  label: string;
+  count: number;
+  percentage: number;
+}
+
+function LegendItem({ color, label, count, percentage }: LegendItemProps) {
     return (
         <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
             <div className="flex items-center gap-3">
