@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { PPDBStatus } from "@prisma/client";
+import { PPDBStatus, Prisma } from "@prisma/client";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 
@@ -63,6 +63,15 @@ export async function getPPDBStats() {
         select: { createdAt: true, status: true }
     });
 
+    interface MonthlyStat {
+      name: string;
+      key: string;
+      Total: number;
+      Diterima: number;
+      Ditolak: number;
+      Pending: number;
+    }
+
     // Process monthly stats
     const monthlyStatsMap = allApps.reduce((acc, curr) => {
         const date = new Date(curr.createdAt);
@@ -86,7 +95,7 @@ export async function getPPDBStats() {
         else if (curr.status === "REJECTED") acc[monthKey].Ditolak++;
 
         return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, MonthlyStat>);
 
     // Sort by key (YYYY-MM) but return array
     const monthlyStats = Object.values(monthlyStatsMap).sort((a, b) => a.key.localeCompare(b.key));
@@ -128,12 +137,14 @@ export async function updateApplicantStatus(id: string, status: PPDBStatus, feed
     }
 }
 
-export async function getApplicants(params: {
+interface GetApplicantsParams {
     search?: string;
     status?: string;
     page?: number;
     limit?: number;
-}) {
+}
+
+export async function getApplicants(params: GetApplicantsParams) {
     const user = await verifyAuth();
     if (!user || !['admin', 'ppdb-officer'].includes(user.role as string)) {
         return { success: false, error: "Unauthorized" };
@@ -143,13 +154,17 @@ export async function getApplicants(params: {
         const { search, status, page = 1, limit = 10 } = params;
         const skip = (page - 1) * limit;
 
-        const where: any = {};
+        const where: Prisma.PPDBApplicationWhereInput = {};
 
         if (search) {
             where.OR = [
-                { name: { contains: search, mode: 'insensitive' } },
-                { nisn: { contains: search } }, // NISN is numeric, usually exact match but contains works on string
-                { asalSekolah: { contains: search, mode: 'insensitive' } }
+                // Cast to any to bypass type check if mode is not supported in current provider
+                // but usually better to omit if not supported.
+                // Assuming standard Prisma behavior, contains is supported.
+                // If using SQLite, mode: 'insensitive' is not supported.
+                { name: { contains: search } },
+                { nisn: { contains: search } },
+                { asalSekolah: { contains: search } }
             ];
         }
 

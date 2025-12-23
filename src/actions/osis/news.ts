@@ -1,7 +1,6 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { BeritaKategori, StatusApproval } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAuthenticatedUser } from "@/lib/auth";
@@ -32,7 +31,7 @@ export async function getOsisNews() {
   return { success: true, data: news };
 }
 
-export async function createOsisNews(prevState: any, formData: FormData) {
+export async function createOsisNews(prevState: unknown, formData: FormData) {
   const user = await getAuthenticatedUser();
   if (!user) return { success: false, error: "Unauthorized" };
 
@@ -92,6 +91,8 @@ export async function deleteOsisNews(id: string) {
         revalidatePath("/dashboard-osis");
         return { success: true, message: "Berita dihapus" };
     } catch (e) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _ = e;
         return { success: false, error: "Error deleting" };
     }
 }

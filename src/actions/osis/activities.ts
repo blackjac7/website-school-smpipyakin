@@ -1,10 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { OsisActivity, StatusApproval } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getAuthenticatedUser } from "@/lib/auth";
 
@@ -43,7 +40,7 @@ export async function getActivities() {
   return { success: true, data: activities };
 }
 
-export async function createActivity(prevState: any, formData: FormData) {
+export async function createActivity(prevState: unknown, formData: FormData) {
   const user = await getAuthenticatedUser();
   if (!user) {
     return { success: false, error: "Unauthorized" };
@@ -98,7 +95,7 @@ export async function createActivity(prevState: any, formData: FormData) {
   }
 }
 
-export async function updateActivity(prevState: any, formData: FormData) {
+export async function updateActivity(prevState: unknown, formData: FormData) {
   const user = await getAuthenticatedUser();
   if (!user) return { success: false, error: "Unauthorized" };
 
@@ -168,6 +165,8 @@ export async function deleteActivity(id: string) {
         revalidatePath("/dashboard-osis");
         return { success: true, message: "Kegiatan dihapus" };
     } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _ = error;
         return { success: false, error: "Gagal menghapus" };
     }
 }
