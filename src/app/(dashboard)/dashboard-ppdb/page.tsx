@@ -29,18 +29,8 @@ interface EnhancedApplicant {
   status: string;
   statusColor?: string;
   feedback: string | null;
-  documents?: {
-    ijazah: boolean;
-    akta: boolean;
-    kk: boolean;
-    foto: boolean;
-  };
-  documentUrls?: {
-    ijazahUrl: string | null;
-    aktaKelahiranUrl: string | null;
-    kartuKeluargaUrl: string | null;
-    pasFotoUrl: string | null;
-  };
+  documents?: unknown;
+  documentUrls?: unknown;
   createdAt: string;
   updatedAt: string;
 }
@@ -115,8 +105,9 @@ function PPDBDashboard() {
     initializeData();
   }, []);
 
-  const handleViewDetail = (applicant: EnhancedApplicant) => {
-    setSelectedApplicant(applicant);
+  const handleViewDetail = (applicant: unknown) => {
+    // Cast to EnhancedApplicant as we know it comes from ValidationContentEnhanced
+    setSelectedApplicant(applicant as EnhancedApplicant);
     setShowDetailModal(true);
   };
 
@@ -216,24 +207,6 @@ function PPDBDashboard() {
         }}
         onStatusUpdate={handleStatusUpdate}
       />
-
-      {/* Old modals - Temporarily disabled for enhanced UI focus */}
-      {/*
-      <DetailModal
-        isOpen={showDetailModal}
-        applicant={selectedApplicant}
-        onClose={() => setShowDetailModal(false)}
-        onValidation={handleValidation}
-      />
-
-      <ValidationModal
-        isOpen={showValidationModal}
-        applicant={selectedApplicant}
-        validationAction={validationAction}
-        onClose={() => setShowValidationModal(false)}
-        onSubmit={handleValidationSubmit}
-      />
-      */}
     </div>
   );
 }

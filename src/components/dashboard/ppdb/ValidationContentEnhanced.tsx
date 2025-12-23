@@ -11,12 +11,7 @@ import {
   Download,
   Users,
   School,
-  Calendar,
-  ArrowUpDown,
-  MoreVertical,
-  User,
   Phone,
-  Mail,
 } from "lucide-react";
 import { getApplicants } from "@/actions/ppdb";
 
@@ -38,12 +33,12 @@ interface Applicant {
   createdAt: string;
   updatedAt: string;
   // Optional client-side properties
-  documents?: any;
-  documentUrls?: any;
+  documents?: unknown;
+  documentUrls?: unknown;
 }
 
 interface ValidationContentEnhancedProps {
-  onViewDetail: (applicant: any) => void; // Using 'any' briefly to bridge type gap if needed, or strict Applicant
+  onViewDetail: (applicant: Applicant) => void;
   onExportData: () => void;
   refreshTrigger?: number;
 }
@@ -58,7 +53,6 @@ export default function ValidationContentEnhanced({
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [sortBy, setSortBy] = useState("newest"); // Client side sorting for now if simplified
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -78,6 +72,7 @@ export default function ValidationContentEnhanced({
 
   useEffect(() => {
     fetchApplicants();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, statusFilter, debouncedSearchTerm, refreshTrigger]);
 
   const fetchApplicants = async () => {
@@ -111,9 +106,6 @@ export default function ValidationContentEnhanced({
     setLoadingDetailId(applicant.id);
     try {
       await new Promise((resolve) => setTimeout(resolve, 200));
-      // Convert dates back to Date objects if the modal expects them?
-      // Or update the Modal to accept strings.
-      // Usually easy to just pass the stringified version and let Modal handle it.
       onViewDetail(applicant);
     } finally {
       setLoadingDetailId(null);
