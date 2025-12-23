@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Home, Plus, Calendar as CalendarIcon, Newspaper, FileText } from "lucide-react";
+import { Home, Calendar as CalendarIcon, Newspaper, FileText, Heart } from "lucide-react";
 import {
   Header,
   StatsCards,
@@ -16,7 +16,9 @@ import {
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DashboardSidebar } from "@/components/dashboard/layout";
 import { getActivities, deleteActivity } from "@/actions/osis/activities";
+import { getMenstruationRecords, getAdzanSchedules, getCarpetSchedules } from "@/actions/worship";
 import NewsManagement from "@/components/dashboard/osis/NewsManagement";
+import ReligiousDashboardClient from "@/components/dashboard/osis/worship/ReligiousDashboardClient";
 import toast from "react-hot-toast";
 
 function OSISDashboard() {
@@ -26,13 +28,25 @@ function OSISDashboard() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
+
+  // Worship Data State
+  const [worshipData, setWorshipData] = useState<{
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      menstruation: any[],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      adzan: any[],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      carpet: any[]
+  }>({ menstruation: [], adzan: [], carpet: [] });
+  const [loadingWorship, setLoadingWorship] = useState(false);
 
   const menuItems: MenuItem[] = [
     { id: "dashboard", label: "Dashboard", icon: Home },
     { id: "activities", label: "Program Kerja", icon: FileText },
     { id: "news", label: "Berita & Kegiatan", icon: Newspaper },
     { id: "schedule", label: "Jadwal Kegiatan", icon: CalendarIcon },
+    { id: "ibadah", label: "Ibadah", icon: Heart },
   ];
 
   // Dummy notifications for now (Server Action not implemented for notifs yet)
@@ -51,16 +65,45 @@ function OSISDashboard() {
     fetchActivities();
   }, []);
 
+  useEffect(() => {
+    if (activeMenu === 'ibadah') {
+        fetchWorshipData();
+    }
+  }, [activeMenu]);
+
   async function fetchActivities() {
     try {
       const res = await getActivities();
       if (res.success && res.data) {
         setActivities(res.data as unknown as OsisActivity[]);
       }
-    } catch (e) {
+    } catch (error) {
+      console.error(error);
       toast.error("Gagal memuat kegiatan");
     } finally {
-      setLoading(false);
+      // setLoading(false);
+    }
+  }
+
+  async function fetchWorshipData() {
+    setLoadingWorship(true);
+    try {
+        const now = new Date();
+        const [menstruation, adzan, carpet] = await Promise.all([
+            getMenstruationRecords(),
+            getAdzanSchedules(now),
+            getCarpetSchedules(now)
+        ]);
+        setWorshipData({
+            menstruation,
+            adzan,
+            carpet
+        });
+    } catch (e) {
+        console.error(e);
+        toast.error("Gagal memuat data ibadah");
+    } finally {
+        setLoadingWorship(false);
     }
   }
 
@@ -152,6 +195,20 @@ function OSISDashboard() {
               currentMonth={currentMonth}
               setCurrentMonth={setCurrentMonth}
             />
+          )}
+
+          {activeMenu === "ibadah" && (
+            loadingWorship ? (
+                <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+            ) : (
+                <ReligiousDashboardClient
+                    menstruationRecords={worshipData.menstruation}
+                    adzanSchedules={worshipData.adzan}
+                    carpetSchedules={worshipData.carpet}
+                />
+            )
           )}
         </main>
       </div>
