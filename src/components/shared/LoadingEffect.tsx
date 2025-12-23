@@ -28,10 +28,12 @@ const LoadingEffect = memo(
     }, []);
 
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-gray-900">
         <div className="flex flex-col items-center space-y-4">
           {/* Loading Animation */}
-          <div className={`${sizeClasses[size]} relative flex items-center justify-center`}>
+          <div
+            className={`${sizeClasses[size]} relative flex items-center justify-center`}
+          >
             {/* Lottie animation - client side only */}
             {isMounted ? (
               <DotLottieReact
@@ -43,14 +45,14 @@ const LoadingEffect = memo(
             ) : (
               /* Fallback for Server Side Rendering (SSR) and initial Client load */
               /* Prevents white screen flash */
-              <div className="w-1/2 h-1/2 border-4 border-gray-100 border-t-[var(--color-school-yellow)] rounded-full animate-spin" />
+              <div className="w-1/2 h-1/2 border-4 border-gray-100 dark:border-gray-700 border-t-[var(--color-school-yellow)] rounded-full animate-spin" />
             )}
           </div>
 
           {/* Loading Message */}
           {showMessage && (
             <div className="text-center space-y-1">
-              <p className="text-lg font-medium text-blue-900 animate-pulse">
+              <p className="text-lg font-medium text-blue-900 dark:text-blue-300 animate-pulse">
                 {message}
               </p>
             </div>

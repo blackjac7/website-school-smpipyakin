@@ -1,10 +1,29 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Filter, Loader2 } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  Image as ImageIcon,
+  Video as VideoIcon,
+} from "lucide-react";
 import KaryaCard from "./KaryaCard";
 import KaryaModal from "./KaryaModal";
-import { getPublicWorks, PublicWork } from "@/actions/public/karya";
+import KaryaStats from "./KaryaStats";
+import FeaturedWorks from "./FeaturedWorks";
+import CategoryPills from "./CategoryPills";
+import {
+  KaryaStatsSkeleton,
+  FeaturedSkeleton,
+  GallerySkeleton,
+} from "./KaryaSkeleton";
+import {
+  getPublicWorks,
+  getFeaturedWorks,
+  getKaryaStats,
+  PublicWork,
+} from "@/actions/public/karya";
+import { motion, AnimatePresence } from "framer-motion";
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -19,9 +38,19 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
+interface KaryaStatsData {
+  totalWorks: number;
+  totalPhotos: number;
+  totalStudents: number;
+  categories: { name: string; count: number }[];
+}
+
 export default function KaryaGallery() {
   const [works, setWorks] = useState<PublicWork[]>([]);
+  const [featuredWorks, setFeaturedWorks] = useState<PublicWork[]>([]);
+  const [stats, setStats] = useState<KaryaStatsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [search, setSearch] = useState("");
@@ -30,8 +59,33 @@ export default function KaryaGallery() {
   const [type, setType] = useState("all");
   const [selectedWork, setSelectedWork] = useState<PublicWork | null>(null);
 
-  // Use a ref to track if we're currently fetching to prevent double-fetching in React Strict Mode or rapid scrolling
   const isFetching = useRef(false);
+
+  // Fetch initial data (stats + featured)
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      setInitialLoading(true);
+      try {
+        const [featuredResult, statsResult] = await Promise.all([
+          getFeaturedWorks(),
+          getKaryaStats(),
+        ]);
+
+        if (featuredResult.success && featuredResult.data) {
+          setFeaturedWorks(featuredResult.data);
+        }
+        if (statsResult.success && statsResult.data) {
+          setStats(statsResult.data);
+        }
+      } catch (error) {
+        console.error("Error fetching initial data:", error);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
 
   const fetchWorks = async (pageNum: number, isNewFilter = false) => {
     if (isFetching.current) return;
@@ -78,83 +132,153 @@ export default function KaryaGallery() {
     fetchWorks(nextPage);
   };
 
+  const handleCategoryChange = (newCategory: string) => {
+    setCategory(newCategory);
+  };
+
+  const handleWorkClick = (work: PublicWork) => {
+    setSelectedWork(work);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Controls */}
-      <div className="mb-10 space-y-4">
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-          <div className="relative w-full md:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari karya atau nama siswa..."
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
-            />
-          </div>
+      {/* Stats Section */}
+      {initialLoading ? <KaryaStatsSkeleton /> : <KaryaStats stats={stats} />}
 
-          <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer shadow-sm text-sm"
-            >
-              <option value="all">Semua Kategori</option>
-              <option value="seni">Seni & Kreativitas</option>
-              <option value="teknologi">Teknologi</option>
-              <option value="tulis">Karya Tulis</option>
-              <option value="fotografi">Fotografi</option>
-              <option value="video">Video</option>
-            </select>
+      {/* Featured Section */}
+      {initialLoading ? (
+        <FeaturedSkeleton />
+      ) : (
+        featuredWorks.length > 0 && (
+          <FeaturedWorks works={featuredWorks} onWorkClick={handleWorkClick} />
+        )
+      )}
 
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer shadow-sm text-sm"
-            >
-              <option value="all">Semua Jenis</option>
-              <option value="photo">Foto/Gambar</option>
-              <option value="video">Video</option>
-            </select>
-          </div>
+      {/* Divider */}
+      <div className="border-t border-gray-200 dark:border-gray-700 my-10" />
+
+      {/* Gallery Header */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          Galeri Semua Karya
+        </h2>
+        <p className="text-gray-500 dark:text-gray-400">
+          Jelajahi koleksi lengkap karya kreatif siswa-siswi kami
+        </p>
+      </div>
+
+      {/* Category Pills */}
+      <CategoryPills
+        selectedCategory={category}
+        onCategoryChange={handleCategoryChange}
+      />
+
+      {/* Search & Type Filter */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Cari karya atau nama siswa..."
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-gray-900/30"
+          />
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={() => setType("all")}
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+              type === "all"
+                ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900"
+                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+            }`}
+          >
+            Semua
+          </button>
+          <button
+            onClick={() => setType("photo")}
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+              type === "photo"
+                ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900"
+                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+            }`}
+          >
+            <ImageIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Foto</span>
+          </button>
+          <button
+            onClick={() => setType("video")}
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+              type === "video"
+                ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900"
+                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+            }`}
+          >
+            <VideoIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Video</span>
+          </button>
         </div>
       </div>
 
-      {/* Gallery Grid - Masonry-ish using CSS columns */}
-      {works.length === 0 && !loading ? (
-        <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
-          <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-4">
-            <Filter className="w-8 h-8 text-gray-400" />
+      {/* Gallery Grid */}
+      {loading && works.length === 0 ? (
+        <GallerySkeleton />
+      ) : works.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-20 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl border border-dashed border-gray-300 dark:border-gray-600"
+        >
+          <div className="w-20 h-20 bg-white dark:bg-gray-700 rounded-2xl shadow-sm dark:shadow-gray-900/30 flex items-center justify-center mx-auto mb-4">
+            <Search className="w-10 h-10 text-gray-300 dark:text-gray-500" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900">Tidak ada karya ditemukan</h3>
-          <p className="text-gray-500 mt-1">Coba sesuaikan filter atau kata kunci pencarian Anda.</p>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+            Tidak ada karya ditemukan
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400 mt-2 max-w-md mx-auto">
+            Coba sesuaikan filter atau kata kunci pencarian Anda untuk menemukan
+            karya yang dicari.
+          </p>
           <button
-             onClick={() => {setSearch(""); setCategory("all"); setType("all");}}
-             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+            onClick={() => {
+              setSearch("");
+              setCategory("all");
+              setType("all");
+            }}
+            className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30"
           >
             Reset Filter
           </button>
-        </div>
+        </motion.div>
       ) : (
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-          {works.map((work) => (
-            <KaryaCard
-              key={work.id}
-              work={work}
-              onClick={() => setSelectedWork(work)}
-            />
-          ))}
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${category}-${type}-${debouncedSearch}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6"
+          >
+            {works.map((work) => (
+              <KaryaCard
+                key={work.id}
+                work={work}
+                onClick={() => setSelectedWork(work)}
+              />
+            ))}
+          </motion.div>
+        </AnimatePresence>
       )}
 
       {/* Load More */}
-      {hasMore && (
+      {hasMore && works.length > 0 && (
         <div className="mt-12 text-center">
           <button
             onClick={loadMore}
             disabled={loading}
-            className="group px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold shadow-sm hover:shadow-md hover:border-blue-300 hover:text-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+            className="group px-8 py-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-semibold shadow-sm dark:shadow-gray-900/30 hover:shadow-lg dark:hover:shadow-gray-900/50 hover:border-blue-300 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
           >
             {loading ? (
               <>
@@ -169,10 +293,7 @@ export default function KaryaGallery() {
       )}
 
       {/* Detail Modal */}
-      <KaryaModal
-        work={selectedWork}
-        onClose={() => setSelectedWork(null)}
-      />
+      <KaryaModal work={selectedWork} onClose={() => setSelectedWork(null)} />
     </div>
   );
 }

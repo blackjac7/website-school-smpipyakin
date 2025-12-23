@@ -100,12 +100,19 @@ export default function WorksSection({
 
   const getCategoryLabel = (category: string) => {
     const categories: { [key: string]: string } = {
-      seni: "Seni & Kreativitas",
-      teknologi: "Teknologi & Digital",
-      tulis: "Karya Tulis",
+      "seni-budaya": "Seni Budaya",
+      "bahasa-indonesia": "Bahasa Indonesia",
+      "bahasa-inggris": "Bahasa Inggris",
+      matematika: "Matematika",
+      ipa: "IPA",
+      ips: "IPS",
+      pai: "Pendidikan Agama Islam",
+      pkn: "PKn",
+      pjok: "PJOK",
+      informatika: "Informatika",
+      koding: "Koding",
+      prakarya: "Prakarya",
       fotografi: "Fotografi",
-      video: "Video & Multimedia",
-      desain: "Desain Grafis",
       lainnya: "Lainnya",
     };
     return categories[category] || category;

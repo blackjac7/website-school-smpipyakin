@@ -86,7 +86,7 @@ export default function QuickStats({ stats }: QuickStatsProps) {
       : defaultStats;
 
   return (
-    <section className="bg-white relative -mt-20 z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+    <section className="bg-white dark:bg-gray-900 relative -mt-20 z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
       <motion.div
         variants={container}
         initial="hidden"
@@ -98,15 +98,15 @@ export default function QuickStats({ stats }: QuickStatsProps) {
           <motion.div
             variants={item}
             key={index}
-            className="group bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-center border border-gray-100"
+            className="group bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl dark:shadow-gray-900/50 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-center border border-gray-100 dark:border-gray-700"
           >
-            <div className="flex justify-center mb-4 p-4 bg-yellow-50 rounded-full w-fit mx-auto group-hover:bg-yellow-100 transition-colors">
+            <div className="flex justify-center mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-full w-fit mx-auto group-hover:bg-yellow-100 dark:group-hover:bg-yellow-900/50 transition-colors">
               {stat.icon}
             </div>
-            <div className="text-4xl font-extrabold text-gray-900 mb-2">
+            <div className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">
               {stat.value}
             </div>
-            <div className="text-gray-500 font-medium uppercase tracking-wider text-sm">
+            <div className="text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider text-sm">
               {stat.label}
             </div>
           </motion.div>

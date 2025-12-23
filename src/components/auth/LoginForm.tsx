@@ -169,7 +169,7 @@ const LoginForm = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-white/20"
+        className="w-full bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-white/20 dark:border-gray-700/50"
       >
         <div className="flex flex-col md:flex-row min-h-[600px]">
           {/* Kolom Kiri: Form Login */}
@@ -182,12 +182,12 @@ const LoginForm = () => {
                 <div className="space-y-1">
                   <label
                     htmlFor="username"
-                    className="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1"
+                    className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
                   >
                     Username
                   </label>
                   <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#1E3A8A] transition-colors">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500 group-focus-within:text-[#1E3A8A] dark:group-focus-within:text-[#F59E0B] transition-colors">
                       <User size={18} />
                     </div>
                     <input
@@ -196,7 +196,7 @@ const LoginForm = () => {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       placeholder="Masukkan username anda"
-                      className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/50 focus:border-[#F59E0B] transition-all text-gray-700 placeholder-gray-400 font-medium text-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:bg-white dark:focus:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/50 focus:border-[#F59E0B] transition-all text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 font-medium text-sm"
                     />
                   </div>
                 </div>
@@ -205,12 +205,12 @@ const LoginForm = () => {
                 <div className="space-y-1">
                   <label
                     htmlFor="password"
-                    className="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1"
+                    className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
                   >
                     Password
                   </label>
                   <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#1E3A8A] transition-colors">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500 group-focus-within:text-[#1E3A8A] dark:group-focus-within:text-[#F59E0B] transition-colors">
                       <Lock size={18} />
                     </div>
                     <input
@@ -219,7 +219,7 @@ const LoginForm = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Masukkan kata sandi"
-                      className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/50 focus:border-[#F59E0B] transition-all text-gray-700 placeholder-gray-400 font-medium text-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:bg-white dark:focus:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/50 focus:border-[#F59E0B] transition-all text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 font-medium text-sm"
                     />
                   </div>
                 </div>
@@ -228,19 +228,19 @@ const LoginForm = () => {
                 <div className="space-y-1">
                   <label
                     htmlFor="role"
-                    className="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1"
+                    className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
                   >
                     Masuk Sebagai
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500">
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500 dark:text-gray-400">
                       <ChevronDown size={18} />
                     </div>
                     <select
                       id="role"
                       value={role}
                       onChange={(e) => setRole(e.target.value as Role)}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/50 focus:border-[#F59E0B] transition-all text-gray-700 appearance-none font-medium text-sm cursor-pointer"
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:bg-white dark:focus:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/50 focus:border-[#F59E0B] transition-all text-gray-700 dark:text-white appearance-none font-medium text-sm cursor-pointer"
                     >
                       <option value="siswa">Siswa</option>
                       <option value="osis">Pengurus OSIS</option>

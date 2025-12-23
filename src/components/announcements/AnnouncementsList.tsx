@@ -81,7 +81,7 @@ export default function AnnouncementsList({
             <motion.div
               key={announcement.id}
               variants={item}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow group"
             >
               <div
                 className={`h-1.5 w-full ${
@@ -96,13 +96,13 @@ export default function AnnouncementsList({
               <div className="p-6">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div className="flex-1">
-                    <h2 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-yellow-600 transition-colors">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">
                       <Link href={`/announcements/${announcement.id}`}>
                         {announcement.title}
                       </Link>
                     </h2>
 
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4">
                       <div className="flex items-center gap-1.5">
                         <Calendar className="w-4 h-4" />
                         {format(new Date(announcement.date), "dd MMMM yyyy", {
@@ -118,7 +118,7 @@ export default function AnnouncementsList({
                     </div>
 
                     <div
-                      className="text-gray-600 line-clamp-2 prose prose-sm mb-4"
+                      className="text-gray-600 dark:text-gray-300 line-clamp-2 prose prose-sm dark:prose-invert mb-4"
                       dangerouslySetInnerHTML={{
                         __html: announcement.content || "",
                       }}
@@ -128,7 +128,7 @@ export default function AnnouncementsList({
                   <div className="shrink-0">
                     <Link
                       href={`/announcements/${announcement.id}`}
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-yellow-600 hover:text-yellow-700 transition-colors px-4 py-2 rounded-lg hover:bg-yellow-50"
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300 transition-colors px-4 py-2 rounded-lg hover:bg-yellow-50 dark:hover:bg-yellow-900/30"
                     >
                       Lihat Detail
                       <ArrowRight className="w-4 h-4" />
@@ -147,7 +147,7 @@ export default function AnnouncementsList({
           <button
             onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
             disabled={currentPage === 1}
-            className="p-2 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-2 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             aria-label="Halaman Sebelumnya"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -162,7 +162,7 @@ export default function AnnouncementsList({
                   "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200",
                   currentPage === page
                     ? "bg-yellow-500 text-white shadow-md scale-110"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-yellow-50 hover:border-yellow-200"
+                    : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 hover:border-yellow-200 dark:hover:border-yellow-700"
                 )}
               >
                 {page}
@@ -175,7 +175,7 @@ export default function AnnouncementsList({
               handlePageChange(Math.min(currentPage + 1, totalPages))
             }
             disabled={currentPage === totalPages}
-            className="p-2 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-2 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             aria-label="Halaman Berikutnya"
           >
             <ChevronRight className="w-5 h-5" />

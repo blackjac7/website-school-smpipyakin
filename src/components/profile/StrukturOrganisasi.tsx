@@ -12,7 +12,11 @@ const VerticalLine = ({
 }: {
   height?: string;
   className?: string;
-}) => <div className={`w-0.5 bg-gray-300 mx-auto ${height} ${className}`} />;
+}) => (
+  <div
+    className={`w-0.5 bg-gray-300 dark:bg-gray-600 mx-auto ${height} ${className}`}
+  />
+);
 
 const HorizontalLine = ({
   width = "w-full",
@@ -20,7 +24,11 @@ const HorizontalLine = ({
 }: {
   width?: string;
   className?: string;
-}) => <div className={`h-0.5 bg-gray-300 mx-auto ${width} ${className}`} />;
+}) => (
+  <div
+    className={`h-0.5 bg-gray-300 dark:bg-gray-600 mx-auto ${width} ${className}`}
+  />
+);
 
 const OrgCard = ({
   image,
@@ -40,20 +48,22 @@ const OrgCard = ({
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
     transition={{ delay }}
-    className={`flex flex-col items-center bg-white p-5 rounded-xl border ${color === "blue" ? "border-blue-200" : "border-gray-200"} shadow-sm hover:shadow-md transition-shadow relative z-10 w-full max-w-[280px]`}
+    className={`flex flex-col items-center bg-white dark:bg-gray-700 p-5 rounded-xl border ${color === "blue" ? "border-blue-200 dark:border-blue-800" : "border-gray-200 dark:border-gray-600"} shadow-sm hover:shadow-md transition-shadow relative z-10 w-full max-w-[280px]`}
   >
     <div className="relative w-20 h-20 mb-3">
       <Image
         src={image}
         alt={name}
         fill
-        className="rounded-full object-cover bg-gray-100"
+        className="rounded-full object-cover bg-gray-100 dark:bg-gray-600"
       />
     </div>
-    <h3 className="font-bold text-gray-900 text-center text-sm leading-tight">
+    <h3 className="font-bold text-gray-900 dark:text-white text-center text-sm leading-tight">
       {name}
     </h3>
-    <p className="text-gray-500 text-xs text-center mt-1 px-2">{position}</p>
+    <p className="text-gray-500 dark:text-gray-400 text-xs text-center mt-1 px-2">
+      {position}
+    </p>
   </motion.div>
 );
 
@@ -76,15 +86,17 @@ const SummaryCard = ({
     initial={{ opacity: 0, scale: 0.95 }}
     whileInView={{ opacity: 1, scale: 1 }}
     viewport={{ once: true }}
-    className={`bg-white p-6 rounded-xl border ${colorClass} shadow-sm flex flex-col items-center w-full max-w-[280px] relative z-10`}
+    className={`bg-white dark:bg-gray-700 p-6 rounded-xl border ${colorClass} shadow-sm flex flex-col items-center w-full max-w-[280px] relative z-10`}
   >
     <div
       className={`w-12 h-12 ${bgClass} rounded-full flex items-center justify-center mb-3 ${textClass}`}
     >
       <Icon className="w-6 h-6" />
     </div>
-    <h3 className="font-bold text-gray-900">{title}</h3>
-    <p className="text-xs text-gray-500 mt-1 text-center">{subtitle}</p>
+    <h3 className="font-bold text-gray-900 dark:text-white">{title}</h3>
+    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
+      {subtitle}
+    </p>
   </motion.div>
 );
 
@@ -116,10 +128,12 @@ export default function StrukturOrganisasi({
         animate={{ opacity: 1, y: 0 }}
         className="text-center space-y-2"
       >
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
           Struktur Organisasi
         </h2>
-        <p className="text-gray-500">Tahun Ajaran 2024/2025</p>
+        <p className="text-gray-500 dark:text-gray-400">
+          Tahun Ajaran 2024/2025
+        </p>
       </motion.div>
 
       {/* Tree Diagram Layout */}
@@ -130,20 +144,20 @@ export default function StrukturOrganisasi({
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="flex flex-col items-center bg-white p-6 rounded-2xl border-2 border-blue-600 shadow-lg max-w-[280px] z-20 relative"
+              className="flex flex-col items-center bg-white dark:bg-gray-700 p-6 rounded-2xl border-2 border-blue-600 dark:border-blue-500 shadow-lg max-w-[280px] z-20 relative"
             >
               <div className="relative w-28 h-28 mb-4">
                 <Image
                   src={kepsek.photo || defaultAvatar}
                   alt={kepsek.name}
                   fill
-                  className="rounded-full object-cover border-4 border-blue-50"
+                  className="rounded-full object-cover border-4 border-blue-50 dark:border-blue-900/50"
                 />
               </div>
-              <h3 className="font-bold text-gray-900 text-lg text-center leading-tight">
+              <h3 className="font-bold text-gray-900 dark:text-white text-lg text-center leading-tight">
                 {kepsek.name}
               </h3>
-              <p className="text-blue-600 font-medium text-sm text-center mt-1">
+              <p className="text-blue-600 dark:text-blue-400 font-medium text-sm text-center mt-1">
                 {kepsek.position}
               </p>
             </motion.div>
@@ -207,9 +221,9 @@ export default function StrukturOrganisasi({
 
           {/* Connector to merge back for Wakasek */}
           <div className="hidden md:flex justify-center mt-8 relative">
-            <div className="absolute -top-8 left-[calc(50%-176px)] w-0.5 h-8 bg-gray-300"></div>
-            <div className="absolute -top-8 right-[calc(50%-176px)] w-0.5 h-8 bg-gray-300"></div>
-            <div className="absolute top-0 w-[352px] h-0.5 bg-gray-300 left-1/2 -translate-x-1/2"></div>
+            <div className="absolute -top-8 left-[calc(50%-176px)] w-0.5 h-8 bg-gray-300 dark:bg-gray-600"></div>
+            <div className="absolute -top-8 right-[calc(50%-176px)] w-0.5 h-8 bg-gray-300 dark:bg-gray-600"></div>
+            <div className="absolute top-0 w-[352px] h-0.5 bg-gray-300 dark:bg-gray-600 left-1/2 -translate-x-1/2"></div>
             <VerticalLine height="h-12" className="mt-0" />
           </div>
         </div>
@@ -251,7 +265,7 @@ export default function StrukturOrganisasi({
 
             {/* Converge lines at bottom */}
             <div className="relative mt-0 h-12">
-              <div className="absolute bottom-0 left-[16.666%] right-[16.666%] h-0.5 bg-gray-300"></div>
+              <div className="absolute bottom-0 left-[16.666%] right-[16.666%] h-0.5 bg-gray-300 dark:bg-gray-600"></div>
               <VerticalLine height="h-full absolute bottom-0 left-[16.666%]" />
               <VerticalLine height="h-full absolute bottom-0 left-1/2 -translate-x-1/2" />
               <VerticalLine height="h-full absolute bottom-0 right-[16.666%]" />
@@ -298,22 +312,22 @@ export default function StrukturOrganisasi({
         </div>
 
         {/* Stats Footer */}
-        <div className="mt-24 w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 pt-12 border-t border-gray-100">
+        <div className="mt-24 w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 pt-12 border-t border-gray-100 dark:border-gray-700">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="p-6 bg-blue-50 rounded-xl border border-blue-100 flex items-center justify-between"
+            className="p-6 bg-blue-50 dark:bg-blue-900/30 rounded-xl border border-blue-100 dark:border-blue-800 flex items-center justify-between"
           >
             <div>
-              <h4 className="font-bold text-gray-900 text-lg">
+              <h4 className="font-bold text-gray-900 dark:text-white text-lg">
                 Guru Mata Pelajaran
               </h4>
-              <p className="text-blue-600 text-sm mt-1">
+              <p className="text-blue-600 dark:text-blue-400 text-sm mt-1">
                 Profesional & Berkompeten
               </p>
             </div>
-            <span className="text-4xl font-black text-blue-200">
+            <span className="text-4xl font-black text-blue-200 dark:text-blue-700">
               {guruCount}
             </span>
           </motion.div>
@@ -322,15 +336,17 @@ export default function StrukturOrganisasi({
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="p-6 bg-yellow-50 rounded-xl border border-yellow-100 flex items-center justify-between"
+            className="p-6 bg-yellow-50 dark:bg-yellow-900/30 rounded-xl border border-yellow-100 dark:border-yellow-800 flex items-center justify-between"
           >
             <div>
-              <h4 className="font-bold text-gray-900 text-lg">
+              <h4 className="font-bold text-gray-900 dark:text-white text-lg">
                 Staff Administrasi
               </h4>
-              <p className="text-yellow-600 text-sm mt-1">Pelayanan Prima</p>
+              <p className="text-yellow-600 dark:text-yellow-400 text-sm mt-1">
+                Pelayanan Prima
+              </p>
             </div>
-            <span className="text-4xl font-black text-yellow-200">
+            <span className="text-4xl font-black text-yellow-200 dark:text-yellow-700">
               {staffCount}
             </span>
           </motion.div>

@@ -1,15 +1,111 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode for Tailwind CSS v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-school-yellow: #F59E0B; /* Golden Yellow */
-  --color-school-blue: #1E3A8A; /* Deep Blue for contrast */
+  --color-school-yellow: #f59e0b; /* Golden Yellow */
+  --color-school-blue: #1e3a8a; /* Deep Blue for contrast */
   --color-primary: var(--color-school-yellow);
   --color-secondary: var(--color-school-blue);
 
-  --color-background: #FAFAFA;
+  --color-background: #fafafa;
   --color-foreground: #171717;
 
-  --font-sans: var(--font-inter); /* Assuming Inter or similar is used, usually defined in layout */
+  --font-sans: var(
+    --font-inter
+  ); /* Assuming Inter or similar is used, usually defined in layout */
+}
+
+/* ========================================
+   DARK MODE CSS VARIABLES
+   ======================================== */
+:root {
+  /* Light mode colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f9fafb;
+
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --text-inverse: #ffffff;
+
+  --border-color: #e5e7eb;
+  --border-color-light: #f3f4f6;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  --toast-border: #e5e7eb;
+
+  /* Accent colors stay same */
+  --accent-yellow: #f59e0b;
+  --accent-yellow-hover: #d97706;
+  --accent-blue: #3b82f6;
+  --accent-green: #10b981;
+  --accent-red: #ef4444;
+}
+
+.dark {
+  /* Dark mode colors - carefully selected for eye comfort */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-card: #1e293b;
+  --bg-card-hover: #334155;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-inverse: #0f172a;
+
+  --border-color: #334155;
+  --border-color-light: #1e293b;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+
+  --toast-border: #334155;
+
+  /* Accent colors adjusted for dark mode readability */
+  --accent-yellow: #fbbf24;
+  --accent-yellow-hover: #f59e0b;
+  --accent-blue: #60a5fa;
+  --accent-green: #34d399;
+  --accent-red: #f87171;
+}
+
+/* Smooth theme transition */
+html {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* Dark mode scrollbar */
+.dark::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.dark::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.dark::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 5px;
+}
+
+.dark::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 /* Custom animations untuk extracurricular page */

@@ -68,17 +68,17 @@ export default async function AnnouncementDetail({
   const PriorityIcon = styles.Icon;
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-32 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-32 pb-20 transition-colors">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         <Link
           href="/announcements"
-          className={`inline-flex items-center text-gray-500 ${styles.hoverText} mb-8 transition-colors group`}
+          className={`inline-flex items-center text-gray-500 dark:text-gray-400 ${styles.hoverText} mb-8 transition-colors group`}
         >
           <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
           Kembali ke Pengumuman
         </Link>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
           {/* Header */}
           <div
             className={`${styles.headerBg} p-6 sm:p-8 transition-colors duration-300`}
@@ -93,16 +93,16 @@ export default async function AnnouncementDetail({
 
           <div className="p-6 sm:p-8">
             {/* Meta */}
-            <div className="flex flex-wrap gap-4 sm:gap-8 pb-6 border-b border-gray-100 mb-6">
-              <div className="flex items-center gap-2 text-gray-600">
+            <div className="flex flex-wrap gap-4 sm:gap-8 pb-6 border-b border-gray-100 dark:border-gray-700 mb-6">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                 <div className={`p-2 ${styles.iconBg} rounded-lg`}>
                   <Calendar className={`w-5 h-5 ${styles.text}`} />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold uppercase">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase">
                     Tanggal
                   </p>
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-medium dark:text-white">
                     {format(new Date(announcement.date), "dd MMMM yyyy", {
                       locale: idLocale,
                     })}
@@ -111,15 +111,15 @@ export default async function AnnouncementDetail({
               </div>
 
               {announcement.location && (
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                   <div className={`p-2 ${styles.iconBg} rounded-lg`}>
                     <MapPin className={`w-5 h-5 ${styles.text}`} />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 font-semibold uppercase">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase">
                       Lokasi
                     </p>
-                    <p className="text-sm font-medium">
+                    <p className="text-sm font-medium dark:text-white">
                       {announcement.location}
                     </p>
                   </div>
@@ -138,16 +138,16 @@ export default async function AnnouncementDetail({
 
             {/* Content */}
             <div
-              className={`prose max-w-none text-gray-700 prose-headings:${styles.text} prose-a:${styles.text}`}
+              className={`prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 prose-headings:${styles.text} prose-a:${styles.text}`}
               dangerouslySetInnerHTML={{ __html: announcement.content || "" }}
             />
 
             {/* Actions */}
-            <div className="mt-10 pt-6 border-t border-gray-100 flex justify-end">
+            <div className="mt-10 pt-6 border-t border-gray-100 dark:border-gray-700 flex justify-end">
               <Link
                 href={`https://wa.me/?text=${encodeURIComponent(`${announcement.title} - Baca selengkapnya di: https://smpipyakin.sch.id/announcements/${id}`)}`}
                 target="_blank"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium text-sm"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium text-sm"
               >
                 <Share2 className="w-4 h-4" />
                 Bagikan

@@ -13,3 +13,7 @@ export { AuthProvider, useAuth } from "./AuthProvider";
 export { default as LoadingEffect } from "./LoadingEffect";
 export { LoadingProvider, useLoading } from "./LoadingProvider";
 export { usePageLoading, useAsyncLoading } from "./usePageLoading";
+
+// Theme components
+export { ThemeProvider } from "./ThemeProvider";
+export { ThemeToggle } from "./ThemeToggle";

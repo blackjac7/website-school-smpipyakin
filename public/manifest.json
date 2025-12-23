@@ -1,0 +1,41 @@
+{
+  "name": "SMP IP Yakin Jakarta",
+  "short_name": "SMP IP Yakin",
+  "description": "Website resmi SMP IP Yakin Jakarta - Sekolah unggulan dengan pendidikan berkualitas",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2675f4",
+  "theme_color": "#2675f4",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/favicon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["education", "school"],
+  "lang": "id-ID",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+}

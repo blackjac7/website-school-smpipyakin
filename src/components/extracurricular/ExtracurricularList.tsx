@@ -52,7 +52,7 @@ export default function ExtracurricularList({
         >
           {activities.map((activity) => (
             <motion.div key={activity.id} variants={item} className="group">
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
                 <div
                   className="relative group cursor-pointer"
                   onClick={() =>
@@ -73,13 +73,13 @@ export default function ExtracurricularList({
                   </div>
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2 text-gray-900 group-hover:text-blue-600 transition-colors">
+                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {activity.title}
                   </h3>
-                  <p className="text-gray-600 mb-4 line-clamp-3">
+                  <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
                     {activity.description}
                   </p>
-                  <div className="flex items-center text-sm text-blue-600">
+                  <div className="flex items-center text-sm text-blue-600 dark:text-blue-400">
                     <div className="flex flex-col">
                       {activity.schedule.includes(" & ") ? (
                         activity.schedule
@@ -111,32 +111,36 @@ export default function ExtracurricularList({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mt-16 bg-white rounded-2xl p-8 shadow-xl border border-blue-100 relative overflow-hidden"
+          className="mt-16 bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border border-blue-100 dark:border-blue-900/50 relative overflow-hidden"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -mr-16 -mt-16 opacity-50 pointer-events-none" />
-          <h2 className="text-2xl font-bold mb-6 text-blue-800 relative z-10">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 dark:bg-blue-900/30 rounded-bl-full -mr-16 -mt-16 opacity-50 pointer-events-none" />
+          <h2 className="text-2xl font-bold mb-6 text-blue-800 dark:text-blue-400 relative z-10">
             Informasi Kegiatan
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 relative z-10">
-            <div className="bg-blue-50/50 p-4 rounded-xl">
-              <h3 className="font-semibold text-blue-900 mb-2">
+            <div className="bg-blue-50/50 dark:bg-blue-900/30 p-4 rounded-xl">
+              <h3 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">
                 Waktu Pelaksanaan
               </h3>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
                 Dilaksanakan setelah jam pelajaran reguler atau di hari Sabtu
                 sesuai jadwal masing-masing.
               </p>
             </div>
-            <div className="bg-blue-50/50 p-4 rounded-xl">
-              <h3 className="font-semibold text-blue-900 mb-2">Pendaftaran</h3>
-              <p className="text-gray-600 text-sm">
+            <div className="bg-blue-50/50 dark:bg-blue-900/30 p-4 rounded-xl">
+              <h3 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">
+                Pendaftaran
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
                 Siswa dapat mendaftar melalui guru pembimbing atau koordinator
                 ekstrakurikuler di awal semester.
               </p>
             </div>
-            <div className="bg-blue-50/50 p-4 rounded-xl">
-              <h3 className="font-semibold text-blue-900 mb-2">Persyaratan</h3>
-              <p className="text-gray-600 text-sm">
+            <div className="bg-blue-50/50 dark:bg-blue-900/30 p-4 rounded-xl">
+              <h3 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">
+                Persyaratan
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
                 Setiap siswa kelas 7 dan 8 wajib mengikuti minimal satu kegiatan
                 ekstrakurikuler (Pramuka Wajib).
               </p>

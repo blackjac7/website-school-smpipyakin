@@ -25,7 +25,7 @@ export default function ProfileLayout({
     menuItems.find((item) => item.path === pathname) || menuItems[0];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 transition-colors">
       <PageHeader
         title={activePage.label}
         description="Mengenal lebih dekat profil, sejarah, dan nilai-nilai luhur SMP IP Yakin Jakarta."
@@ -41,7 +41,7 @@ export default function ProfileLayout({
         <motion.nav
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg border border-gray-100 p-2 mb-6"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-2 mb-6"
         >
           <div className="flex items-center">
             {menuItems.map((item) => {
@@ -55,7 +55,7 @@ export default function ProfileLayout({
                     "flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium",
                     isActive
                       ? "bg-blue-600 text-white shadow-md"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400"
                   )}
                 >
                   <Icon className="w-4 h-4 flex-shrink-0" />
@@ -73,7 +73,7 @@ export default function ProfileLayout({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sm:p-8 min-h-[400px]"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 sm:p-8 min-h-[400px]"
         >
           {children}
         </motion.main>

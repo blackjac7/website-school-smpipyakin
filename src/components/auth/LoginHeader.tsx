@@ -16,8 +16,10 @@ const LoginHeader = () => {
       </div>
 
       {/* Judul Utama */}
-      <h1 className="text-3xl font-bold text-[#1E3A8A] mb-2 tracking-tight">SMP IP YAKIN</h1>
-      <p className="text-gray-500 text-sm max-w-xs mx-auto">
+      <h1 className="text-3xl font-bold text-[#1E3A8A] dark:text-blue-400 mb-2 tracking-tight">
+        SMP IP YAKIN
+      </h1>
+      <p className="text-gray-500 dark:text-gray-400 text-sm max-w-xs mx-auto">
         Sistem Informasi Sekolah Terpadu
       </p>
     </div>

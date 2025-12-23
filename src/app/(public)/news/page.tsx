@@ -7,7 +7,7 @@ export default async function NewsPage() {
   const newsData = await getPublicNews();
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
       <PageHeader
         title="Berita & Prestasi"
         description="Ikuti perkembangan terbaru, prestasi siswa, dan agenda kegiatan di lingkungan SMP IP Yakin Jakarta."

@@ -11,10 +11,7 @@ interface Documents {
 
 interface StepDocumentsProps {
   documents: Documents;
-  onFileChange: (
-    documentType: keyof Documents,
-    file: File | null
-  ) => void;
+  onFileChange: (documentType: keyof Documents, file: File | null) => void;
   antiBot: {
     captcha: {
       num1: number;
@@ -57,13 +54,14 @@ export default function StepDocuments({
 }: StepDocumentsProps) {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-xl mb-6">
-        <h3 className="text-lg font-semibold text-emerald-900 flex items-center gap-2">
+      <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800 p-4 rounded-xl mb-6">
+        <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-300 flex items-center gap-2">
           <UploadCloud className="w-5 h-5" />
           Upload Dokumen
         </h3>
-        <p className="text-sm text-emerald-700">
-          Upload dokumen pendukung dalam format JPG, PNG, atau PDF (Maks. 5MB per file).
+        <p className="text-sm text-emerald-700 dark:text-emerald-400">
+          Upload dokumen pendukung dalam format JPG, PNG, atau PDF (Maks. 5MB
+          per file).
         </p>
       </div>
 
@@ -71,16 +69,16 @@ export default function StepDocuments({
 
       {/* Anti-Bot Section */}
       {antiBot && AntiBotComponents && (
-        <div className="mt-8 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl shadow-sm border border-amber-200 p-6">
+        <div className="mt-8 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 rounded-xl shadow-sm border border-amber-200 dark:border-amber-800 p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
               <AlertCircle className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-amber-900">
+              <h3 className="text-lg font-bold text-amber-900 dark:text-amber-300">
                 Verifikasi Keamanan
               </h3>
-              <p className="text-sm text-amber-700">
+              <p className="text-sm text-amber-700 dark:text-amber-400">
                 Lengkapi verifikasi berikut sebelum mengirim pendaftaran
               </p>
             </div>

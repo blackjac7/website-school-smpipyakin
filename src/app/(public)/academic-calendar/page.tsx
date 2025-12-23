@@ -7,7 +7,7 @@ export default async function AcademicCalendarPage() {
   const activitiesData = await getPublicActivities();
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 transition-colors">
       <PageHeader
         title="Kalender Akademik"
         description="Jadwal kegiatan akademik dan non-akademik SMP IP Yakin Jakarta Tahun Pelajaran 2024/2025."

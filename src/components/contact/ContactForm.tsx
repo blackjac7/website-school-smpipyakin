@@ -130,16 +130,16 @@ const ContactForm = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-xl font-bold mb-6">Kirim Pesan</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+      <h2 className="text-xl font-bold mb-6 dark:text-white">Kirim Pesan</h2>
 
       {/* Message Container - Fixed height to prevent layout shift */}
       <div className="mb-6 h-16">
         {/* Success Message */}
         {submitStatus === "success" && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center h-full">
-            <CheckCircle className="h-5 w-5 text-green-600 mr-2 flex-shrink-0" />
-            <span className="text-green-800 text-sm">
+          <div className="p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg flex items-center h-full">
+            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mr-2 flex-shrink-0" />
+            <span className="text-green-800 dark:text-green-300 text-sm">
               Pesan berhasil dikirim! Kami akan membalas dalam 1x24 jam.
             </span>
           </div>
@@ -147,17 +147,19 @@ const ContactForm = () => {
 
         {/* Error Message */}
         {submitStatus === "error" && errorMessage && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-center h-full">
-            <AlertCircle className="h-5 w-5 text-red-600 mr-2 flex-shrink-0" />
-            <span className="text-red-800 text-sm">{errorMessage}</span>
+          <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg flex items-center h-full">
+            <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mr-2 flex-shrink-0" />
+            <span className="text-red-800 dark:text-red-300 text-sm">
+              {errorMessage}
+            </span>
           </div>
         )}
 
         {/* Default Guide Message */}
         {submitStatus === "idle" && (
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center h-full">
-            <Send className="h-5 w-5 text-blue-600 mr-2 flex-shrink-0" />
-            <span className="text-blue-800 text-sm">
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg flex items-center h-full">
+            <Send className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2 flex-shrink-0" />
+            <span className="text-blue-800 dark:text-blue-300 text-sm">
               Silakan isi formulir di bawah ini untuk menghubungi kami. Semua
               field bertanda (*) wajib diisi.
             </span>
@@ -169,7 +171,7 @@ const ContactForm = () => {
         <div>
           <label
             htmlFor="name"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
             Nama Lengkap *
           </label>
@@ -182,14 +184,14 @@ const ContactForm = () => {
             value={formData.name}
             onChange={handleChange}
             disabled={isSubmitting}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-600"
           />
         </div>
 
         <div>
           <label
             htmlFor="email"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
             Email *
           </label>
@@ -202,14 +204,14 @@ const ContactForm = () => {
             value={formData.email}
             onChange={handleChange}
             disabled={isSubmitting}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-600"
           />
         </div>
 
         <div>
           <label
             htmlFor="phone"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
             Nomor Telepon
           </label>
@@ -222,14 +224,14 @@ const ContactForm = () => {
             value={formData.phone}
             onChange={handleChange}
             disabled={isSubmitting}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-600"
           />
         </div>
 
         <div>
           <label
             htmlFor="subject"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
             Subjek *
           </label>
@@ -240,7 +242,7 @@ const ContactForm = () => {
             value={formData.subject}
             onChange={handleChange}
             disabled={isSubmitting}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-600"
           >
             <option value="">Pilih Subjek</option>
             <option value="Informasi Pendaftaran">Informasi Pendaftaran</option>
@@ -253,7 +255,7 @@ const ContactForm = () => {
         <div>
           <label
             htmlFor="message"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
             Pesan *
           </label>
@@ -267,9 +269,9 @@ const ContactForm = () => {
             disabled={isSubmitting}
             rows={4}
             placeholder="Tulis pesan Anda di sini..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-600"
           ></textarea>
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             {formData.message.length}/1000 karakter
           </div>
         </div>
@@ -308,7 +310,7 @@ const ContactForm = () => {
           )}
         </button>
 
-        <div className="text-xs text-gray-500 text-center">
+        <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
           * Field wajib diisi. Pesan akan dikirim ke email sekolah.
         </div>
       </form>
