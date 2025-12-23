@@ -30,6 +30,7 @@ model User {
   kesiswaan           Kesiswaan?
   newsArticles        News[]               @relation("NewsAuthor")
   schoolActivities    SchoolActivity[]     @relation("ActivityCreator")
+  osisActivities      OsisActivity[]       @relation("OsisActivityCreator")
   notifications       Notification[]
 
   @@map("users")
@@ -211,6 +212,31 @@ model SchoolActivity {
   creator         User         @relation("ActivityCreator", fields: [createdBy], references: [id])
 
   @@map("school_activities")
+}
+
+model OsisActivity {
+  id              String       @id @default(uuid())
+  title           String
+  description     String
+  date            DateTime
+  time            String
+  location        String
+  budget          Int
+  participants    Int
+  organizer       String
+  proposalUrl     String?      @map("proposal_url")
+  status          StatusApproval @default(PENDING)
+  rejectionNote   String?      @map("rejection_note")
+  authorId        String       @map("author_id")
+
+  // Timestamps
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  author          User         @relation("OsisActivityCreator", fields: [authorId], references: [id])
+
+  @@map("osis_activities")
 }
 
 model StudentAchievement {
