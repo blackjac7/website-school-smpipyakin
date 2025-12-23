@@ -5,24 +5,27 @@ export default function PPDBTestimonials() {
     {
       name: "Ibu Sarah Wijaya",
       role: "Wali Murid Kelas 8",
-      content: "Proses PPDB di SMP IP Yakin sangat mudah dan transparan. Tim admin sangat responsif membantu menyelesaikan berkas yang diperlukan.",
+      content:
+        "Proses PPDB di SMP IP Yakin sangat mudah dan transparan. Tim admin sangat responsif membantu menyelesaikan berkas yang diperlukan.",
       rating: 5,
-      image: "/api/placeholder/64/64"
+      image: "/api/placeholder/64/64",
     },
     {
       name: "Bapak Ahmad Rizki",
       role: "Wali Murid Kelas 9",
-      content: "Anak saya berkembang pesat di SMP IP Yakin. Fasilitas lengkap dan guru-guru yang kompeten membuat proses belajar menjadi menyenangkan.",
+      content:
+        "Anak saya berkembang pesat di SMP IP Yakin. Fasilitas lengkap dan guru-guru yang kompeten membuat proses belajar menjadi menyenangkan.",
       rating: 5,
-      image: "/api/placeholder/64/64"
+      image: "/api/placeholder/64/64",
     },
     {
       name: "Ibu Linda Sari",
       role: "Wali Murid Kelas 7",
-      content: "Pendaftaran online sangat memudahkan, tidak perlu repot datang ke sekolah. Tim PPDB juga selalu update status pendaftaran via WhatsApp.",
+      content:
+        "Pendaftaran online sangat memudahkan, tidak perlu repot datang ke sekolah. Tim PPDB juga selalu update status pendaftaran via WhatsApp.",
       rating: 5,
-      image: "/api/placeholder/64/64"
-    }
+      image: "/api/placeholder/64/64",
+    },
   ];
 
   return (
@@ -35,17 +38,17 @@ export default function PPDBTestimonials() {
             Apa Kata Orang Tua Siswa?
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Dengarkan pengalaman langsung dari para orang tua yang telah mempercayakan
-            pendidikan putra-putri mereka kepada kami
+            Dengarkan pengalaman langsung dari para orang tua yang telah
+            mempercayakan pendidikan putra-putri mereka kepada kami
           </p>
         </div>
 
         {/* Testimonials Grid */}
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-gray-100"
+              className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100"
             >
               {/* Quote Icon */}
               <div className="mb-6">
@@ -60,7 +63,10 @@ export default function PPDBTestimonials() {
               {/* Rating */}
               <div className="flex items-center mb-4">
                 {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  <Star
+                    key={i}
+                    className="w-5 h-5 text-yellow-400 fill-current"
+                  />
                 ))}
               </div>
 
@@ -68,11 +74,16 @@ export default function PPDBTestimonials() {
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
                   <span className="text-blue-600 font-bold text-lg">
-                    {testimonial.name.split(' ').map(n => n[0]).join('')}
+                    {testimonial.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
                   </span>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-800">{testimonial.name}</h4>
+                  <h4 className="font-semibold text-gray-800">
+                    {testimonial.name}
+                  </h4>
                   <p className="text-sm text-gray-600">{testimonial.role}</p>
                 </div>
               </div>

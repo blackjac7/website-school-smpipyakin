@@ -48,11 +48,11 @@ export default function ExtracurricularList({
         <motion.div
           variants={container}
           animate="show"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 -mt-10 relative z-20"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 -mt-10 relative z-20"
         >
           {activities.map((activity) => (
-            <motion.div key={activity.id} variants={item}>
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
+            <motion.div key={activity.id} variants={item} className="group">
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
                 <div
                   className="relative group cursor-pointer"
                   onClick={() =>
@@ -73,8 +73,12 @@ export default function ExtracurricularList({
                   </div>
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2">{activity.title}</h3>
-                  <p className="text-gray-600 mb-4">{activity.description}</p>
+                  <h3 className="text-xl font-bold mb-2 text-gray-900 group-hover:text-blue-600 transition-colors">
+                    {activity.title}
+                  </h3>
+                  <p className="text-gray-600 mb-4 line-clamp-3">
+                    {activity.description}
+                  </p>
                   <div className="flex items-center text-sm text-blue-600">
                     <div className="flex flex-col">
                       {activity.schedule.includes(" & ") ? (
@@ -113,7 +117,7 @@ export default function ExtracurricularList({
           <h2 className="text-2xl font-bold mb-6 text-blue-800 relative z-10">
             Informasi Kegiatan
           </h2>
-          <div className="grid md:grid-cols-3 gap-6 relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 relative z-10">
             <div className="bg-blue-50/50 p-4 rounded-xl">
               <h3 className="font-semibold text-blue-900 mb-2">
                 Waktu Pelaksanaan

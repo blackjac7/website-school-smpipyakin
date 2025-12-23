@@ -7,7 +7,11 @@ interface PPDBStatusProps {
   onStatusCheck: () => void;
 }
 
-export default function PPDBStatus({ statusNISN, onNISNChange, onStatusCheck }: PPDBStatusProps) {
+export default function PPDBStatus({
+  statusNISN,
+  onNISNChange,
+  onStatusCheck,
+}: PPDBStatusProps) {
   return (
     <section className="max-w-4xl mx-auto px-4 py-16">
       <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
@@ -22,19 +26,29 @@ export default function PPDBStatus({ statusNISN, onNISNChange, onStatusCheck }: 
 
         <div className="p-8">
           {/* Info Cards */}
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center">
-              <Clock className="w-8 h-8 text-blue-600 mx-auto mb-3" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+            <div className="group bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <Clock className="w-7 h-7 text-blue-600" />
+              </div>
               <h3 className="font-semibold text-blue-800 mb-2">Proses Cepat</h3>
-              <p className="text-blue-600 text-sm">Status update dalam 24 jam</p>
+              <p className="text-blue-600 text-sm">
+                Status update dalam 24 jam
+              </p>
             </div>
-            <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-              <FileSearch className="w-8 h-8 text-green-600 mx-auto mb-3" />
+            <div className="group bg-green-50 border border-green-200 rounded-2xl p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <FileSearch className="w-7 h-7 text-green-600" />
+              </div>
               <h3 className="font-semibold text-green-800 mb-2">Akurat</h3>
-              <p className="text-green-600 text-sm">Data terpercaya & terkini</p>
+              <p className="text-green-600 text-sm">
+                Data terpercaya & terkini
+              </p>
             </div>
-            <div className="bg-purple-50 border border-purple-200 rounded-xl p-6 text-center">
-              <AlertCircle className="w-8 h-8 text-purple-600 mx-auto mb-3" />
+            <div className="group bg-purple-50 border border-purple-200 rounded-2xl p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div className="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <AlertCircle className="w-7 h-7 text-purple-600" />
+              </div>
               <h3 className="font-semibold text-purple-800 mb-2">Notifikasi</h3>
               <p className="text-purple-600 text-sm">Update via WhatsApp</p>
             </div>
@@ -44,7 +58,10 @@ export default function PPDBStatus({ statusNISN, onNISNChange, onStatusCheck }: 
           <div className="max-w-md mx-auto">
             <div className="space-y-6">
               <div>
-                <label htmlFor="statusNISN" className="block text-gray-700 font-semibold mb-3 text-lg">
+                <label
+                  htmlFor="statusNISN"
+                  className="block text-gray-700 font-semibold mb-3 text-lg"
+                >
                   Masukan NISN Anda
                 </label>
                 <div className="relative">
@@ -78,19 +95,27 @@ export default function PPDBStatus({ statusNISN, onNISNChange, onStatusCheck }: 
 
             {/* Status Information */}
             <div className="mt-8 p-6 bg-gray-50 rounded-xl border border-gray-200">
-              <h4 className="font-semibold text-gray-800 mb-3">Status Yang Mungkin Muncul:</h4>
+              <h4 className="font-semibold text-gray-800 mb-3">
+                Status Yang Mungkin Muncul:
+              </h4>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                  <span className="text-gray-600">Sedang Diproses - Pendaftaran dalam tahap verifikasi</span>
+                  <span className="text-gray-600">
+                    Sedang Diproses - Pendaftaran dalam tahap verifikasi
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span className="text-gray-600">Diterima - Selamat! Anda diterima sebagai siswa baru</span>
+                  <span className="text-gray-600">
+                    Diterima - Selamat! Anda diterima sebagai siswa baru
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <span className="text-gray-600">Perlu Perbaikan - Ada dokumen yang perlu dilengkapi</span>
+                  <span className="text-gray-600">
+                    Perlu Perbaikan - Ada dokumen yang perlu dilengkapi
+                  </span>
                 </div>
               </div>
             </div>

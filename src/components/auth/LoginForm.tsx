@@ -336,7 +336,7 @@ const LoginForm = () => {
                   transition={{ duration: 0.3 }}
                   className="flex flex-col items-center"
                 >
-                  <div className="w-64 h-64 md:w-80 md:h-80 relative mb-6">
+                  <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 relative mb-6">
                     <div className="absolute inset-0 bg-[#F59E0B] rounded-full opacity-10 blur-2xl animate-pulse"></div>
                     <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-2xl ring-4 ring-white">
                       <Image

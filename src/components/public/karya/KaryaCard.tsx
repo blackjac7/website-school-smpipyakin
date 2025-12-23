@@ -25,13 +25,21 @@ export default function KaryaCard({ work, onClick }: KaryaCardProps) {
   const getYouTubeThumbnail = (url: string) => {
     try {
       let videoId = "";
-      if (url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1].split("?")[0];
-      else if (url.includes("youtube.com/watch?v=")) videoId = url.split("watch?v=")[1].split("&")[0];
-      return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null;
-    } catch { return null; }
+      if (url.includes("youtu.be/"))
+        videoId = url.split("youtu.be/")[1].split("?")[0];
+      else if (url.includes("youtube.com/watch?v="))
+        videoId = url.split("watch?v=")[1].split("&")[0];
+      return videoId
+        ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+        : null;
+    } catch {
+      return null;
+    }
   };
 
-  const thumbnail = isVideo ? getYouTubeThumbnail(work.videoLink) : work.mediaUrl;
+  const thumbnail = isVideo
+    ? getYouTubeThumbnail(work.videoLink)
+    : work.mediaUrl;
 
   return (
     <motion.div
@@ -41,7 +49,7 @@ export default function KaryaCard({ work, onClick }: KaryaCardProps) {
       exit={{ opacity: 0, scale: 0.9 }}
       whileHover={{ y: -5 }}
       onClick={onClick}
-      className="group cursor-pointer break-inside-avoid mb-6 bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100"
+      className="group cursor-pointer break-inside-avoid mb-6 bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100"
     >
       <div className="relative aspect-video bg-gray-100 overflow-hidden">
         {thumbnail ? (
@@ -88,7 +96,9 @@ export default function KaryaCard({ work, onClick }: KaryaCardProps) {
               <span className="text-xs font-semibold text-gray-700 truncate max-w-[100px]">
                 {work.studentName}
               </span>
-              <span className="text-[10px] text-gray-500">{work.studentClass}</span>
+              <span className="text-[10px] text-gray-500">
+                {work.studentClass}
+              </span>
             </div>
           </div>
           <span className="text-[10px] text-gray-400">

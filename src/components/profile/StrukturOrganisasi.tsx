@@ -40,7 +40,7 @@ const OrgCard = ({
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
     transition={{ delay }}
-    className={`flex flex-col items-center bg-white p-5 rounded-xl border ${color === "blue" ? "border-blue-200" : "border-gray-200"} shadow-sm hover:shadow-md transition-shadow relative z-10`}
+    className={`flex flex-col items-center bg-white p-5 rounded-xl border ${color === "blue" ? "border-blue-200" : "border-gray-200"} shadow-sm hover:shadow-md transition-shadow relative z-10 w-full max-w-[280px]`}
   >
     <div className="relative w-20 h-20 mb-3">
       <Image
@@ -76,7 +76,7 @@ const SummaryCard = ({
     initial={{ opacity: 0, scale: 0.95 }}
     whileInView={{ opacity: 1, scale: 1 }}
     viewport={{ once: true }}
-    className={`bg-white p-6 rounded-xl border ${colorClass} shadow-sm flex flex-col items-center w-64 relative z-10`}
+    className={`bg-white p-6 rounded-xl border ${colorClass} shadow-sm flex flex-col items-center w-full max-w-[280px] relative z-10`}
   >
     <div
       className={`w-12 h-12 ${bgClass} rounded-full flex items-center justify-center mb-3 ${textClass}`}
@@ -188,24 +188,20 @@ export default function StrukturOrganisasi({
             </div>
 
             {kepalaTU && (
-              <div className="w-64">
-                <OrgCard
-                  image={kepalaTU.photo || defaultAvatar}
-                  name={kepalaTU.name}
-                  position={kepalaTU.position}
-                  color="gray"
-                />
-              </div>
+              <OrgCard
+                image={kepalaTU.photo || defaultAvatar}
+                name={kepalaTU.name}
+                position={kepalaTU.position}
+                color="gray"
+              />
             )}
             {operator && (
-              <div className="w-64">
-                <OrgCard
-                  image={operator.photo || defaultAvatar}
-                  name={operator.name}
-                  position={operator.position}
-                  color="gray"
-                />
-              </div>
+              <OrgCard
+                image={operator.photo || defaultAvatar}
+                name={operator.name}
+                position={operator.position}
+                color="gray"
+              />
             )}
           </div>
 

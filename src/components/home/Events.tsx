@@ -29,16 +29,18 @@ export default function Events({ events }: EventsProps) {
             {data.map((event, index) => (
               <div
                 key={event.id || index}
-                className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all border-t-4 border-yellow-500 flex flex-col"
+                className="group bg-white p-6 rounded-2xl shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border-t-4 border-yellow-500 flex flex-col"
               >
                 <div className="flex items-center gap-2 text-yellow-700 font-semibold mb-3 bg-yellow-50 w-fit px-3 py-1 rounded-full text-sm">
                   <Calendar className="w-4 h-4" />
                   {event.date
-                    ? format(new Date(event.date), "dd MMM yyyy", { locale: id })
+                    ? format(new Date(event.date), "dd MMM yyyy", {
+                        locale: id,
+                      })
                     : "TBA"}
                 </div>
 
-                <h3 className="text-xl font-bold mb-3 text-gray-900 line-clamp-2">
+                <h3 className="text-xl font-bold mb-3 text-gray-900 line-clamp-2 group-hover:text-yellow-600 transition-colors">
                   {event.title}
                 </h3>
 
@@ -55,7 +57,9 @@ export default function Events({ events }: EventsProps) {
           </div>
         ) : (
           <div className="text-center py-10 bg-white rounded-lg border border-dashed border-gray-300 mb-8">
-            <p className="text-gray-500">Belum ada agenda kegiatan mendatang.</p>
+            <p className="text-gray-500">
+              Belum ada agenda kegiatan mendatang.
+            </p>
           </div>
         )}
 

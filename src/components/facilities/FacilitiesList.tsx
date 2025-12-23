@@ -48,14 +48,14 @@ function FacilityCard({ facility }: { facility: PublicFacility }) {
   const [imageLoading, setImageLoading] = useState(true);
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-      <div className="relative h-64 bg-gray-200">
+    <div className="group bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+      <div className="relative h-64 bg-gray-200 overflow-hidden">
         {!imageError ? (
           <Image
             src={facility.image}
             alt={facility.title}
             fill
-            className={`object-cover transition-opacity duration-300 ${
+            className={`object-cover transition-all duration-500 group-hover:scale-110 ${
               imageLoading ? "opacity-0" : "opacity-100"
             }`}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -85,8 +85,10 @@ function FacilityCard({ facility }: { facility: PublicFacility }) {
         </div>
       </div>
       <div className="p-6">
-        <h3 className="text-xl font-bold mb-2">{facility.title}</h3>
-        <p className="text-gray-600">{facility.description}</p>
+        <h3 className="text-xl font-bold mb-2 text-gray-900 group-hover:text-blue-600 transition-colors">
+          {facility.title}
+        </h3>
+        <p className="text-gray-600 line-clamp-3">{facility.description}</p>
       </div>
     </div>
   );

@@ -9,14 +9,18 @@ export default function PPDBInfo({ onDownloadGuide }: PPDBInfoProps) {
     "Isi formulir pendaftaran dengan lengkap",
     "Unggah dokumen yang diperlukan",
     "Verifikasi data dan kirim pendaftaran",
-    "Cek status pendaftaran secara berkala"
+    "Cek status pendaftaran secara berkala",
   ];
 
   const importantDates = [
     { label: "Pendaftaran dibuka", date: "1 Juni 2025", status: "active" },
-    { label: "Batas Akhir pendaftaran", date: "30 Juni 2025", status: "upcoming" },
+    {
+      label: "Batas Akhir pendaftaran",
+      date: "30 Juni 2025",
+      status: "upcoming",
+    },
     { label: "Pengumuman hasil", date: "15 Juli 2025", status: "upcoming" },
-    { label: "Daftar ulang", date: "16 - 20 Juli 2025", status: "upcoming" }
+    { label: "Daftar ulang", date: "16 - 20 Juli 2025", status: "upcoming" },
   ];
 
   const requirements = [
@@ -25,7 +29,7 @@ export default function PPDBInfo({ onDownloadGuide }: PPDBInfoProps) {
     "Fotocopy Akta Kelahiran",
     "Fotocopy Kartu Keluarga",
     "Pas foto terbaru 3x4 (3 lembar)",
-    "Fotocopy Kartu Indonesia Pintar (jika ada)"
+    "Fotocopy Kartu Indonesia Pintar (jika ada)",
   ];
 
   return (
@@ -35,18 +39,21 @@ export default function PPDBInfo({ onDownloadGuide }: PPDBInfoProps) {
           Informasi Penting PPDB
         </h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Pastikan Anda memahami seluruh proses pendaftaran untuk kelancaran administrasi
+          Pastikan Anda memahami seluruh proses pendaftaran untuk kelancaran
+          administrasi
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
         {/* Registration Steps */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl transition-all duration-300">
+        <div className="group bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
           <div className="flex items-center mb-6">
-            <div className="bg-blue-100 rounded-full p-3 mr-4">
+            <div className="bg-blue-100 rounded-full p-3 mr-4 group-hover:scale-110 transition-transform">
               <CheckCircle className="w-6 h-6 text-blue-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800">Langkah Pendaftaran</h3>
+            <h3 className="text-xl font-bold text-gray-800">
+              Langkah Pendaftaran
+            </h3>
           </div>
           <ul className="space-y-4">
             {registrationSteps.map((step, index) => (
@@ -61,41 +68,50 @@ export default function PPDBInfo({ onDownloadGuide }: PPDBInfoProps) {
         </div>
 
         {/* Important Dates */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl transition-all duration-300">
+        <div className="group bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
           <div className="flex items-center mb-6">
-            <div className="bg-yellow-100 rounded-full p-3 mr-4">
+            <div className="bg-yellow-100 rounded-full p-3 mr-4 group-hover:scale-110 transition-transform">
               <Calendar className="w-6 h-6 text-yellow-600" />
             </div>
             <h3 className="text-xl font-bold text-gray-800">Tanggal Penting</h3>
           </div>
           <div className="space-y-4">
             {importantDates.map((date, index) => (
-              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+              >
                 <div>
                   <p className="font-medium text-gray-800">{date.label}</p>
                   <p className="text-sm text-gray-600">{date.date}</p>
                 </div>
-                <div className={`w-3 h-3 rounded-full ${
-                  date.status === 'active' ? 'bg-green-500' : 'bg-yellow-500'
-                }`}></div>
+                <div
+                  className={`w-3 h-3 rounded-full ${
+                    date.status === "active" ? "bg-green-500" : "bg-yellow-500"
+                  }`}
+                ></div>
               </div>
             ))}
           </div>
         </div>
 
         {/* Requirements */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl transition-all duration-300">
+        <div className="group bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
           <div className="flex items-center mb-6">
-            <div className="bg-green-100 rounded-full p-3 mr-4">
+            <div className="bg-green-100 rounded-full p-3 mr-4 group-hover:scale-110 transition-transform">
               <FileText className="w-6 h-6 text-green-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800">Persyaratan Dokumen</h3>
+            <h3 className="text-xl font-bold text-gray-800">
+              Persyaratan Dokumen
+            </h3>
           </div>
           <ul className="space-y-3">
             {requirements.map((req, index) => (
               <li key={index} className="flex items-start">
                 <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-600 text-sm leading-relaxed">{req}</span>
+                <span className="text-gray-600 text-sm leading-relaxed">
+                  {req}
+                </span>
               </li>
             ))}
           </ul>
