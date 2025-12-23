@@ -11,8 +11,16 @@ import {
   Legend
 } from "recharts";
 
+interface MonthlyStat {
+  name: string;
+  Total: number;
+  Diterima: number;
+  Pending: number;
+  Ditolak: number;
+}
+
 interface RegistrationChartProps {
-  data: any[];
+  data: MonthlyStat[];
 }
 
 export default function RegistrationChart({ data }: RegistrationChartProps) {

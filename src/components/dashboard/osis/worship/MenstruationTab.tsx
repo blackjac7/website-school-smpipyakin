@@ -67,7 +67,7 @@ export default function MenstruationTab({ records }: MenstruationTabProps) {
             siswaId: record.siswaId,
             startDate: record.startDate,
             endDate: new Date(),
-            notes: record.notes
+            notes: record.notes || undefined // Fix: Convert null to undefined
         });
         toast.success("Status diperbarui");
     } catch (error) {
