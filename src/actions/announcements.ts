@@ -34,7 +34,7 @@ export async function createAnnouncement(data: {
   content: string;
   date: Date;
   priority: PriorityLevel;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   author?: string; // Optional since schema doesn't use it
 }) {
   try {
