@@ -4,23 +4,39 @@ export interface MenuItem {
   id: string;
   label: string;
   icon: LucideIcon;
+  badge?: number; // Added badge support
 }
 
-export interface Activity {
-  id: number;
+export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface OsisActivity {
+  id: string; // Changed from number to string (UUID)
   title: string;
   description: string;
-  date: string;
+  date: Date | string; // Handle both serialization types
   time: string;
-  status: string;
+  status: ApprovalStatus;
   location: string;
   participants: number;
   budget: number;
   organizer: string;
+  proposalUrl?: string | null;
+  rejectionNote?: string | null;
+  authorId?: string;
+  createdAt?: Date | string;
+}
+
+export interface OsisNews {
+  id: string;
+  title: string;
+  content: string;
+  image: string | null;
+  statusPersetujuan: ApprovalStatus;
+  date: Date | string;
 }
 
 export interface Notification {
-  id: number;
+  id: number | string;
   type: string;
   title?: string;
   icon?: unknown;
