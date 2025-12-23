@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { Trophy, Medal, Award, LucideIcon, Home } from "lucide-react";
+import { Trophy, Medal, Award, LucideIcon, Home, BookOpen } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   AchievementsSection,
@@ -23,6 +23,7 @@ import { NotificationAPIService } from "@/hooks/useNotifications";
 import { FormattedNotification } from "@/utils/notificationHelpers";
 import toast from "react-hot-toast";
 import { useSidebar } from "@/hooks/useSidebar";
+import { getStudentWorks, createWork, updateWork, deleteWork, WorkInput } from "@/actions/student/works";
 
 interface AchievementFormData {
   title: string;
@@ -97,7 +98,7 @@ function SiswaDashboardContent() {
   const menuItems: MenuItem[] = [
     { id: "dashboard", label: "Dashboard", icon: Home },
     { id: "achievements", label: "Prestasi", icon: Trophy },
-    // { id: "works", label: "Karya", icon: BookOpen }, // Feature temporarily disabled
+    { id: "works", label: "Karya", icon: BookOpen },
   ];
   const [profileData, setProfileData] = useState<ProfileData>({
     name: "",
@@ -199,14 +200,14 @@ function SiswaDashboardContent() {
     }
   };
 
-  // Load works from API
+  // Load works from Server Action
   const loadWorks = async () => {
     try {
-      const response = await fetch("/api/student/works");
-      const result = await response.json();
-
-      if (result.success) {
+      const result = await getStudentWorks();
+      if (result.success && result.data) {
         setWorks(result.data);
+      } else {
+        console.error("Failed to load works:", result.error);
       }
     } catch (error) {
       console.error("Failed to load works:", error);
@@ -329,26 +330,38 @@ function SiswaDashboardContent() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleCreateWork = async (data: any) => {
+    try {
+      const result = await createWork(data as WorkInput);
+      if (result.success) {
+        toast.success("Karya berhasil diunggah!");
+        await loadWorks();
+        setShowUploadWork(false);
+      } else {
+        console.error("Failed to create work:", result.error);
+        if (result.error === "Limit reached") {
+          toast.error(result.message || "Maksimal 2 karya pending.");
+        } else {
+          toast.error("Gagal mengunggah karya. Silakan coba lagi.");
+        }
+      }
+    } catch (error) {
+      console.error("Failed to create work:", error);
+      toast.error("Terjadi kesalahan. Silakan coba lagi.");
+    }
+  };
+
   // Handle work update
   const handleUpdateWork = async (workId: string, data: Partial<Work>) => {
     try {
-      const response = await fetch("/api/student/works", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: workId,
-          ...data,
-        }),
-      });
+      const result = await updateWork(workId, data as Partial<WorkInput>);
 
-      if (response.ok) {
+      if (result.success) {
         await loadWorks(); // Reload works
         return Promise.resolve();
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update work");
+        throw new Error(result.error || "Failed to update work");
       }
     } catch (error) {
       console.error("Failed to update work:", error);
@@ -370,18 +383,13 @@ function SiswaDashboardContent() {
       },
       async () => {
         try {
-          const response = await fetch(`/api/student/works?id=${workId}`, {
-            method: "DELETE",
-          });
+          const result = await deleteWork(workId);
 
-          if (response.ok) {
+          if (result.success) {
             toast.success("Karya berhasil dihapus!");
             await loadWorks(); // Reload works
           } else {
-            const errorData = await response.json();
-            toast.error(
-              errorData.error || "Gagal menghapus karya. Silakan coba lagi."
-            );
+            toast.error(result.error || "Gagal menghapus karya. Silakan coba lagi.");
           }
         } catch (error) {
           console.error("Failed to delete work:", error);
@@ -417,10 +425,10 @@ function SiswaDashboardContent() {
           <DashboardOverview
             profileData={profileData}
             achievements={achievements}
-            // works={works}
+            works={works}
             onQuickEdit={() => setShowQuickEdit(true)}
             onUploadAchievement={() => setShowUploadForm(true)}
-            // onUploadWork={() => setShowUploadWork(true)}
+            onUploadWork={() => setShowUploadWork(true)}
           />
         );
       case "achievements":
@@ -489,37 +497,7 @@ function SiswaDashboardContent() {
         isOpen={showUploadWork}
         onClose={() => setShowUploadWork(false)}
         pendingCount={works.filter((w) => w.status === "pending").length}
-        onSubmit={async (data) => {
-          try {
-            const response = await fetch("/api/student/works", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(data),
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-              toast.success("Karya berhasil diunggah!");
-              await loadWorks(); // Reload works
-              setShowUploadWork(false);
-            } else {
-              console.error("Failed to create work:", result.error);
-
-              // Handle specific error for pending limit
-              if (result.error === "Limit reached") {
-                toast.error(result.message);
-              } else {
-                toast.error("Gagal mengunggah karya. Silakan coba lagi.");
-              }
-            }
-          } catch (error) {
-            console.error("Failed to create work:", error);
-            toast.error("Terjadi kesalahan. Silakan coba lagi.");
-          }
-        }}
+        onSubmit={handleCreateWork}
       />
 
       <QuickEditModal
