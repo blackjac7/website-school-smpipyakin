@@ -24,6 +24,7 @@ import {
   DashboardStats,
 } from "@/actions/kesiswaan";
 import toast from "react-hot-toast";
+import { useSidebar } from "@/hooks/useSidebar";
 
 interface DashboardClientProps {
   initialQueue: ValidationItem[];
@@ -47,6 +48,7 @@ export default function DashboardClient({
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
   const [validationAction, setValidationAction] = useState<"approve" | "reject">("approve");
   const [isLoading, setIsLoading] = useState(false);
+  const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } = useSidebar(true);
 
   // Sync initial queue if updated
   useEffect(() => {
@@ -155,6 +157,8 @@ export default function DashboardClient({
         title="Kesiswaan"
         subtitle="MANAGEMENT AREA"
         userRole="Kesiswaan"
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
       />
 
       {/* Main Content */}
@@ -165,6 +169,7 @@ export default function DashboardClient({
           showNotifications={showNotifications}
           setShowNotifications={setShowNotifications}
           unreadCount={unreadCount}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
 
         {/* Content */}
