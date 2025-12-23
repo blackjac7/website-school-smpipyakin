@@ -18,6 +18,7 @@ import { DashboardSidebar } from "@/components/dashboard/layout";
 import { getActivities, deleteActivity } from "@/actions/osis/activities";
 import NewsManagement from "@/components/dashboard/osis/NewsManagement";
 import toast from "react-hot-toast";
+import { useSidebar } from "@/hooks/useSidebar";
 
 function OSISDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
@@ -25,7 +26,7 @@ function OSISDashboard() {
   const [activities, setActivities] = useState<OsisActivity[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showNotifications, setShowNotifications] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } = useSidebar(true);
   const [loading, setLoading] = useState(true);
 
   const menuItems: MenuItem[] = [
