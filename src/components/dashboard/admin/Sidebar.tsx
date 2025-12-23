@@ -8,6 +8,7 @@ import {
   Activity,
   Bell,
   Newspaper,
+  GraduationCap,
 } from "lucide-react";
 import DashboardSidebar from "@/components/dashboard/layout/DashboardSidebar";
 import { DashboardMenuItem } from "@/components/dashboard/layout/types";
@@ -32,6 +33,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     if (pathname.includes("/news")) return "news";
     if (pathname.includes("/announcements")) return "announcements";
     if (pathname.includes("/calendar")) return "calendar";
+    if (pathname.includes("/teachers")) return "teachers";
     if (pathname.includes("/users")) return "users";
     return "dashboard";
   };
@@ -53,8 +55,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       case "calendar":
         router.push("/dashboard-admin/calendar");
         break;
+      case "teachers":
+        router.push("/dashboard-admin/teachers");
+        break;
       case "users":
-        router.push("/dashboard-admin/users"); // Assuming this exists or will exist
+        router.push("/dashboard-admin/users");
         break;
       default:
         // router.push('/dashboard-admin');
@@ -68,6 +73,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     { id: "news", label: "Berita Sekolah", icon: Newspaper },
     { id: "announcements", label: "Pengumuman", icon: Bell },
     { id: "calendar", label: "Kalender Akademik", icon: Calendar },
+    { id: "teachers", label: "Profil Guru", icon: GraduationCap },
     { id: "users", label: "Manajemen Pengguna", icon: Users },
   ];
 
