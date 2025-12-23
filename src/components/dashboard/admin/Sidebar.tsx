@@ -7,7 +7,7 @@ import {
   Layout,
   Activity,
   Bell,
-  Newspaper
+  Newspaper,
 } from "lucide-react";
 import DashboardSidebar from "@/components/dashboard/layout/DashboardSidebar";
 import { DashboardMenuItem } from "@/components/dashboard/layout/types";
@@ -27,34 +27,34 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   // Map active menu based on pathname
   const getActiveMenu = () => {
-    if (pathname.includes('/hero')) return 'hero';
-    if (pathname.includes('/stats')) return 'stats';
-    if (pathname.includes('/news')) return 'news';
-    if (pathname.includes('/announcements')) return 'announcements';
-    if (pathname.includes('/calendar')) return 'calendar';
-    if (pathname.includes('/users')) return 'users';
-    return 'dashboard';
+    if (pathname.includes("/hero")) return "hero";
+    if (pathname.includes("/stats")) return "stats";
+    if (pathname.includes("/news")) return "news";
+    if (pathname.includes("/announcements")) return "announcements";
+    if (pathname.includes("/calendar")) return "calendar";
+    if (pathname.includes("/users")) return "users";
+    return "dashboard";
   };
 
   const handleMenuClick = (id: string) => {
     switch (id) {
-      case 'hero':
-        router.push('/dashboard-admin/hero');
+      case "hero":
+        router.push("/dashboard-admin/hero");
         break;
-      case 'stats':
-        router.push('/dashboard-admin/stats');
+      case "stats":
+        router.push("/dashboard-admin/stats");
         break;
-      case 'news':
-        router.push('/dashboard-admin/news');
+      case "news":
+        router.push("/dashboard-admin/news");
         break;
-      case 'announcements':
-        router.push('/dashboard-admin/announcements');
+      case "announcements":
+        router.push("/dashboard-admin/announcements");
         break;
-      case 'calendar':
-        router.push('/dashboard-admin/calendar');
+      case "calendar":
+        router.push("/dashboard-admin/calendar");
         break;
-      case 'users':
-        router.push('/dashboard-admin/users'); // Assuming this exists or will exist
+      case "users":
+        router.push("/dashboard-admin/users"); // Assuming this exists or will exist
         break;
       default:
         // router.push('/dashboard-admin');
@@ -71,6 +71,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     { id: "users", label: "Manajemen Pengguna", icon: Users },
   ];
 
+  // Professional admin avatar
+  const adminAvatar =
+    "https://ui-avatars.com/api/?name=Admin&background=1E3A8A&color=fff&size=128&bold=true";
+
   return (
     <DashboardSidebar
       menuItems={adminMenuItems}
@@ -81,6 +85,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       title="Admin Dashboard"
       subtitle="CONTENT MANAGEMENT"
       userRole="Admin"
+      userAvatar={adminAvatar}
     />
   );
 }

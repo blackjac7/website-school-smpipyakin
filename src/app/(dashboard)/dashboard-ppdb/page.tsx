@@ -42,7 +42,8 @@ import { useSidebar } from "@/hooks/useSidebar";
 
 function PPDBDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
-  const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } = useSidebar(true);
+  const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } =
+    useSidebar(true);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<FormattedNotification[]>(
     []
@@ -152,6 +153,10 @@ function PPDBDashboard() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  // PPDB Staff avatar - professional orange theme
+  const ppdbAvatar =
+    "https://ui-avatars.com/api/?name=PPDB&background=F59E0B&color=fff&size=128&bold=true";
+
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 to-amber-50">
       <DashboardSidebar
@@ -163,6 +168,7 @@ function PPDBDashboard() {
         title="PPDB Center"
         subtitle="OFFICER AREA"
         userRole="PPDB Staff"
+        userAvatar={ppdbAvatar}
       />
 
       {/* Main Content */}

@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Home, Calendar as CalendarIcon, Newspaper, FileText, Heart } from "lucide-react";
+import {
+  Home,
+  Calendar as CalendarIcon,
+  Newspaper,
+  FileText,
+  Heart,
+} from "lucide-react";
 import {
   Header,
   StatsCards,
@@ -16,7 +22,11 @@ import {
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DashboardSidebar } from "@/components/dashboard/layout";
 import { getActivities, deleteActivity } from "@/actions/osis/activities";
-import { getMenstruationRecords, getAdzanSchedules, getCarpetSchedules } from "@/actions/worship";
+import {
+  getMenstruationRecords,
+  getAdzanSchedules,
+  getCarpetSchedules,
+} from "@/actions/worship";
 import NewsManagement from "@/components/dashboard/osis/NewsManagement";
 import ReligiousDashboardClient from "@/components/dashboard/osis/worship/ReligiousDashboardClient";
 import toast from "react-hot-toast";
@@ -28,17 +38,18 @@ function OSISDashboard() {
   const [activities, setActivities] = useState<OsisActivity[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showNotifications, setShowNotifications] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } =
+    useSidebar(true);
   // const [loading, setLoading] = useState(true);
 
   // Worship Data State
   const [worshipData, setWorshipData] = useState<{
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      menstruation: any[],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      adzan: any[],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      carpet: any[]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    menstruation: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    adzan: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    carpet: any[];
   }>({ menstruation: [], adzan: [], carpet: [] });
   const [loadingWorship, setLoadingWorship] = useState(false);
 
@@ -67,8 +78,8 @@ function OSISDashboard() {
   }, []);
 
   useEffect(() => {
-    if (activeMenu === 'ibadah') {
-        fetchWorshipData();
+    if (activeMenu === "ibadah") {
+      fetchWorshipData();
     }
   }, [activeMenu]);
 
@@ -89,22 +100,22 @@ function OSISDashboard() {
   async function fetchWorshipData() {
     setLoadingWorship(true);
     try {
-        const now = new Date();
-        const [menstruation, adzan, carpet] = await Promise.all([
-            getMenstruationRecords(),
-            getAdzanSchedules(now),
-            getCarpetSchedules(now)
-        ]);
-        setWorshipData({
-            menstruation,
-            adzan,
-            carpet
-        });
+      const now = new Date();
+      const [menstruation, adzan, carpet] = await Promise.all([
+        getMenstruationRecords(),
+        getAdzanSchedules(now),
+        getCarpetSchedules(now),
+      ]);
+      setWorshipData({
+        menstruation,
+        adzan,
+        carpet,
+      });
     } catch (e) {
-        console.error(e);
-        toast.error("Gagal memuat data ibadah");
+      console.error(e);
+      toast.error("Gagal memuat data ibadah");
     } finally {
-        setLoadingWorship(false);
+      setLoadingWorship(false);
     }
   }
 
@@ -125,9 +136,9 @@ function OSISDashboard() {
 
   // Logic to refresh data when modal closes (if successful)
   const handleModalClose = () => {
-      setShowForm(false);
-      fetchActivities();
-  }
+    setShowForm(false);
+    fetchActivities();
+  };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -150,6 +161,10 @@ function OSISDashboard() {
     </>
   );
 
+  // OSIS avatar - green theme for student council
+  const osisAvatar =
+    "https://ui-avatars.com/api/?name=OSIS&background=059669&color=fff&size=128&bold=true";
+
   return (
     <div className="flex h-screen bg-gray-50">
       <DashboardSidebar
@@ -161,6 +176,7 @@ function OSISDashboard() {
         title="OSIS Center"
         subtitle="STUDENT COUNCIL"
         userRole="Pengurus OSIS"
+        userAvatar={osisAvatar}
       />
 
       {/* Main Content */}
@@ -178,15 +194,15 @@ function OSISDashboard() {
           {activeMenu === "dashboard" && renderDashboardContent()}
 
           {activeMenu === "activities" && (
-             <div className="space-y-6">
-                 <ActivitiesList
-                    activities={activities}
-                    onAddActivity={handleAddActivity}
-                    onViewActivity={() => {}}
-                    onEditActivity={() => {}} // TODO: Implement edit
-                    onDeleteActivity={handleDeleteActivity}
-                />
-             </div>
+            <div className="space-y-6">
+              <ActivitiesList
+                activities={activities}
+                onAddActivity={handleAddActivity}
+                onViewActivity={() => {}}
+                onEditActivity={() => {}} // TODO: Implement edit
+                onDeleteActivity={handleDeleteActivity}
+              />
+            </div>
           )}
 
           {activeMenu === "news" && <NewsManagement />}
@@ -198,26 +214,22 @@ function OSISDashboard() {
             />
           )}
 
-          {activeMenu === "ibadah" && (
-            loadingWorship ? (
-                <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
+          {activeMenu === "ibadah" &&
+            (loadingWorship ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
             ) : (
-                <ReligiousDashboardClient
-                    menstruationRecords={worshipData.menstruation}
-                    adzanSchedules={worshipData.adzan}
-                    carpetSchedules={worshipData.carpet}
-                />
-            )
-          )}
+              <ReligiousDashboardClient
+                menstruationRecords={worshipData.menstruation}
+                adzanSchedules={worshipData.adzan}
+                carpetSchedules={worshipData.carpet}
+              />
+            ))}
         </main>
       </div>
 
-      <AddActivityModal
-        isOpen={showForm}
-        onClose={handleModalClose}
-      />
+      <AddActivityModal isOpen={showForm} onClose={handleModalClose} />
 
       {/* Click outside to close notifications */}
       {showNotifications && (
