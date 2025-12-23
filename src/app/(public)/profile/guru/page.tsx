@@ -1,15 +1,16 @@
-
 import { Metadata } from "next";
-import { teachers } from "@/lib/data/teachers";
-import TeacherSearch from "@/components/profile/TeacherSearch";
+import { getTeachersOnly } from "@/actions/public/teachers";
+import TeacherList from "@/components/profile/TeacherList";
 
 export const metadata: Metadata = {
-  title: "Profil Guru & Staff | SMP IP Yakin Jakarta",
-  description:
-    "Daftar guru dan staf profesional yang mengajar dan mendukung pendidikan di SMP IP Yakin Jakarta.",
+  title: "Profil Guru | SMP IP Yakin Jakarta",
+  description: "Daftar guru profesional yang mengajar di SMP IP Yakin Jakarta.",
 };
 
-export default function GuruStaffPage() {
+export default async function GuruPage() {
+  // Fetch only teachers (excluding staff) from database
+  const teachersData = await getTeachersOnly();
+
   return (
     <div className="space-y-8">
       <div className="text-center mb-8">
@@ -17,13 +18,13 @@ export default function GuruStaffPage() {
           Tim Pengajar Profesional
         </h2>
         <p className="text-gray-600 text-lg">
-          Kami memiliki tim pengajar yang berdedikasi tinggi, berpengalaman,
-          dan berkomitmen untuk membimbing siswa mencapai potensi terbaiknya
-          dalam akademik maupun karakter.
+          Kami memiliki tim pengajar yang berdedikasi tinggi, berpengalaman, dan
+          berkomitmen untuk membimbing siswa mencapai potensi terbaiknya dalam
+          akademik maupun karakter.
         </p>
       </div>
 
-      <TeacherSearch initialTeachers={teachers} />
+      <TeacherList initialTeachers={teachersData} />
     </div>
   );
 }

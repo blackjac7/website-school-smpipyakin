@@ -61,6 +61,7 @@ const LoginForm = () => {
         description: antiBotValidation.error || "Silakan coba lagi",
         duration: 5000,
       });
+      antiBot.generateCaptcha(); // Refresh captcha on error
       return;
     }
 
@@ -90,6 +91,7 @@ const LoginForm = () => {
           description: result.error || "Terjadi kesalahan",
           duration: 5000,
         });
+        antiBot.generateCaptcha(); // Refresh captcha on error
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -99,6 +101,7 @@ const LoginForm = () => {
         description: "Terjadi kesalahan yang tidak terduga",
         duration: 5000,
       });
+      antiBot.generateCaptcha(); // Refresh captcha on error
     } finally {
       setIsSubmitting(false);
     }
@@ -177,7 +180,10 @@ const LoginForm = () => {
               <div className="space-y-4">
                 {/* Username */}
                 <div className="space-y-1">
-                  <label htmlFor="username" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">
+                  <label
+                    htmlFor="username"
+                    className="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1"
+                  >
                     Username
                   </label>
                   <div className="relative group">
@@ -197,7 +203,10 @@ const LoginForm = () => {
 
                 {/* Password */}
                 <div className="space-y-1">
-                  <label htmlFor="password" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">
+                  <label
+                    htmlFor="password"
+                    className="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1"
+                  >
                     Password
                   </label>
                   <div className="relative group">
@@ -217,7 +226,10 @@ const LoginForm = () => {
 
                 {/* Role Selection */}
                 <div className="space-y-1">
-                  <label htmlFor="role" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">
+                  <label
+                    htmlFor="role"
+                    className="block text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1"
+                  >
                     Masuk Sebagai
                   </label>
                   <div className="relative">
@@ -270,9 +282,25 @@ const LoginForm = () => {
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Memproses...
                   </span>
@@ -287,9 +315,15 @@ const LoginForm = () => {
           <div className="w-full md:w-1/2 bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center p-8 border-t md:border-t-0 md:border-l border-gray-100">
             {/* Background Pattern for Illustration Side */}
             <div className="absolute inset-0 z-0 opacity-10">
-               <svg className="h-full w-full text-[#1E3A8A]" width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-                 <path d="M0 100 C 20 0 50 0 100 100 Z" fill="currentColor" />
-               </svg>
+              <svg
+                className="h-full w-full text-[#1E3A8A]"
+                width="100%"
+                height="100%"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+              >
+                <path d="M0 100 C 20 0 50 0 100 100 Z" fill="currentColor" />
+              </svg>
             </div>
 
             <div className="relative z-10 w-full max-w-sm text-center">
@@ -320,9 +354,15 @@ const LoginForm = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">{currentRole.title}</h3>
+                    <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                      {currentRole.title}
+                    </h3>
                     <p className="text-gray-500 text-sm">
-                      Silakan login untuk mengakses dashboard {role === 'siswa' ? 'akademik dan informasi sekolah' : role}.
+                      Silakan login untuk mengakses dashboard{" "}
+                      {role === "siswa"
+                        ? "akademik dan informasi sekolah"
+                        : role}
+                      .
                     </p>
                   </motion.div>
                 </motion.div>
@@ -331,7 +371,9 @@ const LoginForm = () => {
 
             {/* Footer Text */}
             <div className="absolute bottom-4 text-center w-full z-10">
-              <p className="text-xs text-gray-400">© {new Date().getFullYear()} SMP IP YAKIN. All rights reserved.</p>
+              <p className="text-xs text-gray-400">
+                © {new Date().getFullYear()} SMP IP YAKIN. All rights reserved.
+              </p>
             </div>
           </div>
         </div>

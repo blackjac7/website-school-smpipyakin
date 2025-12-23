@@ -6,6 +6,7 @@ import { SignJWT } from "jose";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
+import { getJWTSecret, getJWTCookieOptions, JWT_CONFIG } from "@/lib/jwt";
 
 // Define schema for validation
 const LoginSchema = z.object({
@@ -46,11 +47,6 @@ const ROLE_PERMISSIONS = {
   PPDB_STAFF: ["read", "write", "manage_ppdb", "view_applications"],
 } as const;
 
-// Get JWT Secret
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "your-super-secret-key-change-this-in-production"
-);
-
 // Helper to get IP address in Server Action
 async function getClientIP(): Promise<string> {
   const headersList = await headers();
@@ -66,7 +62,12 @@ async function getClientIP(): Promise<string> {
 // Security logging
 async function logSecurityEvent(
   eventType: string,
-  details: { username?: string; ip: string; userAgent?: string; reason?: string }
+  details: {
+    username?: string;
+    ip: string;
+    userAgent?: string;
+    reason?: string;
+  }
 ) {
   try {
     console.log(`[SECURITY] ${eventType}:`, {
@@ -96,9 +97,15 @@ export async function loginAction(prevState: unknown, formData: FormData) {
 
   if (!validationResult.success) {
     // If honeypot failed, log it as a bot attempt
-    const honeypotError = validationResult.error.issues.find(e => e.path.includes("honeypot"));
+    const honeypotError = validationResult.error.issues.find((e) =>
+      e.path.includes("honeypot")
+    );
     if (honeypotError) {
-      await logSecurityEvent("BOT_DETECTED", { ip: clientIP, userAgent, reason: "Honeypot filled" });
+      await logSecurityEvent("BOT_DETECTED", {
+        ip: clientIP,
+        userAgent,
+        reason: "Honeypot filled",
+      });
       return { success: false, error: "Security check failed" };
     }
 
@@ -125,7 +132,11 @@ export async function loginAction(prevState: unknown, formData: FormData) {
     });
 
     if (ipAttempts >= 5) {
-      await logSecurityEvent("RATE_LIMITED", { ip: clientIP, username, reason: "IP rate limit exceeded" });
+      await logSecurityEvent("RATE_LIMITED", {
+        ip: clientIP,
+        username,
+        reason: "IP rate limit exceeded",
+      });
       return {
         success: false,
         error: "Too many login attempts. Please try again in 15 minutes.",
@@ -151,10 +162,10 @@ export async function loginAction(prevState: unknown, formData: FormData) {
             {
               role: "SISWA",
               siswa: {
-                osisAccess: true
-              }
-            }
-          ]
+                osisAccess: true,
+              },
+            },
+          ],
         },
         include: {
           siswa: true,
@@ -194,7 +205,7 @@ export async function loginAction(prevState: unknown, formData: FormData) {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-       await prisma.loginAttempt.create({
+      await prisma.loginAttempt.create({
         data: {
           ip: clientIP,
           username,
@@ -226,7 +237,8 @@ export async function loginAction(prevState: unknown, formData: FormData) {
     });
 
     // 6. Generate JWT
-    const permissions = ROLE_PERMISSIONS[user.role as keyof typeof ROLE_PERMISSIONS];
+    const permissions =
+      ROLE_PERMISSIONS[user.role as keyof typeof ROLE_PERMISSIONS];
 
     const token = await new SignJWT({
       userId: user.id,
@@ -236,20 +248,14 @@ export async function loginAction(prevState: unknown, formData: FormData) {
       iat: Math.floor(Date.now() / 1000),
       ip: clientIP,
     })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("24h")
+      .setProtectedHeader({ alg: JWT_CONFIG.ALGORITHM })
+      .setExpirationTime(JWT_CONFIG.EXPIRATION)
       .setIssuedAt()
-      .sign(JWT_SECRET);
+      .sign(getJWTSecret());
 
     // 7. Set Cookie
     const cookieStore = await cookies();
-    cookieStore.set("auth-token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-      maxAge: 24 * 60 * 60, // 24 hours
-      path: "/",
-    });
+    cookieStore.set(JWT_CONFIG.COOKIE_NAME, token, getJWTCookieOptions());
 
     // Return user data for UI updates (no password)
     return {
@@ -260,10 +266,9 @@ export async function loginAction(prevState: unknown, formData: FormData) {
         username: user.username,
         role: role,
         name: user.siswa?.name || user.kesiswaan?.name || user.username,
-        permissions: Array.from(permissions)
-      }
+        permissions: Array.from(permissions),
+      },
     };
-
   } catch (error) {
     console.error("Login action error:", error);
     return {

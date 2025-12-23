@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 import { prisma } from "@/lib/prisma";
-
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "your-super-secret-key-change-this-in-production"
-);
+import { getJWTSecret, getJWTCookieOptions, JWT_CONFIG } from "@/lib/jwt";
 
 // Role mapping untuk kompatibilitas dengan auth system lama
 const ROLE_MAPPING = {
@@ -384,10 +381,10 @@ export async function POST(request: NextRequest) {
       iat: Math.floor(Date.now() / 1000),
       ip: clientIP, // Include IP in token for additional security
     })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("24h")
+      .setProtectedHeader({ alg: JWT_CONFIG.ALGORITHM })
+      .setExpirationTime(JWT_CONFIG.EXPIRATION)
       .setIssuedAt()
-      .sign(JWT_SECRET);
+      .sign(getJWTSecret());
 
     // Log successful login
     await logSecurityEvent("LOGIN_SUCCESS", {
@@ -413,14 +410,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Set secure HTTP-only cookie
-    const isProduction = process.env.NODE_ENV === "production";
-    response.cookies.set("auth-token", token, {
-      httpOnly: true,
-      secure: isProduction, // true in production
-      sameSite: isProduction ? "strict" : "lax", // strict in production
-      maxAge: 24 * 60 * 60, // 24 hours
-      path: "/",
-    });
+    response.cookies.set(JWT_CONFIG.COOKIE_NAME, token, getJWTCookieOptions());
 
     return response;
   } catch (error) {

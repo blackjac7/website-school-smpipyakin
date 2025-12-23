@@ -140,6 +140,7 @@ export default function PPDBPage() {
       // Validate required fields
       if (!formData.namaLengkap || !formData.nisn) {
         toast.error("Nama lengkap dan NISN wajib diisi");
+        antiBot.generateCaptcha(); // Refresh captcha on error
         return;
       }
 
@@ -147,6 +148,7 @@ export default function PPDBPage() {
       const antiBotValidation = antiBot.validateAntiBot();
       if (!antiBotValidation.isValid) {
         toast.error(antiBotValidation.error || "Validasi keamanan gagal");
+        antiBot.generateCaptcha(); // Refresh captcha on error
         return;
       }
 
@@ -186,6 +188,7 @@ export default function PPDBPage() {
         toast.error(
           `NISN ${sanitizedFormData.nisn} sudah terdaftar dalam sistem PPDB`
         );
+        antiBot.generateCaptcha(); // Refresh captcha on error
         return;
       }
 
@@ -281,6 +284,7 @@ export default function PPDBPage() {
           ? error.message
           : "Terjadi kesalahan saat memproses pendaftaran"
       );
+      antiBot.generateCaptcha(); // Refresh captcha on error
     } finally {
       setIsSubmitting(false);
     }

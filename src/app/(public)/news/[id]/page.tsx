@@ -1,4 +1,4 @@
-import { newsData } from "@/shared/data/news";
+import { getNewsById } from "@/actions/public/news";
 import ShareButton from "@/components/news/ShareButton";
 import { Calendar } from "lucide-react";
 import Image from "next/image";
@@ -10,7 +10,7 @@ interface NewsDetailProps {
 
 export default async function NewsDetail({ params }: NewsDetailProps) {
   const { id } = await params;
-  const news = newsData.find((item) => item.id === id);
+  const news = await getNewsById(id);
 
   if (!news) return notFound();
 

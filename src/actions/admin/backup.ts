@@ -3,20 +3,17 @@
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
-
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "your-super-secret-key-change-this-in-production"
-);
+import { getJWTSecret, JWT_CONFIG } from "@/lib/jwt";
 
 // Verify admin permission helper
 async function verifyAdmin() {
   const cookieStore = await cookies();
-  const token = cookieStore.get("auth-token")?.value;
+  const token = cookieStore.get(JWT_CONFIG.COOKIE_NAME)?.value;
 
   if (!token) throw new Error("Unauthorized");
 
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { payload } = await jwtVerify(token, getJWTSecret());
     if (payload.role !== "admin") throw new Error("Unauthorized access");
     return payload;
   } catch (error) {

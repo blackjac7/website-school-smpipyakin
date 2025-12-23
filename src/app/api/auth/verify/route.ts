@@ -2,22 +2,19 @@ import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "your-super-secret-key-change-this-in-production"
-);
+import { getJWTSecret, JWT_CONFIG } from "@/lib/jwt";
 
 export async function GET() {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get("auth-token")?.value;
+    const token = cookieStore.get(JWT_CONFIG.COOKIE_NAME)?.value;
 
     if (!token) {
       return NextResponse.json({ error: "No token found" }, { status: 401 });
     }
 
     // Verify token
-    const { payload: decoded } = await jwtVerify(token, JWT_SECRET);
+    const { payload: decoded } = await jwtVerify(token, getJWTSecret());
 
     // Get fresh user data from database
     const user = await prisma.user.findUnique({

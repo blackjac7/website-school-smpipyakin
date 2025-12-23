@@ -141,10 +141,7 @@ export const getClientIP = (): string => {
 
 // JWT verification utility
 import { jwtVerify } from "jose";
-
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "your-super-secret-key-change-this-in-production"
-);
+import { getJWTSecret } from "@/lib/jwt";
 
 export interface JWTPayload {
   userId: string;
@@ -156,7 +153,7 @@ export interface JWTPayload {
 
 export const verifyJWT = async (token: string): Promise<JWTPayload | null> => {
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { payload } = await jwtVerify(token, getJWTSecret());
 
     // Validate required fields
     if (
