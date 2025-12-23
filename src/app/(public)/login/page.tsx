@@ -5,7 +5,7 @@ import { LogoutSuccessMessage } from "@/components/shared";
 
 const LoginPage = () => {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#1E3A8A] to-[#111827] relative overflow-hidden p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#1E3A8A] to-[#111827] relative overflow-hidden p-4 pt-24">
       {/* Background Shapes/Patterns for visual interest */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
          <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-[#F59E0B]/10 rounded-full blur-3xl" />
