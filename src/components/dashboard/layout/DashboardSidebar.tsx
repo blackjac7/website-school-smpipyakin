@@ -16,6 +16,7 @@ export default function DashboardSidebar({
   title = "Dashboard",
   subtitle = "SCHOOL AREA",
   userRole,
+  userAvatar,
 }: DashboardSidebarProps) {
   const { user } = useAuth();
   const displayRole = userRole || user?.role || "User";
@@ -61,15 +62,17 @@ export default function DashboardSidebar({
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400 shadow-md bg-white">
                 <Image
-                  src="https://res.cloudinary.com/dvnyimxmi/image/upload/v1733055884/logo_svl2lq.png"
-                  alt="Logo"
+                  src="/logo.png"
+                  alt="Logo SMP IP YAKIN"
                   fill
                   sizes="48px"
                   className="object-contain p-1"
                 />
               </div>
               <div>
-                <h1 className="text-lg font-bold leading-tight">{displayTitle}</h1>
+                <h1 className="text-lg font-bold leading-tight">
+                  {displayTitle}
+                </h1>
                 <p className="text-xs text-blue-200 font-medium tracking-wide uppercase">
                   {displaySubtitle}
                 </p>
@@ -121,7 +124,9 @@ export default function DashboardSidebar({
                 )}
                 <item.icon
                   className={`w-5 h-5 ${
-                    isActive ? "text-blue-600" : "text-gray-400 group-hover:text-gray-600"
+                    isActive
+                      ? "text-blue-600"
+                      : "text-gray-400 group-hover:text-gray-600"
                   }`}
                 />
                 <span className="text-sm">{item.label}</span>
@@ -140,6 +145,7 @@ export default function DashboardSidebar({
           <SidebarLogout
             userName={user?.name || user?.username || displayRole}
             userRole={displayRole}
+            userAvatar={userAvatar}
           />
         </div>
       </motion.div>

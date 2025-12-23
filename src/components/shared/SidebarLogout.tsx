@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { LogOut, User } from "lucide-react";
+import Image from "next/image";
 import LogoutConfirmModal from "./LogoutConfirmModal";
 import { useAuth } from "./AuthProvider";
 
 interface SidebarLogoutProps {
   userName?: string;
   userRole?: string;
+  userAvatar?: string;
   className?: string;
   onLogout?: () => void;
 }
@@ -15,6 +17,7 @@ interface SidebarLogoutProps {
 export default function SidebarLogout({
   userName = "User",
   userRole = "Role",
+  userAvatar,
   className = "",
   onLogout,
 }: SidebarLogoutProps) {
@@ -34,9 +37,21 @@ export default function SidebarLogout({
       <div className={`border-t border-gray-200 p-4 ${className}`}>
         {/* User Info */}
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-            <User className="w-4 h-4 text-white" />
-          </div>
+          {userAvatar ? (
+            <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-blue-200 shadow-sm flex-shrink-0">
+              <Image
+                src={userAvatar}
+                alt={userName}
+                fill
+                sizes="40px"
+                className="object-cover"
+              />
+            </div>
+          ) : (
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+              <User className="w-5 h-5 text-white" />
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">
               {userName}

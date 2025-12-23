@@ -38,17 +38,23 @@ export default function DashboardClient({
   initialStats,
 }: DashboardClientProps) {
   const [activeMenu, setActiveMenu] = useState("validation");
-  const [validationQueue, setValidationQueue] = useState<ValidationItem[]>(initialQueue);
+  const [validationQueue, setValidationQueue] =
+    useState<ValidationItem[]>(initialQueue);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Pending");
   const [categoryFilter, setCategoryFilter] = useState("Semua Kategori");
   const [showNotifications, setShowNotifications] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showValidationModal, setShowValidationModal] = useState(false);
-  const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
-  const [validationAction, setValidationAction] = useState<"approve" | "reject">("approve");
+  const [selectedContent, setSelectedContent] = useState<ContentItem | null>(
+    null
+  );
+  const [validationAction, setValidationAction] = useState<
+    "approve" | "reject"
+  >("approve");
   const [isLoading, setIsLoading] = useState(false);
-  const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } = useSidebar(true);
+  const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } =
+    useSidebar(true);
 
   // Sync initial queue if updated
   useEffect(() => {
@@ -60,7 +66,10 @@ export default function DashboardClient({
     const fetchFilteredData = async () => {
       setIsLoading(true);
       try {
-        const status = statusFilter === "Semua Status" ? "ALL" : (statusFilter.toUpperCase() as import("@prisma/client").StatusApproval);
+        const status =
+          statusFilter === "Semua Status"
+            ? "ALL"
+            : (statusFilter.toUpperCase() as import("@prisma/client").StatusApproval);
         const data = await getValidationQueue(status);
         setValidationQueue(data);
       } catch (error) {
@@ -79,7 +88,9 @@ export default function DashboardClient({
       id: "validation",
       label: "Validasi Konten",
       icon: CheckCircle,
-      badge: validationQueue.filter((i) => i.status === "PENDING").length || undefined,
+      badge:
+        validationQueue.filter((i) => i.status === "PENDING").length ||
+        undefined,
     },
     { id: "students", label: "Data Siswa", icon: Users },
     { id: "reports", label: "Laporan", icon: FileText },
@@ -136,7 +147,10 @@ export default function DashboardClient({
         setShowValidationModal(false);
         setShowPreviewModal(false);
         // Refresh the list immediately
-        const status = statusFilter === "Semua Status" ? "ALL" : (statusFilter.toUpperCase() as import("@prisma/client").StatusApproval);
+        const status =
+          statusFilter === "Semua Status"
+            ? "ALL"
+            : (statusFilter.toUpperCase() as import("@prisma/client").StatusApproval);
         const updatedData = await getValidationQueue(status);
         setValidationQueue(updatedData);
       } else {
@@ -147,6 +161,10 @@ export default function DashboardClient({
       toast.error("Terjadi kesalahan sistem");
     }
   };
+
+  // Kesiswaan avatar - purple theme for student affairs
+  const kesiswaanAvatar =
+    "https://ui-avatars.com/api/?name=Kesiswaan&background=7C3AED&color=fff&size=128&bold=true";
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -159,6 +177,7 @@ export default function DashboardClient({
         userRole="Kesiswaan"
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
+        userAvatar={kesiswaanAvatar}
       />
 
       {/* Main Content */}
@@ -177,11 +196,13 @@ export default function DashboardClient({
           {activeMenu === "validation" && (
             <div className="space-y-6">
               <AlertCard
-                count={validationQueue.filter((i) => i.status === "PENDING").length}
+                count={
+                  validationQueue.filter((i) => i.status === "PENDING").length
+                }
               />
               {isLoading ? (
                 <div className="flex justify-center py-10">
-                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                 </div>
               ) : (
                 <ContentList

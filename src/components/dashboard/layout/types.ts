@@ -16,4 +16,5 @@ export interface DashboardSidebarProps {
   title?: string;
   subtitle?: string;
   userRole?: string;
+  userAvatar?: string; // URL for user avatar image
 }
