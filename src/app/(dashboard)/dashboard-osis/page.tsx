@@ -187,6 +187,7 @@ function OSISDashboard() {
           setShowNotifications={setShowNotifications}
           unreadCount={unreadCount}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          activeTab={activeMenu}
         />
 
         {/* Content */}
