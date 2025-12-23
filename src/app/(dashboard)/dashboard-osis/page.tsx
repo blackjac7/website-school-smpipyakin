@@ -20,6 +20,7 @@ import { getMenstruationRecords, getAdzanSchedules, getCarpetSchedules } from "@
 import NewsManagement from "@/components/dashboard/osis/NewsManagement";
 import ReligiousDashboardClient from "@/components/dashboard/osis/worship/ReligiousDashboardClient";
 import toast from "react-hot-toast";
+import { useSidebar } from "@/hooks/useSidebar";
 
 function OSISDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");

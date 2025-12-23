@@ -48,10 +48,11 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { NotificationAPIService } from "@/hooks/useNotifications";
 import { FormattedNotification } from "@/utils/notificationHelpers";
 import toast from "react-hot-toast";
+import { useSidebar } from "@/hooks/useSidebar";
 
 function PPDBDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } = useSidebar(true);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<FormattedNotification[]>(
     []
