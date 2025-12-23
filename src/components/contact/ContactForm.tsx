@@ -67,6 +67,7 @@ const ContactForm = () => {
 
     if (!validateForm()) {
       setSubmitStatus("error");
+      antiBot.generateCaptcha(); // Refresh captcha on error
       return;
     }
 
@@ -113,6 +114,7 @@ const ContactForm = () => {
       setErrorMessage(
         "Gagal mengirim pesan. Silakan coba lagi atau hubungi kami langsung."
       );
+      antiBot.generateCaptcha(); // Refresh captcha on error
     } finally {
       setIsSubmitting(false);
     }

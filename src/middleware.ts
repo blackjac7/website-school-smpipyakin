@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
+import { getJWTSecret } from "@/lib/jwt";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "your-super-secret-key-change-this-in-production"
-);
+const JWT_SECRET = getJWTSecret();
 
 // Define protected routes and their required permissions
 const PROTECTED_ROUTES = {
@@ -169,8 +168,8 @@ export async function middleware(request: NextRequest) {
 
         // Redirect to appropriate dashboard based on role
         let dashboardUrl = `/dashboard-${decoded.role}`;
-        if (decoded.role === 'ppdb-officer') {
-          dashboardUrl = '/dashboard-ppdb';
+        if (decoded.role === "ppdb-officer") {
+          dashboardUrl = "/dashboard-ppdb";
         }
 
         const response = NextResponse.redirect(
