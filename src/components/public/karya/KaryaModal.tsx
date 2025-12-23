@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Calendar, User, BookOpen, Tag } from "lucide-react";
+import { X, Calendar, BookOpen, Tag } from "lucide-react";
 import Image from "next/image";
 
 interface PublicWork {
@@ -32,11 +32,17 @@ export default function KaryaModal({ work, onClose }: KaryaModalProps) {
   const getYouTubeEmbedUrl = (url: string) => {
     try {
       let videoId = "";
-      if (url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1].split("?")[0];
-      else if (url.includes("youtube.com/watch?v=")) videoId = url.split("watch?v=")[1].split("&")[0];
+      if (url.includes("youtu.be/"))
+        videoId = url.split("youtu.be/")[1].split("?")[0];
+      else if (url.includes("youtube.com/watch?v="))
+        videoId = url.split("watch?v=")[1].split("&")[0];
       else if (url.includes("youtube.com/embed/")) return url;
-      return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : null;
-    } catch { return null; }
+      return videoId
+        ? `https://www.youtube.com/embed/${videoId}?autoplay=1`
+        : null;
+    } catch {
+      return null;
+    }
   };
 
   return (
@@ -73,6 +79,7 @@ export default function KaryaModal({ work, onClose }: KaryaModalProps) {
                   className="w-full h-full absolute inset-0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
+                  title={`Video: ${work.title}`}
                 />
               ) : (
                 <div className="relative w-full h-full">
@@ -114,7 +121,9 @@ export default function KaryaModal({ work, onClose }: KaryaModalProps) {
                     {work.studentName.charAt(0)}
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-900 text-sm">{work.studentName}</h4>
+                    <h4 className="font-bold text-gray-900 text-sm">
+                      {work.studentName}
+                    </h4>
                     <p className="text-xs text-gray-500">{work.studentClass}</p>
                   </div>
                 </div>
