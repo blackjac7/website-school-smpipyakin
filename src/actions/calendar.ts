@@ -3,6 +3,16 @@
 import { prisma } from "@/lib/prisma";
 import { SchoolActivity, SemesterType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { getAuthenticatedUser } from "@/lib/auth";
+
+// Helper to verify admin/kesiswaan role for calendar management
+async function verifyCalendarAccess() {
+  const user = await getAuthenticatedUser();
+  if (!user || !["admin", "kesiswaan"].includes(user.role)) {
+    return { authorized: false, error: "Unauthorized: Admin or Kesiswaan access required" };
+  }
+  return { authorized: true, user };
+}
 
 export async function getAllActivities() {
   try {
@@ -46,14 +56,14 @@ export async function createCalendarEvent(data: {
   isHoliday: boolean;
   createdBy?: string;
 }) {
+  const auth = await verifyCalendarAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
-    // We need a creator ID. For now, let's assume we pass it or pick the first admin found
-    let createdById = data.createdBy;
-    if (!createdById) {
-        const admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
-        if (admin) createdById = admin.id;
-        else throw new Error("No admin user found to associate activity with.");
-    }
+    // Use authenticated user's ID if not provided
+    const createdById = data.createdBy || auth.user!.userId;
 
     const event = await prisma.schoolActivity.create({
       data: {
@@ -66,6 +76,7 @@ export async function createCalendarEvent(data: {
       },
     });
     revalidatePath("/academic-calendar");
+    revalidatePath("/dashboard-admin/calendar");
     return { success: true, data: event };
   } catch (error) {
     console.error("Error creating calendar event:", error);
@@ -74,12 +85,18 @@ export async function createCalendarEvent(data: {
 }
 
 export async function updateCalendarEvent(id: string, data: Partial<SchoolActivity>) {
+  const auth = await verifyCalendarAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
     const event = await prisma.schoolActivity.update({
       where: { id },
       data,
     });
     revalidatePath("/academic-calendar");
+    revalidatePath("/dashboard-admin/calendar");
     return { success: true, data: event };
   } catch (error) {
     console.error("Error updating calendar event:", error);
@@ -88,14 +105,21 @@ export async function updateCalendarEvent(id: string, data: Partial<SchoolActivi
 }
 
 export async function deleteCalendarEvent(id: string) {
+  const auth = await verifyCalendarAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
     await prisma.schoolActivity.delete({
       where: { id },
     });
     revalidatePath("/academic-calendar");
+    revalidatePath("/dashboard-admin/calendar");
     return { success: true };
   } catch (error) {
     console.error("Error deleting calendar event:", error);
     return { success: false, error: "Failed to delete event" };
   }
+}
 }

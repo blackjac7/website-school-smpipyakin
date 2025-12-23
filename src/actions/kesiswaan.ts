@@ -1,9 +1,23 @@
-'use server';
+"use server";
 
-import { prisma } from '@/lib/prisma';
-import { StatusApproval, Prisma } from '@prisma/client';
-import { revalidatePath } from 'next/cache';
-import { z } from 'zod';
+import { prisma } from "@/lib/prisma";
+import { StatusApproval, Prisma } from "@prisma/client";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { NotificationService } from "@/lib/notificationService";
+import { getAuthenticatedUser } from "@/lib/auth";
+
+// Helper to verify kesiswaan role
+async function verifyKesiswaanRole() {
+  const user = await getAuthenticatedUser();
+  if (!user || !["kesiswaan", "admin"].includes(user.role)) {
+    return {
+      authorized: false,
+      error: "Unauthorized: Kesiswaan access required",
+    };
+  }
+  return { authorized: true, user };
+}
 
 // =============================================
 // VALIDATION & CONTENT MANAGEMENT
@@ -11,7 +25,7 @@ import { z } from 'zod';
 
 export interface ValidationItem {
   id: string;
-  type: 'achievement' | 'work';
+  type: "achievement" | "work";
   title: string;
   description: string | null;
   authorName: string;
@@ -25,11 +39,12 @@ export interface ValidationItem {
 }
 
 export async function getValidationQueue(
-  statusFilter: StatusApproval | 'ALL' = 'PENDING'
+  statusFilter: StatusApproval | "ALL" = "PENDING"
 ): Promise<ValidationItem[]> {
   try {
-    const whereClause: Prisma.StudentAchievementWhereInput & Prisma.StudentWorkWhereInput = {};
-    if (statusFilter !== 'ALL') {
+    const whereClause: Prisma.StudentAchievementWhereInput &
+      Prisma.StudentWorkWhereInput = {};
+    if (statusFilter !== "ALL") {
       whereClause.statusPersetujuan = statusFilter;
     }
 
@@ -39,7 +54,7 @@ export async function getValidationQueue(
       include: {
         siswa: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     // Fetch Works
@@ -48,16 +63,16 @@ export async function getValidationQueue(
       include: {
         siswa: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     // Normalize and merge
     const normalizedAchievements: ValidationItem[] = achievements.map((a) => ({
       id: a.id,
-      type: 'achievement',
+      type: "achievement",
       title: a.title,
       description: a.description,
-      authorName: a.siswa.name || 'Unknown',
+      authorName: a.siswa.name || "Unknown",
       authorClass: a.siswa.class,
       date: a.createdAt,
       status: a.statusPersetujuan,
@@ -67,14 +82,14 @@ export async function getValidationQueue(
 
     const normalizedWorks: ValidationItem[] = works.map((w) => ({
       id: w.id,
-      type: 'work',
+      type: "work",
       title: w.title,
       description: w.description,
-      authorName: w.siswa.name || 'Unknown',
+      authorName: w.siswa.name || "Unknown",
       authorClass: w.siswa.class,
       date: w.createdAt,
       status: w.statusPersetujuan,
-      category: w.workType === 'PHOTO' ? 'Fotografi' : 'Videografi',
+      category: w.workType === "PHOTO" ? "Fotografi" : "Videografi",
       image: w.mediaUrl,
       videoLink: w.videoLink,
       rejectionNote: w.rejectionNote,
@@ -85,42 +100,110 @@ export async function getValidationQueue(
       (a, b) => b.date.getTime() - a.date.getTime()
     );
   } catch (error) {
-    console.error('Error fetching validation queue:', error);
+    console.error("Error fetching validation queue:", error);
     return [];
   }
 }
 
 export async function validateContent(
   id: string,
-  type: 'achievement' | 'work',
-  action: 'APPROVE' | 'REJECT',
+  type: "achievement" | "work",
+  action: "APPROVE" | "REJECT",
   note?: string
 ) {
-  try {
-    const status = action === 'APPROVE' ? StatusApproval.APPROVED : StatusApproval.REJECTED;
+  // Verify authorization
+  const auth = await verifyKesiswaanRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
 
-    if (type === 'achievement') {
+  try {
+    const status =
+      action === "APPROVE" ? StatusApproval.APPROVED : StatusApproval.REJECTED;
+    let userId: string | null = null;
+    let contentTitle: string = "";
+
+    if (type === "achievement") {
+      // Get the achievement with student info for notification
+      const achievement = await prisma.studentAchievement.findUnique({
+        where: { id },
+        include: { siswa: { select: { userId: true } } },
+      });
+
+      if (!achievement) {
+        return { success: false, error: "Achievement not found" };
+      }
+
+      userId = achievement.siswa.userId;
+      contentTitle = achievement.title;
+
       await prisma.studentAchievement.update({
         where: { id },
         data: {
           statusPersetujuan: status,
         },
       });
+
+      // Send notification to student
+      if (action === "APPROVE") {
+        await NotificationService.createAchievementApprovedNotification(
+          userId,
+          contentTitle,
+          id
+        );
+      } else {
+        await NotificationService.createAchievementRejectedNotification(
+          userId,
+          contentTitle,
+          id,
+          note
+        );
+      }
     } else {
+      // Get the work with student info for notification
+      const work = await prisma.studentWork.findUnique({
+        where: { id },
+        include: { siswa: { select: { userId: true } } },
+      });
+
+      if (!work) {
+        return { success: false, error: "Work not found" };
+      }
+
+      userId = work.siswa.userId;
+      contentTitle = work.title;
+
       await prisma.studentWork.update({
         where: { id },
         data: {
           statusPersetujuan: status,
-          rejectionNote: note,
+          rejectionNote: action === "REJECT" ? note : null,
         },
       });
+
+      // Send notification to student
+      if (action === "APPROVE") {
+        await NotificationService.createWorkApprovedNotification(
+          userId,
+          contentTitle,
+          id
+        );
+      } else {
+        await NotificationService.createWorkRejectedNotification(
+          userId,
+          contentTitle,
+          id,
+          note
+        );
+      }
     }
 
-    revalidatePath('/dashboard-kesiswaan');
+    revalidatePath("/dashboard-kesiswaan");
+    revalidatePath("/dashboard-siswa");
     return { success: true };
   } catch (error) {
-    console.error('Error validating content:', error);
-    return { success: false, error: 'Failed to update status' };
+    console.error("Error validating content:", error);
+    return { success: false, error: "Failed to update status" };
   }
 }
 
@@ -134,23 +217,23 @@ export async function getStudents(search?: string) {
       ? {
           OR: [
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            { name: { contains: search, mode: 'insensitive' } as any },
+            { name: { contains: search, mode: "insensitive" } as any },
             { nisn: { contains: search } },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            { class: { contains: search, mode: 'insensitive' } as any },
+            { class: { contains: search, mode: "insensitive" } as any },
           ],
         }
       : {};
 
     const students = await prisma.siswa.findMany({
       where,
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
       take: 50, // Limit for performance
     });
 
     return students;
   } catch (error) {
-    console.error('Error fetching students:', error);
+    console.error("Error fetching students:", error);
     return [];
   }
 }
@@ -192,20 +275,26 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   ]);
 
   const allItems = [
-    ...achievements.map((a) => ({ ...a, type: 'achievement' })),
-    ...works.map((w) => ({ ...w, type: 'work' })),
+    ...achievements.map((a) => ({ ...a, type: "achievement" })),
+    ...works.map((w) => ({ ...w, type: "work" })),
   ];
 
   // Calculate summary
-  const pending = allItems.filter((i) => i.statusPersetujuan === 'PENDING').length;
-  const approved = allItems.filter((i) => i.statusPersetujuan === 'APPROVED').length;
-  const rejected = allItems.filter((i) => i.statusPersetujuan === 'REJECTED').length;
+  const pending = allItems.filter(
+    (i) => i.statusPersetujuan === "PENDING"
+  ).length;
+  const approved = allItems.filter(
+    (i) => i.statusPersetujuan === "APPROVED"
+  ).length;
+  const rejected = allItems.filter(
+    (i) => i.statusPersetujuan === "REJECTED"
+  ).length;
 
   // Calculate By Status
   const byStatus = [
-    { status: 'Disetujui', count: approved, color: 'bg-green-500' },
-    { status: 'Pending', count: pending, color: 'bg-yellow-500' },
-    { status: 'Ditolak', count: rejected, color: 'bg-red-500' },
+    { status: "Disetujui", count: approved, color: "bg-green-500" },
+    { status: "Pending", count: pending, color: "bg-yellow-500" },
+    { status: "Ditolak", count: rejected, color: "bg-red-500" },
   ];
 
   // Calculate By Category (simplified)
@@ -215,12 +304,12 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
   const byCategory = [
     {
-      category: 'Prestasi Siswa',
+      category: "Prestasi Siswa",
       count: achievementCount,
       percentage: total > 0 ? (achievementCount / total) * 100 : 0,
     },
     {
-      category: 'Karya Siswa',
+      category: "Karya Siswa",
       count: workCount,
       percentage: total > 0 ? (workCount / total) * 100 : 0,
     },
@@ -228,7 +317,20 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
   // Calculate Monthly (Mock for now or real aggregation if needed)
   // For simplicity and performance, we'll group the last 6 months in code
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "Mei",
+    "Jun",
+    "Jul",
+    "Agu",
+    "Sep",
+    "Okt",
+    "Nov",
+    "Des",
+  ];
   const currentMonth = new Date().getMonth();
   const monthlyStats = [];
 
@@ -238,16 +340,22 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     const mIndex = d.getMonth();
 
     // Count items created in this month
-    const itemsInMonth = allItems.filter(item => {
+    const itemsInMonth = allItems.filter((item) => {
       const itemDate = new Date(item.createdAt);
-      return itemDate.getMonth() === mIndex && itemDate.getFullYear() === d.getFullYear();
+      return (
+        itemDate.getMonth() === mIndex &&
+        itemDate.getFullYear() === d.getFullYear()
+      );
     });
 
     monthlyStats.push({
       month: months[mIndex],
-      validated: itemsInMonth.filter(i => i.statusPersetujuan === 'APPROVED').length,
-      pending: itemsInMonth.filter(i => i.statusPersetujuan === 'PENDING').length,
-      rejected: itemsInMonth.filter(i => i.statusPersetujuan === 'REJECTED').length,
+      validated: itemsInMonth.filter((i) => i.statusPersetujuan === "APPROVED")
+        .length,
+      pending: itemsInMonth.filter((i) => i.statusPersetujuan === "PENDING")
+        .length,
+      rejected: itemsInMonth.filter((i) => i.statusPersetujuan === "REJECTED")
+        .length,
     });
   }
 
@@ -275,12 +383,12 @@ const CreateAchievementSchema = z.object({
 export async function createAchievementByStaff(formData: FormData) {
   try {
     const rawData = {
-      title: formData.get('title'),
-      description: formData.get('description'),
-      date: formData.get('date'),
-      studentId: formData.get('studentId'),
-      category: formData.get('category'),
-      level: formData.get('level'),
+      title: formData.get("title"),
+      description: formData.get("description"),
+      date: formData.get("date"),
+      studentId: formData.get("studentId"),
+      category: formData.get("category"),
+      level: formData.get("level"),
     };
 
     const validated = CreateAchievementSchema.parse(rawData);
@@ -288,7 +396,7 @@ export async function createAchievementByStaff(formData: FormData) {
     await prisma.studentAchievement.create({
       data: {
         title: validated.title,
-        description: validated.description || '',
+        description: validated.description || "",
         siswaId: validated.studentId,
         achievementDate: new Date(validated.date),
         category: validated.category,
@@ -297,10 +405,10 @@ export async function createAchievementByStaff(formData: FormData) {
       },
     });
 
-    revalidatePath('/dashboard-kesiswaan');
+    revalidatePath("/dashboard-kesiswaan");
     return { success: true };
   } catch (error) {
-    console.error('Error creating achievement:', error);
-    return { success: false, error: 'Failed to create achievement' };
+    console.error("Error creating achievement:", error);
+    return { success: false, error: "Failed to create achievement" };
   }
 }
