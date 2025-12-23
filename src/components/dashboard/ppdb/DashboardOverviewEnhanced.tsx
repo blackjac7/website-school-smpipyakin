@@ -19,8 +19,13 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { getPPDBStats } from "@/actions/ppdb";
-import RegistrationChart from "./RegistrationChart";
+import dynamic from "next/dynamic";
 import Link from "next/link";
+
+const RegistrationChart = dynamic(() => import("./RegistrationChart"), {
+  ssr: false,
+  loading: () => <div className="h-[300px] w-full bg-gray-100 animate-pulse rounded-xl" />
+});
 
 interface PPDBStats {
   overview: {

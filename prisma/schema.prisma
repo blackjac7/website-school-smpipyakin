@@ -69,6 +69,11 @@ model Siswa {
   achievements    StudentAchievement[]
   works           StudentWork[]
 
+  // Religious Activities
+  menstruationRecords WorshipMenstruationRecord[]
+  adzanSchedules      WorshipAdzanSchedule[]
+  carpetAssignments   WorshipCarpetAssignment[]
+
   @@map("siswa")
 }
 
@@ -434,4 +439,93 @@ model Notification {
 
   @@index([userId, read, createdAt])
   @@map("notifications")
+}
+
+// =============================================
+// RELIGIOUS ACTIVITIES (IBADAH)
+// =============================================
+
+model WorshipMenstruationRecord {
+  id          String    @id @default(uuid())
+  siswaId     String    @map("siswa_id")
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime? @map("end_date")
+  notes       String?
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  siswa       Siswa     @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+
+  @@map("worship_menstruation_records")
+}
+
+model WorshipAdzanSchedule {
+  id          String        @id @default(uuid())
+  siswaId     String        @map("siswa_id")
+  date        DateTime
+  prayerTime  PrayerTime    @map("prayer_time")
+  status      TaskStatus    @default(PENDING)
+
+  // Timestamps
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  siswa       Siswa         @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+
+  @@map("worship_adzan_schedules")
+}
+
+model WorshipCarpetSchedule {
+  id          String      @id @default(uuid())
+  date        DateTime
+  zone        CarpetZone
+  status      TaskStatus  @default(PENDING)
+
+  // Relations
+  assignments WorshipCarpetAssignment[]
+
+  // Timestamps
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("worship_carpet_schedules")
+}
+
+model WorshipCarpetAssignment {
+  id          String                @id @default(uuid())
+  scheduleId  String                @map("schedule_id")
+  siswaId     String                @map("siswa_id")
+
+  // Relations
+  schedule    WorshipCarpetSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  siswa       Siswa                 @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+
+  @@map("worship_carpet_assignments")
+}
+
+enum PrayerTime {
+  ZUHUR  @map("zuhur")
+  ASHAR  @map("ashar")
+  JUMAT  @map("jumat")
+
+  @@map("prayer_time")
+}
+
+enum TaskStatus {
+  PENDING   @map("pending")
+  COMPLETED @map("completed")
+  MISSED    @map("missed")
+
+  @@map("task_status")
+}
+
+enum CarpetZone {
+  FLOOR_1 @map("floor_1")
+  FLOOR_2 @map("floor_2")
+
+  @@map("carpet_zone")
 }
