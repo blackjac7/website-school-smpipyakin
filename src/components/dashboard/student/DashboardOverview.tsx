@@ -32,31 +32,31 @@ interface DashboardOverviewProps {
     category?: string;
     level?: string;
   }>;
-  works: Array<{
-    id: string;
-    title: string;
-    description: string;
-    workType: string;
-    mediaUrl: string;
-    videoLink: string;
-    category: string;
-    subject: string;
-    status: string;
-    rejectionNote: string;
-    createdAt: string;
-  }>;
+  // works: Array<{
+  //   id: string;
+  //   title: string;
+  //   description: string;
+  //   workType: string;
+  //   mediaUrl: string;
+  //   videoLink: string;
+  //   category: string;
+  //   subject: string;
+  //   status: string;
+  //   rejectionNote: string;
+  //   createdAt: string;
+  // }>;
   onQuickEdit: () => void;
   onUploadAchievement: () => void;
-  onUploadWork: () => void;
+  // onUploadWork: () => void;
 }
 
 export default function DashboardOverview({
   profileData,
   achievements,
-  works,
+  // works,
   onQuickEdit,
   onUploadAchievement,
-  onUploadWork,
+  // onUploadWork,
 }: DashboardOverviewProps) {
   const approvedAchievements = achievements.filter(
     (a) => a.status === "approved"
@@ -64,8 +64,8 @@ export default function DashboardOverview({
   const pendingAchievements = achievements.filter(
     (a) => a.status === "pending"
   );
-  const pendingWorks = works.filter((w) => w.status === "pending");
-  const approvedWorks = works.filter((w) => w.status === "approved");
+  // const pendingWorks = works.filter((w) => w.status === "pending");
+  // const approvedWorks = works.filter((w) => w.status === "approved");
 
   const handleUploadAchievement = () => {
     if (pendingAchievements.length >= 2) {
@@ -77,15 +77,15 @@ export default function DashboardOverview({
     onUploadAchievement();
   };
 
-  const handleUploadWork = () => {
-    if (pendingWorks.length >= 2) {
-      toast.error(
-        "Anda memiliki 2 karya pending. Mohon tunggu persetujuan."
-      );
-      return;
-    }
-    onUploadWork();
-  };
+  // const handleUploadWork = () => {
+  //   if (pendingWorks.length >= 2) {
+  //     toast.error(
+  //       "Anda memiliki 2 karya pending. Mohon tunggu persetujuan."
+  //     );
+  //     return;
+  //   }
+  //   onUploadWork();
+  // };
 
   const stats = [
     {
@@ -96,14 +96,14 @@ export default function DashboardOverview({
       border: "border-blue-100",
       subtitle: `${pendingAchievements.length} sedang ditinjau`,
     },
-    {
-      title: "Total Karya",
-      value: approvedWorks.length,
-      icon: BookOpen,
-      color: "bg-amber-50 text-amber-600",
-      border: "border-amber-100",
-      subtitle: `${pendingWorks.length} sedang ditinjau`,
-    },
+    // {
+    //   title: "Total Karya",
+    //   value: approvedWorks.length,
+    //   icon: BookOpen,
+    //   color: "bg-amber-50 text-amber-600",
+    //   border: "border-amber-100",
+    //   subtitle: `${pendingWorks.length} sedang ditinjau`,
+    // },
     {
       title: "Akademik",
       value: approvedAchievements.filter((a) => a.category === "akademik").length,
@@ -122,15 +122,15 @@ export default function DashboardOverview({
             achievementDate.getMonth() === currentDate.getMonth() &&
             achievementDate.getFullYear() === currentDate.getFullYear()
           );
-        }).length +
-        works.filter((w) => {
-          const workDate = new Date(w.createdAt);
-          const currentDate = new Date();
-          return (
-            workDate.getMonth() === currentDate.getMonth() &&
-            workDate.getFullYear() === currentDate.getFullYear()
-          );
         }).length,
+        // + works.filter((w) => {
+        //   const workDate = new Date(w.createdAt);
+        //   const currentDate = new Date();
+        //   return (
+        //     workDate.getMonth() === currentDate.getMonth() &&
+        //     workDate.getFullYear() === currentDate.getFullYear()
+        //   );
+        // }).length,
       icon: TrendingUp,
       color: "bg-indigo-50 text-indigo-600",
       border: "border-indigo-100",
@@ -147,14 +147,14 @@ export default function DashboardOverview({
       date: achievement.date,
       category: achievement.category
     })),
-    ...works.slice(0, 2).map((work) => ({
-      id: work.id,
-      type: "work",
-      title: work.title,
-      status: work.status,
-      date: work.createdAt,
-      category: work.category
-    })),
+    // ...works.slice(0, 2).map((work) => ({
+    //   id: work.id,
+    //   type: "work",
+    //   title: work.title,
+    //   status: work.status,
+    //   date: work.createdAt,
+    //   category: work.category
+    // })),
   ]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 5);
@@ -312,7 +312,7 @@ export default function DashboardOverview({
               </div>
             </button>
 
-            <button
+            {/* <button
               onClick={handleUploadWork}
               disabled={pendingWorks.length >= 2}
               className={`
@@ -347,7 +347,7 @@ export default function DashboardOverview({
                    </div>
                 </div>
               </div>
-            </button>
+            </button> */}
           </div>
         </motion.div>
 
