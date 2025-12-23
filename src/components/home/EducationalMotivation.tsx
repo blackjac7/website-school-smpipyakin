@@ -25,7 +25,7 @@ export default function EducationalMotivation() {
   const values = ["Disiplin", "Kreatif", "Religius", "Mandiri"];
 
   return (
-    <section className="bg-gradient-to-r from-blue-500 to-blue-800 py-16 text-white">
+    <section className="bg-gradient-to-r from-blue-500 to-blue-800 dark:from-blue-700 dark:to-blue-950 py-16 text-white">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Semangat Belajar</h2>
@@ -40,7 +40,7 @@ export default function EducationalMotivation() {
           {pillars.map((item, index) => (
             <div
               key={index}
-              className="bg-white/10 backdrop-blur-lg rounded-lg p-6 hover:scale-105 transition-all"
+              className="bg-white/10 dark:bg-white/5 backdrop-blur-lg rounded-lg p-6 hover:scale-105 transition-all border border-white/10 dark:border-white/5"
             >
               <div className="flex items-center justify-center mb-4">
                 {item.icon}
@@ -58,7 +58,7 @@ export default function EducationalMotivation() {
           {values.map((value, index) => (
             <div
               key={index}
-              className="bg-white/5 backdrop-blur-sm rounded-lg p-4 flex items-center justify-center gap-2"
+              className="bg-white/5 dark:bg-white/[0.03] backdrop-blur-sm rounded-lg p-4 flex items-center justify-center gap-2 border border-white/10 dark:border-white/5"
             >
               <Star className="h-4 w-4" />
               <span className="font-semibold">{value}</span>

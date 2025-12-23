@@ -102,7 +102,11 @@ export default function PPDBForm({
 
     // Validation for Step 2
     if (currentStep === 2) {
-      if (!formData.namaOrtu || !formData.kontakOrtu || !formData.alamatLengkap) {
+      if (
+        !formData.namaOrtu ||
+        !formData.kontakOrtu ||
+        !formData.alamatLengkap
+      ) {
         toast.error("Mohon lengkapi data orang tua dan alamat");
         return;
       }
@@ -118,8 +122,11 @@ export default function PPDBForm({
   };
 
   return (
-    <section ref={formRef} className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
-      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden min-h-[600px] flex flex-col">
+    <section
+      ref={formRef}
+      className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-16"
+    >
+      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden min-h-[600px] flex flex-col">
         {/* Form Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 sm:p-8 text-white text-center">
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">
@@ -187,15 +194,15 @@ export default function PPDBForm({
             )}
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between pt-8 mt-auto border-t border-gray-100">
+            <div className="flex justify-between pt-8 mt-auto border-t border-gray-100 dark:border-gray-700">
               <button
                 type="button"
                 onClick={handlePrev}
                 disabled={currentStep === 1 || isSubmitting}
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
                   currentStep === 1
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                 }`}
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -222,7 +229,8 @@ export default function PPDBForm({
                       <Loader2 className="w-5 h-5 animate-spin" />
                       {uploadProgress ? (
                         <span className="text-sm">
-                          Mengupload {uploadProgress.current}/{uploadProgress.total}...
+                          Mengupload {uploadProgress.current}/
+                          {uploadProgress.total}...
                         </span>
                       ) : (
                         "Memproses..."

@@ -51,7 +51,7 @@ export default function ContactPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
       <PageHeader
         title="Hubungi Kami"
         description="Kami siap membantu dan menjawab pertanyaan Anda seputar SMP IP Yakin Jakarta."
@@ -68,14 +68,14 @@ export default function ContactPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-gray-100 overflow-hidden relative h-fit"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-gray-900/50 p-6 sm:p-8 border border-gray-100 dark:border-gray-700 overflow-hidden relative h-fit"
             >
               {/* Decorative Background Blob */}
-              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-yellow-100/50 to-orange-100/30 rounded-bl-full -mr-10 -mt-10 z-0"></div>
+              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-yellow-100/50 to-orange-100/30 dark:from-yellow-900/20 dark:to-orange-900/10 rounded-bl-full -mr-10 -mt-10 z-0"></div>
 
               <div className="relative z-10">
-                <h2 className="text-xl font-bold mb-6 text-gray-800 flex items-center gap-3">
-                  <div className="p-2 bg-yellow-100 rounded-lg text-yellow-600">
+                <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-white flex items-center gap-3">
+                  <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg text-yellow-600 dark:text-yellow-400">
                     <Phone className="h-5 w-5" />
                   </div>
                   Informasi Kontak
@@ -84,69 +84,69 @@ export default function ContactPage() {
                 <div className="space-y-5">
                   {/* Address */}
                   <div className="flex gap-4 group">
-                    <div className="mt-1 shrink-0 text-gray-400 group-hover:text-blue-600 transition-colors">
+                    <div className="mt-1 shrink-0 text-gray-400 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       <MapPin className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
                         Alamat
                       </h3>
-                      <p className="text-gray-600 text-sm leading-relaxed mt-0.5">
+                      <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mt-0.5">
                         Jl. Bangun Nusa Raya No. 10 Cengkareng Timur, Jakarta
                         Barat 11730
                       </p>
                     </div>
                   </div>
 
-                  <div className="h-px bg-gray-50 w-full" />
+                  <div className="h-px bg-gray-50 dark:bg-gray-700 w-full" />
 
                   {/* Phone */}
                   <div className="flex gap-4 group">
-                    <div className="mt-1 shrink-0 text-gray-400 group-hover:text-green-600 transition-colors">
+                    <div className="mt-1 shrink-0 text-gray-400 dark:text-gray-500 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
                       <Phone className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
                         Telepon
                       </h3>
-                      <p className="text-gray-600 text-sm font-medium mt-0.5">
+                      <p className="text-gray-600 dark:text-gray-300 text-sm font-medium mt-0.5">
                         +62 21 6194 381
                       </p>
                     </div>
                   </div>
 
-                  <div className="h-px bg-gray-50 w-full" />
+                  <div className="h-px bg-gray-50 dark:bg-gray-700 w-full" />
 
                   {/* Email */}
                   <div className="flex gap-4 group">
-                    <div className="mt-1 shrink-0 text-gray-400 group-hover:text-purple-600 transition-colors">
+                    <div className="mt-1 shrink-0 text-gray-400 dark:text-gray-500 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                       <Mail className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
                         Email
                       </h3>
                       <a
                         href="mailto:info@smpipyakin.sch.id"
-                        className="text-blue-600 hover:underline text-sm mt-0.5 block"
+                        className="text-blue-600 dark:text-blue-400 hover:underline text-sm mt-0.5 block"
                       >
                         info@smpipyakin.sch.id
                       </a>
                     </div>
                   </div>
 
-                  <div className="h-px bg-gray-50 w-full" />
+                  <div className="h-px bg-gray-50 dark:bg-gray-700 w-full" />
 
                   {/* Hours */}
                   <div className="flex gap-4 group">
-                    <div className="mt-1 shrink-0 text-gray-400 group-hover:text-orange-600 transition-colors">
+                    <div className="mt-1 shrink-0 text-gray-400 dark:text-gray-500 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
                       <Clock className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
                         Jam Kerja
                       </h3>
-                      <div className="text-sm text-gray-600 mt-0.5 space-y-1">
+                      <div className="text-sm text-gray-600 dark:text-gray-300 mt-0.5 space-y-1">
                         <div className="flex justify-between gap-4">
                           <span>Senin - Jumat</span> <span>07:00 - 15:00</span>
                         </div>
@@ -159,8 +159,8 @@ export default function ContactPage() {
                 </div>
 
                 {/* Socials Inline */}
-                <div className="mt-8 pt-6 border-t border-gray-100">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
+                  <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-4">
                     Media Sosial
                   </p>
                   <div className="flex gap-2">
@@ -168,7 +168,7 @@ export default function ContactPage() {
                       <a
                         key={social.name}
                         href={social.url}
-                        className={`p-2.5 rounded-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${social.bg} ${social.hover} ${social.color}`}
+                        className={`p-2.5 rounded-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${social.bg} ${social.hover} ${social.color} dark:bg-opacity-20 dark:hover:bg-opacity-30`}
                         aria-label={social.name}
                       >
                         <social.icon className="h-5 w-5" />
@@ -184,9 +184,9 @@ export default function ContactPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-white rounded-2xl shadow-xl p-2 border border-gray-100 flex-grow min-h-[300px] flex flex-col"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-gray-900/50 p-2 border border-gray-100 dark:border-gray-700 flex-grow min-h-[300px] flex flex-col"
             >
-              <div className="rounded-xl overflow-hidden w-full h-full relative flex-grow bg-gray-100 group">
+              <div className="rounded-xl overflow-hidden w-full h-full relative flex-grow bg-gray-100 dark:bg-gray-700 group">
                 <iframe
                   src="https://www.google.com/maps/embed/v1/place?q=smp+ip+yakin&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
                   width="100%"
@@ -198,7 +198,7 @@ export default function ContactPage() {
                   title="Peta Lokasi SMP IP Yakin Jakarta"
                   className="w-full h-full grayscale-[50%] group-hover:grayscale-0 transition-all duration-700 ease-in-out"
                 ></iframe>
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm text-xs font-semibold text-gray-700 pointer-events-none border border-white/50">
+                <div className="absolute top-3 left-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm text-xs font-semibold text-gray-700 dark:text-gray-200 pointer-events-none border border-white/50 dark:border-gray-600/50">
                   📍 Lokasi Sekolah
                 </div>
               </div>
@@ -212,15 +212,15 @@ export default function ContactPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="lg:col-span-7 order-2 h-full"
           >
-            <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-gray-100 h-full flex flex-col relative overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-gray-900/50 p-6 sm:p-8 border border-gray-100 dark:border-gray-700 h-full flex flex-col relative overflow-hidden">
               {/* Decorative Blob Right */}
-              <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-blue-50/50 rounded-full blur-3xl z-0 pointer-events-none"></div>
+              <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-blue-50/50 dark:bg-blue-900/10 rounded-full blur-3xl z-0 pointer-events-none"></div>
 
               <div className="relative z-10 mb-2">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
                   Kirim Pesan
                 </h2>
-                <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+                <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 leading-relaxed">
                   Ada pertanyaan? Silakan isi formulir di bawah ini. Tim kami
                   akan segera merespons pesan Anda melalui email.
                 </p>

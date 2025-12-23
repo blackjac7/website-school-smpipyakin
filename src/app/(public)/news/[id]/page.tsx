@@ -15,20 +15,20 @@ export default async function NewsDetail({ params }: NewsDetailProps) {
   if (!news) return notFound();
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20 pb-12">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-20 pb-12 transition-colors">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 leading-tight">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
             {news.title}
           </h1>
-          <div className="flex items-center text-gray-600">
+          <div className="flex items-center text-gray-600 dark:text-gray-400">
             <Calendar className="h-5 w-5 mr-2" />
             <span className="text-sm">{news.date}</span>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
-          <div className="aspect-video w-full bg-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden mb-8">
+          <div className="aspect-video w-full bg-gray-100 dark:bg-gray-700">
             <Image
               src={news.image}
               alt={news.title}
@@ -39,7 +39,7 @@ export default async function NewsDetail({ params }: NewsDetailProps) {
           </div>
           <div className="p-6">
             <div
-              className="prose prose-sm sm:prose lg:prose-lg mx-auto"
+              className="prose prose-sm sm:prose lg:prose-lg dark:prose-invert mx-auto"
               dangerouslySetInnerHTML={{ __html: news.content }}
             />
           </div>

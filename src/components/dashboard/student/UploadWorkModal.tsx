@@ -274,34 +274,19 @@ export default function UploadWorkModal({
                 required
               >
                 <option value="">Pilih kategori</option>
-                <option value="seni">Seni & Kreativitas</option>
-                <option value="teknologi">Teknologi & Digital</option>
-                <option value="tulis">Karya Tulis</option>
-                <option value="fotografi">Fotografi</option>
-                <option value="video">Video & Multimedia</option>
-                <option value="desain">Desain Grafis</option>
-                <option value="lainnya">Lainnya</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Mata Pelajaran Terkait
-              </label>
-              <select
-                value={formData.subject}
-                onChange={(e) => handleInputChange("subject", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Pilih mata pelajaran</option>
                 <option value="seni-budaya">Seni Budaya</option>
-                <option value="teknologi">Teknologi</option>
                 <option value="bahasa-indonesia">Bahasa Indonesia</option>
                 <option value="bahasa-inggris">Bahasa Inggris</option>
                 <option value="matematika">Matematika</option>
                 <option value="ipa">IPA</option>
                 <option value="ips">IPS</option>
                 <option value="pai">Pendidikan Agama Islam</option>
-                <option value="penjaskes">Pendidikan Jasmani</option>
+                <option value="pkn">PKn</option>
+                <option value="pjok">PJOK</option>
+                <option value="informatika">Informatika</option>
+                <option value="koding">Koding</option>
+                <option value="prakarya">Prakarya</option>
+                <option value="fotografi">Fotografi</option>
                 <option value="lainnya">Lainnya</option>
               </select>
             </div>

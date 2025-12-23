@@ -48,8 +48,8 @@ function FacilityCard({ facility }: { facility: PublicFacility }) {
   const [imageLoading, setImageLoading] = useState(true);
 
   return (
-    <div className="group bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-      <div className="relative h-64 bg-gray-200 overflow-hidden">
+    <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+      <div className="relative h-64 bg-gray-200 dark:bg-gray-700 overflow-hidden">
         {!imageError ? (
           <Image
             src={facility.image}
@@ -68,27 +68,29 @@ function FacilityCard({ facility }: { facility: PublicFacility }) {
             quality={75}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-300">
-            <div className="text-center text-gray-500">
+          <div className="w-full h-full flex items-center justify-center bg-gray-300 dark:bg-gray-600">
+            <div className="text-center text-gray-500 dark:text-gray-400">
               <div className="text-4xl mb-2">🏫</div>
               <div className="text-sm">Gambar tidak tersedia</div>
             </div>
           </div>
         )}
         {imageLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
           </div>
         )}
-        <div className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md">
-          <School className="h-6 w-6 text-blue-600" />
+        <div className="absolute top-4 right-4 bg-white dark:bg-gray-800 p-2 rounded-full shadow-md">
+          <School className="h-6 w-6 text-blue-600 dark:text-blue-400" />
         </div>
       </div>
       <div className="p-6">
-        <h3 className="text-xl font-bold mb-2 text-gray-900 group-hover:text-blue-600 transition-colors">
+        <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
           {facility.title}
         </h3>
-        <p className="text-gray-600 line-clamp-3">{facility.description}</p>
+        <p className="text-gray-600 dark:text-gray-300 line-clamp-3">
+          {facility.description}
+        </p>
       </div>
     </div>
   );

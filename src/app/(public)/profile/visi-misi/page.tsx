@@ -5,11 +5,11 @@ import { Target, Award, CheckCircle2 } from "lucide-react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
+  visible: { opacity: 1, y: 0 },
 };
 
 const stagger = {
-  visible: { transition: { staggerChildren: 0.1 } }
+  visible: { transition: { staggerChildren: 0.1 } },
 };
 
 export default function VisiMisiPage() {
@@ -39,16 +39,18 @@ export default function VisiMisiPage() {
         initial="hidden"
         animate="visible"
         variants={fadeInUp}
-        className="bg-gradient-to-br from-blue-50 to-yellow-50 rounded-2xl p-8 border border-blue-100 text-center relative overflow-hidden"
+        className="bg-gradient-to-br from-blue-50 to-yellow-50 dark:from-blue-900/30 dark:to-yellow-900/20 rounded-2xl p-8 border border-blue-100 dark:border-blue-800 text-center relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 p-4 opacity-5">
           <Target className="w-32 h-32" />
         </div>
-        <div className="inline-flex items-center justify-center p-3 bg-white rounded-full shadow-sm mb-4 relative z-10">
-          <Target className="h-8 w-8 text-blue-600" />
+        <div className="inline-flex items-center justify-center p-3 bg-white dark:bg-gray-700 rounded-full shadow-sm mb-4 relative z-10">
+          <Target className="h-8 w-8 text-blue-600 dark:text-blue-400" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4 relative z-10">Visi Sekolah</h2>
-        <p className="text-xl md:text-2xl font-medium text-blue-800 italic max-w-3xl mx-auto leading-relaxed relative z-10">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 relative z-10">
+          Visi Sekolah
+        </h2>
+        <p className="text-xl md:text-2xl font-medium text-blue-800 dark:text-blue-300 italic max-w-3xl mx-auto leading-relaxed relative z-10">
           “Terwujudnya Pelajar Berkarakter Pelajar Pancasila Sepanjang Hayat.”
         </p>
       </motion.section>
@@ -61,10 +63,12 @@ export default function VisiMisiPage() {
           variants={fadeInUp}
           className="flex items-center gap-3 mb-6"
         >
-          <div className="p-2 bg-yellow-100 rounded-lg">
-            <Award className="h-6 w-6 text-yellow-600" />
+          <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+            <Award className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Misi Sekolah</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Misi Sekolah
+          </h2>
         </motion.div>
 
         <motion.div
@@ -77,12 +81,14 @@ export default function VisiMisiPage() {
             <motion.div
               key={idx}
               variants={fadeInUp}
-              className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group"
+              className="flex items-start gap-3 p-4 bg-white dark:bg-gray-700 rounded-xl border border-gray-100 dark:border-gray-600 shadow-sm hover:shadow-md transition-shadow group"
             >
               <div className="mt-1 min-w-5">
                 <CheckCircle2 className="h-5 w-5 text-green-500 group-hover:scale-110 transition-transform" />
               </div>
-              <p className="text-gray-700 leading-relaxed text-sm">{misi}</p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
+                {misi}
+              </p>
             </motion.div>
           ))}
         </motion.div>
@@ -94,11 +100,11 @@ export default function VisiMisiPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="text-2xl font-bold text-gray-900 mb-6"
+          className="text-2xl font-bold text-gray-900 dark:text-white mb-6"
         >
           Tujuan Pendidikan
         </motion.h2>
-        <div className="bg-gray-50 rounded-2xl p-6 md:p-8 border border-gray-100">
+        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-6 md:p-8 border border-gray-100 dark:border-gray-600">
           <ul className="space-y-6">
             {tujuanPoints.map((tujuan, idx) => (
               <motion.li
@@ -106,13 +112,15 @@ export default function VisiMisiPage() {
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.6 + (idx * 0.1) }}
+                transition={{ delay: 0.6 + idx * 0.1 }}
                 className="flex items-start gap-4"
               >
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
                   {idx + 1}
                 </div>
-                <p className="text-gray-700 font-medium pt-1 leading-relaxed">{tujuan}</p>
+                <p className="text-gray-700 dark:text-gray-300 font-medium pt-1 leading-relaxed">
+                  {tujuan}
+                </p>
               </motion.li>
             ))}
           </ul>

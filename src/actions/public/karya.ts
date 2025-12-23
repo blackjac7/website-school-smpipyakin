@@ -108,3 +108,87 @@ export async function getPublicWorks({
     return { success: false, error: "Failed to fetch works" };
   }
 }
+
+// Get featured works (latest 3 works)
+export async function getFeaturedWorks() {
+  try {
+    const works = await prisma.studentWork.findMany({
+      where: {
+        statusPersetujuan: "APPROVED",
+      },
+      include: {
+        siswa: {
+          select: {
+            name: true,
+            class: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+    });
+
+    const formattedWorks = works.map((work) => ({
+      id: work.id,
+      title: work.title,
+      description: work.description || "",
+      workType: work.workType.toLowerCase(),
+      mediaUrl: work.mediaUrl || "",
+      videoLink: work.videoLink || "",
+      category: work.category || "",
+      subject: work.subject || "",
+      createdAt: work.createdAt.toISOString(),
+      studentName: work.siswa.name || "Siswa",
+      studentClass: work.siswa.class || "",
+      studentImage: work.siswa.image || "",
+    }));
+
+    return { success: true, data: formattedWorks };
+  } catch (error) {
+    console.error("getFeaturedWorks error:", error);
+    return { success: false, error: "Failed to fetch featured works" };
+  }
+}
+
+// Get karya statistics
+export async function getKaryaStats() {
+  try {
+    const [totalWorks, totalPhotos, studentStats, categoryStats] =
+      await prisma.$transaction([
+        prisma.studentWork.count({
+          where: { statusPersetujuan: "APPROVED" },
+        }),
+        prisma.studentWork.count({
+          where: { statusPersetujuan: "APPROVED", workType: "PHOTO" },
+        }),
+        prisma.studentWork.groupBy({
+          by: ["siswaId"],
+          where: { statusPersetujuan: "APPROVED" },
+        }),
+        prisma.studentWork.groupBy({
+          by: ["category"],
+          where: { statusPersetujuan: "APPROVED" },
+          _count: { category: true },
+        }),
+      ]);
+
+    const categories = categoryStats.map((cat) => ({
+      name: cat.category || "Lainnya",
+      count: cat._count.category,
+    }));
+
+    return {
+      success: true,
+      data: {
+        totalWorks,
+        totalPhotos,
+        totalStudents: studentStats.length,
+        categories,
+      },
+    };
+  } catch (error) {
+    console.error("getKaryaStats error:", error);
+    return { success: false, error: "Failed to fetch stats" };
+  }
+}

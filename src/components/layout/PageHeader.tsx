@@ -34,9 +34,13 @@ export default function PageHeader({
 
         {/* Animated Pattern */}
         <div className="absolute inset-0 opacity-10">
-            <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white" />
-            </svg>
+          <svg
+            className="h-full w-full"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white" />
+          </svg>
         </div>
       </div>
 
@@ -87,12 +91,19 @@ export default function PageHeader({
         )}
       </div>
 
-       {/* Wave Bottom Decoration */}
-       <div className="absolute bottom-0 left-0 right-0 h-16 md:h-24">
-         <svg className="h-full w-full text-gray-50 fill-current" viewBox="0 0 1440 320" preserveAspectRatio="none">
-             <path fillOpacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-         </svg>
-       </div>
+      {/* Wave Bottom Decoration */}
+      <div className="absolute bottom-0 left-0 right-0 h-16 md:h-24">
+        <svg
+          className="h-full w-full text-gray-50 dark:text-gray-900 fill-current"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path
+            fillOpacity="1"
+            d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          ></path>
+        </svg>
+      </div>
     </div>
   );
 }

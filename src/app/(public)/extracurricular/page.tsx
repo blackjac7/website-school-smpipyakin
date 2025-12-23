@@ -7,7 +7,7 @@ export default async function ExtracurricularPage() {
   const activitiesData = await getPublicExtracurriculars();
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 transition-colors">
       <PageHeader
         title="Program Ekstrakurikuler"
         description="Mengembangkan bakat dan minat siswa melalui berbagai kegiatan positif di luar jam pelajaran reguler."

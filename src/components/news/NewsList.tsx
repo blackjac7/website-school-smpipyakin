@@ -78,13 +78,13 @@ export default function NewsList({ initialNews }: NewsListProps) {
       </motion.div>
 
       {filteredNews.length === 0 && (
-        <div className="text-center py-20 bg-white rounded-xl shadow-sm">
-          <p className="text-gray-500 text-lg">
+        <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+          <p className="text-gray-500 dark:text-gray-400 text-lg">
             Tidak ada berita dalam kategori ini.
           </p>
           <button
             onClick={() => setActiveCategory("all")}
-            className="mt-4 text-blue-600 hover:underline"
+            className="mt-4 text-blue-600 dark:text-blue-400 hover:underline"
           >
             Lihat semua berita
           </button>
@@ -97,7 +97,7 @@ export default function NewsList({ initialNews }: NewsListProps) {
           <button
             onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
             disabled={currentPage === 1}
-            className="p-2 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-2 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             aria-label="Halaman Sebelumnya"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -112,7 +112,7 @@ export default function NewsList({ initialNews }: NewsListProps) {
                   "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200",
                   currentPage === page
                     ? "bg-blue-600 text-white shadow-md scale-110"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-blue-200"
+                    : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-200 dark:hover:border-blue-600"
                 )}
               >
                 {page}
@@ -125,7 +125,7 @@ export default function NewsList({ initialNews }: NewsListProps) {
               handlePageChange(Math.min(currentPage + 1, totalPages))
             }
             disabled={currentPage === totalPages}
-            className="p-2 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-2 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             aria-label="Halaman Berikutnya"
           >
             <ChevronRight className="w-5 h-5" />

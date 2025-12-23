@@ -104,14 +104,16 @@ export default function CloudinaryDocumentUpload({
   const hasUploadedDocument = uploadedDocument || file;
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-blue-300 dark:hover:border-blue-600 transition-colors">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <h4 className="font-medium text-gray-900 flex items-center gap-2">
+          <h4 className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
             {label}
             {required && <span className="text-red-500 text-sm">*</span>}
           </h4>
-          <p className="text-sm text-gray-600 mt-1">{description}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            {description}
+          </p>
         </div>
       </div>
 
@@ -126,13 +128,13 @@ export default function CloudinaryDocumentUpload({
               onChange={handleFileSelect}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
-            <div className="border-2 border-dashed rounded-lg p-6 text-center transition-colors border-gray-300 hover:border-blue-400 hover:bg-gray-50">
+            <div className="border-2 border-dashed rounded-lg p-6 text-center transition-colors border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700/50">
               <div className="flex flex-col items-center gap-2">
-                <Upload className="w-6 h-6 text-gray-400" />
-                <span className="text-sm text-gray-600">
+                <Upload className="w-6 h-6 text-gray-400 dark:text-gray-500" />
+                <span className="text-sm text-gray-600 dark:text-gray-400">
                   Klik untuk pilih file atau drag & drop
                 </span>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500 dark:text-gray-500">
                   JPG, PNG, PDF (Max 5MB)
                 </span>
               </div>
@@ -142,20 +144,24 @@ export default function CloudinaryDocumentUpload({
 
         {/* Error Message */}
         {uploadError && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
             <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-            <span className="text-sm text-red-700">{uploadError}</span>
+            <span className="text-sm text-red-700 dark:text-red-400">
+              {uploadError}
+            </span>
           </div>
         )}
 
         {/* Selected File (Ready for batch upload) */}
         {file && !uploadedDocument && (
-          <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
             <div className="flex items-center gap-3">
               <FileText className="w-4 h-4 text-blue-500" />
               <div>
-                <p className="text-sm font-medium text-blue-800">{file.name}</p>
-                <p className="text-xs text-blue-600">
+                <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                  {file.name}
+                </p>
+                <p className="text-xs text-blue-600 dark:text-blue-400">
                   {formatFileSize(file.size)} - Akan diupload saat form disubmit
                 </p>
               </div>
@@ -172,14 +178,14 @@ export default function CloudinaryDocumentUpload({
 
         {/* Successfully Uploaded File */}
         {uploadedDocument && (
-          <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
             <div className="flex items-center gap-3">
               <Check className="w-4 h-4 text-green-500" />
               <div>
-                <p className="text-sm font-medium text-green-800">
+                <p className="text-sm font-medium text-green-800 dark:text-green-300">
                   {uploadedDocument.fileName}
                 </p>
-                <p className="text-xs text-green-600">
+                <p className="text-xs text-green-600 dark:text-green-400">
                   Berhasil diupload ke cloud storage
                 </p>
               </div>
@@ -189,7 +195,7 @@ export default function CloudinaryDocumentUpload({
                 href={uploadedDocument.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-green-600 hover:text-green-800 text-sm font-medium"
+                className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 text-sm font-medium"
               >
                 Lihat
               </a>

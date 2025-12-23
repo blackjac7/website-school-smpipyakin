@@ -1,19 +1,30 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import StructuredData from "@/components/script/StructuredData";
 import { LoadingProvider } from "@/components/shared";
 import { AuthProvider } from "@/components/shared/AuthProvider";
+import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { Toaster } from "react-hot-toast";
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#2675f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#1f2937" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.smpipyakin.sch.id"),
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/logo.svg", type: "image/svg+xml" },
-      { url: "/logo.png", type: "image/png" },
+      { url: "/icons/favicon.ico", sizes: "48x48" },
+      { url: "/icons/favicon.svg", type: "image/svg+xml" },
+      { url: "/icons/favicon-96x96.png", sizes: "96x96", type: "image/png" },
     ],
-    apple: "/logo.png",
+    apple: "/icons/apple-touch-icon.png",
   },
   title: "SMP IP Yakin Jakarta | Sekolah Menengah Pertama Cengkareng",
   description:
@@ -58,8 +69,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id">
+    <html lang="id" suppressHydrationWarning>
       <head>
+        {/* PWA Manifest */}
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="SMP IP Yakin" />
+
         {/* Preload images for desktop */}
         <link
           rel="preload"
@@ -81,39 +99,42 @@ export default function RootLayout({
         />
         <StructuredData />
       </head>
-      <body className="bg-white text-gray-900">
-        <AuthProvider>
-          <LoadingProvider>
-            <main className="min-h-screen">{children}</main>
+      <body className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+        <ThemeProvider>
+          <AuthProvider>
+            <LoadingProvider>
+              <main className="min-h-screen">{children}</main>
 
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: "#fff",
-                  color: "#374151",
-                  borderRadius: "8px",
-                  border: "1px solid #e5e7eb",
-                  boxShadow:
-                    "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
-                },
-                success: {
-                  iconTheme: {
-                    primary: "#10b981",
-                    secondary: "#fff",
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  className:
+                    "!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100",
+                  style: {
+                    borderRadius: "12px",
+                    border: "1px solid",
+                    borderColor: "var(--toast-border, #e5e7eb)",
+                    boxShadow:
+                      "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
                   },
-                },
-                error: {
-                  iconTheme: {
-                    primary: "#ef4444",
-                    secondary: "#fff",
+                  success: {
+                    iconTheme: {
+                      primary: "#10b981",
+                      secondary: "#fff",
+                    },
                   },
-                },
-              }}
-            />
-          </LoadingProvider>
-        </AuthProvider>
+                  error: {
+                    iconTheme: {
+                      primary: "#ef4444",
+                      secondary: "#fff",
+                    },
+                  },
+                }}
+              />
+            </LoadingProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

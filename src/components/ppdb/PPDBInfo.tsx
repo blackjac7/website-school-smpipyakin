@@ -35,10 +35,10 @@ export default function PPDBInfo({ onDownloadGuide }: PPDBInfoProps) {
   return (
     <section className="max-w-7xl mx-auto px-4 py-16">
       <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-4">
           Informasi Penting PPDB
         </h2>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           Pastikan Anda memahami seluruh proses pendaftaran untuk kelancaran
           administrasi
         </p>
@@ -46,12 +46,12 @@ export default function PPDBInfo({ onDownloadGuide }: PPDBInfoProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
         {/* Registration Steps */}
-        <div className="group bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+        <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
           <div className="flex items-center mb-6">
-            <div className="bg-blue-100 rounded-full p-3 mr-4 group-hover:scale-110 transition-transform">
-              <CheckCircle className="w-6 h-6 text-blue-600" />
+            <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full p-3 mr-4 group-hover:scale-110 transition-transform">
+              <CheckCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white">
               Langkah Pendaftaran
             </h3>
           </div>
@@ -61,29 +61,37 @@ export default function PPDBInfo({ onDownloadGuide }: PPDBInfoProps) {
                 <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5 flex-shrink-0">
                   {index + 1}
                 </span>
-                <span className="text-gray-600 leading-relaxed">{step}</span>
+                <span className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  {step}
+                </span>
               </li>
             ))}
           </ul>
         </div>
 
         {/* Important Dates */}
-        <div className="group bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+        <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
           <div className="flex items-center mb-6">
-            <div className="bg-yellow-100 rounded-full p-3 mr-4 group-hover:scale-110 transition-transform">
-              <Calendar className="w-6 h-6 text-yellow-600" />
+            <div className="bg-yellow-100 dark:bg-yellow-900/30 rounded-full p-3 mr-4 group-hover:scale-110 transition-transform">
+              <Calendar className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800">Tanggal Penting</h3>
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+              Tanggal Penting
+            </h3>
           </div>
           <div className="space-y-4">
             {importantDates.map((date, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50"
               >
                 <div>
-                  <p className="font-medium text-gray-800">{date.label}</p>
-                  <p className="text-sm text-gray-600">{date.date}</p>
+                  <p className="font-medium text-gray-800 dark:text-white">
+                    {date.label}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {date.date}
+                  </p>
                 </div>
                 <div
                   className={`w-3 h-3 rounded-full ${
@@ -96,12 +104,12 @@ export default function PPDBInfo({ onDownloadGuide }: PPDBInfoProps) {
         </div>
 
         {/* Requirements */}
-        <div className="group bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+        <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
           <div className="flex items-center mb-6">
-            <div className="bg-green-100 rounded-full p-3 mr-4 group-hover:scale-110 transition-transform">
-              <FileText className="w-6 h-6 text-green-600" />
+            <div className="bg-green-100 dark:bg-green-900/30 rounded-full p-3 mr-4 group-hover:scale-110 transition-transform">
+              <FileText className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white">
               Persyaratan Dokumen
             </h3>
           </div>
@@ -109,7 +117,7 @@ export default function PPDBInfo({ onDownloadGuide }: PPDBInfoProps) {
             {requirements.map((req, index) => (
               <li key={index} className="flex items-start">
                 <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-600 text-sm leading-relaxed">
+                <span className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                   {req}
                 </span>
               </li>
@@ -127,7 +135,7 @@ export default function PPDBInfo({ onDownloadGuide }: PPDBInfoProps) {
           <Download className="w-5 h-5" />
           Unduh Panduan PPDB (PDF)
         </button>
-        <p className="text-sm text-gray-500 mt-3">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">
           Panduan lengkap proses pendaftaran dalam format PDF
         </p>
       </div>

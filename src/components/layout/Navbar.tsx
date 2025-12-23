@@ -17,8 +17,11 @@ import {
   Calendar,
   Trophy,
   BookOpen,
+  Palette,
+  LogIn,
 } from "lucide-react";
 import logo from "@/assets/logo.svg";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import {
   motion,
   useScroll,
@@ -141,6 +144,12 @@ export default function Navbar() {
           icon: Building2,
           description: "Sarana dan prasarana",
         },
+        {
+          name: "Karya Siswa",
+          href: "/karya-siswa",
+          icon: Palette,
+          description: "Galeri kreativitas siswa",
+        },
       ],
     },
     { name: "Berita", href: "/news" },
@@ -158,7 +167,8 @@ export default function Navbar() {
       return (
         pathname.startsWith("/academic-calendar") ||
         pathname.startsWith("/extracurricular") ||
-        pathname.startsWith("/facilities")
+        pathname.startsWith("/facilities") ||
+        pathname.startsWith("/karya-siswa")
       );
     }
     return pathname === href;
@@ -173,19 +183,19 @@ export default function Navbar() {
     "fixed w-full z-50 transition-all duration-300 border-b",
     isTransparent
       ? "bg-transparent border-transparent py-4"
-      : "bg-white/95 backdrop-blur-md border-gray-200 py-2 shadow-sm"
+      : "bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-gray-200 dark:border-gray-800 py-2 shadow-sm"
   );
 
   const textClasses = twMerge(
     "text-sm font-medium transition-colors",
     isTransparent
       ? "text-white hover:text-yellow-400"
-      : "text-gray-700 hover:text-yellow-600"
+      : "text-gray-700 dark:text-gray-200 hover:text-yellow-600 dark:hover:text-yellow-400"
   );
 
   const logoTextClasses = twMerge(
     "text-xl font-bold transition-colors",
-    isTransparent ? "text-white" : "text-gray-900"
+    isTransparent ? "text-white" : "text-gray-900 dark:text-white"
   );
 
   const handleDropdownToggle = (name: string) => {
@@ -275,7 +285,7 @@ export default function Navbar() {
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
                       onMouseLeave={() => setActiveDropdown(null)}
-                      className="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden py-2"
+                      className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden py-2"
                     >
                       {item.dropdown.map((dropItem) => {
                         const Icon = dropItem.icon || BookOpen;
@@ -285,17 +295,17 @@ export default function Navbar() {
                             href={dropItem.href}
                             onClick={() => setActiveDropdown(null)}
                             className={clsx(
-                              "flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors",
+                              "flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors",
                               isDropdownItemActive(dropItem.href) &&
-                                "bg-yellow-50"
+                                "bg-yellow-50 dark:bg-yellow-900/30"
                             )}
                           >
                             <div
                               className={clsx(
                                 "p-2 rounded-lg",
                                 isDropdownItemActive(dropItem.href)
-                                  ? "bg-yellow-100 text-yellow-600"
-                                  : "bg-gray-100 text-gray-500"
+                                  ? "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400"
+                                  : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
                               )}
                             >
                               <Icon className="h-4 w-4" />
@@ -305,14 +315,14 @@ export default function Navbar() {
                                 className={clsx(
                                   "font-medium text-sm",
                                   isDropdownItemActive(dropItem.href)
-                                    ? "text-yellow-700"
-                                    : "text-gray-900"
+                                    ? "text-yellow-700 dark:text-yellow-400"
+                                    : "text-gray-900 dark:text-gray-100"
                                 )}
                               >
                                 {dropItem.name}
                               </p>
                               {dropItem.description && (
-                                <p className="text-xs text-gray-500 mt-0.5">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                   {dropItem.description}
                                 </p>
                               )}
@@ -329,25 +339,30 @@ export default function Navbar() {
             <Link
               href="/login"
               className={clsx(
-                "ml-4 px-5 py-2 rounded-full font-medium transition-all shadow-sm hover:shadow-md active:scale-95",
+                "ml-2 px-5 py-2.5 rounded-full font-medium transition-all flex items-center gap-2 active:scale-95",
                 isTransparent
-                  ? "bg-white text-yellow-600 hover:bg-yellow-50"
-                  : "bg-gray-900 text-white hover:bg-gray-800"
+                  ? "bg-white/10 backdrop-blur-sm text-white border border-white/30 hover:bg-white hover:text-yellow-600"
+                  : "bg-gray-900 dark:bg-yellow-500 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-yellow-400 shadow-sm hover:shadow-md"
               )}
             >
-              Login
+              <LogIn className="h-4 w-4" />
+              <span>Login</span>
             </Link>
+
+            {/* Theme Toggle - positioned after Login as settings action */}
+            <ThemeToggle variant="icon" className="ml-2" />
           </div>
 
           {/* Mobile Toggle */}
-          <div className="lg:hidden">
+          <div className="lg:hidden flex items-center gap-2">
+            <ThemeToggle variant="minimal" />
             <button
               onClick={() => setIsOpen(!isOpen)}
               className={clsx(
                 "p-2 rounded-full transition-colors",
                 isTransparent
                   ? "text-white hover:bg-white/10"
-                  : "text-gray-700 hover:bg-gray-100"
+                  : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
               )}
             >
               {isOpen ? (
@@ -368,7 +383,7 @@ export default function Navbar() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 z-40 bg-white lg:hidden flex flex-col pt-20 overflow-y-auto"
+            className="fixed inset-0 z-40 bg-white dark:bg-gray-900 lg:hidden flex flex-col pt-20 overflow-y-auto"
           >
             <div className="px-4 py-4 space-y-1">
               {navigation.map((item, index) => (
@@ -386,8 +401,8 @@ export default function Navbar() {
                         className={clsx(
                           "flex items-center justify-between w-full p-4 rounded-xl text-base font-medium transition-all",
                           isActive(item.href)
-                            ? "bg-yellow-50 text-yellow-700"
-                            : "text-gray-600 hover:bg-gray-50"
+                            ? "bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
+                            : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                         )}
                       >
                         {item.name}
@@ -419,8 +434,8 @@ export default function Navbar() {
                                     className={clsx(
                                       "flex items-center gap-3 p-3 rounded-lg transition-colors",
                                       isDropdownItemActive(dropItem.href)
-                                        ? "bg-yellow-50 text-yellow-700"
-                                        : "text-gray-600 hover:bg-gray-50"
+                                        ? "bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
+                                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                                     )}
                                   >
                                     <Icon className="h-4 w-4" />
@@ -445,8 +460,8 @@ export default function Navbar() {
                         item.name === "PPDB"
                           ? "bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-md"
                           : isActive(item.href)
-                            ? "bg-yellow-50 text-yellow-700"
-                            : "text-gray-600 hover:bg-gray-50"
+                            ? "bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
+                            : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                       )}
                     >
                       {item.name}
@@ -456,8 +471,8 @@ export default function Navbar() {
                           item.name === "PPDB"
                             ? "text-white/80"
                             : isActive(item.href)
-                              ? "text-yellow-600"
-                              : "text-gray-400"
+                              ? "text-yellow-600 dark:text-yellow-400"
+                              : "text-gray-400 dark:text-gray-500"
                         )}
                       />
                     </Link>
@@ -475,16 +490,17 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center justify-center w-full p-4 rounded-xl bg-gray-900 text-white font-bold text-base shadow-lg active:scale-95 transition-transform"
+                  className="flex items-center justify-center gap-2 w-full p-4 rounded-xl bg-gray-900 dark:bg-yellow-500 text-white dark:text-gray-900 font-semibold text-base shadow-lg active:scale-95 transition-transform"
                 >
-                  Login Portal
+                  <LogIn className="h-5 w-5" />
+                  <span>Masuk Portal</span>
                 </Link>
               </motion.div>
             </div>
 
             {/* Footer Info */}
-            <div className="mt-auto p-6 border-t border-gray-100">
-              <p className="text-sm text-gray-500 text-center">
+            <div className="mt-auto p-6 border-t border-gray-100 dark:border-gray-800">
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
                 2025 SMP Islam Terpadu IP Yakin Jakarta
               </p>
             </div>
