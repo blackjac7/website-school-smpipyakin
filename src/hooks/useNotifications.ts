@@ -1,15 +1,23 @@
 import React from "react";
 import {
-  NOTIFICATION_ENDPOINTS,
   NOTIFICATION_CONFIG,
   formatNotifications,
   RawNotification,
   FormattedNotification,
 } from "@/utils/notificationHelpers";
+import {
+  getNotifications as getStudentNotifications,
+  markNotificationAsRead as markStudentNotificationAsRead,
+  markAllNotificationsAsRead as markAllStudentNotificationsAsRead,
+} from "@/actions/student/notifications";
+import {
+  getPPDBNotifications,
+  markPPDBNotificationAsRead,
+} from "@/actions/ppdb/notifications";
 
 /**
  * Notification API Service
- * Centralized service for all notification-related API calls
+ * Centralized service for all notification-related API calls using Server Actions
  */
 export class NotificationAPIService {
   /**
@@ -29,25 +37,15 @@ export class NotificationAPIService {
     error?: string;
   }> {
     try {
-      const params = new URLSearchParams({
-        limit: limit.toString(),
-        page: page.toString(),
-        ...(unreadOnly && { unreadOnly: "true" }),
+      const result = await getStudentNotifications({
+        limit,
+        page,
+        unreadOnly,
       });
 
-      const response = await fetch(
-        `${NOTIFICATION_ENDPOINTS.GET_NOTIFICATIONS}?${params}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
+      if (result.success && result.data) {
         const formattedData = formatNotifications(
-          result.data as RawNotification[]
+          result.data as unknown as RawNotification[]
         );
         return {
           success: true,
@@ -87,25 +85,15 @@ export class NotificationAPIService {
     error?: string;
   }> {
     try {
-      const params = new URLSearchParams({
-        limit: limit.toString(),
-        page: page.toString(),
-        ...(unreadOnly && { unreadOnly: "true" }),
+      const result = await getPPDBNotifications({
+        limit,
+        page,
+        unreadOnly,
       });
 
-      const response = await fetch(
-        `${NOTIFICATION_ENDPOINTS.PPDB_GET_NOTIFICATIONS}?${params}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
+      if (result.success && result.data) {
         const formattedData = formatNotifications(
-          result.data as RawNotification[]
+          result.data as unknown as RawNotification[]
         );
         return {
           success: true,
@@ -136,21 +124,7 @@ export class NotificationAPIService {
     error?: string;
   }> {
     try {
-      const response = await fetch(NOTIFICATION_ENDPOINTS.MARK_AS_READ, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          notificationId,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const result = await markStudentNotificationAsRead(notificationId);
       return {
         success: result.success || false,
         error: result.error,
@@ -172,21 +146,7 @@ export class NotificationAPIService {
     error?: string;
   }> {
     try {
-      const response = await fetch(
-        `${NOTIFICATION_ENDPOINTS.PPDB_MARK_AS_READ}/${notificationId}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const result = await markPPDBNotificationAsRead(notificationId);
       return {
         success: result.success || false,
         error: result.error,
@@ -208,21 +168,7 @@ export class NotificationAPIService {
     error?: string;
   }> {
     try {
-      const response = await fetch(NOTIFICATION_ENDPOINTS.MARK_ALL_AS_READ, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          markAllAsRead: true,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const result = await markAllStudentNotificationsAsRead();
       return {
         success: result.success || false,
         error: result.error,

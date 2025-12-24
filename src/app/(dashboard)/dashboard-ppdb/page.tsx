@@ -12,6 +12,7 @@ import { DashboardSidebar } from "@/components/dashboard/layout";
 import DashboardOverviewEnhanced from "@/components/dashboard/ppdb/DashboardOverviewEnhanced";
 import ValidationContentEnhanced from "@/components/dashboard/ppdb/ValidationContentEnhanced";
 import ReportsContentEnhanced from "@/components/dashboard/ppdb/ReportsContentEnhanced";
+import { updateApplicantStatus, PPDBStatus } from "@/actions/ppdb";
 
 // Enhanced Applicant type for validation content - Updated to match database schema
 interface EnhancedApplicant {
@@ -118,15 +119,7 @@ function PPDBDashboard() {
     feedback: string
   ) => {
     try {
-      const response = await fetch(`/api/ppdb/applications/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status, feedback }),
-      });
-
-      const result = await response.json();
+      const result = await updateApplicantStatus(id, status as PPDBStatus, feedback);
 
       if (result.success) {
         toast.success(

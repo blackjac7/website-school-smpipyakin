@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { FileText, Download, Search, Filter } from "lucide-react";
 import { Applicant } from "./types";
 import ApplicantsTable from "./ApplicantsTable";
+import { getApplicants } from "@/actions/ppdb";
 
 interface ValidationContentProps {
   onViewDetail: (applicant: Applicant) => void;
@@ -56,20 +57,34 @@ export default function ValidationContent({
   const fetchApplications = useCallback(async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: "10",
-        ...(statusFilter !== "all" && { status: statusFilter }),
-        ...(searchTerm && { search: searchTerm }),
+      const result = await getApplicants({
+        page: currentPage,
+        limit: 10,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        search: searchTerm || undefined,
       });
 
-      const response = await fetch(`/api/ppdb/applications?${params}`);
-      const result = await response.json();
-
-      if (result.success) {
-        setApplications(result.data);
-        setTotalPages(result.pagination.pages);
-        setTotalCount(result.pagination.total);
+      if (result.success && result.data) {
+        // Server action returns { data: { data: [...], meta: {...} } }
+        const applicationsData = result.data.data.map((app) => ({
+          ...app,
+          statusColor: getStatusColor(app.status),
+          documents: {
+            ijazah: !!app.ijazahUrl,
+            akta: !!app.aktaKelahiranUrl,
+            kk: !!app.kartuKeluargaUrl,
+            foto: !!app.pasFotoUrl,
+          },
+          documentUrls: {
+            ijazahUrl: app.ijazahUrl,
+            aktaKelahiranUrl: app.aktaKelahiranUrl,
+            kartuKeluargaUrl: app.kartuKeluargaUrl,
+            pasFotoUrl: app.pasFotoUrl,
+          },
+        }));
+        setApplications(applicationsData as PPDBApplication[]);
+        setTotalPages(result.data.meta?.totalPages || 1);
+        setTotalCount(result.data.meta?.total || 0);
       }
     } catch (error) {
       console.error("Error fetching applications:", error);
@@ -115,6 +130,19 @@ export default function ValidationContent({
         return "Ditolak";
       default:
         return status;
+    }
+  };
+
+  const getStatusColor = (status: string): string => {
+    switch (status) {
+      case "PENDING":
+        return "bg-yellow-100 text-yellow-800";
+      case "ACCEPTED":
+        return "bg-green-100 text-green-800";
+      case "REJECTED":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 

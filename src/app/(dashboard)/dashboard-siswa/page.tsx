@@ -30,6 +30,16 @@ import {
   deleteWork,
   WorkInput,
 } from "@/actions/student/works";
+import {
+  getStudentProfile,
+  updateStudentProfile,
+  ProfileData,
+} from "@/actions/student/profile";
+import {
+  getStudentAchievements,
+  createAchievement,
+  AchievementInput,
+} from "@/actions/student/achievements";
 
 interface AchievementFormData {
   title: string;
@@ -38,23 +48,6 @@ interface AchievementFormData {
   level: string;
   achievementDate: string;
   image: string;
-}
-
-interface ProfileData {
-  name: string;
-  class: string;
-  year: string;
-  nisn: string;
-  email: string;
-  phone: string;
-  address: string;
-  birthDate: string;
-  birthPlace: string;
-  parentName: string;
-  parentPhone: string;
-  profileImage: string;
-  username?: string;
-  gender?: string;
 }
 
 interface Work {
@@ -110,6 +103,7 @@ function SiswaDashboardContent() {
     { id: "works", label: "Karya", icon: BookOpen },
   ];
   const [profileData, setProfileData] = useState<ProfileData>({
+    id: "",
     name: "",
     class: "",
     year: "",
@@ -122,6 +116,8 @@ function SiswaDashboardContent() {
     parentName: "",
     parentPhone: "",
     profileImage: "",
+    username: "",
+    gender: null,
   });
 
   const [achievements, setAchievements] = useState<
@@ -145,13 +141,12 @@ function SiswaDashboardContent() {
     []
   );
 
-  // Load profile data from API
+  // Load profile data from server action
   const loadProfileData = async () => {
     try {
-      const response = await fetch("/api/student/profile");
-      const result = await response.json();
+      const result = await getStudentProfile();
 
-      if (result.success) {
+      if (result.success && result.data) {
         setProfileData(result.data);
       } else {
         console.error("Failed to load profile:", result.error);
@@ -161,11 +156,10 @@ function SiswaDashboardContent() {
     }
   };
 
-  // Load achievements from API
+  // Load achievements from server action
   const loadAchievements = async () => {
     try {
-      const response = await fetch("/api/student/achievements");
-      const result = await response.json();
+      const result = await getStudentAchievements();
 
       if (result.success) {
         // Format achievements for UI
@@ -275,17 +269,14 @@ function SiswaDashboardContent() {
   // Handle profile update for both quick and full modal
   const handleProfileUpdate = async (updates: Partial<ProfileData>) => {
     try {
-      const response = await fetch("/api/student/profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updates),
-      });
+      // Convert year from string to number for server action
+      const updateData = {
+        ...updates,
+        year: updates.year ? parseInt(updates.year) : undefined,
+      };
+      const result = await updateStudentProfile(updateData);
 
-      const result = await response.json();
-
-      if (result.success) {
+      if (result.success && result.data) {
         setProfileData(result.data);
         return Promise.resolve();
       } else {
@@ -302,35 +293,30 @@ function SiswaDashboardContent() {
     try {
       console.log("Achievement data:", data);
 
-      const response = await fetch("/api/student/achievements", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: data.title,
-          description: data.description,
-          category: data.category,
-          level: data.level,
-          achievementDate: data.achievementDate,
-          image: data.image,
-        }),
-      });
+      const achievementData: AchievementInput = {
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        level: data.level,
+        achievementDate: data.achievementDate,
+        image: data.image,
+      };
 
-      if (response.ok) {
+      const result = await createAchievement(achievementData);
+
+      if (result.success) {
         console.log("Achievement uploaded successfully");
         toast.success("Prestasi berhasil diunggah!");
         setShowUploadForm(false);
-        await loadAchievements(); // Reload achievements
+        await loadAchievements();
       } else {
-        const errorData = await response.json();
-        console.error("Failed to upload achievement:", errorData);
+        console.error("Failed to upload achievement:", result.error);
 
         // Handle specific error for pending limit
-        if (errorData.error === "Limit reached") {
-          toast.error(errorData.message);
+        if (result.error === "Limit reached") {
+          toast.error(result.message || "Limit tercapai");
         } else {
-          toast.error("Gagal mengunggah prestasi. Silakan coba lagi.");
+          toast.error(result.error || "Gagal mengunggah prestasi. Silakan coba lagi.");
         }
       }
     } catch (error) {

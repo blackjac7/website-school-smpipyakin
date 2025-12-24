@@ -145,18 +145,6 @@ export function filterNotificationsByReadStatus(
 }
 
 /**
- * Notification API Endpoints
- */
-export const NOTIFICATION_ENDPOINTS = {
-  GET_NOTIFICATIONS: "/api/student/notifications",
-  MARK_AS_READ: "/api/student/notifications",
-  MARK_ALL_AS_READ: "/api/student/notifications",
-  // PPDB Officer endpoints
-  PPDB_GET_NOTIFICATIONS: "/api/ppdb/notifications",
-  PPDB_MARK_AS_READ: "/api/ppdb/notifications",
-} as const;
-
-/**
  * Default notification pagination settings
  */
 export const NOTIFICATION_CONFIG = {
