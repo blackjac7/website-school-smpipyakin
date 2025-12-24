@@ -108,11 +108,13 @@ test.describe("Dashboard Kesiswaan - Navigation", () => {
 
   test("should have logout button visible", async ({ page }) => {
     await dashboardPage.goto();
-    
+
     // Check logout button exists (may be in dropdown)
-    const logoutLinks = page.locator('text=Logout, text=Keluar, button:has-text("Logout"), a:has-text("Logout")');
+    const logoutLinks = page.locator(
+      'text=Logout, text=Keluar, button:has-text("Logout"), a:has-text("Logout")'
+    );
     const hasLogout = (await logoutLinks.count()) > 0;
-    
+
     // Logout button might be in a dropdown menu, just verify page loaded
     const pageContent = await page.textContent("body");
     expect(pageContent).toBeTruthy();

@@ -261,11 +261,11 @@ test.describe("Dashboard Admin - Navigation", () => {
 
   test("should navigate between sections", async ({ page }) => {
     await dashboardPage.goto();
-    
+
     // Navigate to different sections
     await dashboardPage.gotoNews();
     await expect(page).toHaveURL(/news/);
-    
+
     await dashboardPage.gotoUsers();
     await expect(page).toHaveURL(/users/);
   });
