@@ -1,8 +1,33 @@
 "use server";
 
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+
+// Validation schemas
+const WorkInputSchema = z.object({
+  title: z.string().min(3, "Judul minimal 3 karakter").max(100, "Judul maksimal 100 karakter"),
+  description: z.string().max(500, "Deskripsi maksimal 500 karakter").optional().default(""),
+  workType: z.enum(["photo", "video", "PHOTO", "VIDEO"]).transform(v => v.toLowerCase()),
+  mediaUrl: z.string().optional().default(""),
+  videoLink: z.string().optional().default(""),
+  category: z.string().min(1, "Kategori wajib dipilih"),
+  subject: z.string().optional().default(""),
+}).refine((data) => {
+  const workType = data.workType.toLowerCase();
+  if (workType === "photo" && !data.mediaUrl) {
+    return false;
+  }
+  if (workType === "video" && !data.videoLink) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Foto diperlukan untuk tipe foto, atau link video untuk tipe video",
+});
+
+const IdSchema = z.string().uuid("Invalid work ID");
 
 export type WorkInput = {
   title: string;
@@ -66,25 +91,13 @@ export async function createWork(data: WorkInput) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { title, description, workType, mediaUrl, videoLink, category, subject } = data;
-
-    // Validation
-    if (!title || !workType || !category) {
-      return { success: false, error: "Missing required fields" };
+    // Validate input with Zod
+    const validation = WorkInputSchema.safeParse(data);
+    if (!validation.success) {
+      return { success: false, error: validation.error.issues[0].message };
     }
 
-    const normalizedWorkType = workType.toLowerCase();
-    if (!["photo", "video"].includes(normalizedWorkType)) {
-      return { success: false, error: "Invalid workType" };
-    }
-
-    if (normalizedWorkType === "photo" && !mediaUrl) {
-      return { success: false, error: "Image is required for photo works" };
-    }
-
-    if (normalizedWorkType === "video" && !videoLink) {
-      return { success: false, error: "Video link is required for video works" };
-    }
+    const { title, description, workType, mediaUrl, videoLink, category, subject } = validation.data;
 
     const student = await prisma.siswa.findUnique({
       where: { userId: user.userId },
@@ -112,9 +125,9 @@ export async function createWork(data: WorkInput) {
         siswaId: student.id,
         title,
         description,
-        workType: normalizedWorkType.toUpperCase() as "PHOTO" | "VIDEO",
-        mediaUrl: normalizedWorkType === "photo" ? mediaUrl : null,
-        videoLink: normalizedWorkType === "video" ? videoLink : null,
+        workType: workType.toUpperCase() as "PHOTO" | "VIDEO",
+        mediaUrl: workType === "photo" ? mediaUrl : null,
+        videoLink: workType === "video" ? videoLink : null,
         category,
         subject,
         statusPersetujuan: "PENDING",
@@ -136,7 +149,11 @@ export async function updateWork(id: string, data: Partial<WorkInput>) {
       return { success: false, error: "Unauthorized" };
     }
 
-    if (!id) return { success: false, error: "ID required" };
+    // Validate ID
+    const idValidation = IdSchema.safeParse(id);
+    if (!idValidation.success) {
+      return { success: false, error: idValidation.error.issues[0].message };
+    }
 
     const student = await prisma.siswa.findUnique({
       where: { userId: user.userId },
@@ -148,7 +165,7 @@ export async function updateWork(id: string, data: Partial<WorkInput>) {
     }
 
     const existingWork = await prisma.studentWork.findFirst({
-      where: { id, siswaId: student.id },
+      where: { id: idValidation.data, siswaId: student.id },
     });
 
     if (!existingWork) {
@@ -162,7 +179,7 @@ export async function updateWork(id: string, data: Partial<WorkInput>) {
     const normalizedWorkType = data.workType?.toLowerCase();
 
     await prisma.studentWork.update({
-      where: { id },
+      where: { id: idValidation.data },
       data: {
         title: data.title,
         description: data.description,
@@ -190,6 +207,12 @@ export async function deleteWork(id: string) {
       return { success: false, error: "Unauthorized" };
     }
 
+    // Validate ID
+    const idValidation = IdSchema.safeParse(id);
+    if (!idValidation.success) {
+      return { success: false, error: idValidation.error.issues[0].message };
+    }
+
     const student = await prisma.siswa.findUnique({
       where: { userId: user.userId },
       select: { id: true },
@@ -200,7 +223,7 @@ export async function deleteWork(id: string) {
     }
 
     const existingWork = await prisma.studentWork.findFirst({
-      where: { id, siswaId: student.id },
+      where: { id: idValidation.data, siswaId: student.id },
     });
 
     if (!existingWork) {
@@ -212,7 +235,7 @@ export async function deleteWork(id: string) {
     }
 
     await prisma.studentWork.delete({
-      where: { id },
+      where: { id: idValidation.data },
     });
 
     revalidatePath("/dashboard-siswa");

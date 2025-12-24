@@ -1,32 +1,38 @@
 "use server";
 
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { PPDBStatus, Prisma } from "@prisma/client";
-import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
-import { getJWTSecret, JWT_CONFIG } from "@/lib/jwt";
+import { getAuthenticatedUser } from "@/lib/auth";
 
-async function verifyAuth() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(JWT_CONFIG.COOKIE_NAME)?.value;
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, getJWTSecret());
-    return payload;
-  } catch {
-    return null;
+// Helper to verify PPDB access (admin or ppdb-officer)
+async function verifyPPDBAccess() {
+  const user = await getAuthenticatedUser();
+  if (!user || !["admin", "ppdb-officer"].includes(user.role)) {
+    return { authorized: false, error: "Unauthorized: PPDB access required" };
   }
+  return { authorized: true, user };
 }
 
+// Validation schemas
+const UpdateStatusSchema = z.object({
+  id: z.string().uuid("Invalid application ID"),
+  status: z.enum(["PENDING", "ACCEPTED", "REJECTED"]),
+  feedback: z.string().optional(),
+});
+
+const GetApplicantsSchema = z.object({
+  search: z.string().optional(),
+  status: z.string().optional(),
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(100).default(10),
+});
+
 export async function getPPDBStats() {
-  const user = await verifyAuth();
-  if (!user || user.role !== "ppdb-officer") {
-    // Allow admin too? Assuming PPDB dashboard is restricted.
-    // But let's check roles.
-    if (!["admin", "ppdb-officer"].includes(user?.role as string)) {
-      return { success: false, error: "Unauthorized" };
-    }
+  const auth = await verifyPPDBAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
   }
 
   try {
@@ -131,15 +137,24 @@ export async function updateApplicantStatus(
   status: PPDBStatus,
   feedback?: string
 ) {
-  const user = await verifyAuth();
-  if (!user || !["admin", "ppdb-officer"].includes(user.role as string)) {
-    return { success: false, error: "Unauthorized" };
+  const auth = await verifyPPDBAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  // Validate input
+  const validation = UpdateStatusSchema.safeParse({ id, status, feedback });
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message };
   }
 
   try {
     await prisma.pPDBApplication.update({
-      where: { id },
-      data: { status, feedback },
+      where: { id: validation.data.id },
+      data: { 
+        status: validation.data.status, 
+        feedback: validation.data.feedback 
+      },
     });
     revalidatePath("/dashboard-ppdb");
     return { success: true };
@@ -157,13 +172,19 @@ interface GetApplicantsParams {
 }
 
 export async function getApplicants(params: GetApplicantsParams) {
-  const user = await verifyAuth();
-  if (!user || !["admin", "ppdb-officer"].includes(user.role as string)) {
-    return { success: false, error: "Unauthorized" };
+  const auth = await verifyPPDBAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  // Validate input
+  const validation = GetApplicantsSchema.safeParse(params);
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message };
   }
 
   try {
-    const { search, status, page = 1, limit = 10 } = params;
+    const { search, status, page, limit } = validation.data;
     const skip = (page - 1) * limit;
 
     const where: Prisma.PPDBApplicationWhereInput = {};

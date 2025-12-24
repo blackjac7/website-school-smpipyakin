@@ -23,21 +23,24 @@ const ActivitySchema = z.object({
 export async function getActivities() {
   const user = await getAuthenticatedUser();
   if (!user) {
-    throw new Error("Unauthorized");
+    return { success: false, error: "Unauthorized", data: [] };
   }
 
-  // OSIS sees all OSIS activities (their own and others? Usually shared dashboard)
-  // Assuming shared dashboard for all OSIS members.
-  const activities = await prisma.osisActivity.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
+  try {
+    const activities = await prisma.osisActivity.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
         author: {
-            select: { username: true }
+          select: { username: true }
         }
-    }
-  });
+      }
+    });
 
-  return { success: true, data: activities };
+    return { success: true, data: activities };
+  } catch (error) {
+    console.error("Error fetching activities:", error);
+    return { success: false, error: "Failed to fetch activities", data: [] };
+  }
 }
 
 export async function createActivity(prevState: unknown, formData: FormData) {
