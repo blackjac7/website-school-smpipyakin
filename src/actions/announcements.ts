@@ -8,7 +8,10 @@ import { getAuthenticatedUser } from "@/lib/auth";
 
 // Validation schemas
 const CreateAnnouncementSchema = z.object({
-  title: z.string().min(5, "Judul minimal 5 karakter").max(200, "Judul maksimal 200 karakter"),
+  title: z
+    .string()
+    .min(5, "Judul minimal 5 karakter")
+    .max(200, "Judul maksimal 200 karakter"),
   content: z.string().min(10, "Konten minimal 10 karakter"),
   date: z.coerce.date(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]),

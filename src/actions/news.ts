@@ -8,7 +8,10 @@ import { getAuthenticatedUser } from "@/lib/auth";
 
 // Validation schemas
 const CreateNewsSchema = z.object({
-  title: z.string().min(5, "Judul minimal 5 karakter").max(200, "Judul maksimal 200 karakter"),
+  title: z
+    .string()
+    .min(5, "Judul minimal 5 karakter")
+    .max(200, "Judul maksimal 200 karakter"),
   excerpt: z.string().optional(),
   content: z.string().min(20, "Konten minimal 20 karakter"),
   image: z.string().url("URL gambar tidak valid").optional().or(z.literal("")),
