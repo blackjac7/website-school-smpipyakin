@@ -30,7 +30,16 @@ export const metadata = {
 
 // Default fallback data for graceful degradation
 // Empty array is the fallback since getSchoolStats returns array
-const defaultStats: { id: string; createdAt: Date; updatedAt: Date; isActive: boolean; sortOrder: number; label: string; value: string; iconName: string; }[] = [];
+const defaultStats: {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  isActive: boolean;
+  sortOrder: number;
+  label: string;
+  value: string;
+  iconName: string;
+}[] = [];
 
 const defaultSlides: HeroSlide[] = [
   {

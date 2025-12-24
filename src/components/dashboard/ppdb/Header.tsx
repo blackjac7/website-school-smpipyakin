@@ -1,6 +1,14 @@
 "use client";
 
-import { Menu, Bell, FileText, Settings2, BellOff, Users, BarChart3 } from "lucide-react";
+import {
+  Menu,
+  Bell,
+  FileText,
+  Settings2,
+  BellOff,
+  Users,
+  BarChart3,
+} from "lucide-react";
 import { LogoutButton } from "@/components/shared";
 import { useAuth } from "@/components/shared/AuthProvider";
 import { FormattedNotification } from "@/utils/notificationHelpers";
@@ -189,7 +197,9 @@ export default function Header({
                     ) : (
                       <div className="p-8 text-center">
                         <BellOff className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                        <p className="text-sm text-gray-500">Tidak ada notifikasi</p>
+                        <p className="text-sm text-gray-500">
+                          Tidak ada notifikasi
+                        </p>
                       </div>
                     )}
                   </div>

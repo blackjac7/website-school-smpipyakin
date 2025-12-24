@@ -177,8 +177,10 @@ export async function getKaryaStats() {
 
     const categories = categoryStats.map((cat) => ({
       name: cat.category || "Lainnya",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      count: typeof cat._count === 'number' ? cat._count : ((cat._count as any)?._all || 0),
+      count:
+        typeof cat._count === "number"
+          ? cat._count
+          : (cat._count as { _all?: number })?._all || 0,
     }));
 
     return {

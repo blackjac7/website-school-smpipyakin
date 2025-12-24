@@ -72,7 +72,10 @@ export async function createAnnouncement(data: {
   }
 }
 
-export async function updateAnnouncement(id: string, data: Partial<Announcement>) {
+export async function updateAnnouncement(
+  id: string,
+  data: Partial<Announcement>
+) {
   const auth = await verifyAdminRole();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
