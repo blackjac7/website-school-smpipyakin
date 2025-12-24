@@ -33,7 +33,10 @@ export const loginSchema = z.object({
     .string()
     .min(3, "Username minimal 3 karakter")
     .max(50, "Username maksimal 50 karakter")
-    .regex(/^[a-zA-Z0-9_]+$/, "Username hanya boleh berisi huruf, angka, dan underscore"),
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Username hanya boleh berisi huruf, angka, dan underscore"
+    ),
   password: z
     .string()
     .min(6, "Password minimal 6 karakter")
@@ -63,8 +66,14 @@ export const userCreateSchema = z.object({
     .string()
     .min(3, "Username minimal 3 karakter")
     .max(50, "Username maksimal 50 karakter")
-    .regex(/^[a-zA-Z0-9_]+$/, "Username hanya boleh berisi huruf, angka, dan underscore"),
-  name: z.string().min(2, "Nama minimal 2 karakter").max(100, "Nama maksimal 100 karakter"),
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Username hanya boleh berisi huruf, angka, dan underscore"
+    ),
+  name: z
+    .string()
+    .min(2, "Nama minimal 2 karakter")
+    .max(100, "Nama maksimal 100 karakter"),
   role: z.enum(["admin", "kesiswaan", "osis", "siswa", "ppdb"]),
   password: z.string().min(6, "Password minimal 6 karakter").optional(),
 });
@@ -112,22 +121,35 @@ export const announcementCreateSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export const announcementUpdateSchema = announcementCreateSchema.partial().extend({
-  id: idSchema,
-});
+export const announcementUpdateSchema = announcementCreateSchema
+  .partial()
+  .extend({
+    id: idSchema,
+  });
 
 // ==========================================
 // Academic Schemas
 // ==========================================
 
 export const calendarEventSchema = z.object({
-  title: z.string().min(3, "Judul minimal 3 karakter").max(200, "Judul maksimal 200 karakter"),
-  description: z.string().max(1000, "Deskripsi maksimal 1000 karakter").optional(),
+  title: z
+    .string()
+    .min(3, "Judul minimal 3 karakter")
+    .max(200, "Judul maksimal 200 karakter"),
+  description: z
+    .string()
+    .max(1000, "Deskripsi maksimal 1000 karakter")
+    .optional(),
   startDate: z.coerce.date(),
   endDate: z.coerce.date().optional(),
   allDay: z.boolean().default(false),
-  category: z.enum(["academic", "holiday", "exam", "event", "meeting"]).default("event"),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Format warna tidak valid").optional(),
+  category: z
+    .enum(["academic", "holiday", "exam", "event", "meeting"])
+    .default("event"),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, "Format warna tidak valid")
+    .optional(),
 });
 
 // ==========================================
@@ -135,10 +157,16 @@ export const calendarEventSchema = z.object({
 // ==========================================
 
 export const teacherSchema = z.object({
-  name: z.string().min(2, "Nama minimal 2 karakter").max(100, "Nama maksimal 100 karakter"),
+  name: z
+    .string()
+    .min(2, "Nama minimal 2 karakter")
+    .max(100, "Nama maksimal 100 karakter"),
   nip: z.string().max(30, "NIP maksimal 30 karakter").optional(),
   position: z.string().max(100, "Jabatan maksimal 100 karakter").optional(),
-  subject: z.string().max(100, "Mata pelajaran maksimal 100 karakter").optional(),
+  subject: z
+    .string()
+    .max(100, "Mata pelajaran maksimal 100 karakter")
+    .optional(),
   photo: z.string().url("URL foto tidak valid").optional(),
   email: z.string().email("Email tidak valid").optional(),
   phone: z
@@ -188,12 +216,17 @@ export const ppdbRegistrationSchema = z.object({
   motherOccupation: z.string().optional(),
 
   // Asal Sekolah
-  previousSchool: z.string().min(3, "Nama sekolah asal minimal 3 karakter").max(200),
+  previousSchool: z
+    .string()
+    .min(3, "Nama sekolah asal minimal 3 karakter")
+    .max(200),
   previousSchoolAddress: z.string().max(500).optional(),
 
   // Kontak
   email: z.string().email("Email tidak valid"),
-  phone: z.string().regex(/^(\+62|62|0)[0-9]{9,12}$/, "Nomor telepon tidak valid"),
+  phone: z
+    .string()
+    .regex(/^(\+62|62|0)[0-9]{9,12}$/, "Nomor telepon tidak valid"),
 });
 
 // ==========================================
@@ -201,13 +234,19 @@ export const ppdbRegistrationSchema = z.object({
 // ==========================================
 
 export const contactFormSchema = z.object({
-  name: z.string().min(2, "Nama minimal 2 karakter").max(100, "Nama maksimal 100 karakter"),
+  name: z
+    .string()
+    .min(2, "Nama minimal 2 karakter")
+    .max(100, "Nama maksimal 100 karakter"),
   email: z.string().email("Email tidak valid"),
   phone: z
     .string()
     .regex(/^(\+62|62|0)[0-9]{9,12}$/, "Nomor telepon tidak valid")
     .optional(),
-  subject: z.string().min(5, "Subjek minimal 5 karakter").max(200, "Subjek maksimal 200 karakter"),
+  subject: z
+    .string()
+    .min(5, "Subjek minimal 5 karakter")
+    .max(200, "Subjek maksimal 200 karakter"),
   message: z
     .string()
     .min(20, "Pesan minimal 20 karakter")
@@ -219,9 +258,17 @@ export const contactFormSchema = z.object({
 // ==========================================
 
 export const studentWorkSchema = z.object({
-  title: z.string().min(3, "Judul minimal 3 karakter").max(200, "Judul maksimal 200 karakter"),
-  description: z.string().max(2000, "Deskripsi maksimal 2000 karakter").optional(),
-  category: z.enum(["art", "writing", "science", "technology", "other"]).default("other"),
+  title: z
+    .string()
+    .min(3, "Judul minimal 3 karakter")
+    .max(200, "Judul maksimal 200 karakter"),
+  description: z
+    .string()
+    .max(2000, "Deskripsi maksimal 2000 karakter")
+    .optional(),
+  category: z
+    .enum(["art", "writing", "science", "technology", "other"])
+    .default("other"),
   image: z.string().url("URL gambar tidak valid").optional(),
   videoUrl: z.string().url("URL video tidak valid").optional(),
   studentName: z.string().min(2, "Nama siswa minimal 2 karakter").max(100),
@@ -244,9 +291,15 @@ export const fileUploadSchema = z.object({
 export const imageUploadSchema = fileUploadSchema.extend({
   file: z
     .instanceof(File)
-    .refine((file) => file.size <= 5 * 1024 * 1024, "Ukuran gambar maksimal 5MB")
     .refine(
-      (file) => ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type),
+      (file) => file.size <= 5 * 1024 * 1024,
+      "Ukuran gambar maksimal 5MB"
+    )
+    .refine(
+      (file) =>
+        ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(
+          file.type
+        ),
       "Format gambar harus JPEG, PNG, WebP, atau GIF"
     ),
 });

@@ -3,7 +3,7 @@ name: Dependency Update
 on:
   schedule:
     # Run weekly on Mondays at 3 AM UTC
-    - cron: '0 3 * * 1'
+    - cron: "0 3 * * 1"
   workflow_dispatch:
 
 jobs:
@@ -19,8 +19,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Check for outdated packages
         id: outdated
@@ -54,16 +54,16 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'chore(deps): update dependencies'
-          title: '🔄 Weekly Dependency Updates'
+          commit-message: "chore(deps): update dependencies"
+          title: "🔄 Weekly Dependency Updates"
           body: |
             ## Automated Dependency Update
-            
+
             This PR contains automated dependency updates.
-            
+
             ### Changes
             $(cat outdated.md)
-            
+
             ### Checklist
             - [ ] All tests pass
             - [ ] No breaking changes

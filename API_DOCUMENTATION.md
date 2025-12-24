@@ -21,6 +21,7 @@ Base URL: `https://www.smpipyakin.sch.id/api`
 Login to the system.
 
 **Request Body:**
+
 ```json
 {
   "username": "string",
@@ -30,6 +31,7 @@ Login to the system.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -47,6 +49,7 @@ Login to the system.
 ```
 
 **Error Response:**
+
 ```json
 {
   "success": false,
@@ -61,6 +64,7 @@ Login to the system.
 Logout from the system. Clears the authentication cookie.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -75,11 +79,13 @@ Logout from the system. Clears the authentication cookie.
 Verify the current authentication token.
 
 **Headers:**
+
 ```
 Cookie: token=<JWT_TOKEN>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -112,6 +118,7 @@ Get list of published news articles.
 | category | string | - | Filter by category |
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -200,6 +207,7 @@ Get list of extracurricular activities.
 Check if NISN is already registered.
 
 **Request Body:**
+
 ```json
 {
   "nisn": "1234567890"
@@ -207,6 +215,7 @@ Check if NISN is already registered.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -223,6 +232,7 @@ Check if NISN is already registered.
 Submit a new PPDB registration.
 
 **Request Body:**
+
 ```json
 {
   "fullName": "string",
@@ -247,6 +257,7 @@ Submit a new PPDB registration.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -265,6 +276,7 @@ Submit a new PPDB registration.
 Check PPDB registration status.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -344,14 +356,14 @@ Submit a new work.
 
 ### Common Error Codes
 
-| Code | Status | Description |
-|------|--------|-------------|
-| UNAUTHORIZED | 401 | Authentication required |
-| FORBIDDEN | 403 | Insufficient permissions |
-| NOT_FOUND | 404 | Resource not found |
-| VALIDATION_ERROR | 400 | Invalid input data |
-| RATE_LIMITED | 429 | Too many requests |
-| SERVER_ERROR | 500 | Internal server error |
+| Code             | Status | Description              |
+| ---------------- | ------ | ------------------------ |
+| UNAUTHORIZED     | 401    | Authentication required  |
+| FORBIDDEN        | 403    | Insufficient permissions |
+| NOT_FOUND        | 404    | Resource not found       |
+| VALIDATION_ERROR | 400    | Invalid input data       |
+| RATE_LIMITED     | 429    | Too many requests        |
+| SERVER_ERROR     | 500    | Internal server error    |
 
 ---
 
@@ -364,6 +376,7 @@ API endpoints are rate limited to prevent abuse:
 - Protected endpoints: 60 requests per minute
 
 When rate limited, you'll receive:
+
 ```json
 {
   "success": false,
@@ -387,6 +400,7 @@ When rate limited, you'll receive:
 ## Changelog
 
 ### v1.0.0 (December 2025)
+
 - Initial API release
 - Authentication system
 - PPDB registration
