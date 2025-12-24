@@ -59,6 +59,8 @@ Built with modern web technologies and industry best practices, this system prio
 
 ## 🛠 Tech Stack
 
+### Core Technologies
+
 | Category           | Technology                                                      |
 | ------------------ | --------------------------------------------------------------- |
 | **Framework**      | [Next.js 15](https://nextjs.org/) (App Router)                  |
@@ -66,10 +68,47 @@ Built with modern web technologies and industry best practices, this system prio
 | **Styling**        | [Tailwind CSS v4](https://tailwindcss.com/)                     |
 | **Database**       | [PostgreSQL](https://www.postgresql.org/)                       |
 | **ORM**            | [Prisma](https://www.prisma.io/)                                |
-| **Authentication** | JWT ([Jose](https://github.com/panva/jose)) + HTTP-Only Cookies |
-| **Storage**        | [Cloudinary](https://cloudinary.com/)                           |
+| **Validation**     | [Zod](https://zod.dev/)                                         |
+
+### Authentication & Security
+
+| Category           | Technology                                                      |
+| ------------------ | --------------------------------------------------------------- |
+| **JWT Library**    | [Jose](https://github.com/panva/jose) + HTTP-Only Cookies       |
+| **Password Hash**  | [bcryptjs](https://www.npmjs.com/package/bcryptjs)              |
+
+### Storage & Media
+
+| Category           | Technology                                                      |
+| ------------------ | --------------------------------------------------------------- |
+| **Image Storage**  | [Cloudinary](https://cloudinary.com/) (CDN + Optimization)      |
+| **File Storage**   | [Cloudflare R2](https://developers.cloudflare.com/r2/) (S3-compatible) |
+
+### Third-Party Services
+
+| Category           | Technology                                                      |
+| ------------------ | --------------------------------------------------------------- |
 | **Email**          | [EmailJS](https://www.emailjs.com/)                             |
+| **AI Chatbot**     | [Flowise](https://flowiseai.com/) (Embedded)                    |
+
+### UI/UX Libraries
+
+| Category           | Technology                                                      |
+| ------------------ | --------------------------------------------------------------- |
 | **Animations**     | [Framer Motion](https://www.framer.com/motion/)                 |
+| **Lottie**         | [@lottiefiles/dotlottie-react](https://lottiefiles.com/)        |
+| **Icons**          | [Lucide React](https://lucide.dev/) + [Heroicons](https://heroicons.com/) |
+| **Charts**         | [Recharts](https://recharts.org/)                               |
+| **Theme**          | [next-themes](https://github.com/pacocoursey/next-themes)       |
+| **Toast**          | [react-hot-toast](https://react-hot-toast.com/)                 |
+
+### Utilities
+
+| Category           | Technology                                                      |
+| ------------------ | --------------------------------------------------------------- |
+| **Date/Time**      | [date-fns](https://date-fns.org/) + [date-fns-tz](https://github.com/marnusw/date-fns-tz) |
+| **Excel Export**   | [xlsx (SheetJS)](https://sheetjs.com/)                          |
+| **PWA**            | [next-pwa](https://github.com/shadowwalker/next-pwa)            |
 
 ---
 

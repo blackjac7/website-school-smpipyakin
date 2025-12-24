@@ -46,7 +46,8 @@ This document provides comprehensive technical information about the SMP IP Yaki
 ┌─────────────────────────────────────────────────────────────┐
 │                   External Services                          │
 ├─────────────────────────────────────────────────────────────┤
-│  Cloudinary (Images)  │  EmailJS (Notifications)            │
+│  Cloudinary (Images) │ Cloudflare R2 (Files) │ EmailJS      │
+│  Flowise (AI Chat)   │ Lottie (Animations)                  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -349,6 +350,60 @@ const result = await cloudinary.uploader.upload(file, {
 });
 ```
 
+### Cloudflare R2 (File Storage)
+
+R2 is used for storing larger files and documents with S3-compatible API.
+
+#### Configuration
+
+```env
+R2_ACCOUNT_ID=your-account-id
+R2_ACCESS_KEY_ID=your-access-key-id
+R2_SECRET_ACCESS_KEY=your-secret-access-key
+R2_BUCKET_NAME=your-bucket-name
+R2_PUBLIC_URL=https://your-public-url.r2.dev
+```
+
+#### Usage Example
+
+```typescript
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+// R2 Client Configuration
+export const r2 = new S3Client({
+  region: "auto",
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || "",
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || "",
+  },
+});
+
+// Upload file to R2
+const command = new PutObjectCommand({
+  Bucket: process.env.R2_BUCKET_NAME,
+  Key: `documents/${filename}`,
+  Body: fileBuffer,
+  ContentType: contentType,
+});
+await r2.send(command);
+
+// Generate presigned URL for secure downloads
+const signedUrl = await getSignedUrl(r2, command, { expiresIn: 3600 });
+```
+
+#### Storage Strategy
+
+| Content Type | Storage | Reason |
+|-------------|---------|--------|
+| Profile Images | Cloudinary | Auto optimization, CDN, transformations |
+| News Images | Cloudinary | Auto optimization, responsive images |
+| PPDB Documents | Cloudflare R2 | Larger files, cost-effective storage |
+| Excel Exports | Cloudflare R2 | Generated files, temporary storage |
+
+---
+
 ### EmailJS (Notifications)
 
 #### Configuration
@@ -365,6 +420,106 @@ NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=your-public-key
 | --------------------- | ----------------- | ----------------------------------------------- |
 | `school_notification` | Notify admin      | `from_name`, `from_email`, `subject`, `message` |
 | `user_autoresponse`   | User confirmation | `to_name`, `to_email`                           |
+
+---
+
+### Flowise (AI Chatbot)
+
+Integrated AI chatbot for answering visitor questions.
+
+#### Configuration
+
+```env
+NEXT_PUBLIC_FLOWISE_API_URL=your-flowise-url
+NEXT_PUBLIC_FLOWISE_CHATFLOW_ID=your-chatflow-id
+```
+
+#### Implementation
+
+```tsx
+import { BubbleChat } from "flowise-embed-react";
+
+export function ChatWidget() {
+  return (
+    <BubbleChat
+      chatflowid={process.env.NEXT_PUBLIC_FLOWISE_CHATFLOW_ID}
+      apiHost={process.env.NEXT_PUBLIC_FLOWISE_API_URL}
+      theme={{
+        button: { backgroundColor: "#1E40AF" },
+        chatWindow: { title: "Asisten SMP IP Yakin" },
+      }}
+    />
+  );
+}
+```
+
+---
+
+### Additional Libraries
+
+#### Recharts (Data Visualization)
+
+Used for dashboard charts and analytics.
+
+```tsx
+import { BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
+
+<BarChart data={data}>
+  <XAxis dataKey="name" />
+  <YAxis />
+  <Tooltip />
+  <Bar dataKey="value" fill="#3B82F6" />
+</BarChart>
+```
+
+#### XLSX (Excel Export)
+
+Used for exporting data to Excel format.
+
+```typescript
+import * as XLSX from "xlsx";
+
+function exportToExcel(data: any[], filename: string) {
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
+  XLSX.writeFile(workbook, `${filename}.xlsx`);
+}
+```
+
+#### Lottie Animations
+
+Used for loading states and interactive animations.
+
+```tsx
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+
+<DotLottieReact
+  src="/animations/loading.lottie"
+  loop
+  autoplay
+/>
+```
+
+#### Zod (Validation)
+
+Type-safe schema validation.
+
+```typescript
+import { z } from "zod";
+
+const loginSchema = z.object({
+  username: z.string().min(3).max(50),
+  password: z.string().min(6),
+  role: z.enum(["admin", "kesiswaan", "siswa", "osis", "ppdb-officer"]),
+});
+
+// Validate data
+const result = loginSchema.safeParse(formData);
+if (!result.success) {
+  return { errors: result.error.flatten() };
+}
+```
 
 ---
 
