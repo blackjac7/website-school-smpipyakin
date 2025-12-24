@@ -556,3 +556,53 @@ enum CarpetZone {
 
   @@map("carpet_zone")
 }
+
+// =============================================
+// SITE SETTINGS & FEATURE FLAGS
+// =============================================
+
+model SiteSettings {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  type        SettingType @default(STRING)
+  category    String   @default("general")
+  description String?
+  isPublic    Boolean  @default(false) @map("is_public")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+enum SettingType {
+  STRING
+  NUMBER
+  BOOLEAN
+  DATE
+  JSON
+
+  @@map("setting_type")
+}
+
+model MaintenanceSchedule {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  startTime   DateTime @map("start_time")
+  endTime     DateTime @map("end_time")
+  isActive    Boolean  @default(true) @map("is_active")
+  
+  // Pages affected (null = all pages)
+  affectedPaths String[] @map("affected_paths")
+  
+  // Message to show during maintenance
+  message     String   @default("Website sedang dalam pemeliharaan. Silakan kembali beberapa saat lagi.")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?  @map("created_by")
+
+  @@map("maintenance_schedules")
+}
