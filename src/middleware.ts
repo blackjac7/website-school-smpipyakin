@@ -13,6 +13,17 @@ const PROTECTED_ROUTES = {
   "/dashboard-ppdb": ["ppdb-officer"],
 };
 
+// Routes that should be excluded from maintenance mode
+const MAINTENANCE_EXCLUDED_ROUTES = [
+  "/maintenance",
+  "/api",
+  "/login",
+  "/dashboard-admin",
+  "/_next",
+  "/icons",
+  "/favicon",
+];
+
 // Security headers
 function addSecurityHeaders(response: NextResponse): NextResponse {
   // Prevent XSS attacks
@@ -56,6 +67,34 @@ function getClientIP(request: NextRequest): string {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const clientIP = getClientIP(request);
+
+  // Check for maintenance mode (using cookie-based flag for edge runtime compatibility)
+  const maintenanceEnabled =
+    request.cookies.get("maintenance-mode")?.value === "true";
+  const isExcludedFromMaintenance = MAINTENANCE_EXCLUDED_ROUTES.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  if (maintenanceEnabled && !isExcludedFromMaintenance) {
+    // Check if admin is logged in (they can bypass maintenance)
+    const token = request.cookies.get("auth-token")?.value;
+    let isAdmin = false;
+
+    if (token) {
+      try {
+        const { payload: decoded } = await jwtVerify(token, JWT_SECRET);
+        isAdmin = decoded.role === "admin";
+      } catch {
+        // Token invalid, not admin
+      }
+    }
+
+    if (!isAdmin) {
+      const maintenanceUrl = new URL("/maintenance", request.url);
+      const response = NextResponse.redirect(maintenanceUrl);
+      return addSecurityHeaders(response);
+    }
+  }
 
   // Check if the route is protected
   const protectedRoute = Object.keys(PROTECTED_ROUTES).find((route) =>
