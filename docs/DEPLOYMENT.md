@@ -155,13 +155,13 @@ Click "Deploy" and wait for the build to complete.
 
 ### Cloudflare R2 Variables
 
-| Variable                | Description                      |
-| ----------------------- | -------------------------------- |
-| `R2_ACCOUNT_ID`         | Cloudflare account ID            |
-| `R2_ACCESS_KEY_ID`      | R2 API access key ID             |
-| `R2_SECRET_ACCESS_KEY`  | R2 API secret access key         |
-| `R2_BUCKET_NAME`        | R2 bucket name                   |
-| `R2_PUBLIC_URL`         | Public URL for R2 bucket (if enabled) |
+| Variable               | Description                           |
+| ---------------------- | ------------------------------------- |
+| `R2_ACCOUNT_ID`        | Cloudflare account ID                 |
+| `R2_ACCESS_KEY_ID`     | R2 API access key ID                  |
+| `R2_SECRET_ACCESS_KEY` | R2 API secret access key              |
+| `R2_BUCKET_NAME`       | R2 bucket name                        |
+| `R2_PUBLIC_URL`        | Public URL for R2 bucket (if enabled) |
 
 ### EmailJS Variables (Optional)
 
@@ -173,10 +173,10 @@ Click "Deploy" and wait for the build to complete.
 
 ### Flowise Variables (Optional)
 
-| Variable                           | Description                |
-| ---------------------------------- | -------------------------- |
-| `NEXT_PUBLIC_FLOWISE_API_URL`      | Flowise API endpoint URL   |
-| `NEXT_PUBLIC_FLOWISE_CHATFLOW_ID`  | Chatflow ID for the widget |
+| Variable                          | Description                |
+| --------------------------------- | -------------------------- |
+| `NEXT_PUBLIC_FLOWISE_API_URL`     | Flowise API endpoint URL   |
+| `NEXT_PUBLIC_FLOWISE_CHATFLOW_ID` | Chatflow ID for the widget |
 
 ### Generating Secure Secrets
 

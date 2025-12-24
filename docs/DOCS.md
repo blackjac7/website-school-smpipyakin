@@ -395,12 +395,12 @@ const signedUrl = await getSignedUrl(r2, command, { expiresIn: 3600 });
 
 #### Storage Strategy
 
-| Content Type | Storage | Reason |
-|-------------|---------|--------|
-| Profile Images | Cloudinary | Auto optimization, CDN, transformations |
-| News Images | Cloudinary | Auto optimization, responsive images |
-| PPDB Documents | Cloudflare R2 | Larger files, cost-effective storage |
-| Excel Exports | Cloudflare R2 | Generated files, temporary storage |
+| Content Type   | Storage       | Reason                                  |
+| -------------- | ------------- | --------------------------------------- |
+| Profile Images | Cloudinary    | Auto optimization, CDN, transformations |
+| News Images    | Cloudinary    | Auto optimization, responsive images    |
+| PPDB Documents | Cloudflare R2 | Larger files, cost-effective storage    |
+| Excel Exports  | Cloudflare R2 | Generated files, temporary storage      |
 
 ---
 
@@ -469,7 +469,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
   <YAxis />
   <Tooltip />
   <Bar dataKey="value" fill="#3B82F6" />
-</BarChart>
+</BarChart>;
 ```
 
 #### XLSX (Excel Export)
@@ -494,11 +494,7 @@ Used for loading states and interactive animations.
 ```tsx
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
-<DotLottieReact
-  src="/animations/loading.lottie"
-  loop
-  autoplay
-/>
+<DotLottieReact src="/animations/loading.lottie" loop autoplay />;
 ```
 
 #### Zod (Validation)
