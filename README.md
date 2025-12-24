@@ -185,6 +185,10 @@ CRON_SECRET="your-cron-secret"
 | `npm run db:seed`         | Seed database with sample data  |
 | `npm run db:seed-content` | Seed content data               |
 | `npm run db:reset`        | Reset database (⚠️ destructive) |
+| `npm run test:e2e`        | Run all E2E tests               |
+| `npm run test:auth`       | Run authentication tests        |
+| `npm run test:public`     | Run public pages tests          |
+| `npm run test:dashboards` | Run dashboard tests             |
 
 ---
 
@@ -204,18 +208,26 @@ CRON_SECRET="your-cron-secret"
 
 ## 📚 Documentation
 
-| Document                              | Description                            |
-| ------------------------------------- | -------------------------------------- |
-| [DOCS.md](./docs/DOCS.md)             | Technical documentation & architecture |
-| [DEPLOYMENT.md](./docs/DEPLOYMENT.md) | Production deployment guide            |
-| [SECURITY.md](./docs/SECURITY.md)     | Security implementation details        |
-| [CONTRIBUTING.md](./CONTRIBUTING.md)  | Contribution guidelines                |
+| Document                                         | Description                            |
+| ------------------------------------------------ | -------------------------------------- |
+| [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)   | REST API endpoints documentation       |
+| [TECHNICAL_DOCS.md](./TECHNICAL_DOCS.md)         | Technical documentation & architecture |
+| [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)     | Production deployment guide            |
+| [TESTING_GUIDE.md](./TESTING_GUIDE.md)           | Testing documentation & best practices |
+| [DATABASE_SETUP.md](./DATABASE_SETUP.md)         | Database setup & configuration         |
+| [CLOUDINARY_SETUP.md](./CLOUDINARY_SETUP.md)     | Cloudinary integration guide           |
+| [EMAILJS_SETUP.md](./EMAILJS_SETUP.md)           | EmailJS configuration                  |
 
 ---
 
 ## 📁 Project Structure
 
 ```
+├── .github/                # GitHub Actions CI/CD
+│   └── workflows/
+│       ├── ci.yml          # Main CI/CD pipeline
+│       ├── backup.yml      # Database backup workflow
+│       └── dependency-update.yml
 ├── prisma/                 # Database schema & migrations
 │   ├── schema.prisma
 │   ├── seed.ts
@@ -223,6 +235,10 @@ CRON_SECRET="your-cron-secret"
 ├── public/                 # Static assets
 │   ├── icons/              # PWA icons
 │   └── manifest.json
+├── tests/                  # E2E Tests (Playwright)
+│   ├── fixtures/           # Test fixtures & helpers
+│   ├── pages/              # Page Object Models
+│   └── *.spec.ts           # Test specifications
 ├── src/
 │   ├── actions/            # Server actions
 │   │   ├── admin/
@@ -236,9 +252,11 @@ CRON_SECRET="your-cron-secret"
 │   ├── components/         # React components
 │   ├── hooks/              # Custom React hooks
 │   ├── lib/                # Utility libraries
+│   │   └── validations.ts  # Zod schemas
 │   ├── shared/             # Shared data & types
 │   └── utils/              # Utility functions
-└── docs/                   # Documentation
+├── sentry.*.config.ts      # Sentry error tracking config
+└── lighthouserc.json       # Lighthouse CI config
 ```
 
 ---
@@ -262,7 +280,50 @@ This application implements multiple layers of security:
 - **CSRF**: SameSite cookies + origin validation
 - **Bot Attacks**: Math CAPTCHA + honeypot fields
 
-For detailed security documentation, see [SECURITY.md](./docs/SECURITY.md).
+For detailed security documentation, see [PENETRATION_TESTING_DOCUMENTATION.md](./PENETRATION_TESTING_DOCUMENTATION.md).
+
+---
+
+## 🧪 Testing
+
+This project includes comprehensive E2E testing with Playwright using Page Object Model pattern.
+
+### Test Coverage
+
+| Test Suite       | Tests | Description                      |
+| ---------------- | ----- | -------------------------------- |
+| Authentication   | 18    | Login, logout, session handling  |
+| Public Pages     | 37    | All public facing pages          |
+| Dashboard Siswa  | 14    | Student dashboard functionality  |
+| Dashboard PPDB   | 17    | PPDB officer dashboard           |
+| Dashboard Admin  | 24    | Admin management features        |
+| Dashboard OSIS   | 10    | OSIS dashboard features          |
+| Dashboard Kesiswaan | 10 | Student affairs dashboard        |
+| **Total**        | **128** | Full application coverage      |
+
+### Running Tests
+
+```bash
+# Run all E2E tests
+npm run test:e2e
+
+# Run specific test suites
+npm run test:auth        # Authentication tests
+npm run test:public      # Public pages tests
+npm run test:dashboards  # All dashboard tests
+
+# Run with UI
+npm run test:e2e:ui
+```
+
+---
+
+## 📊 Monitoring & Analytics
+
+- **Sentry** - Error tracking and performance monitoring
+- **Vercel Analytics** - Web analytics and user insights
+- **Vercel Speed Insights** - Core Web Vitals tracking
+- **Lighthouse CI** - Performance auditing in CI/CD
 
 ---
 

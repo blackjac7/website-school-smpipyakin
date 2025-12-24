@@ -1,0 +1,75 @@
+name: Dependency Update
+
+on:
+  schedule:
+    # Run weekly on Mondays at 3 AM UTC
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Check for outdated packages
+        id: outdated
+        run: |
+          echo "## Outdated Packages" > outdated.md
+          npm outdated --json > outdated.json || true
+          if [ -s outdated.json ] && [ "$(cat outdated.json)" != "{}" ]; then
+            echo "OUTDATED=true" >> $GITHUB_OUTPUT
+            echo "\`\`\`json" >> outdated.md
+            cat outdated.json >> outdated.md
+            echo "\`\`\`" >> outdated.md
+          else
+            echo "OUTDATED=false" >> $GITHUB_OUTPUT
+            echo "All packages are up to date!" >> outdated.md
+          fi
+
+      - name: Update minor and patch versions
+        if: steps.outdated.outputs.OUTDATED == 'true'
+        run: |
+          npm update --save
+          npm audit fix || true
+
+      - name: Run tests after update
+        if: steps.outdated.outputs.OUTDATED == 'true'
+        run: |
+          npm run lint
+          npx tsc --noEmit
+
+      - name: Create Pull Request
+        if: steps.outdated.outputs.OUTDATED == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore(deps): update dependencies'
+          title: '🔄 Weekly Dependency Updates'
+          body: |
+            ## Automated Dependency Update
+            
+            This PR contains automated dependency updates.
+            
+            ### Changes
+            $(cat outdated.md)
+            
+            ### Checklist
+            - [ ] All tests pass
+            - [ ] No breaking changes
+            - [ ] Review the changelog of updated packages
+          branch: chore/dependency-updates
+          delete-branch: true
+          labels: |
+            dependencies
+            automated

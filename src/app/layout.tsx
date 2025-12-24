@@ -6,6 +6,8 @@ import { LoadingProvider } from "@/components/shared";
 import { AuthProvider } from "@/components/shared/AuthProvider";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { Toaster } from "react-hot-toast";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -148,6 +150,8 @@ export default function RootLayout({
             </LoadingProvider>
           </AuthProvider>
         </ThemeProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
