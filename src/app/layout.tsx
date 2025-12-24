@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import NextTopLoader from "nextjs-toploader";
 import StructuredData from "@/components/script/StructuredData";
 import { LoadingProvider } from "@/components/shared";
 import { AuthProvider } from "@/components/shared/AuthProvider";
@@ -100,6 +101,18 @@ export default function RootLayout({
         <StructuredData />
       </head>
       <body className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+        <NextTopLoader
+          color="#3B82F6"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #3B82F6,0 0 5px #3B82F6"
+          zIndex={9999}
+        />
         <ThemeProvider>
           <AuthProvider>
             <LoadingProvider>
