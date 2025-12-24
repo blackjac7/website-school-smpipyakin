@@ -29,12 +29,8 @@ export const metadata = {
 };
 
 // Default fallback data for graceful degradation
-const defaultStats = {
-  totalStudents: 400,
-  totalTeachers: 30,
-  totalClasses: 12,
-  facilities: 15,
-};
+// Empty array is the fallback since getSchoolStats returns array
+const defaultStats: { id: string; createdAt: Date; updatedAt: Date; isActive: boolean; sortOrder: number; label: string; value: string; iconName: string; }[] = [];
 
 const defaultSlides: HeroSlide[] = [
   {

@@ -112,8 +112,3 @@ export async function deleteAnnouncement(id: string) {
     return { success: false, error: "Failed to delete announcement" };
   }
 }
-  } catch (error) {
-    console.error("Error deleting announcement:", error);
-    return { success: false, error: "Failed to delete announcement" };
-  }
-}

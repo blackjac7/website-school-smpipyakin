@@ -3,12 +3,23 @@ export class RateLimiter {
   private submissions: Map<string, number[]> = new Map();
   private maxSubmissions: number;
   private windowMs: number;
-  private cleanupInterval: NodeJS.Timeout | null = null;
+  private cleanupInterval: ReturnType<typeof setInterval> | null = null;
+  private isInitialized: boolean = false;
 
   constructor(maxSubmissions = 5, windowMs = 3600000) {
     // 1 hour window
     this.maxSubmissions = maxSubmissions;
     this.windowMs = windowMs;
+
+    // Only initialize cleanup interval on client-side
+    if (typeof window !== "undefined") {
+      this.initCleanup();
+    }
+  }
+
+  private initCleanup(): void {
+    if (this.isInitialized) return;
+    this.isInitialized = true;
 
     // Auto-cleanup expired entries every 10 minutes to prevent memory leaks
     this.cleanupInterval = setInterval(
@@ -39,6 +50,11 @@ export class RateLimiter {
   }
 
   isAllowed(identifier: string): boolean {
+    // Ensure cleanup is initialized when method is called on client
+    if (typeof window !== "undefined" && !this.isInitialized) {
+      this.initCleanup();
+    }
+
     const now = Date.now();
     const userSubmissions = this.submissions.get(identifier) || [];
 

@@ -165,17 +165,20 @@ export async function getKaryaStats() {
         prisma.studentWork.groupBy({
           by: ["siswaId"],
           where: { statusPersetujuan: "APPROVED" },
+          orderBy: { siswaId: "asc" },
         }),
         prisma.studentWork.groupBy({
           by: ["category"],
           where: { statusPersetujuan: "APPROVED" },
-          _count: { category: true },
+          orderBy: { category: "asc" },
+          _count: true,
         }),
       ]);
 
     const categories = categoryStats.map((cat) => ({
       name: cat.category || "Lainnya",
-      count: cat._count.category,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      count: typeof cat._count === 'number' ? cat._count : ((cat._count as any)?._all || 0),
     }));
 
     return {

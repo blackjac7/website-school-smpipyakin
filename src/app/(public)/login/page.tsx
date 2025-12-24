@@ -1,6 +1,5 @@
 // src/app/(public)/login/page.tsx
 import LoginForm from "@/components/auth/LoginForm";
-// import VulnerableForm from "@/components/auth/VulnerableForm";
 import { LogoutSuccessMessage } from "@/components/shared";
 
 const LoginPage = () => {
@@ -16,7 +15,6 @@ const LoginPage = () => {
       <div className="z-10 w-full max-w-5xl flex flex-col items-center gap-8">
         <LoginForm />
         <LogoutSuccessMessage />
-        {/* <VulnerableForm /> */}
       </div>
     </div>
   );
