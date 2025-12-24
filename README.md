@@ -208,15 +208,15 @@ CRON_SECRET="your-cron-secret"
 
 ## 📚 Documentation
 
-| Document                                         | Description                            |
-| ------------------------------------------------ | -------------------------------------- |
-| [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)   | REST API endpoints documentation       |
-| [TECHNICAL_DOCS.md](./TECHNICAL_DOCS.md)         | Technical documentation & architecture |
-| [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)     | Production deployment guide            |
-| [TESTING_GUIDE.md](./TESTING_GUIDE.md)           | Testing documentation & best practices |
-| [DATABASE_SETUP.md](./DATABASE_SETUP.md)         | Database setup & configuration         |
-| [CLOUDINARY_SETUP.md](./CLOUDINARY_SETUP.md)     | Cloudinary integration guide           |
-| [EMAILJS_SETUP.md](./EMAILJS_SETUP.md)           | EmailJS configuration                  |
+| Document                                       | Description                            |
+| ---------------------------------------------- | -------------------------------------- |
+| [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) | REST API endpoints documentation       |
+| [TECHNICAL_DOCS.md](./TECHNICAL_DOCS.md)       | Technical documentation & architecture |
+| [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)   | Production deployment guide            |
+| [TESTING_GUIDE.md](./TESTING_GUIDE.md)         | Testing documentation & best practices |
+| [DATABASE_SETUP.md](./DATABASE_SETUP.md)       | Database setup & configuration         |
+| [CLOUDINARY_SETUP.md](./CLOUDINARY_SETUP.md)   | Cloudinary integration guide           |
+| [EMAILJS_SETUP.md](./EMAILJS_SETUP.md)         | EmailJS configuration                  |
 
 ---
 
@@ -290,16 +290,16 @@ This project includes comprehensive E2E testing with Playwright using Page Objec
 
 ### Test Coverage
 
-| Test Suite       | Tests | Description                      |
-| ---------------- | ----- | -------------------------------- |
-| Authentication   | 18    | Login, logout, session handling  |
-| Public Pages     | 37    | All public facing pages          |
-| Dashboard Siswa  | 14    | Student dashboard functionality  |
-| Dashboard PPDB   | 17    | PPDB officer dashboard           |
-| Dashboard Admin  | 24    | Admin management features        |
-| Dashboard OSIS   | 10    | OSIS dashboard features          |
-| Dashboard Kesiswaan | 10 | Student affairs dashboard        |
-| **Total**        | **128** | Full application coverage      |
+| Test Suite          | Tests   | Description                     |
+| ------------------- | ------- | ------------------------------- |
+| Authentication      | 18      | Login, logout, session handling |
+| Public Pages        | 37      | All public facing pages         |
+| Dashboard Siswa     | 14      | Student dashboard functionality |
+| Dashboard PPDB      | 17      | PPDB officer dashboard          |
+| Dashboard Admin     | 24      | Admin management features       |
+| Dashboard OSIS      | 10      | OSIS dashboard features         |
+| Dashboard Kesiswaan | 10      | Student affairs dashboard       |
+| **Total**           | **128** | Full application coverage       |
 
 ### Running Tests
 

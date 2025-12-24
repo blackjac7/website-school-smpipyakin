@@ -13,7 +13,12 @@ export default function PublicLayout({
       {/* Skip to main content link for keyboard accessibility */}
       <SkipLink href="#main-content">Langsung ke konten utama</SkipLink>
       <Navbar />
-      <main id="main-content" className="min-h-screen" role="main" tabIndex={-1}>
+      <main
+        id="main-content"
+        className="min-h-screen"
+        role="main"
+        tabIndex={-1}
+      >
         {children}
       </main>
       <Footer />

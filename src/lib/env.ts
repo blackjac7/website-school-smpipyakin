@@ -8,7 +8,9 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
 
   // Cloudinary
-  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z.string().min(1, "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is required"),
+  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z
+    .string()
+    .min(1, "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is required"),
   CLOUDINARY_API_KEY: z.string().min(1, "CLOUDINARY_API_KEY is required"),
   CLOUDINARY_API_SECRET: z.string().min(1, "CLOUDINARY_API_SECRET is required"),
 
@@ -27,7 +29,9 @@ const envSchema = z.object({
   SENTRY_AUTH_TOKEN: z.string().optional(),
 
   // Node Environment
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  NODE_ENV: z
+    .enum(["development", "test", "production"])
+    .default("development"),
 });
 
 export const env = envSchema.safeParse(process.env);

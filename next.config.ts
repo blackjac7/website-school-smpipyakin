@@ -124,4 +124,7 @@ const sentryWebpackPluginOptions = {
   },
 };
 
-export default withSentryConfig(withPWA(nextConfig), sentryWebpackPluginOptions);
+export default withSentryConfig(
+  withPWA(nextConfig),
+  sentryWebpackPluginOptions
+);

@@ -10,7 +10,10 @@ interface SkipLinkProps {
  * Provides keyboard users with a quick way to skip to main content
  * This is an important accessibility feature for screen readers and keyboard navigation
  */
-export function SkipLink({ href = "#main-content", children = "Lewati ke konten utama" }: SkipLinkProps) {
+export function SkipLink({
+  href = "#main-content",
+  children = "Lewati ke konten utama",
+}: SkipLinkProps) {
   return (
     <a
       href={href}
@@ -26,11 +29,7 @@ export function SkipLink({ href = "#main-content", children = "Lewati ke konten 
  * Hides content visually but keeps it accessible to screen readers
  */
 export function VisuallyHidden({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="sr-only">
-      {children}
-    </span>
-  );
+  return <span className="sr-only">{children}</span>;
 }
 
 /**
@@ -124,7 +123,11 @@ interface AccessibleIconProps {
   decorative?: boolean;
 }
 
-export function AccessibleIcon({ label, children, decorative = false }: AccessibleIconProps) {
+export function AccessibleIcon({
+  label,
+  children,
+  decorative = false,
+}: AccessibleIconProps) {
   if (decorative) {
     return (
       <span aria-hidden="true" role="presentation">
@@ -149,7 +152,10 @@ interface LoadingSpinnerProps {
   label?: string;
 }
 
-export function LoadingSpinner({ size = "md", label = "Memuat..." }: LoadingSpinnerProps) {
+export function LoadingSpinner({
+  size = "md",
+  label = "Memuat...",
+}: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: "w-4 h-4",
     md: "w-8 h-8",
@@ -250,7 +256,9 @@ export function useFocusReturn() {
  */
 export function useAnnouncer() {
   const [message, setMessage] = React.useState("");
-  const [politeness, setPoliteness] = React.useState<"polite" | "assertive">("polite");
+  const [politeness, setPoliteness] = React.useState<"polite" | "assertive">(
+    "polite"
+  );
 
   const announce = React.useCallback(
     (text: string, level: "polite" | "assertive" = "polite") => {
@@ -263,11 +271,7 @@ export function useAnnouncer() {
   );
 
   const Announcer = React.useCallback(
-    () => (
-      <LiveRegion politeness={politeness}>
-        {message}
-      </LiveRegion>
-    ),
+    () => <LiveRegion politeness={politeness}>{message}</LiveRegion>,
     [message, politeness]
   );
 
