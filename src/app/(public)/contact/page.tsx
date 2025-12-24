@@ -1,7 +1,23 @@
 "use client";
 
-import ContactForm from "@/components/contact/ContactForm";
+import dynamic from "next/dynamic";
 import PageHeader from "@/components/layout/PageHeader";
+
+// Dynamic import to avoid prerender issues
+const ContactForm = dynamic(() => import("@/components/contact/ContactForm"), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 animate-pulse">
+      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-6"></div>
+      <div className="space-y-4">
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      </div>
+    </div>
+  ),
+});
 import {
   Clock,
   Mail,

@@ -5,14 +5,12 @@ export { default as SidebarLogout } from "./SidebarLogout";
 export { default as ToastNotification } from "./ToastNotification";
 export { default as LogoutAnimation } from "./LogoutAnimation";
 export { default as LoginAnimation } from "./LoginAnimation";
-export { default as LogoutDemo } from "./LogoutDemo";
 export { default as LogoutSuccessMessage } from "./LogoutSuccessMessage";
 export { AuthProvider, useAuth } from "./AuthProvider";
 
 // Loading components
 export { default as LoadingEffect } from "./LoadingEffect";
 export { LoadingProvider, useLoading } from "./LoadingProvider";
-export { usePageLoading, useAsyncLoading } from "./usePageLoading";
 
 // Theme components
 export { ThemeProvider } from "./ThemeProvider";

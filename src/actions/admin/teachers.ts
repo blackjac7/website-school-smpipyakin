@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { TeacherCategory } from "@prisma/client";
+import { getJWTSecret, JWT_CONFIG } from "@/lib/jwt";
 
 // Schema validation untuk teacher
 const TeacherSchema = z.object({
@@ -43,17 +44,14 @@ async function verifyAdminRole(): Promise<{
   error?: string;
 }> {
   const cookieStore = await cookies();
-  const token = cookieStore.get("auth-token")?.value;
+  const token = cookieStore.get(JWT_CONFIG.COOKIE_NAME)?.value;
 
   if (!token) {
     return { success: false, error: "Unauthorized: No token found" };
   }
 
   try {
-    const secret = new TextEncoder().encode(
-      process.env.JWT_SECRET || "fallback-secret"
-    );
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, getJWTSecret());
 
     if (payload.role !== "admin") {
       return { success: false, error: "Unauthorized: Admin access required" };

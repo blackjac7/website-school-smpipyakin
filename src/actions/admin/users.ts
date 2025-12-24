@@ -5,6 +5,19 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { UserRole, GenderType } from "@prisma/client";
+import { getAuthenticatedUser } from "@/lib/auth";
+
+// Helper to verify admin role
+async function verifyAdminRole() {
+  const user = await getAuthenticatedUser();
+  if (!user || user.role !== "admin") {
+    return {
+      authorized: false,
+      error: "Unauthorized: Admin access required",
+    };
+  }
+  return { authorized: true, user };
+}
 
 // Schema for creating/updating a user
 const UserSchema = z.object({
@@ -25,6 +38,12 @@ const UserSchema = z.object({
 export type UserFormData = z.infer<typeof UserSchema>;
 
 export async function getUsers() {
+  // Verify admin authorization
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
     const users = await prisma.user.findMany({
       orderBy: { createdAt: "desc" },
@@ -63,18 +82,30 @@ export async function getUsers() {
 }
 
 export async function createUser(data: UserFormData) {
+  // Verify admin authorization
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   const result = UserSchema.safeParse(data);
 
   if (!result.success) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const error: any = result.error;
-    return { success: false, error: error.errors[0]?.message || "Validasi gagal" };
+    return {
+      success: false,
+      error: error.errors[0]?.message || "Validasi gagal",
+    };
   }
 
   const { username, password, role, name, email, gender } = result.data;
 
   if (!password) {
-    return { success: false, error: "Password wajib diisi untuk pengguna baru" };
+    return {
+      success: false,
+      error: "Password wajib diisi untuk pengguna baru",
+    };
   }
 
   try {
@@ -137,12 +168,19 @@ export async function createUser(data: UserFormData) {
     return { success: true, message: "Pengguna berhasil ditambahkan" };
   } catch (error) {
     console.error("Create user error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Gagal membuat pengguna";
+    const errorMessage =
+      error instanceof Error ? error.message : "Gagal membuat pengguna";
     return { success: false, error: errorMessage };
   }
 }
 
 export async function updateUser(userId: string, data: UserFormData) {
+  // Verify admin authorization
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
     // 1. Check if user exists
     const existingUser = await prisma.user.findUnique({
@@ -183,7 +221,7 @@ export async function updateUser(userId: string, data: UserFormData) {
         // For simplicity, we assume role changing that requires profile creation is handled carefully
         // or we upsert.
         if (existingUser.siswa) {
-             await tx.siswa.update({
+          await tx.siswa.update({
             where: { userId: userId },
             data: {
               name: data.name,
@@ -194,42 +232,43 @@ export async function updateUser(userId: string, data: UserFormData) {
             },
           });
         } else {
-             // Handle case where Admin changes someone to Siswa (Optional strictly speaking)
-             // But valid for robustness
-             if (!data.nisn) throw new Error("NISN required when switching to Siswa");
-             await tx.siswa.create({
-                 data: {
-                     userId,
-                     name: data.name,
-                     nisn: data.nisn,
-                     class: data.class,
-                     osisAccess: data.osisAccess || false,
-                     gender: (data.gender as GenderType) || "MALE",
-                 }
-             })
+          // Handle case where Admin changes someone to Siswa (Optional strictly speaking)
+          // But valid for robustness
+          if (!data.nisn)
+            throw new Error("NISN required when switching to Siswa");
+          await tx.siswa.create({
+            data: {
+              userId,
+              name: data.name,
+              nisn: data.nisn,
+              class: data.class,
+              osisAccess: data.osisAccess || false,
+              gender: (data.gender as GenderType) || "MALE",
+            },
+          });
         }
-
       } else if (data.role === "KESISWAAN") {
-          if (existingUser.kesiswaan) {
-               await tx.kesiswaan.update({
-                where: { userId: userId },
-                data: {
-                    name: data.name,
-                    nip: data.nip,
-                    gender: data.gender as GenderType,
-                }
-               })
-          } else {
-              if (!data.nip) throw new Error("NIP required when switching to Kesiswaan");
-              await tx.kesiswaan.create({
-                  data: {
-                      userId,
-                      name: data.name,
-                      nip: data.nip,
-                      gender: (data.gender as GenderType) || "MALE",
-                  }
-              })
-          }
+        if (existingUser.kesiswaan) {
+          await tx.kesiswaan.update({
+            where: { userId: userId },
+            data: {
+              name: data.name,
+              nip: data.nip,
+              gender: data.gender as GenderType,
+            },
+          });
+        } else {
+          if (!data.nip)
+            throw new Error("NIP required when switching to Kesiswaan");
+          await tx.kesiswaan.create({
+            data: {
+              userId,
+              name: data.name,
+              nip: data.nip,
+              gender: (data.gender as GenderType) || "MALE",
+            },
+          });
+        }
       }
     });
 
@@ -237,12 +276,19 @@ export async function updateUser(userId: string, data: UserFormData) {
     return { success: true, message: "Pengguna berhasil diperbarui" };
   } catch (error) {
     console.error("Update user error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Gagal memperbarui pengguna";
+    const errorMessage =
+      error instanceof Error ? error.message : "Gagal memperbarui pengguna";
     return { success: false, error: errorMessage };
   }
 }
 
 export async function deleteUser(userId: string) {
+  // Verify admin authorization
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
     await prisma.user.delete({
       where: { id: userId },

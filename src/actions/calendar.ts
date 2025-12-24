@@ -122,4 +122,3 @@ export async function deleteCalendarEvent(id: string) {
     return { success: false, error: "Failed to delete event" };
   }
 }
-}

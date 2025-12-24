@@ -32,31 +32,31 @@ interface DashboardOverviewProps {
     category?: string;
     level?: string;
   }>;
-  // works: Array<{
-  //   id: string;
-  //   title: string;
-  //   description: string;
-  //   workType: string;
-  //   mediaUrl: string;
-  //   videoLink: string;
-  //   category: string;
-  //   subject: string;
-  //   status: string;
-  //   rejectionNote: string;
-  //   createdAt: string;
-  // }>;
+  works: Array<{
+    id: string;
+    title: string;
+    description: string;
+    workType: string;
+    mediaUrl: string;
+    videoLink: string;
+    category: string;
+    subject: string;
+    status: string;
+    rejectionNote: string;
+    createdAt: string;
+  }>;
   onQuickEdit: () => void;
   onUploadAchievement: () => void;
-  // onUploadWork: () => void;
+  onUploadWork: () => void;
 }
 
 export default function DashboardOverview({
   profileData,
   achievements,
-  // works,
+  works,
   onQuickEdit,
   onUploadAchievement,
-  // onUploadWork,
+  onUploadWork,
 }: DashboardOverviewProps) {
   const approvedAchievements = achievements.filter(
     (a) => a.status === "approved"

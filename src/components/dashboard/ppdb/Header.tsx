@@ -232,6 +232,6 @@ export default function Header({
           />
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }
