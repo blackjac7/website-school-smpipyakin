@@ -1,58 +1,265 @@
-# SMP IP Yakin Website
+# 🏫 SMP IP Yakin - School Management System
 
-A modern, secure, and comprehensive school management system built for SMP IP Yakin. This project leverages the latest web technologies to provide a seamless experience for students, teachers, administrators, and the public.
+<div align="center">
 
-## 🚀 Tech Stack
+![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-316192?style=for-the-badge&logo=postgresql)
+![Prisma](https://img.shields.io/badge/Prisma-6.x-2D3748?style=for-the-badge&logo=prisma)
 
-- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **Database**: [PostgreSQL](https://www.postgresql.org/) with [Prisma ORM](https://www.prisma.io/)
-- **Authentication**: Custom JWT (Jose) + HttpOnly Cookies
-- **Storage**: Cloudinary
-- **Email**: EmailJS
+**A modern, secure, and comprehensive school management system**
 
-## ✨ Key Features
+[Getting Started](#-getting-started) •
+[Documentation](#-documentation) •
+[Features](#-features) •
+[Security](#-security)
 
-- **Role-Based Dashboards**: Dedicated areas for Admin, Kesiswaan, OSIS, PPDB, and Students.
-- **Secure Authentication**: Robust login system with database-backed rate limiting and IP binding.
-- **PPDB System**: Digital student admission process with document management.
-- **Anti-Bot Security**: Integrated Math Captcha, Honeypot fields, and intelligent rate limiting.
-- **Responsive Design**: Mobile-first architecture ensuring accessibility on all devices.
+</div>
+
+---
+
+## 📖 Overview
+
+SMP IP Yakin Website is a full-featured school management platform designed to streamline administrative tasks, enhance communication, and provide a seamless digital experience for students, teachers, and administrators.
+
+Built with modern web technologies and industry best practices, this system prioritizes **security**, **performance**, and **user experience**.
+
+---
+
+## ✨ Features
+
+### 🎯 Core Modules
+
+| Module                    | Description                                                               |
+| ------------------------- | ------------------------------------------------------------------------- |
+| **Multi-Role Dashboard**  | Dedicated dashboards for Admin, Kesiswaan, OSIS, PPDB Staff, and Students |
+| **PPDB System**           | Complete digital admission workflow with document management              |
+| **Content Management**    | News, announcements, and event management                                 |
+| **Academic Calendar**     | School schedule and event planning                                        |
+| **Student Works Gallery** | Showcase student achievements and projects                                |
+| **Facility Management**   | School facilities and extracurricular activities                          |
+
+### 🔐 Security Features
+
+- **Database-backed Rate Limiting** - Prevents brute force attacks
+- **JWT with HTTP-Only Cookies** - Secure session management
+- **IP Binding** - Session hijacking prevention
+- **Input Sanitization** - XSS protection
+- **CAPTCHA & Honeypot** - Anti-bot measures
+- **Role-Based Access Control** - Granular permission system
+
+### 🚀 Performance
+
+- **Progressive Web App (PWA)** - Installable and offline-capable
+- **Image Optimization** - Cloudinary CDN integration
+- **Responsive Design** - Mobile-first architecture
+
+---
+
+## 🛠 Tech Stack
+
+| Category           | Technology                                                      |
+| ------------------ | --------------------------------------------------------------- |
+| **Framework**      | [Next.js 15](https://nextjs.org/) (App Router)                  |
+| **Language**       | [TypeScript](https://www.typescriptlang.org/)                   |
+| **Styling**        | [Tailwind CSS v4](https://tailwindcss.com/)                     |
+| **Database**       | [PostgreSQL](https://www.postgresql.org/)                       |
+| **ORM**            | [Prisma](https://www.prisma.io/)                                |
+| **Authentication** | JWT ([Jose](https://github.com/panva/jose)) + HTTP-Only Cookies |
+| **Storage**        | [Cloudinary](https://cloudinary.com/)                           |
+| **Email**          | [EmailJS](https://www.emailjs.com/)                             |
+| **Animations**     | [Framer Motion](https://www.framer.com/motion/)                 |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js** 18.x or higher
+- **PostgreSQL** 14+ (or use a managed service like Neon, Supabase, or Railway)
+- **npm** or **yarn**
+
+### Installation
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-repo/website-school-smpipyakin.git
+cd website-school-smpipyakin
+
+# 2. Install dependencies
+npm install
+
+# 3. Setup environment variables
+cp .env.example .env
+# Edit .env with your credentials
+
+# 4. Setup database
+npm run db:generate    # Generate Prisma Client
+npm run db:migrate     # Run migrations
+npm run db:seed        # Seed sample data
+
+# 5. Start development server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Environment Variables
+
+Create a `.env` file with the following variables:
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/smpipyakin"
+
+# Authentication
+JWT_SECRET="your-super-secret-key-min-32-characters"
+
+# Cloudinary
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
+
+# EmailJS (Optional)
+NEXT_PUBLIC_EMAILJS_SERVICE_ID="your-service-id"
+NEXT_PUBLIC_EMAILJS_TEMPLATE_ID="your-template-id"
+NEXT_PUBLIC_EMAILJS_PUBLIC_KEY="your-public-key"
+
+# Cron Jobs (Production)
+CRON_SECRET="your-cron-secret"
+```
+
+---
+
+## 📜 Available Scripts
+
+| Command                   | Description                     |
+| ------------------------- | ------------------------------- |
+| `npm run dev`             | Start development server        |
+| `npm run build`           | Build for production            |
+| `npm run start`           | Start production server         |
+| `npm run lint`            | Run ESLint                      |
+| `npm run db:generate`     | Generate Prisma Client          |
+| `npm run db:migrate`      | Run database migrations         |
+| `npm run db:seed`         | Seed database with sample data  |
+| `npm run db:seed-content` | Seed content data               |
+| `npm run db:reset`        | Reset database (⚠️ destructive) |
+
+---
+
+## 👥 Default Accounts
+
+> ⚠️ **Warning**: Change all default passwords before deploying to production!
+
+| Role       | Username    | Password   | Dashboard Access       |
+| ---------- | ----------- | ---------- | ---------------------- |
+| Admin      | `admin`     | `admin123` | `/dashboard-admin`     |
+| Kesiswaan  | `kesiswaan` | `admin123` | `/dashboard-kesiswaan` |
+| Student    | `siswa001`  | `admin123` | `/dashboard-siswa`     |
+| OSIS       | `osis001`   | `admin123` | `/dashboard-osis`      |
+| PPDB Staff | `ppdb001`   | `admin123` | `/dashboard-ppdb`      |
+
+---
 
 ## 📚 Documentation
 
-For detailed technical information, including setup instructions, security architecture, and database schema, please refer to the **[Technical Documentation](TECHNICAL_DOCS.md)**.
+| Document                              | Description                            |
+| ------------------------------------- | -------------------------------------- |
+| [DOCS.md](./docs/DOCS.md)             | Technical documentation & architecture |
+| [DEPLOYMENT.md](./docs/DEPLOYMENT.md) | Production deployment guide            |
+| [SECURITY.md](./docs/SECURITY.md)     | Security implementation details        |
+| [CONTRIBUTING.md](./CONTRIBUTING.md)  | Contribution guidelines                |
 
-## 🛠️ Getting Started
+---
 
-1.  **Clone the repository**
-2.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
-3.  **Setup Environment**:
-    Copy `.env.example` to `.env` and fill in the required credentials (Database, Cloudinary, etc.).
-4.  **Initialize Database**:
-    ```bash
-    npm run db:generate
-    npm run db:migrate
-    npm run db:seed
-    ```
-5.  **Run Development Server**:
-    ```bash
-    npm run dev
-    ```
+## 📁 Project Structure
 
-## 🔐 Default Accounts (Development)
+```
+├── prisma/                 # Database schema & migrations
+│   ├── schema.prisma
+│   ├── seed.ts
+│   └── migrations/
+├── public/                 # Static assets
+│   ├── icons/              # PWA icons
+│   └── manifest.json
+├── src/
+│   ├── actions/            # Server actions
+│   │   ├── admin/
+│   │   ├── osis/
+│   │   ├── public/
+│   │   └── student/
+│   ├── app/                # Next.js App Router
+│   │   ├── (dashboard)/    # Protected dashboard routes
+│   │   ├── (public)/       # Public pages
+│   │   └── api/            # API routes
+│   ├── components/         # React components
+│   ├── hooks/              # Custom React hooks
+│   ├── lib/                # Utility libraries
+│   ├── shared/             # Shared data & types
+│   └── utils/              # Utility functions
+└── docs/                   # Documentation
+```
 
-| Role | Username | Password |
-|------|----------|----------|
-| Admin | `admin` | `admin123` |
-| Student | `siswa001` | `admin123` |
+---
 
-*Refer to `TECHNICAL_DOCS.md` for the full list of default accounts.*
+## 🔐 Security
+
+This application implements multiple layers of security:
+
+### Authentication & Authorization
+
+- JWT tokens with HTTP-Only cookies
+- IP binding to prevent session hijacking
+- Secure password hashing (bcrypt, 12 salt rounds)
+- Role-based access control with 5 distinct roles
+
+### Attack Prevention
+
+- **Brute Force**: Database-backed rate limiting (5 attempts/15 min per IP)
+- **SQL Injection**: Prisma ORM with prepared statements
+- **XSS**: React auto-escaping + input sanitization
+- **CSRF**: SameSite cookies + origin validation
+- **Bot Attacks**: Math CAPTCHA + honeypot fields
+
+For detailed security documentation, see [SECURITY.md](./docs/SECURITY.md).
+
+---
+
+## 🚀 Deployment
+
+### Recommended Stack
+
+| Service           | Purpose                            |
+| ----------------- | ---------------------------------- |
+| **Vercel**        | Hosting (optimized for Next.js)    |
+| **Neon/Supabase** | PostgreSQL with connection pooling |
+| **Cloudflare**    | DNS, SSL, and DDoS protection      |
+| **Cloudinary**    | Image storage and optimization     |
+
+### Quick Deploy
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
+
+See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed instructions.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [Contributing Guidelines](./CONTRIBUTING.md) before submitting a pull request.
+
+---
 
 ## 📄 License
 
-Private - SMP IP Yakin
+This project is proprietary software developed for SMP IP Yakin.
+
+---
+
+<div align="center">
+
+**Built with ❤️ for SMP IP Yakin**
+
+</div>

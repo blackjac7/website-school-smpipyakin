@@ -106,7 +106,8 @@ export default function DashboardOverview({
     // },
     {
       title: "Akademik",
-      value: approvedAchievements.filter((a) => a.category === "akademik").length,
+      value: approvedAchievements.filter((a) => a.category === "akademik")
+        .length,
       icon: Award,
       color: "bg-emerald-50 text-emerald-600",
       border: "border-emerald-100",
@@ -114,23 +115,22 @@ export default function DashboardOverview({
     },
     {
       title: "Aktivitas Bulan Ini",
-      value:
-        achievements.filter((a) => {
-          const achievementDate = new Date(a.date);
-          const currentDate = new Date();
-          return (
-            achievementDate.getMonth() === currentDate.getMonth() &&
-            achievementDate.getFullYear() === currentDate.getFullYear()
-          );
-        }).length,
-        // + works.filter((w) => {
-        //   const workDate = new Date(w.createdAt);
-        //   const currentDate = new Date();
-        //   return (
-        //     workDate.getMonth() === currentDate.getMonth() &&
-        //     workDate.getFullYear() === currentDate.getFullYear()
-        //   );
-        // }).length,
+      value: achievements.filter((a) => {
+        const achievementDate = new Date(a.date);
+        const currentDate = new Date();
+        return (
+          achievementDate.getMonth() === currentDate.getMonth() &&
+          achievementDate.getFullYear() === currentDate.getFullYear()
+        );
+      }).length,
+      // + works.filter((w) => {
+      //   const workDate = new Date(w.createdAt);
+      //   const currentDate = new Date();
+      //   return (
+      //     workDate.getMonth() === currentDate.getMonth() &&
+      //     workDate.getFullYear() === currentDate.getFullYear()
+      //   );
+      // }).length,
       icon: TrendingUp,
       color: "bg-indigo-50 text-indigo-600",
       border: "border-indigo-100",
@@ -145,7 +145,7 @@ export default function DashboardOverview({
       title: achievement.title,
       status: achievement.status,
       date: achievement.date,
-      category: achievement.category
+      category: achievement.category,
     })),
     // ...works.slice(0, 2).map((work) => ({
     //   id: work.id,
@@ -164,14 +164,14 @@ export default function DashboardOverview({
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const item = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
+    show: { opacity: 1, y: 0 },
   };
 
   return (
@@ -211,7 +211,8 @@ export default function DashboardOverview({
 
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-                Halo, <span className="text-blue-700">{profileData.name}</span> 👋
+                Halo, <span className="text-blue-700">{profileData.name}</span>{" "}
+                👋
               </h1>
               <p className="text-gray-500 mt-1 text-lg">
                 Kelas {profileData.class} • {profileData.year}
@@ -228,13 +229,13 @@ export default function DashboardOverview({
           </div>
 
           <div className="flex gap-3 w-full md:w-auto">
-             <button
-                onClick={onQuickEdit}
-                className="flex-1 md:flex-none items-center justify-center inline-flex gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm"
-              >
-                <Edit3 className="w-4 h-4" />
-                Edit Profil
-              </button>
+            <button
+              onClick={onQuickEdit}
+              className="flex-1 md:flex-none items-center justify-center inline-flex gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm"
+            >
+              <Edit3 className="w-4 h-4" />
+              Edit Profil
+            </button>
           </div>
         </div>
       </motion.div>
@@ -254,11 +255,17 @@ export default function DashboardOverview({
               <div className={`p-3 rounded-lg ${stat.color}`}>
                 <stat.icon className="w-6 h-6" />
               </div>
-              {index === 0 && <div className="w-2 h-2 rounded-full bg-blue-500" />}
+              {index === 0 && (
+                <div className="w-2 h-2 rounded-full bg-blue-500" />
+              )}
             </div>
             <div>
-              <p className="text-3xl font-bold text-gray-900 tracking-tight">{stat.value}</p>
-              <p className="text-sm font-medium text-gray-600 mt-1">{stat.title}</p>
+              <p className="text-3xl font-bold text-gray-900 tracking-tight">
+                {stat.value}
+              </p>
+              <p className="text-sm font-medium text-gray-600 mt-1">
+                {stat.title}
+              </p>
               <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
                 {stat.subtitle}
               </p>
@@ -280,9 +287,11 @@ export default function DashboardOverview({
               disabled={pendingAchievements.length >= 2}
               className={`
                 group relative overflow-hidden p-6 rounded-2xl text-left border transition-all duration-300
-                ${pendingAchievements.length >= 2
-                  ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-75"
-                  : "bg-white border-blue-100 hover:border-blue-300 hover:shadow-md hover:bg-blue-50/30"}
+                ${
+                  pendingAchievements.length >= 2
+                    ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-75"
+                    : "bg-white border-blue-100 hover:border-blue-300 hover:shadow-md hover:bg-blue-50/30"
+                }
               `}
             >
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -290,24 +299,32 @@ export default function DashboardOverview({
               </div>
 
               <div className="relative z-10">
-                <div className={`
+                <div
+                  className={`
                   w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors
                   ${pendingAchievements.length >= 2 ? "bg-gray-200" : "bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white"}
-                `}>
+                `}
+                >
                   <Trophy className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-1">Upload Prestasi</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">
+                  Upload Prestasi
+                </h3>
                 <p className="text-sm text-gray-500 mb-4 line-clamp-2">
                   Tambahkan pencapaian barumu dan biarkan sekolah mengapresiasi.
                 </p>
 
                 <div className="flex items-center justify-between mt-auto">
-                   <span className={`text-xs font-semibold px-2 py-1 rounded-md ${pendingAchievements.length >= 2 ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-700'}`}>
-                      {pendingAchievements.length}/2 Pending
-                   </span>
-                   <div className={`p-2 rounded-full ${pendingAchievements.length >= 2 ? 'bg-gray-200' : 'bg-white shadow-sm group-hover:translate-x-1 transition-transform'}`}>
-                      <ArrowRight className="w-4 h-4 text-gray-600" />
-                   </div>
+                  <span
+                    className={`text-xs font-semibold px-2 py-1 rounded-md ${pendingAchievements.length >= 2 ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-700"}`}
+                  >
+                    {pendingAchievements.length}/2 Pending
+                  </span>
+                  <div
+                    className={`p-2 rounded-full ${pendingAchievements.length >= 2 ? "bg-gray-200" : "bg-white shadow-sm group-hover:translate-x-1 transition-transform"}`}
+                  >
+                    <ArrowRight className="w-4 h-4 text-gray-600" />
+                  </div>
                 </div>
               </div>
             </button>
@@ -352,10 +369,15 @@ export default function DashboardOverview({
         </motion.div>
 
         {/* Recent Activity Feed */}
-        <motion.div variants={item} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col h-full">
+        <motion.div
+          variants={item}
+          className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col h-full"
+        >
           <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
             <h3 className="font-bold text-gray-900">Aktivitas Terbaru</h3>
-            <span className="text-xs text-gray-500 font-medium">Terakhir diupdate</span>
+            <span className="text-xs text-gray-500 font-medium">
+              Terakhir diupdate
+            </span>
           </div>
 
           <div className="flex-1 overflow-y-auto p-2">
@@ -366,33 +388,65 @@ export default function DashboardOverview({
                     key={`${activity.type}-${activity.id}-${idx}`}
                     className="group flex gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-default"
                   >
-                    <div className={`
+                    <div
+                      className={`
                       w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5
-                      ${activity.type === 'achievement' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'}
-                    `}>
-                      {activity.type === 'achievement' ? <Trophy className="w-5 h-5" /> : <BookOpen className="w-5 h-5" />}
+                      ${activity.type === "achievement" ? "bg-blue-100 text-blue-600" : "bg-amber-100 text-amber-600"}
+                    `}
+                    >
+                      {activity.type === "achievement" ? (
+                        <Trophy className="w-5 h-5" />
+                      ) : (
+                        <BookOpen className="w-5 h-5" />
+                      )}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
-                         <h4 className="text-sm font-semibold text-gray-900 line-clamp-1">{activity.title}</h4>
-                         <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2">
-                            {new Date(activity.date).toLocaleDateString("id-ID", { day: 'numeric', month: 'short' })}
-                         </span>
+                        <h4 className="text-sm font-semibold text-gray-900 line-clamp-1">
+                          {activity.title}
+                        </h4>
+                        <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2">
+                          {new Date(activity.date).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                          })}
+                        </span>
                       </div>
-                      <p className="text-xs text-gray-500 mb-2 capitalize">{activity.category || (activity.type === 'achievement' ? 'Prestasi' : 'Karya')}</p>
+                      <p className="text-xs text-gray-500 mb-2 capitalize">
+                        {activity.category ||
+                          (activity.type === "achievement"
+                            ? "Prestasi"
+                            : "Karya")}
+                      </p>
 
                       <div className="flex items-center gap-2">
-                        <span className={`
+                        <span
+                          className={`
                           inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border
-                          ${activity.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                            activity.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
-                            'bg-red-50 text-red-700 border-red-100'}
-                        `}>
-                          {activity.status === 'approved' && <CheckCircle2 className="w-3 h-3" />}
-                          {activity.status === 'pending' && <Clock className="w-3 h-3" />}
-                          {activity.status === 'rejected' && <XCircle className="w-3 h-3" />}
-                          {activity.status === 'approved' ? 'Disetujui' : activity.status === 'pending' ? 'Menunggu' : 'Ditolak'}
+                          ${
+                            activity.status === "approved"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                              : activity.status === "pending"
+                                ? "bg-yellow-50 text-yellow-700 border-yellow-100"
+                                : "bg-red-50 text-red-700 border-red-100"
+                          }
+                        `}
+                        >
+                          {activity.status === "approved" && (
+                            <CheckCircle2 className="w-3 h-3" />
+                          )}
+                          {activity.status === "pending" && (
+                            <Clock className="w-3 h-3" />
+                          )}
+                          {activity.status === "rejected" && (
+                            <XCircle className="w-3 h-3" />
+                          )}
+                          {activity.status === "approved"
+                            ? "Disetujui"
+                            : activity.status === "pending"
+                              ? "Menunggu"
+                              : "Ditolak"}
                         </span>
                       </div>
                     </div>
@@ -401,11 +455,16 @@ export default function DashboardOverview({
               </div>
             ) : (
               <div className="h-40 flex flex-col items-center justify-center text-center p-4">
-                 <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                    <Clock className="w-6 h-6 text-gray-300" />
-                 </div>
-                 <p className="text-sm font-medium text-gray-900">Belum ada aktivitas</p>
-                 <p className="text-xs text-gray-500 mt-1 max-w-[200px]">Mulai upload prestasi atau karyamu untuk melihat riwayat aktivitas di sini.</p>
+                <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+                  <Clock className="w-6 h-6 text-gray-300" />
+                </div>
+                <p className="text-sm font-medium text-gray-900">
+                  Belum ada aktivitas
+                </p>
+                <p className="text-xs text-gray-500 mt-1 max-w-[200px]">
+                  Mulai upload prestasi atau karyamu untuk melihat riwayat
+                  aktivitas di sini.
+                </p>
               </div>
             )}
           </div>

@@ -9,7 +9,10 @@ import { getAuthenticatedUser } from "@/lib/auth";
 async function verifyCalendarAccess() {
   const user = await getAuthenticatedUser();
   if (!user || !["admin", "kesiswaan"].includes(user.role)) {
-    return { authorized: false, error: "Unauthorized: Admin or Kesiswaan access required" };
+    return {
+      authorized: false,
+      error: "Unauthorized: Admin or Kesiswaan access required",
+    };
   }
   return { authorized: true, user };
 }
@@ -84,7 +87,10 @@ export async function createCalendarEvent(data: {
   }
 }
 
-export async function updateCalendarEvent(id: string, data: Partial<SchoolActivity>) {
+export async function updateCalendarEvent(
+  id: string,
+  data: Partial<SchoolActivity>
+) {
   const auth = await verifyCalendarAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
