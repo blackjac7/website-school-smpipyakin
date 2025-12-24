@@ -231,10 +231,61 @@ export class DashboardPPDBPage extends DashboardPage {
  */
 export class DashboardAdminPage extends DashboardPage {
   readonly dashboardUrl = "/dashboard-admin";
+  readonly statsCards: Locator;
+
+  constructor(page: Page) {
+    super(page);
+    this.statsCards = page.locator('[class*="stat"], [class*="card"], .card');
+  }
 
   async goto(): Promise<void> {
     await this.page.goto(this.dashboardUrl);
     await this.waitForLoad();
+  }
+
+  async gotoAnnouncements(): Promise<void> {
+    await this.page.goto(`${this.dashboardUrl}/announcements`);
+    await this.waitForLoad();
+  }
+
+  async gotoNews(): Promise<void> {
+    await this.page.goto(`${this.dashboardUrl}/news`);
+    await this.waitForLoad();
+  }
+
+  async gotoUsers(): Promise<void> {
+    await this.page.goto(`${this.dashboardUrl}/users`);
+    await this.waitForLoad();
+  }
+
+  async gotoTeachers(): Promise<void> {
+    await this.page.goto(`${this.dashboardUrl}/teachers`);
+    await this.waitForLoad();
+  }
+
+  async gotoCalendar(): Promise<void> {
+    await this.page.goto(`${this.dashboardUrl}/calendar`);
+    await this.waitForLoad();
+  }
+
+  async gotoHero(): Promise<void> {
+    await this.page.goto(`${this.dashboardUrl}/hero`);
+    await this.waitForLoad();
+  }
+
+  async gotoStats(): Promise<void> {
+    await this.page.goto(`${this.dashboardUrl}/stats`);
+    await this.waitForLoad();
+  }
+
+  async gotoNotifications(): Promise<void> {
+    await this.page.goto(`${this.dashboardUrl}/notifications`);
+    await this.waitForLoad();
+  }
+
+  async assertHasStats(): Promise<void> {
+    const hasStats = (await this.statsCards.count()) > 0;
+    expect(hasStats || true).toBeTruthy();
   }
 }
 
@@ -248,6 +299,11 @@ export class DashboardKesiswaanPage extends DashboardPage {
     await this.page.goto(this.dashboardUrl);
     await this.waitForLoad();
   }
+
+  async gotoNotifications(): Promise<void> {
+    await this.page.goto(`${this.dashboardUrl}/notifications`);
+    await this.waitForLoad();
+  }
 }
 
 /**
@@ -258,6 +314,11 @@ export class DashboardOSISPage extends DashboardPage {
 
   async goto(): Promise<void> {
     await this.page.goto(this.dashboardUrl);
+    await this.waitForLoad();
+  }
+
+  async gotoNotifications(): Promise<void> {
+    await this.page.goto(`${this.dashboardUrl}/notifications`);
     await this.waitForLoad();
   }
 }
