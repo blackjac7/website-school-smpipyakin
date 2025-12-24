@@ -6,26 +6,41 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
 // Validation schemas
-const WorkInputSchema = z.object({
-  title: z.string().min(3, "Judul minimal 3 karakter").max(100, "Judul maksimal 100 karakter"),
-  description: z.string().max(500, "Deskripsi maksimal 500 karakter").optional().default(""),
-  workType: z.enum(["photo", "video", "PHOTO", "VIDEO"]).transform(v => v.toLowerCase()),
-  mediaUrl: z.string().optional().default(""),
-  videoLink: z.string().optional().default(""),
-  category: z.string().min(1, "Kategori wajib dipilih"),
-  subject: z.string().optional().default(""),
-}).refine((data) => {
-  const workType = data.workType.toLowerCase();
-  if (workType === "photo" && !data.mediaUrl) {
-    return false;
-  }
-  if (workType === "video" && !data.videoLink) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Foto diperlukan untuk tipe foto, atau link video untuk tipe video",
-});
+const WorkInputSchema = z
+  .object({
+    title: z
+      .string()
+      .min(3, "Judul minimal 3 karakter")
+      .max(100, "Judul maksimal 100 karakter"),
+    description: z
+      .string()
+      .max(500, "Deskripsi maksimal 500 karakter")
+      .optional()
+      .default(""),
+    workType: z
+      .enum(["photo", "video", "PHOTO", "VIDEO"])
+      .transform((v) => v.toLowerCase()),
+    mediaUrl: z.string().optional().default(""),
+    videoLink: z.string().optional().default(""),
+    category: z.string().min(1, "Kategori wajib dipilih"),
+    subject: z.string().optional().default(""),
+  })
+  .refine(
+    (data) => {
+      const workType = data.workType.toLowerCase();
+      if (workType === "photo" && !data.mediaUrl) {
+        return false;
+      }
+      if (workType === "video" && !data.videoLink) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message:
+        "Foto diperlukan untuk tipe foto, atau link video untuk tipe video",
+    }
+  );
 
 const IdSchema = z.string().uuid("Invalid work ID");
 
@@ -97,7 +112,15 @@ export async function createWork(data: WorkInput) {
       return { success: false, error: validation.error.issues[0].message };
     }
 
-    const { title, description, workType, mediaUrl, videoLink, category, subject } = validation.data;
+    const {
+      title,
+      description,
+      workType,
+      mediaUrl,
+      videoLink,
+      category,
+      subject,
+    } = validation.data;
 
     const student = await prisma.siswa.findUnique({
       where: { userId: user.userId },
@@ -117,7 +140,11 @@ export async function createWork(data: WorkInput) {
     });
 
     if (pendingWorks >= 2) {
-      return { success: false, error: "Limit reached", message: "Maksimal 2 karya pending." };
+      return {
+        success: false,
+        error: "Limit reached",
+        message: "Maksimal 2 karya pending.",
+      };
     }
 
     await prisma.studentWork.create({
@@ -183,9 +210,21 @@ export async function updateWork(id: string, data: Partial<WorkInput>) {
       data: {
         title: data.title,
         description: data.description,
-        workType: normalizedWorkType ? (normalizedWorkType.toUpperCase() as "PHOTO" | "VIDEO") : undefined,
-        mediaUrl: normalizedWorkType === "photo" ? data.mediaUrl : (data.workType ? null : undefined),
-        videoLink: normalizedWorkType === "video" ? data.videoLink : (data.workType ? null : undefined),
+        workType: normalizedWorkType
+          ? (normalizedWorkType.toUpperCase() as "PHOTO" | "VIDEO")
+          : undefined,
+        mediaUrl:
+          normalizedWorkType === "photo"
+            ? data.mediaUrl
+            : data.workType
+              ? null
+              : undefined,
+        videoLink:
+          normalizedWorkType === "video"
+            ? data.videoLink
+            : data.workType
+              ? null
+              : undefined,
         category: data.category,
         subject: data.subject,
         statusPersetujuan: "PENDING",

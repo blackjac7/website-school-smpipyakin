@@ -9,7 +9,9 @@ import { getAuthenticatedUser } from "@/lib/auth";
 const ActivitySchema = z.object({
   title: z.string().min(3, "Judul minimal 3 karakter"),
   description: z.string().min(10, "Deskripsi minimal 10 karakter"),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format tanggal tidak valid (YYYY-MM-DD)"),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Format tanggal tidak valid (YYYY-MM-DD)"),
   time: z.string().regex(/^\d{2}:\d{2}$/, "Format waktu tidak valid (HH:MM)"),
   location: z.string().min(3, "Lokasi wajib diisi"),
   budget: z.coerce.number().min(0, "Budget tidak boleh negatif"),
@@ -31,9 +33,9 @@ export async function getActivities() {
       orderBy: { createdAt: "desc" },
       include: {
         author: {
-          select: { username: true }
-        }
-      }
+          select: { username: true },
+        },
+      },
     });
 
     return { success: true, data: activities };
@@ -113,7 +115,10 @@ export async function updateActivity(prevState: unknown, formData: FormData) {
   // Usually only pending can be edited? Or always?
   // Let's allow edit if PENDING or if User is Admin.
   if (existing.status !== "PENDING" && user.role !== "admin") {
-      return { success: false, error: "Hanya kegiatan status PENDING yang dapat diubah" };
+    return {
+      success: false,
+      error: "Hanya kegiatan status PENDING yang dapat diubah",
+    };
   }
 
   const rawData = {
@@ -153,23 +158,23 @@ export async function updateActivity(prevState: unknown, formData: FormData) {
 }
 
 export async function deleteActivity(id: string) {
-    const user = await getAuthenticatedUser();
-    if (!user) return { success: false, error: "Unauthorized" };
+  const user = await getAuthenticatedUser();
+  if (!user) return { success: false, error: "Unauthorized" };
 
-    const existing = await prisma.osisActivity.findUnique({ where: { id } });
-    if (!existing) return { success: false, error: "Not found" };
+  const existing = await prisma.osisActivity.findUnique({ where: { id } });
+  if (!existing) return { success: false, error: "Not found" };
 
-    if (existing.status !== "PENDING" && user.role !== "admin") {
-        return { success: false, error: "Cannot delete processed activity" };
-    }
+  if (existing.status !== "PENDING" && user.role !== "admin") {
+    return { success: false, error: "Cannot delete processed activity" };
+  }
 
-    try {
-        await prisma.osisActivity.delete({ where: { id } });
-        revalidatePath("/dashboard-osis");
-        return { success: true, message: "Kegiatan dihapus" };
-    } catch (error) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _ = error;
-        return { success: false, error: "Gagal menghapus" };
-    }
+  try {
+    await prisma.osisActivity.delete({ where: { id } });
+    revalidatePath("/dashboard-osis");
+    return { success: true, message: "Kegiatan dihapus" };
+  } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _ = error;
+    return { success: false, error: "Gagal menghapus" };
+  }
 }

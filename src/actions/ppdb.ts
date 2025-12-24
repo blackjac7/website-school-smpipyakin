@@ -151,9 +151,9 @@ export async function updateApplicantStatus(
   try {
     await prisma.pPDBApplication.update({
       where: { id: validation.data.id },
-      data: { 
-        status: validation.data.status, 
-        feedback: validation.data.feedback 
+      data: {
+        status: validation.data.status,
+        feedback: validation.data.feedback,
       },
     });
     revalidatePath("/dashboard-ppdb");
