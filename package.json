@@ -21,7 +21,11 @@
     "test:public": "playwright test tests/public-pages.spec.ts",
     "test:auth": "playwright test tests/auth.spec.ts",
     "test:siswa": "playwright test tests/dashboard-siswa.spec.ts",
-    "test:ppdb": "playwright test tests/dashboard-ppdb.spec.ts"
+    "test:ppdb": "playwright test tests/dashboard-ppdb.spec.ts",
+    "test:admin": "playwright test tests/dashboard-admin.spec.ts",
+    "test:kesiswaan": "playwright test tests/dashboard-kesiswaan.spec.ts",
+    "test:osis": "playwright test tests/dashboard-osis.spec.ts",
+    "test:dashboards": "playwright test tests/dashboard-*.spec.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.956.0",
