@@ -193,9 +193,9 @@ export default function ValidationContent({
   return (
     <div className="space-y-6">
       {/* Header Info */}
-      <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-200">
+      <div className="bg-linear-to-r from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-200">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-linear-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
             <FileText className="w-4 h-4 text-white" />
           </div>
           <h3 className="text-lg font-bold text-gray-900">
@@ -268,7 +268,7 @@ export default function ValidationContent({
 
             <button
               onClick={onExportData}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all duration-200"
+              className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all duration-200"
             >
               <Download className="w-4 h-4" />
               Export Data

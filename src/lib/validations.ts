@@ -186,7 +186,7 @@ export const ppdbRegistrationSchema = z.object({
   fullName: z.string().min(3, "Nama lengkap minimal 3 karakter").max(100),
   birthPlace: z.string().min(2, "Tempat lahir minimal 2 karakter").max(100),
   birthDate: z.coerce.date(),
-  gender: z.enum(["L", "P"], { required_error: "Jenis kelamin wajib dipilih" }),
+  gender: z.enum(["L", "P"], { message: "Jenis kelamin wajib dipilih" }),
   religion: z.string().min(1, "Agama wajib diisi"),
   nisn: z
     .string()

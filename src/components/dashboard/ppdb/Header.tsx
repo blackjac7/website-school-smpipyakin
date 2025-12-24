@@ -80,7 +80,7 @@ export default function Header({
           {onToggleSidebar && (
             <button
               onClick={onToggleSidebar}
-              className="lg:hidden p-2 rounded-xl hover:bg-amber-50 transition-all duration-200 cursor-pointer group flex-shrink-0"
+              className="lg:hidden p-2 rounded-xl hover:bg-amber-50 transition-all duration-200 cursor-pointer group shrink-0"
               aria-label="Toggle sidebar"
             >
               <Menu className="w-5 h-5 text-gray-600 group-hover:text-amber-600 transition-colors" />
@@ -93,7 +93,7 @@ export default function Header({
             transition={{ duration: 0.2 }}
             className="flex items-center gap-3 min-w-0"
           >
-            <div className="hidden sm:flex p-2.5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl shadow-lg shadow-amber-200 flex-shrink-0">
+            <div className="hidden sm:flex p-2.5 bg-linear-to-br from-amber-400 to-orange-500 rounded-xl shadow-lg shadow-amber-200 shrink-0">
               <headerInfo.icon className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
@@ -129,7 +129,7 @@ export default function Header({
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     exit={{ scale: 0 }}
-                    className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-rose-500 text-white text-xs font-medium rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 shadow-lg"
+                    className="absolute -top-1 -right-1 bg-linear-to-r from-red-500 to-rose-500 text-white text-xs font-medium rounded-full min-w-5 h-5 flex items-center justify-center px-1 shadow-lg"
                   >
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </motion.span>
@@ -147,7 +147,7 @@ export default function Header({
                   transition={{ duration: 0.2 }}
                   className="absolute right-0 mt-2 w-[90vw] sm:w-80 max-w-sm bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden"
                 >
-                  <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-amber-50 to-orange-50">
+                  <div className="p-4 border-b border-gray-100 bg-linear-to-r from-amber-50 to-orange-50">
                     <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                       <Bell className="w-4 h-4 text-amber-600" />
                       Notifikasi
@@ -173,7 +173,7 @@ export default function Header({
                         >
                           <div className="flex items-start gap-3">
                             <notification.icon
-                              className={`w-4 h-4 ${notification.color} mt-1 flex-shrink-0`}
+                              className={`w-4 h-4 ${notification.color} mt-1 shrink-0`}
                             />
                             <div className="flex-1 min-w-0">
                               <p
@@ -189,7 +189,7 @@ export default function Header({
                               </p>
                             </div>
                             {!notification.read && (
-                              <div className="w-2.5 h-2.5 bg-amber-500 rounded-full mt-1.5 flex-shrink-0 ring-4 ring-amber-100"></div>
+                              <div className="w-2.5 h-2.5 bg-amber-500 rounded-full mt-1.5 shrink-0 ring-4 ring-amber-100"></div>
                             )}
                           </div>
                         </motion.div>
@@ -229,7 +229,7 @@ export default function Header({
             variant="profile"
             userName={user?.name || user?.username || "PPDB Officer"}
             userRole="Officer PPDB"
-            className="flex-shrink-0"
+            className="shrink-0"
             // Mobile notifications props
             notifications={notifications}
             unreadCount={unreadCount}

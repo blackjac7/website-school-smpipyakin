@@ -81,7 +81,7 @@ export default function Header({
             </button>
           )}
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex w-10 h-10 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl items-center justify-center shadow-sm">
+            <div className="hidden sm:flex w-10 h-10 bg-linear-to-br from-purple-500 to-violet-600 rounded-xl items-center justify-center shadow-sm">
               <headerInfo.icon className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -151,7 +151,7 @@ export default function Header({
                         >
                           <div className="flex items-start gap-3">
                             <div
-                              className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                              className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
                                 notification.type === "success"
                                   ? "bg-green-500"
                                   : notification.type === "pending"

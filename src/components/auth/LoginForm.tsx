@@ -171,7 +171,7 @@ const LoginForm = () => {
         transition={{ duration: 0.5 }}
         className="w-full bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-white/20 dark:border-gray-700/50"
       >
-        <div className="flex flex-col md:flex-row min-h-[600px]">
+        <div className="flex flex-col md:flex-row min-h-150">
           {/* Kolom Kiri: Form Login */}
           <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center relative z-10">
             <LoginHeader />

@@ -94,7 +94,7 @@ export default function StudentHeader({
             transition={{ duration: 0.2 }}
             className="flex items-center gap-3"
           >
-            <div className="hidden sm:flex p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-200">
+            <div className="hidden sm:flex p-2.5 bg-linear-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-200">
               <HeaderIcon className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -135,7 +135,7 @@ export default function StudentHeader({
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     exit={{ scale: 0 }}
-                    className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-rose-500 text-white text-xs font-medium rounded-full min-w-5 h-5 flex items-center justify-center px-1 shadow-lg"
+                    className="absolute -top-1 -right-1 bg-linear-to-r from-red-500 to-rose-500 text-white text-xs font-medium rounded-full min-w-5 h-5 flex items-center justify-center px-1 shadow-lg"
                   >
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </motion.span>
@@ -153,7 +153,7 @@ export default function StudentHeader({
                   transition={{ duration: 0.2 }}
                   className="absolute right-0 mt-2 w-[90vw] sm:w-80 max-w-sm bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden"
                 >
-                  <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+                  <div className="p-4 border-b border-gray-100 bg-linear-to-r from-blue-50 to-indigo-50">
                     <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                       <Bell className="w-4 h-4 text-blue-600" />
                       Notifikasi

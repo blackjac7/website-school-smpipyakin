@@ -83,7 +83,7 @@ export default function ValidationContentEnhanced({
         page: currentPage,
         limit: ITEMS_PER_PAGE,
         status: statusFilter,
-        search: debouncedSearchTerm
+        search: debouncedSearchTerm,
       });
 
       if (result.success && result.data) {
@@ -151,9 +151,9 @@ export default function ValidationContentEnhanced({
         <div className="h-40 bg-gray-200 rounded-xl"></div>
         <div className="h-20 bg-gray-200 rounded-xl"></div>
         <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-gray-200 rounded-xl"></div>
-            ))}
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-16 bg-gray-200 rounded-xl"></div>
+          ))}
         </div>
       </div>
     );
@@ -162,15 +162,13 @@ export default function ValidationContentEnhanced({
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] rounded-2xl p-6 text-white shadow-lg">
+      <div className="bg-linear-to-r from-[#1E3A8A] to-[#2563EB] rounded-2xl p-6 text-white shadow-lg">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
             <Users className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">
-              Validasi Pendaftar
-            </h2>
+            <h2 className="text-2xl font-bold">Validasi Pendaftar</h2>
             <p className="text-blue-100 opacity-90">
               Kelola data dan status penerimaan calon siswa
             </p>
@@ -194,7 +192,7 @@ export default function ValidationContentEnhanced({
           </div>
 
           {/* Status Filter */}
-          <div className="relative min-w-[180px]">
+          <div className="relative min-w-45">
             <Filter className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
             <select
               className="w-full pl-10 pr-8 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer"
@@ -207,7 +205,19 @@ export default function ValidationContentEnhanced({
               <option value="REJECTED">Ditolak</option>
             </select>
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400">
-               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"
+                ></path>
+              </svg>
             </div>
           </div>
 
@@ -215,8 +225,17 @@ export default function ValidationContentEnhanced({
           <button
             onClick={() => {
               // Generate CSV from current data
-              const headers = ["Nama", "NISN", "Gender", "Asal Sekolah", "Ortu", "Kontak", "Status", "Tanggal Daftar"];
-              const rows = applicants.map(app => [
+              const headers = [
+                "Nama",
+                "NISN",
+                "Gender",
+                "Asal Sekolah",
+                "Ortu",
+                "Kontak",
+                "Status",
+                "Tanggal Daftar",
+              ];
+              const rows = applicants.map((app) => [
                 `"${app.name}"`,
                 `"${app.nisn}"`,
                 app.gender || "-",
@@ -224,15 +243,23 @@ export default function ValidationContentEnhanced({
                 `"${app.parentName || "-"}"`,
                 `"${app.parentContact || "-"}"`,
                 app.status,
-                new Date(app.createdAt).toLocaleDateString("id-ID")
+                new Date(app.createdAt).toLocaleDateString("id-ID"),
               ]);
 
-              const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-              const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+              const csvContent = [
+                headers.join(","),
+                ...rows.map((r) => r.join(",")),
+              ].join("\n");
+              const blob = new Blob([csvContent], {
+                type: "text/csv;charset=utf-8;",
+              });
               const url = window.URL.createObjectURL(blob);
               const link = document.createElement("a");
               link.setAttribute("href", url);
-              link.setAttribute("download", `data_pendaftar_ppdb_${new Date().toISOString().split('T')[0]}.csv`);
+              link.setAttribute(
+                "download",
+                `data_pendaftar_ppdb_${new Date().toISOString().split("T")[0]}.csv`
+              );
               document.body.appendChild(link);
               link.click();
               document.body.removeChild(link);
@@ -279,8 +306,8 @@ export default function ValidationContentEnhanced({
                   {/* Student Info */}
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm">
-                         {applicant.name.charAt(0)}
+                      <div className="w-10 h-10 bg-linear-to-br from-blue-100 to-indigo-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm">
+                        {applicant.name.charAt(0)}
                       </div>
                       <div>
                         <div className="font-semibold text-gray-900">
@@ -290,7 +317,9 @@ export default function ValidationContentEnhanced({
                           <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 font-mono">
                             {applicant.nisn}
                           </span>
-                          <span>• {applicant.gender === "LAKI_LAKI" ? "L" : "P"}</span>
+                          <span>
+                            • {applicant.gender === "LAKI_LAKI" ? "L" : "P"}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -358,7 +387,9 @@ export default function ValidationContentEnhanced({
                 Sebelumnya
               </button>
               <button
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                onClick={() =>
+                  setCurrentPage(Math.min(totalPages, currentPage + 1))
+                }
                 disabled={currentPage === totalPages}
                 className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-gray-50 transition-colors"
               >
