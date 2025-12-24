@@ -1,0 +1,27 @@
+# Robots.txt for SMP IP Yakin Jakarta
+# https://www.smpipyakin.sch.id
+
+User-agent: *
+Allow: /
+Disallow: /dashboard-admin
+Disallow: /dashboard-kesiswaan
+Disallow: /dashboard-osis
+Disallow: /dashboard-ppdb
+Disallow: /dashboard-siswa
+Disallow: /api
+Disallow: /login
+Disallow: /unauthorized
+
+# Crawl delay for all bots
+Crawl-delay: 1
+
+# Google bot specific rules
+User-agent: Googlebot
+Allow: /
+
+# Bing bot specific rules
+User-agent: Bingbot
+Allow: /
+
+# Sitemap location
+Sitemap: https://www.smpipyakin.sch.id/sitemap.xml
