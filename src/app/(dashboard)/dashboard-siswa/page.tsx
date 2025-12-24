@@ -316,7 +316,9 @@ function SiswaDashboardContent() {
         if (result.error === "Limit reached") {
           toast.error(result.message || "Limit tercapai");
         } else {
-          toast.error(result.error || "Gagal mengunggah prestasi. Silakan coba lagi.");
+          toast.error(
+            result.error || "Gagal mengunggah prestasi. Silakan coba lagi."
+          );
         }
       }
     } catch (error) {

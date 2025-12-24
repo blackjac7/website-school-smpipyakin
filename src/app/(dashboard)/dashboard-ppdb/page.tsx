@@ -119,7 +119,11 @@ function PPDBDashboard() {
     feedback: string
   ) => {
     try {
-      const result = await updateApplicantStatus(id, status as PPDBStatus, feedback);
+      const result = await updateApplicantStatus(
+        id,
+        status as PPDBStatus,
+        feedback
+      );
 
       if (result.success) {
         toast.success(
