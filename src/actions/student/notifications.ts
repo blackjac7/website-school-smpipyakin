@@ -71,7 +71,11 @@ export async function getNotifications(params?: {
     // Validate input
     const validation = GetNotificationsSchema.safeParse(params || {});
     if (!validation.success) {
-      return { success: false, data: [], error: validation.error.issues[0].message };
+      return {
+        success: false,
+        data: [],
+        error: validation.error.issues[0].message,
+      };
     }
 
     const { limit, page, unreadOnly } = validation.data;
@@ -171,7 +175,10 @@ export async function markAllNotificationsAsRead(): Promise<{
     return { success: true };
   } catch (error) {
     console.error("markAllNotificationsAsRead error:", error);
-    return { success: false, error: "Failed to mark all notifications as read" };
+    return {
+      success: false,
+      error: "Failed to mark all notifications as read",
+    };
   }
 }
 

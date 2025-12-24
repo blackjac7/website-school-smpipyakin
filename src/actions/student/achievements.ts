@@ -7,8 +7,15 @@ import { revalidatePath } from "next/cache";
 
 // Validation schemas
 const CreateAchievementSchema = z.object({
-  title: z.string().min(3, "Judul minimal 3 karakter").max(100, "Judul maksimal 100 karakter"),
-  description: z.string().max(500, "Deskripsi maksimal 500 karakter").optional().default(""),
+  title: z
+    .string()
+    .min(3, "Judul minimal 3 karakter")
+    .max(100, "Judul maksimal 100 karakter"),
+  description: z
+    .string()
+    .max(500, "Deskripsi maksimal 500 karakter")
+    .optional()
+    .default(""),
   category: z.string().min(1, "Kategori wajib dipilih"),
   level: z.string().min(1, "Tingkat wajib dipilih"),
   achievementDate: z.string().optional(),
@@ -39,7 +46,10 @@ export type AchievementInput = z.infer<typeof CreateAchievementSchema>;
 async function verifyStudentRole() {
   const user = await getAuthenticatedUser();
   if (!user || user.role !== "siswa") {
-    return { authorized: false, error: "Unauthorized: Student access required" };
+    return {
+      authorized: false,
+      error: "Unauthorized: Student access required",
+    };
   }
   return { authorized: true, user };
 }
@@ -83,17 +93,19 @@ export async function getStudentAchievements(): Promise<{
       orderBy: { createdAt: "desc" },
     });
 
-    const formattedAchievements: AchievementData[] = achievements.map((achievement) => ({
-      id: achievement.id,
-      title: achievement.title,
-      description: achievement.description || "",
-      image: achievement.image || "",
-      status: achievement.statusPersetujuan.toLowerCase(),
-      category: achievement.category || "",
-      level: achievement.level || "",
-      date: formatAchievementDate(achievement.achievementDate),
-      createdAt: achievement.createdAt.toISOString(),
-    }));
+    const formattedAchievements: AchievementData[] = achievements.map(
+      (achievement) => ({
+        id: achievement.id,
+        title: achievement.title,
+        description: achievement.description || "",
+        image: achievement.image || "",
+        status: achievement.statusPersetujuan.toLowerCase(),
+        category: achievement.category || "",
+        level: achievement.level || "",
+        date: formatAchievementDate(achievement.achievementDate),
+        createdAt: achievement.createdAt.toISOString(),
+      })
+    );
 
     return { success: true, data: formattedAchievements };
   } catch (error) {
@@ -144,11 +156,13 @@ export async function createAchievement(data: AchievementInput): Promise<{
       return {
         success: false,
         error: "Limit reached",
-        message: "Anda sudah memiliki 2 prestasi yang sedang menunggu persetujuan. Silakan tunggu hingga ada yang disetujui atau ditolak sebelum mengunggah prestasi baru.",
+        message:
+          "Anda sudah memiliki 2 prestasi yang sedang menunggu persetujuan. Silakan tunggu hingga ada yang disetujui atau ditolak sebelum mengunggah prestasi baru.",
       };
     }
 
-    const { title, description, category, level, achievementDate, image } = validation.data;
+    const { title, description, category, level, achievementDate, image } =
+      validation.data;
 
     const achievement = await prisma.studentAchievement.create({
       data: {
@@ -186,7 +200,9 @@ export async function createAchievement(data: AchievementInput): Promise<{
 /**
  * Update achievement
  */
-export async function updateAchievement(data: z.infer<typeof UpdateAchievementSchema>): Promise<{
+export async function updateAchievement(
+  data: z.infer<typeof UpdateAchievementSchema>
+): Promise<{
   success: boolean;
   data?: AchievementData;
   error?: string;
@@ -228,7 +244,8 @@ export async function updateAchievement(data: z.infer<typeof UpdateAchievementSc
       return { success: false, error: "Cannot modify approved achievements" };
     }
 
-    const { id, title, description, category, level, achievementDate, image } = validation.data;
+    const { id, title, description, category, level, achievementDate, image } =
+      validation.data;
 
     const updatedAchievement = await prisma.studentAchievement.update({
       where: { id },

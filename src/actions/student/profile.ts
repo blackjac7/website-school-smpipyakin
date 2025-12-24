@@ -42,7 +42,10 @@ export type ProfileData = {
 async function verifyStudentRole() {
   const user = await getAuthenticatedUser();
   if (!user || user.role !== "siswa") {
-    return { authorized: false, error: "Unauthorized: Student access required" };
+    return {
+      authorized: false,
+      error: "Unauthorized: Student access required",
+    };
   }
   return { authorized: true, user };
 }
