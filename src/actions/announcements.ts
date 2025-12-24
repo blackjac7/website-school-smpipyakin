@@ -1,9 +1,21 @@
 "use server";
 
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { Announcement, PriorityLevel } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedUser } from "@/lib/auth";
+
+// Validation schemas
+const CreateAnnouncementSchema = z.object({
+  title: z.string().min(5, "Judul minimal 5 karakter").max(200, "Judul maksimal 200 karakter"),
+  content: z.string().min(10, "Konten minimal 10 karakter"),
+  date: z.coerce.date(),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH"]),
+  author: z.string().optional(),
+});
+
+const IdSchema = z.string().uuid("Invalid announcement ID");
 
 // Helper to verify admin role
 async function verifyAdminRole() {
@@ -44,15 +56,21 @@ export async function createAnnouncement(data: {
   content: string;
   date: Date;
   priority: PriorityLevel;
-  author?: string; // Optional since schema doesn't use it
+  author?: string;
 }) {
   const auth = await verifyAdminRole();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
+  // Validate input
+  const validation = CreateAnnouncementSchema.safeParse(data);
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message };
+  }
+
   try {
-    const { title, content, date, priority } = data;
+    const { title, content, date, priority } = validation.data;
 
     const announcement = await prisma.announcement.create({
       data: {
@@ -81,9 +99,15 @@ export async function updateAnnouncement(
     return { success: false, error: auth.error };
   }
 
+  // Validate ID
+  const idValidation = IdSchema.safeParse(id);
+  if (!idValidation.success) {
+    return { success: false, error: idValidation.error.issues[0].message };
+  }
+
   try {
     const announcement = await prisma.announcement.update({
-      where: { id },
+      where: { id: idValidation.data },
       data,
     });
     revalidatePath("/announcements");
@@ -102,9 +126,15 @@ export async function deleteAnnouncement(id: string) {
     return { success: false, error: auth.error };
   }
 
+  // Validate ID
+  const idValidation = IdSchema.safeParse(id);
+  if (!idValidation.success) {
+    return { success: false, error: idValidation.error.issues[0].message };
+  }
+
   try {
     await prisma.announcement.delete({
-      where: { id },
+      where: { id: idValidation.data },
     });
     revalidatePath("/announcements");
     revalidatePath("/");
