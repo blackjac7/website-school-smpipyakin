@@ -112,9 +112,9 @@ export default function DashboardOverview() {
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-200">
+      <div className="bg-linear-to-r from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-200">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-linear-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
             <BarChart3 className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -166,7 +166,7 @@ export default function DashboardOverview() {
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-linear-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
                 <FileText className="w-4 h-4 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900">
@@ -211,7 +211,7 @@ export default function DashboardOverview() {
           {/* Gender Distribution */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-linear-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-4 h-4 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900">
@@ -242,7 +242,7 @@ export default function DashboardOverview() {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className="bg-gradient-to-r from-purple-400 to-purple-600 h-2 rounded-full transition-all duration-500"
+                        className="bg-linear-to-r from-purple-400 to-purple-600 h-2 rounded-full transition-all duration-500"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -316,7 +316,7 @@ function StatCard({
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-4">
         <div
-          className={`w-10 h-10 bg-gradient-to-br ${colorClasses[color].split(" ")[0]} ${colorClasses[color].split(" ")[1]} rounded-lg flex items-center justify-center`}
+          className={`w-10 h-10 bg-linear-to-br ${colorClasses[color].split(" ")[0]} ${colorClasses[color].split(" ")[1]} rounded-lg flex items-center justify-center`}
         >
           <Icon className="w-5 h-5 text-white" />
         </div>

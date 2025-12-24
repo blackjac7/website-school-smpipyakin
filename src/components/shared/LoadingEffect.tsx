@@ -45,7 +45,7 @@ const LoadingEffect = memo(
             ) : (
               /* Fallback for Server Side Rendering (SSR) and initial Client load */
               /* Prevents white screen flash */
-              <div className="w-1/2 h-1/2 border-4 border-gray-100 dark:border-gray-700 border-t-[var(--color-school-yellow)] rounded-full animate-spin" />
+              <div className="w-1/2 h-1/2 border-4 border-gray-100 dark:border-gray-700 border-t-(--color-school-yellow) rounded-full animate-spin" />
             )}
           </div>
 

@@ -19,7 +19,7 @@ export default function PageHeader({
   image,
 }: PageHeaderProps) {
   return (
-    <div className="relative w-full h-[300px] md:h-[400px] flex items-center justify-center overflow-hidden">
+    <div className="relative w-full h-75 md:h-100 flex items-center justify-center overflow-hidden">
       {/* Background Image/Overlay */}
       <div className="absolute inset-0 z-0">
         {image ? (
@@ -28,7 +28,7 @@ export default function PageHeader({
             style={{ backgroundImage: `url(${image})` }}
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-blue-900 to-blue-700" />
+          <div className="w-full h-full bg-linear-to-br from-blue-900 to-blue-700" />
         )}
         <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
 

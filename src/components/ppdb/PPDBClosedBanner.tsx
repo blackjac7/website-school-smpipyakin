@@ -148,9 +148,9 @@ export default async function PPDBClosedBanner({
     >
       <div className="flex items-start gap-3">
         {isQuotaFull ? (
-          <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+          <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
         ) : (
-          <Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+          <Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 shrink-0" />
         )}
         <div>
           <p

@@ -138,7 +138,7 @@ const ContactForm = () => {
         {/* Success Message */}
         {submitStatus === "success" && (
           <div className="p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg flex items-center h-full">
-            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mr-2 flex-shrink-0" />
+            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mr-2 shrink-0" />
             <span className="text-green-800 dark:text-green-300 text-sm">
               Pesan berhasil dikirim! Kami akan membalas dalam 1x24 jam.
             </span>
@@ -148,7 +148,7 @@ const ContactForm = () => {
         {/* Error Message */}
         {submitStatus === "error" && errorMessage && (
           <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg flex items-center h-full">
-            <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mr-2 flex-shrink-0" />
+            <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mr-2 shrink-0" />
             <span className="text-red-800 dark:text-red-300 text-sm">
               {errorMessage}
             </span>
@@ -158,7 +158,7 @@ const ContactForm = () => {
         {/* Default Guide Message */}
         {submitStatus === "idle" && (
           <div className="p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg flex items-center h-full">
-            <Send className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2 flex-shrink-0" />
+            <Send className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2 shrink-0" />
             <span className="text-blue-800 dark:text-blue-300 text-sm">
               Silakan isi formulir di bawah ini untuk menghubungi kami. Semua
               field bertanda (*) wajib diisi.

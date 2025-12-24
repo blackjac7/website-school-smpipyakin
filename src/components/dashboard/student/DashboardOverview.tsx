@@ -192,7 +192,7 @@ export default function DashboardOverview({
         <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-6">
             <div className="relative group">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-amber-500 rounded-full opacity-75 group-hover:opacity-100 transition duration-300 blur-sm" />
+              <div className="absolute -inset-0.5 bg-linear-to-r from-blue-600 to-amber-500 rounded-full opacity-75 group-hover:opacity-100 transition duration-300 blur-sm" />
               <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-white bg-gray-100">
                 {profileData.profileImage ? (
                   <Image
@@ -390,7 +390,7 @@ export default function DashboardOverview({
                   >
                     <div
                       className={`
-                      w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5
+                      w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5
                       ${activity.type === "achievement" ? "bg-blue-100 text-blue-600" : "bg-amber-100 text-amber-600"}
                     `}
                     >
@@ -461,7 +461,7 @@ export default function DashboardOverview({
                 <p className="text-sm font-medium text-gray-900">
                   Belum ada aktivitas
                 </p>
-                <p className="text-xs text-gray-500 mt-1 max-w-[200px]">
+                <p className="text-xs text-gray-500 mt-1 max-w-50">
                   Mulai upload prestasi atau karyamu untuk melihat riwayat
                   aktivitas di sini.
                 </p>

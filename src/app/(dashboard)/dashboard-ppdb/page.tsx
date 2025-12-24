@@ -155,7 +155,7 @@ function PPDBDashboard() {
     "https://ui-avatars.com/api/?name=PPDB&background=F59E0B&color=fff&size=128&bold=true";
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-amber-50">
+    <div className="flex h-screen bg-linear-to-br from-gray-50 to-amber-50">
       <DashboardSidebar
         menuItems={menuItems}
         activeMenu={activeMenu}

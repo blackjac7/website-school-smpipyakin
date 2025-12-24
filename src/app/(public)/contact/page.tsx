@@ -87,7 +87,7 @@ export default function ContactPage() {
               className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-gray-900/50 p-6 sm:p-8 border border-gray-100 dark:border-gray-700 overflow-hidden relative h-fit"
             >
               {/* Decorative Background Blob */}
-              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-yellow-100/50 to-orange-100/30 dark:from-yellow-900/20 dark:to-orange-900/10 rounded-bl-full -mr-10 -mt-10 z-0"></div>
+              <div className="absolute top-0 right-0 w-40 h-40 bg-linear-to-br from-yellow-100/50 to-orange-100/30 dark:from-yellow-900/20 dark:to-orange-900/10 rounded-bl-full -mr-10 -mt-10 z-0"></div>
 
               <div className="relative z-10">
                 <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-white flex items-center gap-3">
@@ -200,9 +200,9 @@ export default function ContactPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-gray-900/50 p-2 border border-gray-100 dark:border-gray-700 flex-grow min-h-[300px] flex flex-col"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-gray-900/50 p-2 border border-gray-100 dark:border-gray-700 grow min-h-75 flex flex-col"
             >
-              <div className="rounded-xl overflow-hidden w-full h-full relative flex-grow bg-gray-100 dark:bg-gray-700 group">
+              <div className="rounded-xl overflow-hidden w-full h-full relative grow bg-gray-100 dark:bg-gray-700 group">
                 <iframe
                   src="https://www.google.com/maps/embed/v1/place?q=smp+ip+yakin&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
                   width="100%"
@@ -212,7 +212,7 @@ export default function ContactPage() {
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                   title="Peta Lokasi SMP IP Yakin Jakarta"
-                  className="w-full h-full grayscale-[50%] group-hover:grayscale-0 transition-all duration-700 ease-in-out"
+                  className="w-full h-full grayscale-50 group-hover:grayscale-0 transition-all duration-700 ease-in-out"
                 ></iframe>
                 <div className="absolute top-3 left-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm text-xs font-semibold text-gray-700 dark:text-gray-200 pointer-events-none border border-white/50 dark:border-gray-600/50">
                   📍 Lokasi Sekolah
@@ -242,7 +242,7 @@ export default function ContactPage() {
                 </p>
               </div>
 
-              <div className="relative z-10 flex-grow">
+              <div className="relative z-10 grow">
                 <ContactForm />
               </div>
             </div>
