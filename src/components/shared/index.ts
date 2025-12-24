@@ -19,6 +19,20 @@ export { ThemeToggle } from "./ThemeToggle";
 // Error handling
 export { ErrorBoundary, withErrorBoundary } from "./ErrorBoundary";
 
+// Accessibility components
+export {
+  SkipLink,
+  VisuallyHidden,
+  FocusTrap,
+  LiveRegion,
+  AccessibleIcon,
+  LoadingSpinner,
+  Heading,
+  useReducedMotion,
+  useFocusReturn,
+  useAnnouncer,
+} from "./Accessibility";
+
 // UI State components
 export { default as EmptyState, EmptyStateCompact } from "./EmptyState";
 export {
