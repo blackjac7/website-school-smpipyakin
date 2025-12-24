@@ -54,6 +54,7 @@ Built with modern web technologies and industry best practices, this system prio
 - **Progressive Web App (PWA)** - Installable and offline-capable
 - **Image Optimization** - Cloudinary CDN integration
 - **Responsive Design** - Mobile-first architecture
+- **SEO Optimized** - Sitemap, robots.txt, structured data
 
 ---
 
@@ -178,6 +179,7 @@ CRON_SECRET="your-cron-secret"
 | ------------------------- | ------------------------------- |
 | `npm run dev`             | Start development server        |
 | `npm run build`           | Build for production            |
+| `npm run postbuild`       | Generate sitemap after build    |
 | `npm run start`           | Start production server         |
 | `npm run lint`            | Run ESLint                      |
 | `npm run db:generate`     | Generate Prisma Client          |
@@ -189,6 +191,7 @@ CRON_SECRET="your-cron-secret"
 | `npm run test:auth`       | Run authentication tests        |
 | `npm run test:public`     | Run public pages tests          |
 | `npm run test:dashboards` | Run dashboard tests             |
+| `npm run test:coverage`   | Run tests with coverage report  |
 
 ---
 
