@@ -100,12 +100,33 @@ Vercel should auto-detect these, but verify:
 Add all required environment variables in Vercel dashboard:
 
 ```
+# Database
 DATABASE_URL=your-pooled-database-url
+
+# Authentication
 JWT_SECRET=your-jwt-secret
 CRON_SECRET=your-cron-secret
+
+# Cloudinary (Images)
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
 CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret
+
+# Cloudflare R2 (Files)
+R2_ACCOUNT_ID=your-account-id
+R2_ACCESS_KEY_ID=your-access-key-id
+R2_SECRET_ACCESS_KEY=your-secret-access-key
+R2_BUCKET_NAME=your-bucket-name
+R2_PUBLIC_URL=https://your-bucket.r2.dev
+
+# EmailJS (Optional)
+NEXT_PUBLIC_EMAILJS_SERVICE_ID=your-service-id
+NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=your-template-id
+NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=your-public-key
+
+# Flowise AI Chatbot (Optional)
+NEXT_PUBLIC_FLOWISE_API_URL=your-flowise-url
+NEXT_PUBLIC_FLOWISE_CHATFLOW_ID=your-chatflow-id
 ```
 
 ### Step 4: Deploy
@@ -132,6 +153,16 @@ Click "Deploy" and wait for the build to complete.
 | `CLOUDINARY_API_KEY`                | API key         |
 | `CLOUDINARY_API_SECRET`             | API secret      |
 
+### Cloudflare R2 Variables
+
+| Variable                | Description                      |
+| ----------------------- | -------------------------------- |
+| `R2_ACCOUNT_ID`         | Cloudflare account ID            |
+| `R2_ACCESS_KEY_ID`      | R2 API access key ID             |
+| `R2_SECRET_ACCESS_KEY`  | R2 API secret access key         |
+| `R2_BUCKET_NAME`        | R2 bucket name                   |
+| `R2_PUBLIC_URL`         | Public URL for R2 bucket (if enabled) |
+
 ### EmailJS Variables (Optional)
 
 | Variable                          | Description        |
@@ -139,6 +170,13 @@ Click "Deploy" and wait for the build to complete.
 | `NEXT_PUBLIC_EMAILJS_SERVICE_ID`  | EmailJS service ID |
 | `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` | Email template ID  |
 | `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY`  | Public key         |
+
+### Flowise Variables (Optional)
+
+| Variable                           | Description                |
+| ---------------------------------- | -------------------------- |
+| `NEXT_PUBLIC_FLOWISE_API_URL`      | Flowise API endpoint URL   |
+| `NEXT_PUBLIC_FLOWISE_CHATFLOW_ID`  | Chatflow ID for the widget |
 
 ### Generating Secure Secrets
 
