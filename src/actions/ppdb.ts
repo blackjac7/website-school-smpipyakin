@@ -6,6 +6,9 @@ import { revalidatePath } from "next/cache";
 import { PPDBStatus, Prisma } from "@prisma/client";
 import { getAuthenticatedUser } from "@/lib/auth";
 
+// Re-export PPDBStatus for use in components
+export type { PPDBStatus } from "@prisma/client";
+
 // Helper to verify PPDB access (admin or ppdb-officer)
 async function verifyPPDBAccess() {
   const user = await getAuthenticatedUser();

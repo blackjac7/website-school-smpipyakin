@@ -10,6 +10,7 @@ import {
   FileText,
   BarChart3,
 } from "lucide-react";
+import { getPPDBStats } from "@/actions/ppdb";
 
 interface PPDBStats {
   overview: {
@@ -19,8 +20,12 @@ interface PPDBStats {
     rejected: number;
   };
   monthlyStats: Array<{
-    status: string;
-    _count: { id: number };
+    name: string;
+    key: string;
+    Total: number;
+    Diterima: number;
+    Ditolak: number;
+    Pending: number;
   }>;
   recentApplications: Array<{
     id: string;
@@ -32,7 +37,7 @@ interface PPDBStats {
   }>;
   genderStats: Array<{
     gender: string | null;
-    _count: { id: number };
+    _count: number;
   }>;
 }
 
@@ -48,13 +53,12 @@ export default function DashboardOverview() {
   const fetchStatistics = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/ppdb/statistics");
-      const result = await response.json();
+      const result = await getPPDBStats();
 
-      if (result.success) {
+      if (result.success && result.data) {
         setStats(result.data);
       } else {
-        setError("Gagal memuat statistik");
+        setError(result.error || "Gagal memuat statistik");
       }
     } catch (error) {
       console.error("Error fetching statistics:", error);
@@ -225,7 +229,7 @@ export default function DashboardOverview() {
                       : "Tidak diketahui";
                 const percentage =
                   overview.total > 0
-                    ? Math.round((stat._count.id / overview.total) * 100)
+                    ? Math.round((stat._count / overview.total) * 100)
                     : 0;
 
                 return (
@@ -233,7 +237,7 @@ export default function DashboardOverview() {
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">{genderLabel}</span>
                       <span className="font-medium">
-                        {stat._count.id} ({percentage}%)
+                        {stat._count} ({percentage}%)
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
