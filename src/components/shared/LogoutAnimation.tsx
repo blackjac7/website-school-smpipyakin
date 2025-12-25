@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface LogoutAnimationProps {
   isVisible: boolean;
@@ -55,9 +55,7 @@ export default function LogoutAnimation({
 
           {/* Text Status */}
           <div className="space-y-2">
-            <h3 className="text-xl font-bold text-blue-900">
-              Sampai Jumpa!
-            </h3>
+            <h3 className="text-xl font-bold text-blue-900">Sampai Jumpa!</h3>
             <p className="text-gray-500 text-sm">
               Sedang mengakhiri sesi anda...
             </p>
