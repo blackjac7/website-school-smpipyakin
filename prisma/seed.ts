@@ -281,6 +281,9 @@ async function main() {
   });
 
   // Create sample PPDB applications
+  // Ensure idempotency by clearing previous sample applications
+  await prisma.pPDBApplication.deleteMany();
+
   await prisma.pPDBApplication.createMany({
     data: [
       {
