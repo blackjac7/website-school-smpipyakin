@@ -8,6 +8,8 @@ import { Announcement, PriorityLevel } from "@prisma/client";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 
 interface AnnouncementsPageProps {
   announcements: Announcement[];
@@ -17,6 +19,7 @@ export default function AnnouncementsAdmin({ announcements }: AnnouncementsPageP
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Announcement | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const confirmModal = useToastConfirm();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -54,13 +57,24 @@ export default function AnnouncementsAdmin({ announcements }: AnnouncementsPageP
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this announcement?")) return;
-    try {
-      await deleteAnnouncement(id);
-      toast.success("Announcement deleted");
-    } catch (error) {
-      toast.error("Failed to delete announcement");
-    }
+    confirmModal.showConfirm(
+      {
+        title: "Hapus Pengumuman",
+        message: "Apakah Anda yakin ingin menghapus pengumuman ini?",
+        description: "Tindakan ini tidak dapat dibatalkan.",
+        type: "danger",
+        confirmText: "Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
+        try {
+          await deleteAnnouncement(id);
+          toast.success("Announcement deleted");
+        } catch (error) {
+          toast.error("Failed to delete announcement");
+        }
+      }
+    );
   };
 
   return (
@@ -188,6 +202,15 @@ export default function AnnouncementsAdmin({ announcements }: AnnouncementsPageP
           </motion.div>
         </div>
       )}
+
+      {/* Toast Confirm Modal */}
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        isLoading={confirmModal.isLoading}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+        {...confirmModal.options}
+      />
     </div>
   );
 }

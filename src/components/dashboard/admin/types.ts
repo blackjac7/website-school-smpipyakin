@@ -12,13 +12,13 @@ export interface User {
 }
 
 export interface Notification {
-  id: number;
-  type: 'alert' | 'info' | 'success';
+  id: number | string;
+  type: string;
   title?: string; // Made optional to fit existing data
   icon?: unknown; // Made optional
   color?: string; // Made optional
   message: string;
-  detail: string;
+  detail?: string;
   time: string;
   read: boolean;
 }

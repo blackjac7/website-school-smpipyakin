@@ -7,6 +7,8 @@ import { createSchoolStat, updateSchoolStat, deleteSchoolStat } from "@/actions/
 import { SchoolStat } from "@prisma/client";
 import toast from "react-hot-toast";
 import * as LucideIcons from "lucide-react";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 
 interface StatsPageProps {
   stats: SchoolStat[];
@@ -16,6 +18,7 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStat, setEditingStat] = useState<SchoolStat | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const confirmModal = useToastConfirm();
 
   // Helper to render dynamic icon
   const renderIcon = (iconName: string) => {
@@ -53,13 +56,24 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this stat?")) return;
-    try {
-      await deleteSchoolStat(id);
-      toast.success("Stat deleted");
-    } catch (error) {
-      toast.error("Failed to delete stat");
-    }
+    confirmModal.showConfirm(
+      {
+        title: "Hapus Statistik",
+        message: "Apakah Anda yakin ingin menghapus data statistik ini?",
+        description: "Tindakan ini tidak dapat dibatalkan.",
+        type: "danger",
+        confirmText: "Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
+        try {
+          await deleteSchoolStat(id);
+          toast.success("Stat deleted");
+        } catch (error) {
+          toast.error("Failed to delete stat");
+        }
+      }
+    );
   };
 
   return (
@@ -139,6 +153,15 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
           </motion.div>
         </div>
       )}
+
+      {/* Toast Confirm Modal */}
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        isLoading={confirmModal.isLoading}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+        {...confirmModal.options}
+      />
     </div>
   );
 }

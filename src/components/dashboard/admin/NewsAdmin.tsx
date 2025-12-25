@@ -8,6 +8,8 @@ import { News } from "@prisma/client";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 
 interface NewsPageProps {
   news: News[];
@@ -17,6 +19,7 @@ export default function NewsAdmin({ news }: NewsPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<News | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const confirmModal = useToastConfirm();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -62,13 +65,24 @@ export default function NewsAdmin({ news }: NewsPageProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this news?")) return;
-    try {
-      await deleteNews(id);
-      toast.success("News deleted");
-    } catch (error) {
-      toast.error("Failed to delete news");
-    }
+    confirmModal.showConfirm(
+      {
+        title: "Hapus Berita",
+        message: "Apakah Anda yakin ingin menghapus berita ini?",
+        description: "Tindakan ini tidak dapat dibatalkan.",
+        type: "danger",
+        confirmText: "Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
+        try {
+          await deleteNews(id);
+          toast.success("News deleted");
+        } catch (error) {
+          toast.error("Failed to delete news");
+        }
+      }
+    );
   };
 
   return (
@@ -191,6 +205,15 @@ export default function NewsAdmin({ news }: NewsPageProps) {
           </motion.div>
         </div>
       )}
+
+      {/* Toast Confirm Modal */}
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        isLoading={confirmModal.isLoading}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+        {...confirmModal.options}
+      />
     </div>
   );
 }
