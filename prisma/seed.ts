@@ -52,7 +52,6 @@ async function main() {
     update: {},
     create: {
       username: "siswa001",
-      email: "siswa001@smpipyakin.sch.id",
       password: hashedPassword,
       role: "SISWA",
     },
@@ -70,7 +69,6 @@ async function main() {
       year: 2024,
       gender: "MALE",
       osisAccess: false,
-      email: "ahmadrizki@gmail.com",
       phone: "081234567890",
       address: "Jl. Merdeka No. 123, Jakarta Pusat",
       birthDate: new Date("2010-05-15"),
@@ -86,7 +84,6 @@ async function main() {
     update: {},
     create: {
       username: "osis001",
-      email: "osis001@smpipyakin.sch.id",
       password: hashedPassword,
       role: "OSIS",
     },
@@ -104,7 +101,6 @@ async function main() {
       year: 2023,
       gender: "FEMALE",
       osisAccess: true,
-      email: "ketuaosis@gmail.com",
       phone: "081234567892",
       address: "Jl. Sudirman No. 456, Jakarta Selatan",
       birthDate: new Date("2009-08-20"),
@@ -114,13 +110,12 @@ async function main() {
     },
   });
 
-  // 5. PPDB Staff
+  // 5. PPDB Staff (no email - only admin & kesiswaan have email)
   await prisma.user.upsert({
     where: { username: "ppdb001" },
     update: {},
     create: {
       username: "ppdb001",
-      email: "ppdb001@smpipyakin.sch.id",
       password: hashedPassword,
       role: "PPDB_STAFF",
     },
@@ -134,7 +129,8 @@ async function main() {
         date: new Date("2024-12-01"),
         content:
           "Siswa SMP IP Yakin meraih juara 1 dalam olimpiade matematika tingkat Jakarta.",
-        image: "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
+        image:
+          "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
         kategori: "ACHIEVEMENT",
         statusPersetujuan: "APPROVED",
         authorId: adminUser.id,
@@ -144,27 +140,30 @@ async function main() {
         date: new Date("2024-11-15"),
         content:
           "Ekstrakurikuler robotika mengadakan workshop pembuatan robot sederhana.",
-        image: "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733055884/hero3_gigw1x.webp",
+        image:
+          "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733055884/hero3_gigw1x.webp",
         kategori: "ACTIVITY",
         statusPersetujuan: "APPROVED",
         authorId: kesiswaanUser.id,
       },
-       {
+      {
         title: "Kunjungan Belajar ke Museum Nasional",
         date: new Date("2024-10-20"),
         content:
           "Siswa kelas VII melakukan kunjungan belajar sejarah ke Museum Nasional.",
-        image: "https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1024/q_auto/f_auto/v1733055889/hero2_oa2prx.webp",
+        image:
+          "https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1024/q_auto/f_auto/v1733055889/hero2_oa2prx.webp",
         kategori: "ACTIVITY",
         statusPersetujuan: "APPROVED",
         authorId: adminUser.id,
       },
-       {
+      {
         title: "Juara Harapan Lomba Pidato Bahasa Inggris",
         date: new Date("2024-09-10"),
         content:
           "Selamat kepada siswa kami yang meraih juara harapan dalam lomba pidato.",
-        image: "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
+        image:
+          "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
         kategori: "ACHIEVEMENT",
         statusPersetujuan: "APPROVED",
         authorId: kesiswaanUser.id,
@@ -193,7 +192,8 @@ async function main() {
         title: "Pendaftaran Ekstrakurikuler Baru",
         date: new Date("2024-07-20"),
         location: "Ruang Kesiswaan",
-        content: "Pendaftaran ekstrakurikuler untuk siswa baru dibuka mulai Senin depan.",
+        content:
+          "Pendaftaran ekstrakurikuler untuk siswa baru dibuka mulai Senin depan.",
         priority: "LOW",
       },
     ],
@@ -219,7 +219,7 @@ async function main() {
         tahunPelajaran: "2024/2025",
         createdBy: osisUser.id,
       },
-       {
+      {
         title: "Seminar Anti-Bullying",
         date: new Date("2024-08-15"),
         information: "Seminar wajib bagi seluruh siswa kelas VII.",
