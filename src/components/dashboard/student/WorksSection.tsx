@@ -431,70 +431,71 @@ export default function WorksSection({
               animate="show"
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
             >
-              {currentWorks.map((work) => (
-                <motion.div
-                  key={work.id}
-                  variants={item}
-                  className="group bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1"
-                >
-                  <div className="aspect-video bg-gray-100 relative overflow-hidden">
-                    {/* Media Preview Logic (Simplified for brevity, similar to original but cleaned up) */}
-                    <div
-                      className="w-full h-full cursor-pointer relative"
-                      onClick={() => handleViewMedia(work)}
-                    >
-                      {work.workType === "photo" && work.mediaUrl ? (
-                        <Image
-                          src={work.mediaUrl}
-                          alt={work.title}
-                          fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-110"
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        />
-                      ) : work.workType === "video" && work.videoLink ? (
-                        <div className="w-full h-full relative">
-                          {/* Thumbnail Logic reuse */}
-                          <div className="w-full h-full bg-gray-900 flex items-center justify-center text-white">
-                            {/* Just a placeholder if no thumbnail fetch logic available in this view, simpler than before */}
-                            {isYouTubeUrl(work.videoLink) ? (
-                              (() => {
-                                const thumb = getYouTubeThumbnail(work.videoLink);
-                                return thumb ? (
-                                  <Image
-                                    src={thumb}
-                                    alt=""
-                                    fill
-                                    className="object-cover opacity-80"
-                                  />
-                                ) : (
-                                  <div className="flex flex-col items-center">
-                                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-2">
-                                      <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent ml-1"></div>
-                                    </div>
-                                    <span className="text-xs font-medium">Video Preview</span>
+              {currentWorks.map((work) => {
+                const thumb = isYouTubeUrl(work.videoLink)
+                  ? getYouTubeThumbnail(work.videoLink)
+                  : null;
+                return (
+                  <motion.div
+                    key={work.id}
+                    variants={item}
+                    className="group bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <div className="aspect-video bg-gray-100 relative overflow-hidden">
+                      {/* Media Preview Logic (Simplified for brevity, similar to original but cleaned up) */}
+                      <div
+                        className="w-full h-full cursor-pointer relative"
+                        onClick={() => handleViewMedia(work)}
+                      >
+                        {work.workType === "photo" && work.mediaUrl ? (
+                          <Image
+                            src={work.mediaUrl}
+                            alt={work.title}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-110"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          />
+                        ) : work.workType === "video" && work.videoLink ? (
+                          <div className="w-full h-full relative">
+                            {/* Thumbnail Logic reuse */}
+                            <div className="w-full h-full bg-gray-900 flex items-center justify-center text-white">
+                              {/* Just a placeholder if no thumbnail fetch logic available in this view, simpler than before */}
+                              {thumb ? (
+                                <Image
+                                  src={thumb}
+                                  alt=""
+                                  fill
+                                  className="object-cover opacity-80"
+                                />
+                              ) : (
+                                <div className="flex flex-col items-center">
+                                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-2">
+                                    <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent ml-1"></div>
                                   </div>
-                                );
-                              })()
-                            ) : (
+                                  <span className="text-xs font-medium">
+                                    Video Preview
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                            <Eye className="w-8 h-8" />
+                          </div>
+                        )}
+
+                        {/* Hover Overlay */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="px-4 py-2 bg-white/90 rounded-full text-xs font-bold shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform">
+                            Lihat Detail
                           </div>
                         </div>
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-                          <Eye className="w-8 h-8" />
-                        </div>
-                      )}
-
-                      {/* Hover Overlay */}
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <div className="px-4 py-2 bg-white/90 rounded-full text-xs font-bold shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform">
-                          Lihat Detail
-                        </div>
                       </div>
-                    </div>
 
-                    <div className="absolute top-3 right-3 z-10 pointer-events-none">
-                      <span
-                        className={`
+                      <div className="absolute top-3 right-3 z-10 pointer-events-none">
+                        <span
+                          className={`
                          px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide shadow-sm
                          ${
                            work.status === "approved"
@@ -504,76 +505,77 @@ export default function WorksSection({
                                : "bg-red-500 text-white"
                          }
                       `}
-                      >
-                        {work.status === "approved"
-                          ? "Disetujui"
-                          : work.status === "pending"
-                            ? "Pending"
-                            : "Ditolak"}
-                      </span>
-                    </div>
-
-                    <div className="absolute bottom-3 left-3 z-10 pointer-events-none">
-                      <span
-                        className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide shadow-sm bg-white/90 backdrop-blur-sm ${work.workType === "photo" ? "text-green-700" : "text-red-700"}`}
-                      >
-                        {getWorkTypeLabel(work.workType)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-4">
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <span className="text-[10px] font-semibold px-2 py-1 bg-teal-50 text-teal-700 rounded-md border border-teal-100 uppercase">
-                        {getCategoryLabel(work.category)}
-                      </span>
-                      {work.subject && (
-                        <span className="text-[10px] font-semibold px-2 py-1 bg-gray-50 text-gray-600 rounded-md border border-gray-200 uppercase line-clamp-1">
-                          {getSubjectLabel(work.subject)}
+                        >
+                          {work.status === "approved"
+                            ? "Disetujui"
+                            : work.status === "pending"
+                              ? "Pending"
+                              : "Ditolak"}
                         </span>
-                      )}
+                      </div>
+
+                      <div className="absolute bottom-3 left-3 z-10 pointer-events-none">
+                        <span
+                          className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide shadow-sm bg-white/90 backdrop-blur-sm ${work.workType === "photo" ? "text-green-700" : "text-red-700"}`}
+                        >
+                          {getWorkTypeLabel(work.workType)}
+                        </span>
+                      </div>
                     </div>
 
-                    <h4 className="font-bold text-gray-900 mb-1.5 line-clamp-1 group-hover:text-blue-600 transition-colors">
-                      {work.title}
-                    </h4>
+                    <div className="p-4">
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        <span className="text-[10px] font-semibold px-2 py-1 bg-teal-50 text-teal-700 rounded-md border border-teal-100 uppercase">
+                          {getCategoryLabel(work.category)}
+                        </span>
+                        {work.subject && (
+                          <span className="text-[10px] font-semibold px-2 py-1 bg-gray-50 text-gray-600 rounded-md border border-gray-200 uppercase line-clamp-1">
+                            {getSubjectLabel(work.subject)}
+                          </span>
+                        )}
+                      </div>
 
-                    <p className="text-xs text-gray-400 font-medium mb-3">
-                      {formatDate(work.createdAt)}
-                    </p>
+                      <h4 className="font-bold text-gray-900 mb-1.5 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                        {work.title}
+                      </h4>
 
-                    {/* Action Footer */}
-                    <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
-                      <button
-                        onClick={() => setSelectedWork(work)}
-                        className="flex-1 px-3 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors text-xs font-semibold"
-                      >
-                        Detail
-                      </button>
+                      <p className="text-xs text-gray-400 font-medium mb-3">
+                        {formatDate(work.createdAt)}
+                      </p>
 
-                      {work.status === "pending" && (
+                      {/* Action Footer */}
+                      <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
                         <button
-                          onClick={() => onEditClick(work)}
-                          className="p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors"
-                          title="Edit"
+                          onClick={() => setSelectedWork(work)}
+                          className="flex-1 px-3 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors text-xs font-semibold"
                         >
-                          <Edit className="w-3.5 h-3.5" />
+                          Detail
                         </button>
-                      )}
 
-                      {work.status === "rejected" && (
-                        <button
-                          onClick={() => onDeleteClick(work.id)}
-                          className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-                          title="Hapus"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
+                        {work.status === "pending" && (
+                          <button
+                            onClick={() => onEditClick(work)}
+                            className="p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors"
+                            title="Edit"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+
+                        {work.status === "rejected" && (
+                          <button
+                            onClick={() => onDeleteClick(work.id)}
+                            className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                            title="Hapus"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </motion.div>
           )}
 

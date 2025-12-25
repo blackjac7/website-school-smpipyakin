@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 import withPWAInit from "next-pwa";
 
+// Suppress Sentry instrumentation file warning during build (temporary)
+process.env.SENTRY_SUPPRESS_INSTRUMENTATION_FILE_WARNING =
+  process.env.SENTRY_SUPPRESS_INSTRUMENTATION_FILE_WARNING || "1";
+
 const withPWA = withPWAInit({
   dest: "public",
   register: true,
