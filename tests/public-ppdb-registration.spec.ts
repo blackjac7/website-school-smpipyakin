@@ -44,9 +44,18 @@ test.describe.serial("@smoke PPDB public registration gating", () => {
     // ensure no leftover application with same nisn
     await prisma.pPDBApplication.deleteMany({ where: { nisn } });
 
-    // ensure server is responsive
-    const health = await request.get("/");
-    expect(health.ok()).toBeTruthy();
+    // ensure server is responsive (retry a few times)
+    let health = null as any;
+    for (let i = 0; i < 6; i++) {
+      try {
+        health = await request.get("/");
+        if (health.ok()) break;
+      } catch (e) {
+        // ignore transient errors
+      }
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+    expect(health && health.ok()).toBeTruthy();
 
     // increase timeout for API post to reduce flakiness on slow CI machines
     const res = await request.post("/api/ppdb/register", {
@@ -76,9 +85,18 @@ test.describe.serial("@smoke PPDB public registration gating", () => {
     // ensure no leftover application with same nisn
     await prisma.pPDBApplication.deleteMany({ where: { nisn } });
 
-    // ensure server is responsive
-    const health = await request.get("/");
-    expect(health.ok()).toBeTruthy();
+    // ensure server is responsive (retry a few times)
+    let health = null as any;
+    for (let i = 0; i < 6; i++) {
+      try {
+        health = await request.get("/");
+        if (health.ok()) break;
+      } catch (e) {
+        // ignore transient errors
+      }
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+    expect(health && health.ok()).toBeTruthy();
 
     const res = await request.post("/api/ppdb/register", {
       data: samplePayload(nisn),
