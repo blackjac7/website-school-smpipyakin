@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isPPDBOpen } from "@/lib/siteSettings";
 
 interface DocumentData {
   cloudinaryId: string;
@@ -58,6 +59,15 @@ export async function POST(request: NextRequest) {
       documentsCount: documents?.length || 0,
       documents: documents, // Log the full documents array
     });
+
+    // Server-side: ensure PPDB is open before accepting registrations
+    const ppdbStatus = await isPPDBOpen();
+    if (!ppdbStatus.isOpen) {
+      return NextResponse.json(
+        { error: ppdbStatus.message || "Pendaftaran PPDB saat ini ditutup" },
+        { status: 403 }
+      );
+    }
 
     // Validasi data wajib
     if (
