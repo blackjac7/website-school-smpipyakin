@@ -8,6 +8,8 @@ import toast from "react-hot-toast";
 import { createCarpetSchedule, deleteCarpetSchedule, updateCarpetStatus } from "@/actions/worship";
 import { CarpetZone, TaskStatus } from "@prisma/client";
 import StudentSelector from "./StudentSelector";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 
 interface CarpetSchedule {
   id: string;
@@ -33,6 +35,7 @@ export default function CarpetTab({ schedules }: CarpetTabProps) {
     zone: "FLOOR_1" as CarpetZone,
     studentIds: [] as string[]
   });
+  const confirmModal = useToastConfirm();
 
   // Group by date
   const schedulesByDate = schedules.reduce((acc, curr) => {
@@ -88,14 +91,25 @@ export default function CarpetTab({ schedules }: CarpetTabProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Hapus jadwal ini?")) return;
-    try {
-        await deleteCarpetSchedule(id);
-        toast.success("Jadwal dihapus");
-    } catch (error) {
-        console.error(error);
-        toast.error("Gagal menghapus");
-    }
+    confirmModal.showConfirm(
+      {
+        title: "Hapus Jadwal",
+        message: "Hapus jadwal ini?",
+        description: "Tindakan ini tidak dapat dibatalkan.",
+        type: "danger",
+        confirmText: "Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
+        try {
+            await deleteCarpetSchedule(id);
+            toast.success("Jadwal dihapus");
+        } catch (error) {
+            console.error(error);
+            toast.error("Gagal menghapus");
+        }
+      }
+    );
   };
 
   return (
@@ -265,6 +279,15 @@ export default function CarpetTab({ schedules }: CarpetTabProps) {
           </div>
         </div>
       )}
+
+      {/* Toast Confirm Modal */}
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        isLoading={confirmModal.isLoading}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+        {...confirmModal.options}
+      />
     </div>
   );
 }

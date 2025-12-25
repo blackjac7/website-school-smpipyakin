@@ -18,6 +18,8 @@ import {
 } from "@/actions/worship";
 import { PrayerTime, TaskStatus } from "@prisma/client";
 import StudentSelector from "./StudentSelector";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 
 interface AdzanSchedule {
   id: string;
@@ -42,6 +44,7 @@ export default function AdzanTab({ schedules }: AdzanTabProps) {
     date: new Date().toISOString().split("T")[0],
     prayerTime: "ZUHUR" as PrayerTime, // Fixed to ZUHUR only
   });
+  const confirmModal = useToastConfirm();
 
   // Group by date for easier display
   const schedulesByDate = schedules.reduce(
@@ -88,14 +91,25 @@ export default function AdzanTab({ schedules }: AdzanTabProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Hapus jadwal ini?")) return;
-    try {
-      await deleteAdzanSchedule(id);
-      toast.success("Jadwal dihapus");
-    } catch (error) {
-      console.error(error);
-      toast.error("Gagal menghapus");
-    }
+    confirmModal.showConfirm(
+      {
+        title: "Hapus Jadwal",
+        message: "Hapus jadwal ini?",
+        description: "Tindakan ini tidak dapat dibatalkan.",
+        type: "danger",
+        confirmText: "Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
+        try {
+          await deleteAdzanSchedule(id);
+          toast.success("Jadwal dihapus");
+        } catch (error) {
+          console.error(error);
+          toast.error("Gagal menghapus");
+        }
+      }
+    );
   };
 
   // Generate calendar days for current view could be complex,
@@ -253,6 +267,15 @@ export default function AdzanTab({ schedules }: AdzanTabProps) {
           </div>
         </div>
       )}
+
+      {/* Toast Confirm Modal */}
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        isLoading={confirmModal.isLoading}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+        {...confirmModal.options}
+      />
     </div>
   );
 }

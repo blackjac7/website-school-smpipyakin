@@ -6,6 +6,8 @@ import UserModal from "@/components/dashboard/admin/UserModal";
 import { getUsers, createUser, updateUser, deleteUser, UserFormData } from "@/actions/admin/users";
 import { User } from "./types";
 import toast from "react-hot-toast";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const convertToCompatibleUser = (user: User | null): any => {
@@ -23,6 +25,7 @@ export default function UsersPage() {
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const confirmModal = useToastConfirm();
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -52,15 +55,25 @@ export default function UsersPage() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus pengguna ini?")) {
-      const result = await deleteUser(userId);
-      if (result.success) {
-        toast.success("Pengguna berhasil dihapus");
-        fetchUsers();
-      } else {
-        toast.error(result.error || "Gagal menghapus pengguna");
+    confirmModal.showConfirm(
+      {
+        title: "Hapus Pengguna",
+        message: "Apakah Anda yakin ingin menghapus pengguna ini?",
+        description: "Tindakan ini tidak dapat dibatalkan.",
+        type: "danger",
+        confirmText: "Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
+        const result = await deleteUser(userId);
+        if (result.success) {
+          toast.success("Pengguna berhasil dihapus");
+          fetchUsers();
+        } else {
+          toast.error(result.error || "Gagal menghapus pengguna");
+        }
       }
-    }
+    );
   };
 
   const handleModalSubmit = async (formData: UserFormData) => {
@@ -103,6 +116,15 @@ export default function UsersPage() {
         selectedUser={convertToCompatibleUser(selectedUser)}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onSubmit={handleModalSubmit as any}
+      />
+
+      {/* Toast Confirm Modal */}
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        isLoading={confirmModal.isLoading}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+        {...confirmModal.options}
       />
     </div>
   );

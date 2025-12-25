@@ -7,6 +7,8 @@ import { Plus, AlertTriangle, Check, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { upsertMenstruationRecord, deleteMenstruationRecord } from "@/actions/worship";
 import StudentSelector from "./StudentSelector";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 
 interface MenstruationRecord {
   id: string;
@@ -33,6 +35,7 @@ export default function MenstruationTab({ records }: MenstruationTabProps) {
     notes: ""
   });
   const [loading, setLoading] = useState(false);
+  const confirmModal = useToastConfirm();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,31 +63,53 @@ export default function MenstruationTab({ records }: MenstruationTabProps) {
   };
 
   const handleEndPeriod = async (record: MenstruationRecord) => {
-    if (!confirm("Konfirmasi haid selesai hari ini?")) return;
-    try {
-        await upsertMenstruationRecord({
+    confirmModal.showConfirm(
+      {
+        title: "Konfirmasi Selesai Haid",
+        message: "Konfirmasi haid selesai hari ini?",
+        description: "Status siswi akan kembali menjadi 'Suci'.",
+        type: "success",
+        confirmText: "Ya, Selesai",
+        cancelText: "Batal",
+      },
+      async () => {
+        try {
+          await upsertMenstruationRecord({
             id: record.id,
             siswaId: record.siswaId,
             startDate: record.startDate,
             endDate: new Date(),
             notes: record.notes || undefined // Fix: Convert null to undefined
-        });
-        toast.success("Status diperbarui");
-    } catch (error) {
-        console.error(error);
-        toast.error("Gagal update status");
-    }
+          });
+          toast.success("Status diperbarui");
+        } catch (error) {
+          console.error(error);
+          toast.error("Gagal update status");
+        }
+      }
+    );
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Hapus data ini?")) return;
-    try {
-        await deleteMenstruationRecord(id);
-        toast.success("Data dihapus");
-    } catch (error) {
-        console.error(error);
-        toast.error("Gagal menghapus");
-    }
+    confirmModal.showConfirm(
+      {
+        title: "Hapus Data",
+        message: "Hapus data ini?",
+        description: "Tindakan ini tidak dapat dibatalkan.",
+        type: "danger",
+        confirmText: "Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
+        try {
+          await deleteMenstruationRecord(id);
+          toast.success("Data dihapus");
+        } catch (error) {
+          console.error(error);
+          toast.error("Gagal menghapus");
+        }
+      }
+    );
   }
 
   return (
@@ -231,6 +256,15 @@ export default function MenstruationTab({ records }: MenstruationTabProps) {
           </div>
         </div>
       )}
+
+      {/* Toast Confirm Modal */}
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        isLoading={confirmModal.isLoading}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+        {...confirmModal.options}
+      />
     </div>
   );
 }
