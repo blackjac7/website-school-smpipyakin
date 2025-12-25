@@ -1,11 +1,53 @@
+
 import { getNewsById } from "@/actions/public/news";
 import ShareButton from "@/components/news/ShareButton";
 import { Calendar } from "lucide-react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { Metadata } from "next";
 
 interface NewsDetailProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: NewsDetailProps): Promise<Metadata> {
+  const { id } = await params;
+  const news = await getNewsById(id);
+
+  if (!news) {
+    return {
+      title: 'Berita Tidak Ditemukan - SMP IP Yakin Jakarta',
+      description: 'Halaman berita yang Anda cari tidak tersedia.'
+    };
+  }
+
+  // Remove HTML tags for description
+  const cleanDescription = news.content.replace(/<[^>]*>/g, '').substring(0, 160);
+
+  return {
+    title: `${news.title} - Berita SMP IP Yakin Jakarta`,
+    description: cleanDescription,
+    openGraph: {
+      title: news.title,
+      description: cleanDescription,
+      images: [
+        {
+          url: news.image,
+          width: 800,
+          height: 600,
+          alt: news.title
+        }
+      ],
+      type: 'article',
+      publishedTime: news.date
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: news.title,
+      description: cleanDescription,
+      images: [news.image]
+    }
+  };
 }
 
 export default async function NewsDetail({ params }: NewsDetailProps) {
@@ -28,18 +70,19 @@ export default async function NewsDetail({ params }: NewsDetailProps) {
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden mb-8">
-          <div className="aspect-video w-full bg-gray-100 dark:bg-gray-700">
+          <div className="aspect-video w-full bg-gray-100 dark:bg-gray-700 relative">
             <Image
               src={news.image}
               alt={news.title}
-              width={1024}
-              height={600}
-              className="w-full h-full object-contain"
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 800px"
+              priority
             />
           </div>
           <div className="p-6">
             <div
-              className="prose prose-sm sm:prose lg:prose-lg dark:prose-invert mx-auto"
+              className="prose prose-sm sm:prose lg:prose-lg dark:prose-invert mx-auto break-words"
               dangerouslySetInnerHTML={{ __html: news.content }}
             />
           </div>
