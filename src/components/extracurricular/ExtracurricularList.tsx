@@ -59,13 +59,15 @@ export default function ExtracurricularList({
                     handleImageClick(activity.image, activity.title)
                   }
                 >
-                  <Image
-                    src={activity.image}
-                    alt={activity.title}
-                    width={800}
-                    height={400}
-                    className="w-full h-48 object-cover transition duration-300 group-hover:brightness-75"
-                  />
+                  <div className="relative h-48 w-full">
+                    <Image
+                      src={activity.image}
+                      alt={activity.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover transition duration-300 group-hover:brightness-75"
+                    />
+                  </div>
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <span className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
                       Klik untuk memperbesar
