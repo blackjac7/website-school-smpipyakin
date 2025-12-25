@@ -55,6 +55,7 @@ const OrgCard = ({
         src={image}
         alt={name}
         fill
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         className="rounded-full object-cover bg-gray-100 dark:bg-gray-600"
       />
     </div>
@@ -151,6 +152,7 @@ export default function StrukturOrganisasi({
                   src={kepsek.photo || defaultAvatar}
                   alt={kepsek.name}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="rounded-full object-cover border-4 border-blue-50 dark:border-blue-900/50"
                 />
               </div>

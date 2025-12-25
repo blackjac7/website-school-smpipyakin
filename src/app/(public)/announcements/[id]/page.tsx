@@ -1,3 +1,4 @@
+
 import { getAnnouncementById } from "@/actions/public/announcements";
 import {
   Calendar,
@@ -12,12 +13,38 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
+import { Metadata } from "next";
 
 interface AnnouncementDetailProps {
   params: Promise<{ id: string }>;
 }
 
 type PriorityLevel = "HIGH" | "MEDIUM" | "LOW";
+
+export async function generateMetadata({ params }: AnnouncementDetailProps): Promise<Metadata> {
+  const { id } = await params;
+  const announcement = await getAnnouncementById(id);
+
+  if (!announcement) {
+    return {
+      title: 'Pengumuman Tidak Ditemukan - SMP IP Yakin Jakarta',
+    };
+  }
+
+  // Clean description
+  const cleanDescription = announcement.content.replace(/<[^>]*>/g, '').substring(0, 160);
+
+  return {
+    title: `${announcement.title} - Pengumuman SMP IP Yakin Jakarta`,
+    description: cleanDescription,
+    openGraph: {
+      title: announcement.title,
+      description: cleanDescription,
+      type: 'article',
+      publishedTime: announcement.date
+    }
+  };
+}
 
 export default async function AnnouncementDetail({
   params,
@@ -138,7 +165,7 @@ export default async function AnnouncementDetail({
 
             {/* Content */}
             <div
-              className={`prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 prose-headings:${styles.text} prose-a:${styles.text}`}
+              className={`prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 prose-headings:${styles.text} prose-a:${styles.text} break-words`}
               dangerouslySetInnerHTML={{ __html: announcement.content || "" }}
             />
 

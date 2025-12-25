@@ -98,6 +98,7 @@ export interface FormattedNotification {
   color: string;
   time: string;
   read: boolean;
+  detail?: string;
 }
 
 export function formatNotification(
@@ -112,6 +113,7 @@ export function formatNotification(
     color: getNotificationColor(notification.type),
     time: notification.time,
     read: notification.read,
+    detail: '',
   };
 }
 

@@ -12,9 +12,9 @@ export interface User {
 }
 
 export interface Notification {
-  id: number | string;
+  id: string;
   type: string;
-  title?: string; // Made optional to fit existing data
+  title: string;
   icon?: unknown; // Made optional
   color?: string; // Made optional
   message: string;
