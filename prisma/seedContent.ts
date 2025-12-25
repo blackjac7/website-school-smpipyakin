@@ -383,12 +383,116 @@ async function seedTeachers() {
   console.log(`   ✅ Created ${teacherData.length} teachers`);
 }
 
+async function seedHeroSlides() {
+  console.log("🖼️ Seeding Hero Slides...");
+
+  // Remove existing data so seed is idempotent
+  await prisma.heroSlide.deleteMany();
+
+  const heroSlidesData = [
+    {
+      title: "Selamat Datang di SMP IP Yakin",
+      subtitle:
+        "Membangun generasi cerdas berakhlak mulia melalui pendidikan yang berpusat pada karakter dan prestasi.",
+      imageSmall:
+        "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733055884/hero3_gigw1x.webp",
+      imageMedium:
+        "https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1600/q_auto/f_auto/v1733055884/hero3_gigw1x.webp",
+      linkPrimaryText: "PPDB",
+      linkPrimaryHref: "/ppdb",
+      linkSecondaryText: "Kegiatan",
+      linkSecondaryHref: "/kegiatan",
+      isActive: true,
+      sortOrder: 0,
+    },
+    {
+      title: "Prestasi Siswa Kami",
+      subtitle:
+        "Penghargaan dan prestasi terbaru siswa dalam berbagai kompetisi akademik dan non-akademik.",
+      imageSmall:
+        "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
+      imageMedium:
+        "https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1600/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
+      linkPrimaryText: "Berita",
+      linkPrimaryHref: "/berita",
+      linkSecondaryText: "Galeri",
+      linkSecondaryHref: "/galeri",
+      isActive: true,
+      sortOrder: 1,
+    },
+    {
+      title: "Ekstrakurikuler yang Aktif",
+      subtitle:
+        "Bergabunglah dengan berbagai ekstrakurikuler untuk mengembangkan minat dan bakatmu.",
+      imageSmall:
+        "https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1024/q_auto/f_auto/v1733055889/hero2_oa2prx.webp",
+      imageMedium:
+        "https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1600/q_auto/f_auto/v1733055889/hero2_oa2prx.webp",
+      linkPrimaryText: "Ekstrakurikuler",
+      linkPrimaryHref: "/ekstrakurikuler",
+      isActive: true,
+      sortOrder: 2,
+    },
+  ];
+
+  for (const slide of heroSlidesData) {
+    await prisma.heroSlide.create({ data: slide });
+  }
+
+  console.log(`   ✅ Created ${heroSlidesData.length} hero slides`);
+}
+
+async function seedSchoolStats() {
+  console.log("📊 Seeding School Stats...");
+
+  await prisma.schoolStat.deleteMany();
+
+  const schoolStatsData = [
+    {
+      label: "Siswa Terdaftar",
+      value: "1,250",
+      iconName: "users",
+      isActive: true,
+      sortOrder: 0,
+    },
+    {
+      label: "Guru & Staf",
+      value: "75",
+      iconName: "academic-cap",
+      isActive: true,
+      sortOrder: 1,
+    },
+    {
+      label: "Ekstrakurikuler",
+      value: "12",
+      iconName: "sparkles",
+      isActive: true,
+      sortOrder: 2,
+    },
+    {
+      label: "Fasilitas",
+      value: "8",
+      iconName: "building",
+      isActive: true,
+      sortOrder: 3,
+    },
+  ];
+
+  for (const stat of schoolStatsData) {
+    await prisma.schoolStat.create({ data: stat });
+  }
+
+  console.log(`   ✅ Created ${schoolStatsData.length} school stats`);
+}
+
 async function main() {
   console.log("🌱 Starting Content Seeding...\n");
 
   await seedExtracurricular();
   await seedFacilities();
   await seedTeachers();
+  await seedHeroSlides();
+  await seedSchoolStats();
 
   console.log("\n✨ Content seeding completed!");
 }
