@@ -296,7 +296,7 @@ test.describe("SEO & Accessibility", () => {
   });
 });
 
-test.describe("Performance", () => {
+test.describe("@nightly Performance", () => {
   test("homepage should load within acceptable time", async ({ page }) => {
     const startTime = Date.now();
     await page.goto("/");
