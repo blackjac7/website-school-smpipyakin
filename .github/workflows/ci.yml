@@ -1,5 +1,9 @@
 name: CI/CD Pipeline
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main, develop]
@@ -276,6 +280,15 @@ jobs:
         run: |
           PGPASSWORD=password pg_dump -h localhost -U postgres -d testdb -F p -f db-dump.sql
 
+      - name: Cache DB dump
+        id: cache-db-dump
+        uses: actions/cache@v4
+        with:
+          path: db-dump.sql
+          key: db-dump-${{ hashFiles('prisma/**', 'package-lock.json') }}
+          restore-keys: |
+            db-dump-
+
       - name: Upload DB dump artifact
         uses: actions/upload-artifact@v4
         with:
@@ -329,7 +342,17 @@ jobs:
       - name: Install Playwright Browser (chromium only)
         run: npx playwright install --with-deps chromium
 
-      - name: Download DB snapshot
+      - name: Restore DB dump from cache
+        id: restore-db-dump-staged
+        uses: actions/cache@v4
+        with:
+          path: db-dump.sql
+          key: db-dump-${{ hashFiles('prisma/**', 'package-lock.json') }}
+          restore-keys: |
+            db-dump-
+
+      - name: Download DB snapshot (fallback)
+        if: steps.restore-db-dump-staged.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
           name: db-dump
@@ -352,12 +375,19 @@ jobs:
           DATABASE_URL: postgresql://postgres:password@localhost:5432/testdb
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
+      - name: Compress Playwright report (on failure)
+        if: failure()
+        run: |
+          if [ -d playwright-report ]; then
+            tar -czf playwright-report-staged.tar.gz playwright-report/
+          fi
+
       - name: Upload test results (on failure only)
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-staged
-          path: playwright-report/
+          path: playwright-report-staged.tar.gz
           retention-days: 7
 
   # Full E2E (nightly or push to main) — full browser matrix, longer runtime
@@ -406,7 +436,17 @@ jobs:
       - name: Install Playwright Browsers (all)
         run: npx playwright install --with-deps
 
-      - name: Download DB snapshot
+      - name: Restore DB dump from cache
+        id: restore-db-dump-full
+        uses: actions/cache@v4
+        with:
+          path: db-dump.sql
+          key: db-dump-${{ hashFiles('prisma/**', 'package-lock.json') }}
+          restore-keys: |
+            db-dump-
+
+      - name: Download DB snapshot (fallback)
+        if: steps.restore-db-dump-full.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
           name: db-dump
@@ -432,12 +472,19 @@ jobs:
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
 
+      - name: Compress Playwright report (on failure)
+        if: failure()
+        run: |
+          if [ -d playwright-report ]; then
+            tar -czf playwright-report-full.tar.gz playwright-report/
+          fi
+
       - name: Upload test results (on failure only)
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-full
-          path: playwright-report/
+          path: playwright-report-full.tar.gz
           retention-days: 30
 
       - name: Create GitHub issue on full E2E failure
@@ -447,8 +494,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const title = `[E2E][FAIL] Full E2E failed on ${context.repo.owner}/${context.repo.repo} (${process.env.GITHUB_REF})`;
-            const body = `Full E2E tests failed.\n\nRun details: ${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}\n\nArtifacts: playwright-report-full\n\nPlease triage and attach relevant failing traces/screenshot artifacts.`;
-            await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body });
+            const body = `Full E2E tests failed.\n\nRun details: ${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}\n\nArtifacts: playwright-report-full (playwright-report-full.tar.gz)\n\nPlease triage and attach relevant failing traces/screenshot artifacts.`;
+            await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body, labels: ["e2e-failure","triage-needed"] });
 
   # Lighthouse Performance Check
   lighthouse:
