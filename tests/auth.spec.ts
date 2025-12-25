@@ -180,9 +180,14 @@ test.describe("Logout Flow", () => {
     // Attempt logout
     await dashboardPage.logout();
 
-    // Should be redirected to login or home
-    const url = page.url();
-    expect(url).toBeTruthy();
+    // Should have been redirected to login or see the login form or no logout button
+    const loginSelector = page.locator('#username, input[name="username"]');
+    if ((await loginSelector.count()) > 0) {
+      await expect(loginSelector.first()).toBeVisible();
+    } else {
+      // Fallback: ensure logout button no longer present
+      expect(await dashboardPage.logoutButton.count()).toBe(0);
+    }
   });
 });
 
