@@ -1,4 +1,11 @@
-import { Search, Download, UserPlus, User as UserIcon, Edit, Trash2, ShieldCheck } from "lucide-react";
+import {
+  Search,
+  UserPlus,
+  User as UserIcon,
+  Edit,
+  Trash2,
+  ShieldCheck,
+} from "lucide-react";
 import { User } from "./types";
 
 interface UsersTableProps {
@@ -58,7 +65,7 @@ export default function UsersTable({
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Detail Info
                   </th>
-                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Aksi
                   </th>
                 </tr>
@@ -66,13 +73,19 @@ export default function UsersTable({
               <tbody className="bg-white divide-y divide-gray-200">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
+                    <td
+                      colSpan={5}
+                      className="px-6 py-10 text-center text-gray-500"
+                    >
                       Memuat data...
                     </td>
                   </tr>
                 ) : users.length === 0 ? (
-                   <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-10 text-center text-gray-500"
+                    >
                       Belum ada data pengguna
                     </td>
                   </tr>
@@ -82,8 +95,8 @@ export default function UsersTable({
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
-                             {/* Default Placeholder */}
-                             <UserIcon className="w-5 h-5 text-gray-400" />
+                            {/* Default Placeholder */}
+                            <UserIcon className="w-5 h-5 text-gray-400" />
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">
@@ -92,22 +105,27 @@ export default function UsersTable({
                             <div className="text-sm text-gray-500">
                               {user.username}
                             </div>
-                             {user.email && (
-                                <div className="text-xs text-gray-400">
-                                  {user.email}
-                                </div>
-                             )}
+                            {user.email && (
+                              <div className="text-xs text-gray-400">
+                                {user.email}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col gap-1 items-start">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                             user.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' :
-                             user.role === 'SISWA' ? 'bg-blue-100 text-blue-800' :
-                             user.role === 'KESISWAAN' ? 'bg-orange-100 text-orange-800' :
-                             'bg-gray-100 text-gray-800'
-                          }`}>
+                          <span
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              user.role === "ADMIN"
+                                ? "bg-purple-100 text-purple-800"
+                                : user.role === "SISWA"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : user.role === "KESISWAAN"
+                                    ? "bg-orange-100 text-orange-800"
+                                    : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
                             {user.role}
                           </span>
 
@@ -121,15 +139,15 @@ export default function UsersTable({
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                         {user.role === 'SISWA' && (
-                             <div className="flex flex-col">
-                                 <span>NISN: {user.nisn || '-'}</span>
-                                 <span>Kelas: {user.class || '-'}</span>
-                             </div>
-                         )}
-                         {user.role === 'KESISWAAN' && (
-                             <div>NIP: {user.nip || '-'}</div>
-                         )}
+                        {user.role === "SISWA" && (
+                          <div className="flex flex-col">
+                            <span>NISN: {user.nisn || "-"}</span>
+                            <span>Kelas: {user.class || "-"}</span>
+                          </div>
+                        )}
+                        {user.role === "KESISWAAN" && (
+                          <div>NIP: {user.nip || "-"}</div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">

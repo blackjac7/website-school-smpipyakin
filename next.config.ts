@@ -41,6 +41,8 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
+  // Set explicit outputFileTracingRoot to avoid Next.js workspace root inference warning
+  outputFileTracingRoot: __dirname,
   images: {
     remotePatterns: [
       {

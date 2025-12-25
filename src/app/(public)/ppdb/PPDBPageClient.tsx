@@ -50,7 +50,11 @@ export interface PPDBStatus {
   };
 }
 
-export function PPDBPageClient({ ppdbStatus }: { ppdbStatus: PPDBStatus }) {
+export function PPDBPageClient({
+  ppdbStatus: _ppdbStatus,
+}: {
+  ppdbStatus: PPDBStatus;
+}) {
   const [formData, setFormData] = useState<FormData>({
     namaLengkap: "",
     nisn: "",
