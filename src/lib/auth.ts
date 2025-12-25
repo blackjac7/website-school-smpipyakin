@@ -13,6 +13,7 @@ export async function getAuthenticatedUser() {
     const { payload } = await jwtVerify(token.value, secret);
     return payload as { userId: string; role: string; username: string };
   } catch (error) {
+    console.error("getAuthenticatedUser error:", error);
     return null;
   }
 }
