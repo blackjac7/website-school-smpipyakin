@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getMaintenanceStatus } from "@/actions/admin/settings";
 
 export async function GET(_request: NextRequest) {
+  // keep request referenced for future improvements
+  void _request;
+
   try {
     const res = await getMaintenanceStatus();
     if (!res.success)

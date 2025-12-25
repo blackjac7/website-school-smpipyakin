@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Calendar as CalendarIcon, Image as ImageIcon } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Calendar as CalendarIcon,
+  Image as ImageIcon,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { createNews, updateNews, deleteNews } from "@/actions/news";
 import { News } from "@prisma/client";
@@ -44,11 +50,11 @@ export default function NewsAdmin({ news }: NewsPageProps) {
     try {
       if (editingItem) {
         await updateNews(editingItem.id, {
-            title: data.title,
-            date: data.date,
-            content: data.content,
-            image: data.image,
-            kategori: data.category
+          title: data.title,
+          date: data.date,
+          content: data.content,
+          image: data.image,
+          kategori: data.category,
         });
         toast.success("News updated");
       } else {
@@ -58,6 +64,7 @@ export default function NewsAdmin({ news }: NewsPageProps) {
       setIsModalOpen(false);
       setEditingItem(null);
     } catch (error) {
+      console.error("Failed to save news:", error);
       toast.error("Failed to save news");
     } finally {
       setIsLoading(false);
@@ -79,6 +86,7 @@ export default function NewsAdmin({ news }: NewsPageProps) {
           await deleteNews(id);
           toast.success("News deleted");
         } catch (error) {
+          console.error("Failed to delete news:", error);
           toast.error("Failed to delete news");
         }
       }
@@ -90,7 +98,10 @@ export default function NewsAdmin({ news }: NewsPageProps) {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">News Management</h1>
         <button
-          onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
+          onClick={() => {
+            setEditingItem(null);
+            setIsModalOpen(true);
+          }}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
         >
           <Plus size={20} /> Add News
@@ -106,34 +117,51 @@ export default function NewsAdmin({ news }: NewsPageProps) {
             className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full"
           >
             <div className="relative h-48 bg-gray-100">
-               {item.image ? (
-                   <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-               ) : (
-                   <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50">
-                       <ImageIcon size={32} />
-                   </div>
-               )}
-               <div className="absolute top-2 right-2">
-                   <span className={`text-xs font-bold px-2 py-1 rounded-full shadow-sm ${
-                       item.kategori === 'ACHIEVEMENT' ? 'bg-yellow-400 text-yellow-900' : 'bg-blue-500 text-white'
-                   }`}>
-                       {item.kategori === 'ACHIEVEMENT' ? 'Prestasi' : 'Kegiatan'}
-                   </span>
-               </div>
+              {item.image ? (
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50">
+                  <ImageIcon size={32} />
+                </div>
+              )}
+              <div className="absolute top-2 right-2">
+                <span
+                  className={`text-xs font-bold px-2 py-1 rounded-full shadow-sm ${
+                    item.kategori === "ACHIEVEMENT"
+                      ? "bg-yellow-400 text-yellow-900"
+                      : "bg-blue-500 text-white"
+                  }`}
+                >
+                  {item.kategori === "ACHIEVEMENT" ? "Prestasi" : "Kegiatan"}
+                </span>
+              </div>
             </div>
 
             <div className="p-4 flex flex-col flex-1">
               <div className="text-xs text-gray-500 mb-2 flex items-center gap-1">
-                  <CalendarIcon size={12} />
-                  {format(new Date(item.date), "dd MMMM yyyy", { locale: localeId })}
+                <CalendarIcon size={12} />
+                {format(new Date(item.date), "dd MMMM yyyy", {
+                  locale: localeId,
+                })}
               </div>
 
-              <h3 className="font-bold text-lg mb-2 line-clamp-2">{item.title}</h3>
-              <p className="text-gray-500 text-sm mb-4 line-clamp-3 flex-1">{item.content}</p>
+              <h3 className="font-bold text-lg mb-2 line-clamp-2">
+                {item.title}
+              </h3>
+              <p className="text-gray-500 text-sm mb-4 line-clamp-3 flex-1">
+                {item.content}
+              </p>
 
               <div className="flex justify-end gap-2 pt-4 border-t border-gray-100 mt-auto">
                 <button
-                  onClick={() => { setEditingItem(item); setIsModalOpen(true); }}
+                  onClick={() => {
+                    setEditingItem(item);
+                    setIsModalOpen(true);
+                  }}
                   className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
                 >
                   <Pencil size={18} />
@@ -158,27 +186,53 @@ export default function NewsAdmin({ news }: NewsPageProps) {
             className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
           >
             <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white">
-              <h2 className="text-xl font-bold">{editingItem ? 'Edit News' : 'Add News'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-gray-700">&times;</button>
+              <h2 className="text-xl font-bold">
+                {editingItem ? "Edit News" : "Add News"}
+              </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                &times;
+              </button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Title</label>
-                <input name="title" required defaultValue={editingItem?.title} className="w-full p-2 border rounded-lg" />
+                <input
+                  name="title"
+                  required
+                  defaultValue={editingItem?.title}
+                  className="w-full p-2 border rounded-lg"
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <label className="text-sm font-medium">Date</label>
-                    <input type="date" name="date" required defaultValue={editingItem?.date ? new Date(editingItem.date).toISOString().split('T')[0] : ''} className="w-full p-2 border rounded-lg" />
+                  <label className="text-sm font-medium">Date</label>
+                  <input
+                    type="date"
+                    name="date"
+                    required
+                    defaultValue={
+                      editingItem?.date
+                        ? new Date(editingItem.date).toISOString().split("T")[0]
+                        : ""
+                    }
+                    className="w-full p-2 border rounded-lg"
+                  />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-sm font-medium">Category</label>
-                    <select name="kategori" defaultValue={editingItem?.kategori || 'ACTIVITY'} className="w-full p-2 border rounded-lg bg-white">
-                        <option value="ACTIVITY">Kegiatan</option>
-                        <option value="ACHIEVEMENT">Prestasi</option>
-                    </select>
+                  <label className="text-sm font-medium">Category</label>
+                  <select
+                    name="kategori"
+                    defaultValue={editingItem?.kategori || "ACTIVITY"}
+                    className="w-full p-2 border rounded-lg bg-white"
+                  >
+                    <option value="ACTIVITY">Kegiatan</option>
+                    <option value="ACHIEVEMENT">Prestasi</option>
+                  </select>
                 </div>
               </div>
 
@@ -186,19 +240,40 @@ export default function NewsAdmin({ news }: NewsPageProps) {
                 <label className="text-sm font-medium">Image URL</label>
                 <div className="flex items-center gap-2">
                   <ImageIcon size={18} className="text-gray-400" />
-                  <input name="image" defaultValue={editingItem?.image || ''} placeholder="https://..." className="w-full p-2 border rounded-lg" />
+                  <input
+                    name="image"
+                    defaultValue={editingItem?.image || ""}
+                    placeholder="https://..."
+                    className="w-full p-2 border rounded-lg"
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Content</label>
-                <textarea name="content" required defaultValue={editingItem?.content} rows={8} className="w-full p-2 border rounded-lg" />
+                <textarea
+                  name="content"
+                  required
+                  defaultValue={editingItem?.content}
+                  rows={8}
+                  className="w-full p-2 border rounded-lg"
+                />
               </div>
 
               <div className="flex justify-end gap-3 pt-6">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
-                <button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
-                  {isLoading ? 'Saving...' : 'Save News'}
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {isLoading ? "Saving..." : "Save News"}
                 </button>
               </div>
             </form>

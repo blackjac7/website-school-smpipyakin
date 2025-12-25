@@ -86,6 +86,9 @@ export function PPDBPageClient({
     enableRateLimit: true,
   });
 
+  // Keep the server-provided status variable referenced (reserved for future UI improvements)
+  void _ppdbStatus;
+
   // Set page title
   useEffect(() => {
     document.title = "PPDB - SMP IP Yakin Jakarta";
