@@ -80,6 +80,7 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
           await deleteHeroSlide(id);
           toast.success("Slide deleted");
         } catch (error) {
+          console.error("Failed to delete slide:", error);
           toast.error("Failed to delete slide");
         }
       }
