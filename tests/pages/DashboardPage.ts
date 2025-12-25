@@ -111,7 +111,27 @@ export class DashboardPage {
   async logout(): Promise<void> {
     if ((await this.logoutButton.count()) > 0) {
       await this.logoutButton.first().click();
-      await this.page.waitForLoadState("domcontentloaded");
+
+      // Wait for network idle and for either the logout button to be removed
+      // or the login form to appear. This reduces flakiness on slow CI environments.
+      await this.page.waitForLoadState("networkidle").catch(() => {});
+
+      // Wait for logout button to be detached (user session cleared)
+      await this.logoutButton
+        .first()
+        .waitFor({ state: "detached", timeout: 10000 })
+        .catch(() => {});
+
+      // If login form exists, wait for it to be visible
+      const loginSelector = this.page.locator(
+        '#username, input[name="username"]'
+      );
+      if ((await loginSelector.count()) > 0) {
+        await loginSelector
+          .first()
+          .waitFor({ state: "visible", timeout: 10000 })
+          .catch(() => {});
+      }
     }
   }
 
