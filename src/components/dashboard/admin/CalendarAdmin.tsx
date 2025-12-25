@@ -8,6 +8,8 @@ import { SchoolActivity, SemesterType } from "@prisma/client";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 
 interface CalendarPageProps {
   activities: SchoolActivity[];
@@ -18,6 +20,7 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
   const [editingItem, setEditingItem] = useState<SchoolActivity | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [filterSemester, setFilterSemester] = useState<SemesterType | "ALL">("ALL");
+  const confirmModal = useToastConfirm();
 
   const filteredActivities = filterSemester === "ALL"
     ? activities
@@ -68,13 +71,24 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this activity?")) return;
-    try {
-      await deleteCalendarEvent(id);
-      toast.success("Activity deleted");
-    } catch (error) {
-      toast.error("Failed to delete activity");
-    }
+    confirmModal.showConfirm(
+      {
+        title: "Hapus Kegiatan",
+        message: "Apakah Anda yakin ingin menghapus kegiatan ini?",
+        description: "Tindakan ini tidak dapat dibatalkan.",
+        type: "danger",
+        confirmText: "Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
+        try {
+          await deleteCalendarEvent(id);
+          toast.success("Activity deleted");
+        } catch (error) {
+          toast.error("Failed to delete activity");
+        }
+      }
+    );
   };
 
   return (
@@ -211,6 +225,15 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
           </motion.div>
         </div>
       )}
+
+      {/* Toast Confirm Modal */}
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        isLoading={confirmModal.isLoading}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+        {...confirmModal.options}
+      />
     </div>
   );
 }

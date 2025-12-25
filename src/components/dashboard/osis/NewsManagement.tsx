@@ -7,11 +7,14 @@ import toast from "react-hot-toast";
 import { OsisNews } from "./types";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 
 export default function NewsManagement() {
   const [news, setNews] = useState<OsisNews[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const confirmModal = useToastConfirm();
 
   useEffect(() => {
     fetchNews();
@@ -33,14 +36,25 @@ export default function NewsManagement() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Apakah anda yakin ingin menghapus berita ini?")) return;
-    const res = await deleteOsisNews(id);
-    if (res.success) {
-      toast.success("Berita dihapus");
-      fetchNews();
-    } else {
-      toast.error(res.error || "Gagal menghapus");
-    }
+    confirmModal.showConfirm(
+      {
+        title: "Hapus Berita",
+        message: "Apakah Anda yakin ingin menghapus berita ini?",
+        description: "Tindakan ini tidak dapat dibatalkan.",
+        type: "danger",
+        confirmText: "Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
+        const res = await deleteOsisNews(id);
+        if (res.success) {
+          toast.success("Berita dihapus");
+          fetchNews();
+        } else {
+          toast.error(res.error || "Gagal menghapus");
+        }
+      }
+    );
   };
 
   return (
@@ -98,6 +112,14 @@ export default function NewsManagement() {
       {showModal && (
         <AddNewsModal onClose={() => setShowModal(false)} onSuccess={() => { setShowModal(false); fetchNews(); }} />
       )}
+
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        isLoading={confirmModal.isLoading}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+        {...confirmModal.options}
+      />
     </div>
   );
 }

@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { createHeroSlide, updateHeroSlide, deleteHeroSlide } from "@/actions/hero";
 import { HeroSlide } from "@prisma/client";
 import toast from "react-hot-toast";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 
 interface HeroPageProps {
   slides: HeroSlide[];
@@ -15,6 +17,7 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSlide, setEditingSlide] = useState<HeroSlide | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const confirmModal = useToastConfirm();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,13 +55,24 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this slide?")) return;
-    try {
-      await deleteHeroSlide(id);
-      toast.success("Slide deleted");
-    } catch (error) {
-      toast.error("Failed to delete slide");
-    }
+    confirmModal.showConfirm(
+      {
+        title: "Hapus Slide",
+        message: "Apakah Anda yakin ingin menghapus slide ini?",
+        description: "Tindakan ini tidak dapat dibatalkan.",
+        type: "danger",
+        confirmText: "Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
+        try {
+          await deleteHeroSlide(id);
+          toast.success("Slide deleted");
+        } catch (error) {
+          toast.error("Failed to delete slide");
+        }
+      }
+    );
   };
 
   return (
@@ -192,6 +206,15 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
           </motion.div>
         </div>
       )}
+
+      {/* Toast Confirm Modal */}
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        isLoading={confirmModal.isLoading}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+        {...confirmModal.options}
+      />
     </div>
   );
 }
