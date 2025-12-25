@@ -1,0 +1,76 @@
+import { test, expect, request } from "@playwright/test";
+import prisma from "../src/lib/prisma";
+
+const samplePayload = (nisn: string) => ({
+  namaLengkap: "Test User",
+  nisn,
+  jenisKelamin: "laki-laki",
+  tempatLahir: "Jakarta",
+  tanggalLahir: "2012-01-01",
+  alamatLengkap: "Jl. Contoh",
+  asalSekolah: "SD Contoh",
+  kontakOrtu: "081234567890",
+  namaOrtu: "Ortu Test",
+  emailOrtu: "ortu@example.com",
+  documents: [],
+});
+
+test.describe("PPDB public registration gating", () => {
+  test.beforeEach(async () => {
+    // ensure settings seeded
+    await prisma.siteSettings.upsert({
+      where: { key: "ppdb.enabled" },
+      update: { value: "false" },
+      create: {
+        key: "ppdb.enabled",
+        value: "false",
+        type: "BOOLEAN",
+        category: "ppdb",
+      },
+    });
+  });
+
+  test("should reject registration when PPDB is closed", async ({
+    request,
+  }) => {
+    // ensure closed
+    await prisma.siteSettings.update({
+      where: { key: "ppdb.enabled" },
+      data: { value: "false" },
+    });
+
+    const res = await request.post("/api/ppdb/register", {
+      data: samplePayload("1234567890"),
+    });
+    expect(res.status()).toBe(403);
+    const body = await res.json();
+    expect(body.error).toBeTruthy();
+  });
+
+  test("should accept registration when PPDB is open", async ({ request }) => {
+    // open PPDB
+    await prisma.siteSettings.update({
+      where: { key: "ppdb.enabled" },
+      data: { value: "true" },
+    });
+
+    const nisn = `test-${Date.now()}`;
+    const res = await request.post("/api/ppdb/register", {
+      data: samplePayload(nisn),
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(body.success).toBeTruthy();
+
+    // cleanup created application
+    await prisma.pPDBApplication.deleteMany({ where: { nisn } });
+  });
+
+  test.afterAll(async () => {
+    // reset
+    await prisma.siteSettings.update({
+      where: { key: "ppdb.enabled" },
+      data: { value: "true" },
+    });
+  });
+});
