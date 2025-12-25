@@ -3,7 +3,7 @@ import prisma from "../src/lib/prisma";
 
 const CRON_SECRET = process.env.CRON_SECRET || "test-cron-secret";
 
-test.describe.serial("Maintenance schedule cron", () => {
+test.describe.serial("@nightly Maintenance schedule cron", () => {
   test.beforeEach(async () => {
     // cleanup schedules
     await prisma.maintenanceSchedule.deleteMany();

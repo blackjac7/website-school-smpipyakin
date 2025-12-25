@@ -26,7 +26,7 @@ import {
 } from "./pages";
 import { LoginPage } from "./pages/LoginPage";
 
-test.describe("Homepage", () => {
+test.describe("@smoke Homepage", () => {
   let homePage: HomePage;
 
   test.beforeEach(async ({ page }) => {
@@ -64,7 +64,7 @@ test.describe("Homepage", () => {
   });
 });
 
-test.describe("Login Page", () => {
+test.describe("@smoke Login Page", () => {
   let loginPage: LoginPage;
 
   test.beforeEach(async ({ page }) => {
@@ -193,7 +193,7 @@ test.describe("Contact Page", () => {
   });
 });
 
-test.describe("PPDB Page", () => {
+test.describe("@smoke PPDB Page", () => {
   let ppdbPage: PPDBPage;
 
   test.beforeEach(async ({ page }) => {
