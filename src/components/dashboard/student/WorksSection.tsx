@@ -457,21 +457,25 @@ export default function WorksSection({
                           <div className="w-full h-full bg-gray-900 flex items-center justify-center text-white">
                             {/* Just a placeholder if no thumbnail fetch logic available in this view, simpler than before */}
                             {isYouTubeUrl(work.videoLink) ? (
-                              <img
-                                src={getYouTubeThumbnail(work.videoLink) || ""}
-                                className="w-full h-full object-cover opacity-80"
-                                alt=""
-                              />
+                              (() => {
+                                const thumb = getYouTubeThumbnail(work.videoLink);
+                                return thumb ? (
+                                  <Image
+                                    src={thumb}
+                                    alt=""
+                                    fill
+                                    className="object-cover opacity-80"
+                                  />
+                                ) : (
+                                  <div className="flex flex-col items-center">
+                                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-2">
+                                      <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent ml-1"></div>
+                                    </div>
+                                    <span className="text-xs font-medium">Video Preview</span>
+                                  </div>
+                                );
+                              })()
                             ) : (
-                              <div className="flex flex-col items-center">
-                                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-2">
-                                  <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent ml-1"></div>
-                                </div>
-                                <span className="text-xs font-medium">
-                                  Video Preview
-                                </span>
-                              </div>
-                            )}
                           </div>
                         </div>
                       ) : (
