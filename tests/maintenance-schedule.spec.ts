@@ -3,7 +3,7 @@ import prisma from "../src/lib/prisma";
 
 const CRON_SECRET = process.env.CRON_SECRET || "test-cron-secret";
 
-test.describe("Maintenance schedule cron", () => {
+test.describe.serial("Maintenance schedule cron", () => {
   test.beforeEach(async () => {
     // cleanup schedules
     await prisma.maintenanceSchedule.deleteMany();
@@ -55,7 +55,7 @@ test.describe("Maintenance schedule cron", () => {
     expect(statusBody.data.message).toContain("Scheduled maintenance test");
 
     // cleanup
-    await prisma.maintenanceSchedule.delete({ where: { id: schedule.id } });
+    await prisma.maintenanceSchedule.deleteMany({ where: { id: schedule.id } });
   });
 
   test("cron should disable maintenance when no active schedule", async ({

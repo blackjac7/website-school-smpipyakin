@@ -15,7 +15,7 @@ const samplePayload = (nisn: string) => ({
   documents: [],
 });
 
-test.describe("PPDB public registration gating", () => {
+test.describe.serial("PPDB public registration gating", () => {
   test.beforeEach(async () => {
     // ensure settings seeded
     await prisma.siteSettings.upsert({
@@ -39,12 +39,24 @@ test.describe("PPDB public registration gating", () => {
       data: { value: "false" },
     });
 
+    const nisn = `closed-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+    // ensure no leftover application with same nisn
+    await prisma.pPDBApplication.deleteMany({ where: { nisn } });
+
     const res = await request.post("/api/ppdb/register", {
-      data: samplePayload("1234567890"),
+      data: samplePayload(nisn),
     });
+
     expect(res.status()).toBe(403);
     const body = await res.json();
     expect(body.error).toBeTruthy();
+
+    // ensure no application was created
+    const existing = await prisma.pPDBApplication.findUnique({
+      where: { nisn },
+    });
+    expect(existing).toBeNull();
   });
 
   test("should accept registration when PPDB is open", async ({ request }) => {
@@ -54,7 +66,10 @@ test.describe("PPDB public registration gating", () => {
       data: { value: "true" },
     });
 
-    const nisn = `test-${Date.now()}`;
+    const nisn = `open-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    // ensure no leftover application with same nisn
+    await prisma.pPDBApplication.deleteMany({ where: { nisn } });
+
     const res = await request.post("/api/ppdb/register", {
       data: samplePayload(nisn),
     });
