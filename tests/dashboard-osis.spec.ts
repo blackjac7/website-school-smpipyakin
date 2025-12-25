@@ -14,7 +14,7 @@ import { test, expect } from "@playwright/test";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardOSISPage } from "./pages/DashboardPage";
 
-test.describe("Dashboard OSIS - Overview", () => {
+test.describe("@nightly Dashboard OSIS - Overview", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardOSISPage;
 
@@ -89,7 +89,7 @@ test.describe("Dashboard OSIS - Responsive Design", () => {
   });
 });
 
-test.describe("Dashboard OSIS - Navigation", () => {
+test.describe("@nightly Dashboard OSIS - Navigation", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardOSISPage;
 
