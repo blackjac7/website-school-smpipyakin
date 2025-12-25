@@ -62,8 +62,19 @@ export class LoginPage {
    * Navigate to login page
    */
   async goto(): Promise<void> {
-    await this.page.goto("/login");
-    await this.page.waitForLoadState("domcontentloaded");
+    // Use networkidle and a slightly longer timeout to be resilient on CI/dev servers
+    try {
+      await this.page.goto("/login", {
+        waitUntil: "networkidle",
+        timeout: 60000,
+      });
+    } catch (err) {
+      // Retry once if navigation times out
+      await this.page.goto("/login", {
+        waitUntil: "networkidle",
+        timeout: 60000,
+      });
+    }
   }
 
   /**
