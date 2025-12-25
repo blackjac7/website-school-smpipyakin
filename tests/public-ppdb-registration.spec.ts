@@ -15,7 +15,7 @@ const samplePayload = (nisn: string) => ({
   documents: [],
 });
 
-test.describe.serial("PPDB public registration gating", () => {
+test.describe.serial("@smoke PPDB public registration gating", () => {
   test.beforeEach(async () => {
     // ensure settings seeded
     await prisma.siteSettings.upsert({
