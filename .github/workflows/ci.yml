@@ -283,11 +283,88 @@ jobs:
           path: db-dump.sql
           retention-days: 7
 
+  # Staged E2E (push to main) — medium coverage to catch regressions quickly
+  staged-e2e:
+    name: Staged E2E (medium)
+    runs-on: ubuntu-latest
+    needs: [build, prepare-db-snapshot]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Cache npm & Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browser (chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: Download DB snapshot
+        uses: actions/download-artifact@v4
+        with:
+          name: db-dump
+
+      - name: Install Postgres client (psql)
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Restore DB from dump
+        run: |
+          if [ -f db-dump.sql ]; then
+            PGPASSWORD=password psql -h localhost -U postgres -d testdb -f db-dump.sql
+          fi
+
+      - name: Start server and run staged E2E tests
+        run: |
+          npm run start &
+          sleep 10
+          npx playwright test --grep "@medium|@smoke" --project=chromium --workers=2 --reporter=list
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/testdb
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+      - name: Upload test results (on failure only)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-staged
+          path: playwright-report/
+          retention-days: 7
+
   # Full E2E (nightly or push to main) — full browser matrix, longer runtime
   full-e2e:
     name: Full E2E (matrix)
     runs-on: ubuntu-latest
-    needs: [build, prepare-db-snapshot]
+    needs: [build, prepare-db-snapshot, staged-e2e]
     if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     services:
       postgres:
@@ -362,6 +439,16 @@ jobs:
           name: playwright-report-full
           path: playwright-report/
           retention-days: 30
+
+      - name: Create GitHub issue on full E2E failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const title = `[E2E][FAIL] Full E2E failed on ${context.repo.owner}/${context.repo.repo} (${process.env.GITHUB_REF})`;
+            const body = `Full E2E tests failed.\n\nRun details: ${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}\n\nArtifacts: playwright-report-full\n\nPlease triage and attach relevant failing traces/screenshot artifacts.`;
+            await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body });
 
   # Lighthouse Performance Check
   lighthouse:
