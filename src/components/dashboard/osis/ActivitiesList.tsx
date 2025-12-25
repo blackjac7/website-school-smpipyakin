@@ -16,6 +16,7 @@ import { id as idLocale } from "date-fns/locale";
 interface ActivitiesListProps {
   activities: OsisActivity[];
   onAddActivity: () => void;
+  onViewActivity?: (activity: OsisActivity) => void;
   onEditActivity: (activity: OsisActivity) => void;
   onDeleteActivity: (id: string) => void;
 }

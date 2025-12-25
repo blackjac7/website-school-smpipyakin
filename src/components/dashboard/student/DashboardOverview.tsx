@@ -32,15 +32,31 @@ interface DashboardOverviewProps {
     category?: string;
     level?: string;
   }>;
+  works?: Array<{
+    id: string;
+    title: string;
+    description: string;
+    workType: string;
+    mediaUrl: string;
+    videoLink: string;
+    category: string;
+    subject: string;
+    status: string;
+    rejectionNote: string;
+    createdAt: string;
+  }>;
   onQuickEdit: () => void;
   onUploadAchievement: () => void;
+  onUploadWork?: () => void;
 }
 
 export default function DashboardOverview({
   profileData,
   achievements,
+  works,
   onQuickEdit,
   onUploadAchievement,
+  onUploadWork,
 }: DashboardOverviewProps) {
   const approvedAchievements = achievements.filter(
     (a) => a.status === "approved"
@@ -48,6 +64,10 @@ export default function DashboardOverview({
   const pendingAchievements = achievements.filter(
     (a) => a.status === "pending"
   );
+
+  // Keep optional props referenced to avoid lint warnings until they are used
+  void works;
+  void onUploadWork;
   // const pendingWorks = works.filter((w) => w.status === "pending");
   // const approvedWorks = works.filter((w) => w.status === "approved");
 
