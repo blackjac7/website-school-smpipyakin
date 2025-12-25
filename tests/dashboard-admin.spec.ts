@@ -14,7 +14,7 @@ import { test, expect } from "@playwright/test";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardAdminPage } from "./pages/DashboardPage";
 
-test.describe("Dashboard Admin - Overview", () => {
+test.describe("@nightly Dashboard Admin - Overview", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardAdminPage;
 
@@ -45,7 +45,7 @@ test.describe("Dashboard Admin - Overview", () => {
   });
 });
 
-test.describe("Dashboard Admin - Announcements Management", () => {
+test.describe("@nightly Dashboard Admin - Announcements Management", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardAdminPage;
 
@@ -67,7 +67,7 @@ test.describe("Dashboard Admin - Announcements Management", () => {
   });
 });
 
-test.describe("Dashboard Admin - News Management", () => {
+test.describe("@nightly Dashboard Admin - News Management", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardAdminPage;
 
@@ -89,7 +89,7 @@ test.describe("Dashboard Admin - News Management", () => {
   });
 });
 
-test.describe("Dashboard Admin - Users Management", () => {
+test.describe("@nightly Dashboard Admin - Users Management", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardAdminPage;
 
@@ -111,7 +111,7 @@ test.describe("Dashboard Admin - Users Management", () => {
   });
 });
 
-test.describe("Dashboard Admin - Teachers Management", () => {
+test.describe("@nightly Dashboard Admin - Teachers Management", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardAdminPage;
 
@@ -133,7 +133,7 @@ test.describe("Dashboard Admin - Teachers Management", () => {
   });
 });
 
-test.describe("Dashboard Admin - Calendar Management", () => {
+test.describe("@nightly Dashboard Admin - Calendar Management", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardAdminPage;
 
@@ -155,7 +155,7 @@ test.describe("Dashboard Admin - Calendar Management", () => {
   });
 });
 
-test.describe("Dashboard Admin - Hero Management", () => {
+test.describe("@nightly Dashboard Admin - Hero Management", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardAdminPage;
 
@@ -177,7 +177,7 @@ test.describe("Dashboard Admin - Hero Management", () => {
   });
 });
 
-test.describe("Dashboard Admin - Stats Management", () => {
+test.describe("@nightly Dashboard Admin - Stats Management", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardAdminPage;
 
@@ -199,7 +199,7 @@ test.describe("Dashboard Admin - Stats Management", () => {
   });
 });
 
-test.describe("Dashboard Admin - Notifications", () => {
+test.describe("@nightly Dashboard Admin - Notifications", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardAdminPage;
 
@@ -221,7 +221,7 @@ test.describe("Dashboard Admin - Notifications", () => {
   });
 });
 
-test.describe("Dashboard Admin - Responsive Design", () => {
+test.describe("@nightly Dashboard Admin - Responsive Design", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardAdminPage;
 
@@ -242,7 +242,7 @@ test.describe("Dashboard Admin - Responsive Design", () => {
   });
 });
 
-test.describe("Dashboard Admin - Navigation", () => {
+test.describe("@nightly Dashboard Admin - Navigation", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardAdminPage;
 

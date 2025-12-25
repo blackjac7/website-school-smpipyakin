@@ -14,7 +14,7 @@ import { test, expect } from "@playwright/test";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardKesiswaanPage } from "./pages/DashboardPage";
 
-test.describe("Dashboard Kesiswaan - Overview", () => {
+test.describe("@nightly Dashboard Kesiswaan - Overview", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardKesiswaanPage;
 

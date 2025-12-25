@@ -14,7 +14,7 @@ import { test, expect } from "@playwright/test";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardPPDBPage } from "./pages/DashboardPage";
 
-test.describe("Dashboard PPDB - Overview", () => {
+test.describe("@nightly Dashboard PPDB - Overview", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardPPDBPage;
 
@@ -45,7 +45,7 @@ test.describe("Dashboard PPDB - Overview", () => {
   });
 });
 
-test.describe("Dashboard PPDB - Pendaftar Management", () => {
+test.describe("@nightly Dashboard PPDB - Pendaftar Management", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardPPDBPage;
 

@@ -14,7 +14,7 @@ import { test, expect } from "@playwright/test";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardSiswaPage } from "./pages/DashboardPage";
 
-test.describe("Dashboard Siswa - Overview", () => {
+test.describe("@nightly Dashboard Siswa - Overview", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardSiswaPage;
 
@@ -46,7 +46,7 @@ test.describe("Dashboard Siswa - Overview", () => {
   });
 });
 
-test.describe("Dashboard Siswa - Karya Siswa", () => {
+test.describe("@nightly Dashboard Siswa - Karya Siswa", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardSiswaPage;
 
@@ -84,7 +84,7 @@ test.describe("Dashboard Siswa - Karya Siswa", () => {
   });
 });
 
-test.describe("Dashboard Siswa - Pengumuman", () => {
+test.describe("@nightly Dashboard Siswa - Pengumuman", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardSiswaPage;
 
@@ -111,7 +111,7 @@ test.describe("Dashboard Siswa - Pengumuman", () => {
   });
 });
 
-test.describe("Dashboard Siswa - Responsive Design", () => {
+test.describe("@nightly Dashboard Siswa - Responsive Design", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardSiswaPage;
 
@@ -140,7 +140,7 @@ test.describe("Dashboard Siswa - Responsive Design", () => {
   });
 });
 
-test.describe("Dashboard Siswa - Navigation", () => {
+test.describe("@nightly Dashboard Siswa - Navigation", () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardSiswaPage;
 
