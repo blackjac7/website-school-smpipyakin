@@ -44,8 +44,14 @@ test.describe.serial("@smoke PPDB public registration gating", () => {
     // ensure no leftover application with same nisn
     await prisma.pPDBApplication.deleteMany({ where: { nisn } });
 
+    // ensure server is responsive
+    const health = await request.get("/");
+    expect(health.ok()).toBeTruthy();
+
+    // increase timeout for API post to reduce flakiness on slow CI machines
     const res = await request.post("/api/ppdb/register", {
       data: samplePayload(nisn),
+      timeout: 30000,
     });
 
     expect(res.status()).toBe(403);
@@ -70,8 +76,13 @@ test.describe.serial("@smoke PPDB public registration gating", () => {
     // ensure no leftover application with same nisn
     await prisma.pPDBApplication.deleteMany({ where: { nisn } });
 
+    // ensure server is responsive
+    const health = await request.get("/");
+    expect(health.ok()).toBeTruthy();
+
     const res = await request.post("/api/ppdb/register", {
       data: samplePayload(nisn),
+      timeout: 30000,
     });
     expect(res.status()).toBe(200);
     const body = await res.json();
