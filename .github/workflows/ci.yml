@@ -127,6 +127,16 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
+      - name: Cache npm & Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
         run: npm ci
 
@@ -253,6 +263,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Cache npm & Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install Playwright Browsers (all)
         run: npx playwright install --with-deps
 
@@ -273,9 +293,9 @@ jobs:
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
 
-      - name: Upload test results
+      - name: Upload test results (on failure only)
+        if: failure()
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: playwright-report-full
           path: playwright-report/
