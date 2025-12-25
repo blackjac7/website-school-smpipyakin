@@ -16,6 +16,8 @@ import {
   TeacherInput,
 } from "@/actions/admin/teachers";
 import { motion } from "framer-motion";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 
 export default function TeachersPage() {
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
@@ -25,6 +27,7 @@ export default function TeachersPage() {
   const [selectedTeacher, setSelectedTeacher] = useState<TeacherData | null>(
     null
   );
+  const confirmModal = useToastConfirm();
 
   // Fetch teachers on mount
   const fetchTeachers = async () => {
@@ -61,15 +64,25 @@ export default function TeachersPage() {
     const teacher = teachers.find((t) => t.id === id);
     if (!teacher) return;
 
-    if (confirm(`Apakah Anda yakin ingin menghapus ${teacher.name}?`)) {
-      const result = await deleteTeacher(id);
-      if (result.success) {
-        toast.success(result.message || "Guru berhasil dihapus");
-        fetchTeachers();
-      } else {
-        toast.error(result.error || "Gagal menghapus guru");
+    confirmModal.showConfirm(
+      {
+        title: "Hapus Guru",
+        message: `Apakah Anda yakin ingin menghapus ${teacher.name}?`,
+        description: "Data guru yang dihapus tidak dapat dikembalikan.",
+        type: "danger",
+        confirmText: "Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
+        const result = await deleteTeacher(id);
+        if (result.success) {
+          toast.success(result.message || "Guru berhasil dihapus");
+          fetchTeachers();
+        } else {
+          toast.error(result.error || "Gagal menghapus guru");
+        }
       }
-    }
+    );
   };
 
   // Handle toggle status
@@ -186,6 +199,15 @@ export default function TeachersPage() {
         mode={modalMode}
         selectedTeacher={selectedTeacher}
         onSubmit={handleModalSubmit}
+      />
+
+      {/* Toast Confirm Modal */}
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        isLoading={confirmModal.isLoading}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+        {...confirmModal.options}
       />
     </div>
   );
