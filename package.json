@@ -29,7 +29,8 @@
     "test:dashboards": "playwright test tests/dashboard-*.spec.ts",
     "test:e2e": "playwright test",
     "test:coverage": "playwright test --reporter=html,json --output=coverage-report",
-    "check:instrumentation": "node ./scripts/checkInstrumentation.js"
+    "check:instrumentation": "node scripts/checkInstrumentation.js",
+    "prebuild": "npm run check:instrumentation"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.956.0",

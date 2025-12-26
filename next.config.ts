@@ -7,8 +7,7 @@ const withPWA = withPWAInit({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
-  // Allow caching files up to 5MB (increase from default to avoid large sourcemap warnings)
-  maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+  maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB, increase default to allow larger source maps
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/res\.cloudinary\.com\/.*/i,
