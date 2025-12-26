@@ -421,15 +421,15 @@ async function seedHeroSlides() {
       sortOrder: 1,
     },
     {
-      title: "Ekstrakurikuler yang Aktif",
+      title: "Fasilitas Sekolah",
       subtitle:
-        "Bergabunglah dengan berbagai ekstrakurikuler untuk mengembangkan minat dan bakatmu.",
+        "Fasilitas lengkap yang mendukung kegiatan belajar dan pengembangan siswa.",
       imageSmall:
         "https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1024/q_auto/f_auto/v1733055889/hero2_oa2prx.webp",
       imageMedium:
         "https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1600/q_auto/f_auto/v1733055889/hero2_oa2prx.webp",
-      linkPrimaryText: "Ekstrakurikuler",
-      linkPrimaryHref: "/ekstrakurikuler",
+      linkPrimaryText: "Fasilitas",
+      linkPrimaryHref: "/facilities",
       isActive: true,
       sortOrder: 2,
     },
