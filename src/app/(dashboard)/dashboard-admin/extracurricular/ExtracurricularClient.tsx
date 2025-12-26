@@ -6,14 +6,14 @@ import { Plus, Pencil, Trash2, Search, X, UploadCloud, Clock } from "lucide-reac
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
-import { ToastConfirmModal } from "@/components/shared/ToastConfirmModal";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 import {
   createExtracurricular,
   updateExtracurricular,
   deleteExtracurricular,
 } from "@/actions/admin/extracurricular";
 import { Extracurricular } from "@prisma/client";
-import { CldUploadWidget } from "next-cloudinary";
+import { CldUploadWidget, CloudinaryUploadWidgetResults } from "next-cloudinary";
 
 interface ExtracurricularClientProps {
   initialData: Extracurricular[];
@@ -29,34 +29,34 @@ export default function ExtracurricularClient({ initialData }: ExtracurricularCl
 
   // Form states
   const [formData, setFormData] = useState({
-    name: "",
+    title: "",
     description: "",
     schedule: "",
-    imageUrl: "",
+    image: "",
   });
 
-  const { showConfirm, confirmProps } = useToastConfirm();
+  const { showConfirm, ...confirmState } = useToastConfirm();
 
   const filteredData = data.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleOpenModal = (item?: Extracurricular) => {
     if (item) {
       setEditingItem(item);
       setFormData({
-        name: item.name,
-        description: item.description,
-        schedule: item.schedule,
-        imageUrl: item.imageUrl || "",
+        title: item.title,
+        description: item.description || "",
+        schedule: item.schedule || "",
+        image: item.image || "",
       });
     } else {
       setEditingItem(null);
       setFormData({
-        name: "",
+        title: "",
         description: "",
         schedule: "",
-        imageUrl: "",
+        image: "",
       });
     }
     setIsModalOpen(true);
@@ -68,10 +68,10 @@ export default function ExtracurricularClient({ initialData }: ExtracurricularCl
 
     try {
       const form = new FormData();
-      form.append("name", formData.name);
+      form.append("title", formData.title);
       form.append("description", formData.description);
       form.append("schedule", formData.schedule);
-      form.append("imageUrl", formData.imageUrl);
+      form.append("image", formData.image);
 
       let result;
       if (editingItem) {
@@ -97,12 +97,14 @@ export default function ExtracurricularClient({ initialData }: ExtracurricularCl
   };
 
   const handleDelete = (id: string) => {
-    showConfirm({
-      title: "Hapus Ekstrakurikuler?",
-      message: "Data yang dihapus tidak dapat dikembalikan.",
-      confirmText: "Hapus",
-      cancelText: "Batal",
-      onConfirm: async () => {
+    showConfirm(
+      {
+        title: "Hapus Ekstrakurikuler?",
+        message: "Data yang dihapus tidak dapat dikembalikan.",
+        confirmText: "Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
         const result = await deleteExtracurricular(id);
         if (result.success) {
           toast.success("Ekstrakurikuler dihapus");
@@ -110,8 +112,8 @@ export default function ExtracurricularClient({ initialData }: ExtracurricularCl
         } else {
           toast.error(result.error || "Gagal menghapus");
         }
-      },
-    });
+      }
+    );
   };
 
   return (
@@ -150,10 +152,10 @@ export default function ExtracurricularClient({ initialData }: ExtracurricularCl
             className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-md transition-shadow"
           >
             <div className="relative h-48 w-full bg-gray-100">
-              {item.imageUrl ? (
+              {item.image ? (
                 <Image
-                  src={item.imageUrl}
-                  alt={item.name}
+                  src={item.image}
+                  alt={item.title}
                   fill
                   className="object-cover"
                 />
@@ -178,10 +180,10 @@ export default function ExtracurricularClient({ initialData }: ExtracurricularCl
               </div>
             </div>
             <div className="p-4">
-              <h3 className="font-semibold text-gray-800 mb-1">{item.name}</h3>
+              <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
               <div className="flex items-center gap-1.5 text-xs text-blue-600 mb-2 font-medium">
                 <Clock className="w-3.5 h-3.5" />
-                {item.schedule}
+                {item.schedule || "Jadwal belum diatur"}
               </div>
               <p className="text-sm text-gray-600 line-clamp-2">
                 {item.description}
@@ -221,9 +223,9 @@ export default function ExtracurricularClient({ initialData }: ExtracurricularCl
                 <input
                   type="text"
                   required
-                  value={formData.name}
+                  value={formData.title}
                   onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
+                    setFormData({ ...formData, title: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -265,10 +267,10 @@ export default function ExtracurricularClient({ initialData }: ExtracurricularCl
                   Foto
                 </label>
                 <div className="mt-1 flex items-center gap-4">
-                  {formData.imageUrl && (
+                  {formData.image && (
                     <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
                       <Image
-                        src={formData.imageUrl}
+                        src={formData.image}
                         alt="Preview"
                         fill
                         className="object-cover"
@@ -277,11 +279,14 @@ export default function ExtracurricularClient({ initialData }: ExtracurricularCl
                   )}
                   <CldUploadWidget
                     uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_PPDB || "ml_default"}
-                    onSuccess={(result: { info: { secure_url: string } }) => {
-                      setFormData({
-                        ...formData,
-                        imageUrl: result.info.secure_url,
-                      });
+                    onSuccess={(result: CloudinaryUploadWidgetResults) => {
+                      const info = result?.info;
+                      if (info && typeof info === 'object' && 'secure_url' in info) {
+                        setFormData({
+                          ...formData,
+                          image: (info as { secure_url: string }).secure_url,
+                        });
+                      }
                     }}
                   >
                     {({ open }) => (
@@ -319,7 +324,19 @@ export default function ExtracurricularClient({ initialData }: ExtracurricularCl
         </div>
       )}
 
-      <ToastConfirmModal {...confirmProps} />
+      <ToastConfirmModal
+        isOpen={confirmState.isOpen}
+        message={confirmState.options.message}
+        title={confirmState.options.title}
+        description={confirmState.options.description}
+        type={confirmState.options.type}
+        confirmText={confirmState.options.confirmText}
+        cancelText={confirmState.options.cancelText}
+        onConfirm={confirmState.onConfirm}
+        onCancel={confirmState.onCancel}
+        showCloseButton={confirmState.options.showCloseButton}
+        isLoading={confirmState.isLoading}
+      />
     </div>
   );
 }
