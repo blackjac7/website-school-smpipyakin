@@ -2,6 +2,7 @@
 import { Suspense } from "react";
 import HeroCarousel from "@/components/home/HeroCarousel";
 import QuickStats from "@/components/home/QuickStats";
+import ServerHero from "@/components/home/ServerHero";
 import Announcements from "@/components/home/Announcements";
 import NewsSection from "@/components/home/NewsSection";
 import Events from "@/components/home/Events";
@@ -130,7 +131,12 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroCarousel slides={transformedSlides} />
+      {/* Server-rendered initial hero to ensure preload is used for LCP */}
+      {transformedSlides.length > 0 && (
+        <ServerHero slide={transformedSlides[0]} />
+      )}
+
+      <HeroCarousel slides={transformedSlides} ssrFallback={true} />
 
       <QuickStats stats={schoolStats} />
 
