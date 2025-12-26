@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -77,27 +77,15 @@ export default function HeroCarousel({
   const [current, setCurrent] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
 
-  useLayoutEffect(() => {
+  // Use standard useEffect to avoid SSR warnings and ensure consistent behavior
+  useEffect(() => {
     setIsMounted(true);
-
-    // Remove server-rendered hero (if any) immediately to avoid duplication
-    if (ssrFallback) {
-      try {
-        const serverHero = document.getElementById("server-hero");
-        if (serverHero && serverHero.parentNode) {
-          // Use element.remove() which is safe if the node was already detached
-          serverHero.remove();
-        }
-      } catch {
-        // ignore
-      }
-    }
 
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % activeSlides.length);
     }, 7000);
     return () => clearInterval(timer);
-  }, [activeSlides.length, ssrFallback]);
+  }, [activeSlides.length]);
 
   const nextSlide = () => {
     setCurrent((prev) => (prev + 1) % activeSlides.length);
@@ -110,7 +98,11 @@ export default function HeroCarousel({
   };
 
   return (
-    <section className="relative h-[100dvh] min-h-[600px] overflow-hidden bg-black">
+    <section
+      className={`relative h-[100dvh] min-h-[600px] overflow-hidden transition-colors duration-500 ${
+        isMounted ? "bg-black pointer-events-auto" : "bg-transparent pointer-events-none"
+      }`}
+    >
       <AnimatePresence mode="wait">
         <motion.div
           key={current}

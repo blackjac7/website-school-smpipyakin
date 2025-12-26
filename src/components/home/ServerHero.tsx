@@ -36,19 +36,19 @@ export default function ServerHero({ slide }: { slide: HeroSlide }) {
             {slide.linkPrimary && (
               <Link
                 href={slide.linkPrimary.href}
-                className="group"
+                className="group w-full sm:w-auto flex items-center justify-center gap-2 bg-yellow-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-400 transition shadow-[0_0_20px_rgba(245,158,11,0.5)]"
                 prefetch={false}
               >
-                <a className="w-full sm:w-auto flex items-center justify-center gap-2 bg-yellow-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-400 transition shadow-[0_0_20px_rgba(245,158,11,0.5)]">
-                  {slide.linkPrimary.text}
-                </a>
+                {slide.linkPrimary.text}
               </Link>
             )}
             {slide.linkSecondary && (
-              <Link href={slide.linkSecondary.href} prefetch={false}>
-                <a className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-lg border-2 border-white text-white hover:bg-white hover:text-black transition">
-                  {slide.linkSecondary.text}
-                </a>
+              <Link
+                href={slide.linkSecondary.href}
+                prefetch={false}
+                className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-lg border-2 border-white text-white hover:bg-white hover:text-black transition flex items-center justify-center"
+              >
+                {slide.linkSecondary.text}
               </Link>
             )}
           </div>
