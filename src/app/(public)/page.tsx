@@ -131,12 +131,19 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Server-rendered initial hero to ensure preload is used for LCP */}
-      {transformedSlides.length > 0 && (
-        <ServerHero slide={transformedSlides[0]} />
-      )}
+      <div className="relative h-[100dvh] min-h-[600px]">
+        {/* Server-rendered initial hero to ensure preload is used for LCP */}
+        {transformedSlides.length > 0 && (
+          <div className="absolute inset-0 z-0">
+            <ServerHero slide={transformedSlides[0]} />
+          </div>
+        )}
 
-      <HeroCarousel slides={transformedSlides} ssrFallback={true} />
+        {/* Client-side carousel that takes over interactions */}
+        <div className="absolute inset-0 z-10">
+          <HeroCarousel slides={transformedSlides} ssrFallback={true} />
+        </div>
+      </div>
 
       <QuickStats stats={schoolStats} />
 
