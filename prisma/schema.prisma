@@ -119,6 +119,7 @@ model PPDBApplication {
   aktaKelahiranUrl  String?             @map("akta_kelahiran_url")
   kartuKeluargaUrl  String?             @map("kartu_keluarga_url")
   pasFotoUrl        String?             @map("pas_foto_url")
+  retries           Int                 @default(0)
 
   // Timestamps
   createdAt         DateTime            @default(now())

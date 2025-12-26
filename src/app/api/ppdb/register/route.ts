@@ -99,25 +99,92 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Cek apakah NISN sudah terdaftar
-    const existingApplication = await prisma.pPDBApplication.findUnique({
-      where: { nisn },
-    });
-
-    if (existingApplication) {
-      return NextResponse.json(
-        { error: "NISN sudah terdaftar dalam sistem PPDB" },
-        { status: 409 }
-      );
-    }
-
-    // Convert string ke tipe yang sesuai
+    // Prepare mappings and common conversions
     const genderMap: { [key: string]: "MALE" | "FEMALE" } = {
       "laki-laki": "MALE",
       perempuan: "FEMALE",
     };
 
     const birthDate = tanggalLahir ? new Date(tanggalLahir) : null;
+
+    // Cek apakah NISN sudah terdaftar
+    const existingApplication = await prisma.pPDBApplication.findUnique({
+      where: { nisn },
+    });
+
+    if (existingApplication) {
+      // If applicant is still pending or already accepted, block duplicate registration
+      if (
+        existingApplication.status === "PENDING" ||
+        existingApplication.status === "ACCEPTED"
+      ) {
+        return NextResponse.json(
+          {
+            error: `NISN sudah terdaftar dan berstatus ${existingApplication.status}.`,
+          },
+          { status: 409 }
+        );
+      }
+
+      // If previously rejected, allow exactly ONE re-registration attempt
+      if (existingApplication.status === "REJECTED") {
+        const retries = existingApplication.retries ?? 0;
+        if (retries >= 1) {
+          return NextResponse.json(
+            {
+              error:
+                "Tidak dapat mendaftar ulang lebih dari sekali setelah penolakan.",
+            },
+            { status: 409 }
+          );
+        }
+
+        // Proceed by updating the existing application (retry)
+        const birthDate = tanggalLahir ? new Date(tanggalLahir) : null;
+
+        const updated = await prisma.pPDBApplication.update({
+          where: { nisn },
+          data: {
+            name: namaLengkap,
+            gender: genderMap[jenisKelamin] || null,
+            birthPlace: tempatLahir || null,
+            birthDate,
+            address: alamatLengkap || null,
+            asalSekolah: asalSekolah || null,
+            parentContact: kontakOrtu || null,
+            parentName: namaOrtu || null,
+            parentEmail: emailOrtu || null,
+            status: "PENDING",
+            ijazahUrl:
+              (documents || []).find((d) => d.documentType === "ijazah")?.url ||
+              null,
+            aktaKelahiranUrl:
+              (documents || []).find((d) => d.documentType === "aktaKelahiran")
+                ?.url || null,
+            kartuKeluargaUrl:
+              (documents || []).find((d) => d.documentType === "kartuKeluarga")
+                ?.url || null,
+            pasFotoUrl:
+              (documents || []).find((d) => d.documentType === "pasFoto")
+                ?.url || null,
+            retries: retries + 1,
+            feedback: null,
+          },
+        });
+
+        return NextResponse.json({
+          success: true,
+          message: "Pendaftaran PPDB berhasil dikirim (pengajuan ulang).",
+          data: {
+            id: updated.id,
+            nisn: updated.nisn,
+            name: updated.name,
+            status: updated.status,
+            createdAt: updated.createdAt,
+          },
+        });
+      }
+    }
 
     // Buat aplikasi PPDB dalam transaksi
     const result = await prisma.$transaction(async (tx) => {
