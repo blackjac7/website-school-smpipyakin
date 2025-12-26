@@ -64,20 +64,11 @@ export default function AdminDashboardLayout({
   // Hide header on notifications page because it has its own custom header
   const showHeader = !pathname.includes("/notifications");
 
-  // Show loading overlay when navigation starts; the Sidebar will call onNavigateStart
-  const [isNavigating, setIsNavigating] = useState(false);
-
-  // Stop navigating overlay when pathname changes (navigation finished)
-  useEffect(() => {
-    setIsNavigating(false);
-  }, [pathname]);
-
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar
         isOpen={isOpen}
         onClose={() => setIsOpen(!isOpen)}
-        onNavigateStart={() => setIsNavigating(true)}
       />
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {showHeader && (
@@ -90,15 +81,11 @@ export default function AdminDashboardLayout({
           />
         )}
 
-        {/* Content area - keep stable layout and show overlay during navigation to avoid flicker */}
-        <div className="flex-1 relative">
-          {isNavigating && (
-            <div className="absolute inset-0 z-50 bg-white/60 flex items-center justify-center">
-              <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-          )}
-
-          <div className="flex-1 overflow-y-auto p-8">{children}</div>
+        {/* Content area */}
+        <div className="flex-1 overflow-y-auto bg-gray-50">
+          <div className="p-8 pb-20">
+            {children}
+          </div>
         </div>
       </div>
     </div>

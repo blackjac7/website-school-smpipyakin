@@ -22,11 +22,9 @@ interface SidebarProps {
   menuItems?: DashboardMenuItem[];
   activeMenu?: string;
   setActiveMenu?: (id: string) => void;
-  // Optional callback to notify parent that navigation started
-  onNavigateStart?: () => void;
 }
 
-export function Sidebar({ isOpen, onClose, onNavigateStart }: SidebarProps) {
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -36,6 +34,8 @@ export function Sidebar({ isOpen, onClose, onNavigateStart }: SidebarProps) {
     if (pathname.includes("/stats")) return "stats";
     if (pathname.includes("/news")) return "news";
     if (pathname.includes("/announcements")) return "announcements";
+    if (pathname.includes("/facilities")) return "facilities";
+    if (pathname.includes("/extracurricular")) return "extracurricular";
     if (pathname.includes("/calendar")) return "calendar";
     if (pathname.includes("/teachers")) return "teachers";
     if (pathname.includes("/users")) return "users";
@@ -44,9 +44,6 @@ export function Sidebar({ isOpen, onClose, onNavigateStart }: SidebarProps) {
   };
 
   const handleMenuClick = (id: string) => {
-    // Notify layout that navigation started so it can show a persistent overlay
-    if (typeof onNavigateStart === "function") onNavigateStart();
-
     switch (id) {
       case "dashboard":
         router.push("/dashboard-admin");
@@ -62,6 +59,12 @@ export function Sidebar({ isOpen, onClose, onNavigateStart }: SidebarProps) {
         break;
       case "announcements":
         router.push("/dashboard-admin/announcements");
+        break;
+      case "facilities":
+        router.push("/dashboard-admin/facilities");
+        break;
+      case "extracurricular":
+        router.push("/dashboard-admin/extracurricular");
         break;
       case "calendar":
         router.push("/dashboard-admin/calendar");
@@ -87,6 +90,8 @@ export function Sidebar({ isOpen, onClose, onNavigateStart }: SidebarProps) {
     { id: "stats", label: "Quick Stats", icon: Activity },
     { id: "news", label: "Berita Sekolah", icon: Newspaper },
     { id: "announcements", label: "Pengumuman", icon: Bell },
+    { id: "facilities", label: "Fasilitas", icon: Layout },
+    { id: "extracurricular", label: "Ekstrakurikuler", icon: Activity },
     { id: "calendar", label: "Kalender Akademik", icon: Calendar },
     { id: "teachers", label: "Profil Guru", icon: GraduationCap },
     { id: "users", label: "Manajemen Pengguna", icon: Users },

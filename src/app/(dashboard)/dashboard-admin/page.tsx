@@ -96,7 +96,7 @@ export default function AdminDashboardPage() {
       subValue: "Terdata",
       icon: Building2,
       color: "green",
-      href: "/dashboard-admin/facilities", // Assuming this route exists or will be added
+      href: "/dashboard-admin/facilities",
     },
     {
       title: "Ekstrakurikuler",
@@ -104,7 +104,7 @@ export default function AdminDashboardPage() {
       subValue: "Program",
       icon: Trophy,
       color: "red",
-      href: "/dashboard-admin/extracurricular", // Adjusted to match public route naming if admin doesn't have specific one yet, but usually it's /teachers or similar. Wait, let's check routes.
+      href: "/dashboard-admin/extracurricular",
     },
   ];
 
