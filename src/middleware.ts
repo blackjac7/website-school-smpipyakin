@@ -40,9 +40,10 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
 
   // Content Security Policy
   if (process.env.NODE_ENV === "production") {
+    // Allow the specific font CDN and Instagram framing, and enable Vercel speed insights domain in connect-src
     response.headers.set(
       "Content-Security-Policy",
-      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.emailjs.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' api.emailjs.com;"
+      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.emailjs.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' fonts.gstatic.com https://r2cdn.perplexity.ai; img-src 'self' data: https:; connect-src 'self' api.emailjs.com https://va.vercel-scripts.com; frame-src 'self' https://www.instagram.com;"
     );
   }
 
