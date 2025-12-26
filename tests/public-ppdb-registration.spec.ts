@@ -159,6 +159,38 @@ test.describe.serial("@smoke PPDB public registration gating", () => {
     await prisma.pPDBApplication.deleteMany({ where: { nisn } });
   });
 
+  test("should enforce IP rate limit on registration", async ({ request }) => {
+    // open PPDB
+    await prisma.siteSettings.update({
+      where: { key: "ppdb.enabled" },
+      data: { value: "true" },
+    });
+
+    const base = `ratetest-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const created: string[] = [];
+
+    // The server limit is 5 per hour; attempt 6 registrations with unique NISNs
+    for (let i = 0; i < 6; i++) {
+      const nisn = `${base}-${i}`;
+      const res = await request.post("/api/ppdb/register", {
+        data: samplePayload(nisn),
+        timeout: 30000,
+      });
+      if (i < 5) {
+        expect(res.status()).toBe(200);
+        created.push(nisn);
+      } else {
+        // last attempt should be rate-limited
+        expect(res.status()).toBe(429);
+      }
+    }
+
+    // cleanup created applications
+    await prisma.pPDBApplication.deleteMany({
+      where: { nisn: { in: created } },
+    });
+  });
+
   test.afterAll(async () => {
     // reset
     await prisma.siteSettings.update({
