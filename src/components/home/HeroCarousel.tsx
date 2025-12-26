@@ -85,7 +85,8 @@ export default function HeroCarousel({
       try {
         const serverHero = document.getElementById("server-hero");
         if (serverHero && serverHero.parentNode) {
-          serverHero.parentNode.removeChild(serverHero);
+          // Use element.remove() which is safe if the node was already detached
+          serverHero.remove();
         }
       } catch {
         // ignore
