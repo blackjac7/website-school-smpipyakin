@@ -15,14 +15,30 @@ export async function GET(request: NextRequest) {
     // Cek apakah NISN sudah terdaftar
     const existingApplication = await prisma.pPDBApplication.findUnique({
       where: { nisn },
-      select: { id: true, name: true, createdAt: true },
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        status: true,
+        retries: true,
+      },
     });
 
     if (existingApplication) {
+      const retries = existingApplication.retries ?? 0;
+      const allowRetry =
+        existingApplication.status === "REJECTED" && retries < 1;
+
       return NextResponse.json({
         exists: true,
         message: `NISN ${nisn} sudah terdaftar atas nama ${existingApplication.name}`,
-        data: existingApplication,
+        data: {
+          id: existingApplication.id,
+          name: existingApplication.name,
+          status: existingApplication.status,
+          retries,
+          allowRetry,
+        },
       });
     }
 

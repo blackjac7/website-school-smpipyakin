@@ -207,11 +207,20 @@ export function PPDBPageClient({
       toast.dismiss("nisn-check");
 
       if (checkResponse.ok && checkResult.exists) {
-        toast.error(
-          `NISN ${sanitizedFormData.nisn} sudah terdaftar dalam sistem PPDB`
-        );
-        antiBot.generateCaptcha(); // Refresh captcha on error
-        return;
+        // If previously rejected but allowed to retry once, allow flow to continue
+        const existing = checkResult.data || {};
+        if (existing.status === "REJECTED" && existing.allowRetry) {
+          toast(
+            `NISN ${sanitizedFormData.nisn} sebelumnya ditolak. Anda diizinkan mendaftar ulang SEKALI. Melanjutkan pendaftaran...`,
+            { icon: "⚠️" }
+          );
+        } else {
+          toast.error(
+            `NISN ${sanitizedFormData.nisn} sudah terdaftar dalam sistem PPDB`
+          );
+          antiBot.generateCaptcha(); // Refresh captcha on error
+          return;
+        }
       }
 
       console.log("NISN check passed:", checkResult.message);
