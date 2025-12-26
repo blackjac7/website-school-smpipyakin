@@ -400,11 +400,12 @@ async function seedHeroSlides() {
         "https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1600/q_auto/f_auto/v1733055884/hero3_gigw1x.webp",
       linkPrimaryText: "PPDB",
       linkPrimaryHref: "/ppdb",
-      linkSecondaryText: "Kegiatan",
-      linkSecondaryHref: "/kegiatan",
+      linkSecondaryText: "Pengumuman",
+      linkSecondaryHref: "/announcements",
       isActive: true,
       sortOrder: 0,
     },
+
     {
       title: "Prestasi Siswa Kami",
       subtitle:
@@ -414,12 +415,13 @@ async function seedHeroSlides() {
       imageMedium:
         "https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1600/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
       linkPrimaryText: "Berita",
-      linkPrimaryHref: "/berita",
-      linkSecondaryText: "Galeri",
-      linkSecondaryHref: "/galeri",
+      linkPrimaryHref: "/news",
+      linkSecondaryText: "Karya Siswa",
+      linkSecondaryHref: "/karya-siswa",
       isActive: true,
       sortOrder: 1,
     },
+
     {
       title: "Fasilitas Sekolah",
       subtitle:

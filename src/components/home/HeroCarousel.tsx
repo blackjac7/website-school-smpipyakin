@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,6 +25,8 @@ export interface HeroSlide {
 
 interface HeroCarouselProps {
   slides?: HeroSlide[];
+  /** If true, assumes the first slide is server-rendered (LCP) and will avoid reloading it on client */
+  ssrFallback?: boolean;
 }
 
 const defaultSlides: HeroSlide[] = [
@@ -66,24 +68,44 @@ const defaultSlides: HeroSlide[] = [
   },
 ];
 
-export default function HeroCarousel({ slides }: HeroCarouselProps) {
+export default function HeroCarousel({
+  slides,
+  ssrFallback,
+}: HeroCarouselProps) {
   // Use passed slides, or default slides if passed slides are empty or undefined
   const activeSlides = slides && slides.length > 0 ? slides : defaultSlides;
   const [current, setCurrent] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    setIsMounted(true);
+
+    // Remove server-rendered hero (if any) immediately to avoid duplication
+    if (ssrFallback) {
+      try {
+        const serverHero = document.getElementById("server-hero");
+        if (serverHero && serverHero.parentNode) {
+          serverHero.parentNode.removeChild(serverHero);
+        }
+      } catch {
+        // ignore
+      }
+    }
+
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % activeSlides.length);
     }, 7000);
     return () => clearInterval(timer);
-  }, [activeSlides.length]);
+  }, [activeSlides.length, ssrFallback]);
 
   const nextSlide = () => {
     setCurrent((prev) => (prev + 1) % activeSlides.length);
   };
 
   const prevSlide = () => {
-    setCurrent((prev) => (prev - 1 + activeSlides.length) % activeSlides.length);
+    setCurrent(
+      (prev) => (prev - 1 + activeSlides.length) % activeSlides.length
+    );
   };
 
   return (
@@ -97,70 +119,84 @@ export default function HeroCarousel({ slides }: HeroCarouselProps) {
           exit={{ opacity: 0 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
         >
-          <Image
-            src={activeSlides[current].image.small}
-            alt={activeSlides[current].title}
-            fill
-            sizes="100vw"
-            className="object-cover md:hidden"
-            priority={true}
-          />
-          <Image
-            src={activeSlides[current].image.medium}
-            alt={activeSlides[current].title}
-            fill
-            sizes="100vw"
-            className="object-cover hidden md:block"
-            priority={true}
-          />
+          {/* If server provided an LCP static hero, skip re-rendering its image until client mounts */}
+          {!(ssrFallback && !isMounted && current === 0) && (
+            <>
+              <Image
+                src={activeSlides[current].image.small}
+                alt={activeSlides[current].title}
+                fill
+                sizes="100vw"
+                className="object-cover md:hidden"
+                priority={current !== 0}
+              />
+              <Image
+                src={activeSlides[current].image.medium}
+                alt={activeSlides[current].title}
+                fill
+                sizes="100vw"
+                className="object-cover hidden md:block"
+                priority={current !== 0}
+              />
+            </>
+          )}
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
         </motion.div>
       </AnimatePresence>
 
       <div className="relative h-full max-w-7xl mx-auto px-4 flex items-center">
         <div className="text-white max-w-2xl z-10 pb-20 md:pb-0">
-          <AnimatePresence mode="wait">
-             <motion.div
+          {(isMounted || !ssrFallback) && (
+            <AnimatePresence mode="wait">
+              <motion.div
                 key={current}
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
-             >
+              >
                 <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-lg">
-                    {activeSlides[current].title}
+                  {activeSlides[current].title}
                 </h1>
                 <p className="text-xl md:text-2xl mb-10 text-gray-200 font-light drop-shadow-md">
-                    {activeSlides[current].subtitle}
+                  {activeSlides[current].subtitle}
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4">
-                    {activeSlides[current].linkPrimary && (
-                        <Link href={activeSlides[current].linkPrimary!.href} className="group">
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-yellow-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-400 transition shadow-[0_0_20px_rgba(245,158,11,0.5)]"
-                            >
-                                {activeSlides[current].linkPrimary!.text}
-                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </motion.button>
-                        </Link>
-                    )}
-                    {activeSlides[current].linkSecondary && (
-                        <Link href={activeSlides[current].linkSecondary!.href}>
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-lg border-2 border-white text-white hover:bg-white hover:text-black transition"
-                            >
-                                {activeSlides[current].linkSecondary!.text}
-                            </motion.button>
-                        </Link>
-                    )}
+                  {activeSlides[current].linkPrimary && (
+                    <Link
+                      href={activeSlides[current].linkPrimary!.href}
+                      className="group"
+                      prefetch={false}
+                    >
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 bg-yellow-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-400 transition shadow-[0_0_20px_rgba(245,158,11,0.5)]"
+                      >
+                        {activeSlides[current].linkPrimary!.text}
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </motion.button>
+                    </Link>
+                  )}
+                  {activeSlides[current].linkSecondary && (
+                    <Link
+                      href={activeSlides[current].linkSecondary!.href}
+                      prefetch={false}
+                    >
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-lg border-2 border-white text-white hover:bg-white hover:text-black transition"
+                      >
+                        {activeSlides[current].linkSecondary!.text}
+                      </motion.button>
+                    </Link>
+                  )}
                 </div>
-             </motion.div>
-          </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
+          )}
         </div>
       </div>
 
@@ -171,7 +207,9 @@ export default function HeroCarousel({ slides }: HeroCarouselProps) {
             key={index}
             onClick={() => setCurrent(index)}
             className={`h-2 rounded-full transition-all duration-300 ${
-              current === index ? "bg-yellow-500 w-8" : "bg-white/30 w-2 hover:bg-white/60"
+              current === index
+                ? "bg-yellow-500 w-8"
+                : "bg-white/30 w-2 hover:bg-white/60"
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />
@@ -180,18 +218,18 @@ export default function HeroCarousel({ slides }: HeroCarouselProps) {
 
       {/* Navigation Arrows */}
       <div className="absolute inset-0 hidden md:flex items-center justify-between px-4 pointer-events-none">
-          <button
-            onClick={prevSlide}
-            className="pointer-events-auto p-3 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:scale-110 transition-all border border-white/20"
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </button>
-          <button
-            onClick={nextSlide}
-            className="pointer-events-auto p-3 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:scale-110 transition-all border border-white/20"
-          >
-            <ArrowRight className="h-6 w-6" />
-          </button>
+        <button
+          onClick={prevSlide}
+          className="pointer-events-auto p-3 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:scale-110 transition-all border border-white/20"
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </button>
+        <button
+          onClick={nextSlide}
+          className="pointer-events-auto p-3 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:scale-110 transition-all border border-white/20"
+        >
+          <ArrowRight className="h-6 w-6" />
+        </button>
       </div>
     </section>
   );
