@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -54,9 +54,9 @@ export default function TeachersTable({
   const [isDragging, setIsDragging] = useState(false);
 
   // Update ordered list when teachers prop changes
-  useState(() => {
+  useEffect(() => {
     setOrderedTeachers(teachers);
-  });
+  }, [teachers]);
 
   // Filter teachers
   const filteredTeachers = orderedTeachers.filter((teacher) => {

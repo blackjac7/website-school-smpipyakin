@@ -9,6 +9,7 @@ import {
   Bell,
   Newspaper,
   GraduationCap,
+  Settings,
 } from "lucide-react";
 import DashboardSidebar from "@/components/dashboard/layout/DashboardSidebar";
 import { DashboardMenuItem } from "@/components/dashboard/layout/types";
@@ -35,6 +36,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     if (pathname.includes("/calendar")) return "calendar";
     if (pathname.includes("/teachers")) return "teachers";
     if (pathname.includes("/users")) return "users";
+    if (pathname.includes("/settings")) return "settings";
     return "dashboard";
   };
 
@@ -61,6 +63,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       case "users":
         router.push("/dashboard-admin/users");
         break;
+      case "settings":
+        router.push("/dashboard-admin/settings");
+        break;
       default:
         // router.push('/dashboard-admin');
         break;
@@ -75,6 +80,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     { id: "calendar", label: "Kalender Akademik", icon: Calendar },
     { id: "teachers", label: "Profil Guru", icon: GraduationCap },
     { id: "users", label: "Manajemen Pengguna", icon: Users },
+    { id: "settings", label: "Pengaturan", icon: Settings },
   ];
 
   // Professional admin avatar
