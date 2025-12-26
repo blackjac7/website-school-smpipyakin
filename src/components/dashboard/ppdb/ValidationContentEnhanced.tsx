@@ -262,7 +262,8 @@ export default function ValidationContentEnhanced({
               );
               document.body.appendChild(link);
               link.click();
-              document.body.removeChild(link);
+              // Use link.remove() which does nothing if the node is already detached
+              link.remove();
 
               if (onExportData) onExportData();
             }}
