@@ -21,9 +21,11 @@ interface SidebarProps {
   menuItems?: DashboardMenuItem[];
   activeMenu?: string;
   setActiveMenu?: (id: string) => void;
+  // Optional callback to notify parent that navigation started
+  onNavigateStart?: () => void;
 }
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, onNavigateStart }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -41,6 +43,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
 
   const handleMenuClick = (id: string) => {
+    // Notify layout that navigation started so it can show a persistent overlay
+    if (typeof onNavigateStart === "function") onNavigateStart();
+
     switch (id) {
       case "hero":
         router.push("/dashboard-admin/hero");
