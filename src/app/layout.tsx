@@ -150,8 +150,10 @@ export default function RootLayout({
             </LoadingProvider>
           </AuthProvider>
         </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
+        {process.env.NODE_ENV === 'production' && <Analytics />}
+        {process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_VERCEL_SPEED_INSIGHTS === '1' && (
+          <SpeedInsights />
+        )}
       </body>
     </html>
   );
