@@ -10,6 +10,7 @@ import {
   Newspaper,
   GraduationCap,
   Settings,
+  LayoutDashboard,
 } from "lucide-react";
 import DashboardSidebar from "@/components/dashboard/layout/DashboardSidebar";
 import { DashboardMenuItem } from "@/components/dashboard/layout/types";
@@ -47,6 +48,9 @@ export function Sidebar({ isOpen, onClose, onNavigateStart }: SidebarProps) {
     if (typeof onNavigateStart === "function") onNavigateStart();
 
     switch (id) {
+      case "dashboard":
+        router.push("/dashboard-admin");
+        break;
       case "hero":
         router.push("/dashboard-admin/hero");
         break;
@@ -78,6 +82,7 @@ export function Sidebar({ isOpen, onClose, onNavigateStart }: SidebarProps) {
   };
 
   const adminMenuItems: DashboardMenuItem[] = [
+    { id: "dashboard", label: "Overview", icon: LayoutDashboard },
     { id: "hero", label: "Hero Carousel", icon: Layout },
     { id: "stats", label: "Quick Stats", icon: Activity },
     { id: "news", label: "Berita Sekolah", icon: Newspaper },
