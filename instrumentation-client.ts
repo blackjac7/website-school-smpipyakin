@@ -25,3 +25,9 @@ export function register() {
     ],
   });
 }
+
+// Hook to instrument client-side router transitions for Sentry
+// See Sentry docs: export onRouterTransitionStart = Sentry.captureRouterTransitionStart
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const onRouterTransitionStart: any = (Sentry as any)
+  .captureRouterTransitionStart;
