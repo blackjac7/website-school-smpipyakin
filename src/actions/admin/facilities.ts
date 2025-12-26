@@ -7,10 +7,9 @@ import { z } from "zod";
 
 // Define schema for validation
 const FacilitySchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
-  imageUrl: z.string().url("Valid image URL is required"),
-  category: z.enum(["LABORATORY", "LIBRARY", "SPORTS", "OTHER"]),
+  image: z.string().url("Valid image URL is required").nullable().optional().or(z.literal("")),
 });
 
 export async function getFacilities() {
@@ -37,20 +36,23 @@ export async function createFacility(formData: FormData) {
   }
 
   const data = {
-    name: formData.get("name") as string,
+    title: formData.get("title") as string,
     description: formData.get("description") as string,
-    imageUrl: formData.get("imageUrl") as string,
-    category: formData.get("category") as "LABORATORY" | "LIBRARY" | "SPORTS" | "OTHER",
+    image: (formData.get("image") as string) || null,
   };
 
   const validation = FacilitySchema.safeParse(data);
   if (!validation.success) {
-    return { success: false, error: validation.error.errors[0].message };
+    return { success: false, error: "Validation failed" };
   }
 
   try {
     await prisma.facility.create({
-      data: validation.data,
+      data: {
+        title: validation.data.title,
+        description: validation.data.description,
+        image: validation.data.image || null,
+      },
     });
     revalidatePath("/dashboard-admin/facilities");
     revalidatePath("/facilities"); // Revalidate public page
@@ -68,21 +70,24 @@ export async function updateFacility(id: string, formData: FormData) {
   }
 
   const data = {
-    name: formData.get("name") as string,
+    title: formData.get("title") as string,
     description: formData.get("description") as string,
-    imageUrl: formData.get("imageUrl") as string,
-    category: formData.get("category") as "LABORATORY" | "LIBRARY" | "SPORTS" | "OTHER",
+    image: (formData.get("image") as string) || null,
   };
 
   const validation = FacilitySchema.safeParse(data);
   if (!validation.success) {
-    return { success: false, error: validation.error.errors[0].message };
+    return { success: false, error: "Validation failed" };
   }
 
   try {
     await prisma.facility.update({
       where: { id },
-      data: validation.data,
+      data: {
+        title: validation.data.title,
+        description: validation.data.description,
+        image: validation.data.image || null,
+      },
     });
     revalidatePath("/dashboard-admin/facilities");
     revalidatePath("/facilities");

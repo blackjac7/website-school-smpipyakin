@@ -6,14 +6,14 @@ import { Plus, Pencil, Trash2, Search, X, UploadCloud } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
-import { ToastConfirmModal } from "@/components/shared/ToastConfirmModal";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 import {
   createFacility,
   updateFacility,
   deleteFacility,
 } from "@/actions/admin/facilities";
 import { Facility } from "@prisma/client";
-import { CldUploadWidget } from "next-cloudinary";
+import { CldUploadWidget, CloudinaryUploadWidgetResults } from "next-cloudinary";
 
 interface FacilitiesClientProps {
   initialFacilities: Facility[];
@@ -29,34 +29,31 @@ export default function FacilitiesClient({ initialFacilities }: FacilitiesClient
 
   // Form states
   const [formData, setFormData] = useState({
-    name: "",
+    title: "",
     description: "",
-    imageUrl: "",
-    category: "OTHER",
+    image: "",
   });
 
-  const { showConfirm, confirmProps } = useToastConfirm();
+  const { showConfirm, ...confirmState } = useToastConfirm();
 
   const filteredFacilities = facilities.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleOpenModal = (item?: Facility) => {
     if (item) {
       setEditingItem(item);
       setFormData({
-        name: item.name,
-        description: item.description,
-        imageUrl: item.imageUrl,
-        category: item.category,
+        title: item.title,
+        description: item.description || "",
+        image: item.image || "",
       });
     } else {
       setEditingItem(null);
       setFormData({
-        name: "",
+        title: "",
         description: "",
-        imageUrl: "",
-        category: "OTHER",
+        image: "",
       });
     }
     setIsModalOpen(true);
@@ -68,10 +65,9 @@ export default function FacilitiesClient({ initialFacilities }: FacilitiesClient
 
     try {
       const data = new FormData();
-      data.append("name", formData.name);
+      data.append("title", formData.title);
       data.append("description", formData.description);
-      data.append("imageUrl", formData.imageUrl);
-      data.append("category", formData.category);
+      data.append("image", formData.image);
 
       let result;
       if (editingItem) {
@@ -85,7 +81,6 @@ export default function FacilitiesClient({ initialFacilities }: FacilitiesClient
           editingItem ? "Fasilitas diperbarui" : "Fasilitas ditambahkan"
         );
         setIsModalOpen(false);
-        // Refresh handled by Server Action revalidate, but we can optimistically update or reload
         router.refresh();
       } else {
         toast.error(result.error || "Terjadi kesalahan");
@@ -98,12 +93,14 @@ export default function FacilitiesClient({ initialFacilities }: FacilitiesClient
   };
 
   const handleDelete = (id: string) => {
-    showConfirm({
-      title: "Hapus Fasilitas?",
-      message: "Data yang dihapus tidak dapat dikembalikan.",
-      confirmText: "Hapus",
-      cancelText: "Batal",
-      onConfirm: async () => {
+    showConfirm(
+      {
+        title: "Hapus Fasilitas?",
+        message: "Data yang dihapus tidak dapat dikembalikan.",
+        confirmText: "Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
         const result = await deleteFacility(id);
         if (result.success) {
           toast.success("Fasilitas dihapus");
@@ -111,8 +108,8 @@ export default function FacilitiesClient({ initialFacilities }: FacilitiesClient
         } else {
           toast.error(result.error || "Gagal menghapus");
         }
-      },
-    });
+      }
+    );
   };
 
   return (
@@ -151,10 +148,10 @@ export default function FacilitiesClient({ initialFacilities }: FacilitiesClient
             className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-md transition-shadow"
           >
             <div className="relative h-48 w-full bg-gray-100">
-              {item.imageUrl ? (
+              {item.image ? (
                 <Image
-                  src={item.imageUrl}
-                  alt={item.name}
+                  src={item.image}
+                  alt={item.title}
                   fill
                   className="object-cover"
                 />
@@ -177,12 +174,9 @@ export default function FacilitiesClient({ initialFacilities }: FacilitiesClient
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
-              <div className="absolute top-2 left-2 px-2 py-1 bg-black/50 text-white text-xs rounded">
-                {item.category}
-              </div>
             </div>
             <div className="p-4">
-              <h3 className="font-semibold text-gray-800 mb-1">{item.name}</h3>
+              <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
               <p className="text-sm text-gray-600 line-clamp-2">
                 {item.description}
               </p>
@@ -221,30 +215,12 @@ export default function FacilitiesClient({ initialFacilities }: FacilitiesClient
                 <input
                   type="text"
                   required
-                  value={formData.name}
+                  value={formData.title}
                   onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
+                    setFormData({ ...formData, title: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Kategori
-                </label>
-                <select
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="LABORATORY">Laboratorium</option>
-                  <option value="LIBRARY">Perpustakaan</option>
-                  <option value="SPORTS">Olahraga</option>
-                  <option value="OTHER">Lainnya</option>
-                </select>
               </div>
 
               <div>
@@ -267,10 +243,10 @@ export default function FacilitiesClient({ initialFacilities }: FacilitiesClient
                   Foto
                 </label>
                 <div className="mt-1 flex items-center gap-4">
-                  {formData.imageUrl && (
+                  {formData.image && (
                     <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
                       <Image
-                        src={formData.imageUrl}
+                        src={formData.image}
                         alt="Preview"
                         fill
                         className="object-cover"
@@ -279,11 +255,14 @@ export default function FacilitiesClient({ initialFacilities }: FacilitiesClient
                   )}
                   <CldUploadWidget
                     uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_PPDB || "ml_default"}
-                    onSuccess={(result: { info: { secure_url: string } }) => {
-                      setFormData({
-                        ...formData,
-                        imageUrl: result.info.secure_url,
-                      });
+                    onSuccess={(result: CloudinaryUploadWidgetResults) => {
+                      const info = result?.info;
+                      if (info && typeof info === 'object' && 'secure_url' in info) {
+                        setFormData({
+                          ...formData,
+                          image: (info as { secure_url: string }).secure_url,
+                        });
+                      }
                     }}
                   >
                     {({ open }) => (
@@ -321,7 +300,19 @@ export default function FacilitiesClient({ initialFacilities }: FacilitiesClient
         </div>
       )}
 
-      <ToastConfirmModal {...confirmProps} />
+      <ToastConfirmModal
+        isOpen={confirmState.isOpen}
+        message={confirmState.options.message}
+        title={confirmState.options.title}
+        description={confirmState.options.description}
+        type={confirmState.options.type}
+        confirmText={confirmState.options.confirmText}
+        cancelText={confirmState.options.cancelText}
+        onConfirm={confirmState.onConfirm}
+        onCancel={confirmState.onCancel}
+        showCloseButton={confirmState.options.showCloseButton}
+        isLoading={confirmState.isLoading}
+      />
     </div>
   );
 }
