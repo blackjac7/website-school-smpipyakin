@@ -269,6 +269,33 @@ Submit a new PPDB registration.
 }
 ```
 
+**Notes & Behaviors:**
+
+- **Unique NISN rule:** Only one active registration per NISN is allowed. If a registration exists with status `PENDING` or `ACCEPTED`, new registration attempts using the same NISN will be rejected with HTTP **409 Conflict**.
+- **One-time re-registration after rejection:** If an existing application has status `REJECTED`, the applicant is allowed to re-register **exactly once**. The server stores a `retries` count on the application and increments it when a re-registration is performed. If `retries >= 1` and the application is `REJECTED`, further attempts will be rejected with HTTP **409 Conflict** and an explanatory error message.
+- **Rate limiting (anti-abuse):** The registration endpoint enforces a per-IP rate limit of **5 registration attempts per hour**. If the limit is exceeded, the endpoint returns HTTP **429 Too Many Requests** with an error message. The upload endpoint (`/api/ppdb/upload` or `/api/ppdb/upload-r2`) enforces a per-IP rate limit of **20 uploads per hour**.
+- **Check NISN endpoint:** Use `GET /api/ppdb/check-nisn?nisn={nisn}` to determine if a NISN already exists and whether a retry is allowed. When the NISN exists, the response includes `status`, `retries`, and `allowRetry` flags in the `data` object.
+
+**Example error responses:**
+
+- Duplicate / conflict:
+
+```json
+{ "error": "NISN sudah terdaftar dan berstatus PENDING." }
+```
+
+- Re-registration limit reached:
+
+```json
+{ "error": "Tidak dapat mendaftar ulang lebih dari sekali setelah penolakan." }
+```
+
+- Rate limit exceeded:
+
+```json
+{ "error": "Terlalu banyak percobaan pendaftaran. Silakan coba lagi nanti." }
+```
+
 ---
 
 ### GET /api/ppdb/status/:registrationNumber
