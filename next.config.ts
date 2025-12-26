@@ -7,7 +7,7 @@ const withPWA = withPWAInit({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
-  // @ts-ignore - allow passing custom Workbox option despite PWAConfig type
+  // @ts-expect-error - allow passing custom Workbox option despite PWAConfig type
   // Increase maximum file size to cache (5 MB) to allow larger source maps if needed
   maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
   runtimeCaching: [
