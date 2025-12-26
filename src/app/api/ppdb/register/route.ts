@@ -69,6 +69,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Server-side rate limiting (per IP) to prevent abuse
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
+
+    // Limit to 5 registration attempts per hour per IP
+    const { isAllowed } = await import("@/lib/rateLimiter");
+    const rl = isAllowed(`ppdb-register:${ip}`, 5, 60 * 60 * 1000);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            "Terlalu banyak percobaan pendaftaran. Silakan coba lagi nanti.",
+        },
+        { status: 429 }
+      );
+    }
+
     // Validasi data wajib
     if (
       !namaLengkap ||

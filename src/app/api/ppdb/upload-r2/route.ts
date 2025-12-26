@@ -16,6 +16,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Server-side rate limiting (per IP) to prevent abuse of upload endpoint
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
+    const { isAllowed } = await import("@/lib/rateLimiter");
+    // Limit uploads to 20 per hour per IP
+    const rlUpload = isAllowed(`ppdb-upload:${ip}`, 20, 60 * 60 * 1000);
+    if (!rlUpload.allowed) {
+      return NextResponse.json(
+        { error: "Terlalu banyak percobaan upload. Silakan coba lagi nanti." },
+        { status: 429 }
+      );
+    }
+
     // Validation
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
