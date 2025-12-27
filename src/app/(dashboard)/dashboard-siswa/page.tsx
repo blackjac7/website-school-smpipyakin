@@ -40,6 +40,7 @@ import {
   createAchievement,
   AchievementInput,
 } from "@/actions/student/achievements";
+import { LoadingEffect } from "@/components/shared";
 
 interface AchievementFormData {
   title: string;
@@ -405,16 +406,7 @@ function SiswaDashboardContent() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-pulse">
-          <div className="text-center">
-            <div className="h-8 bg-gray-200 rounded w-48 mx-auto mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingEffect />;
   }
 
   const renderContent = () => {
@@ -465,7 +457,7 @@ function SiswaDashboardContent() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <StudentHeader
           notifications={notifications}
           showNotifications={showNotifications}
@@ -551,7 +543,7 @@ function SiswaDashboardContent() {
 export default function SiswaDashboard() {
   return (
     <ProtectedRoute requiredRoles={["siswa"]}>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<LoadingEffect />}>
         <SiswaDashboardContent />
       </Suspense>
     </ProtectedRoute>
