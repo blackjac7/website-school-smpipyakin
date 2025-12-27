@@ -14,7 +14,7 @@ import {
   ActivitiesList,
   Calendar,
   AddActivityModal,
-  // EditActivityModal, // Removed for now, reusing add form or custom edit might be better
+  EditActivityModal,
   MenuItem,
   OsisActivity,
   Notification,
@@ -31,16 +31,20 @@ import NewsManagement from "@/components/dashboard/osis/NewsManagement";
 import ReligiousDashboardClient from "@/components/dashboard/osis/worship/ReligiousDashboardClient";
 import toast from "react-hot-toast";
 import { useSidebar } from "@/hooks/useSidebar";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
+import { motion } from "framer-motion";
 
 function OSISDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [showForm, setShowForm] = useState(false);
+  const [editingActivity, setEditingActivity] = useState<OsisActivity | null>(null);
   const [activities, setActivities] = useState<OsisActivity[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showNotifications, setShowNotifications] = useState(false);
   const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } =
     useSidebar(true);
-  // const [loading, setLoading] = useState(true);
+  const confirmModal = useToastConfirm();
 
   // Worship Data State
   const [worshipData, setWorshipData] = useState<{
@@ -61,7 +65,7 @@ function OSISDashboard() {
     { id: "ibadah", label: "Ibadah", icon: Heart },
   ];
 
-  // Dummy notifications for now (Server Action not implemented for notifs yet)
+  // Dummy notifications for now
   const notifications: Notification[] = [
     {
       id: 1,
@@ -92,8 +96,6 @@ function OSISDashboard() {
     } catch (error) {
       console.error(error);
       toast.error("Gagal memuat kegiatan");
-    } finally {
-      // setLoading(false);
     }
   }
 
@@ -123,34 +125,54 @@ function OSISDashboard() {
     setShowForm(true);
   };
 
+  const handleEditActivity = (activity: OsisActivity) => {
+    setEditingActivity(activity);
+  };
+
   const handleDeleteActivity = async (id: string) => {
-    if (!confirm("Apakah anda yakin ingin menghapus kegiatan ini?")) return;
-    const res = await deleteActivity(id);
-    if (res.success) {
-      toast.success("Kegiatan berhasil dihapus");
-      fetchActivities();
-    } else {
-      toast.error(res.error || "Gagal menghapus");
-    }
+    confirmModal.showConfirm(
+      {
+        title: "Hapus Kegiatan",
+        message: "Apakah Anda yakin ingin menghapus kegiatan ini?",
+        description: "Tindakan ini tidak dapat dibatalkan.",
+        type: "danger",
+        confirmText: "Hapus",
+        cancelText: "Batal",
+      },
+      async () => {
+        const res = await deleteActivity(id);
+        if (res.success) {
+          toast.success("Kegiatan berhasil dihapus");
+          fetchActivities();
+        } else {
+          toast.error(res.error || "Gagal menghapus");
+        }
+      }
+    );
   };
 
   // Logic to refresh data when modal closes (if successful)
   const handleModalClose = () => {
     setShowForm(false);
+    setEditingActivity(null);
     fetchActivities();
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const renderDashboardContent = () => (
-    <>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <StatsCards />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <ActivitiesList
           activities={activities.slice(0, 5)} // Show recent 5
           onAddActivity={handleAddActivity}
           onViewActivity={() => {}}
-          onEditActivity={() => {}}
+          onEditActivity={handleEditActivity}
           onDeleteActivity={handleDeleteActivity}
         />
         <Calendar
@@ -158,15 +180,15 @@ function OSISDashboard() {
           setCurrentMonth={setCurrentMonth}
         />
       </div>
-    </>
+    </motion.div>
   );
 
-  // OSIS avatar - green theme for student council
+  // OSIS avatar - School Blue/Yellow theme
   const osisAvatar =
-    "https://ui-avatars.com/api/?name=OSIS&background=059669&color=fff&size=128&bold=true";
+    "https://ui-avatars.com/api/?name=OSIS&background=1E3A8A&color=fff&size=128&bold=true";
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       <DashboardSidebar
         menuItems={menuItems}
         activeMenu={activeMenu}
@@ -180,7 +202,7 @@ function OSISDashboard() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <Header
           notifications={notifications}
           showNotifications={showNotifications}
@@ -195,24 +217,40 @@ function OSISDashboard() {
           {activeMenu === "dashboard" && renderDashboardContent()}
 
           {activeMenu === "activities" && (
-            <div className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-6"
+            >
               <ActivitiesList
                 activities={activities}
                 onAddActivity={handleAddActivity}
                 onViewActivity={() => {}}
-                onEditActivity={() => {}} // TODO: Implement edit
+                onEditActivity={handleEditActivity}
                 onDeleteActivity={handleDeleteActivity}
               />
-            </div>
+            </motion.div>
           )}
 
-          {activeMenu === "news" && <NewsManagement />}
+          {activeMenu === "news" && (
+             <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <NewsManagement />
+            </motion.div>
+          )}
 
           {activeMenu === "schedule" && (
-            <Calendar
-              currentMonth={currentMonth}
-              setCurrentMonth={setCurrentMonth}
-            />
+             <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <Calendar
+                currentMonth={currentMonth}
+                setCurrentMonth={setCurrentMonth}
+              />
+            </motion.div>
           )}
 
           {activeMenu === "ibadah" &&
@@ -221,16 +259,35 @@ function OSISDashboard() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
             ) : (
-              <ReligiousDashboardClient
-                menstruationRecords={worshipData.menstruation}
-                adzanSchedules={worshipData.adzan}
-                carpetSchedules={worshipData.carpet}
-              />
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <ReligiousDashboardClient
+                  menstruationRecords={worshipData.menstruation}
+                  adzanSchedules={worshipData.adzan}
+                  carpetSchedules={worshipData.carpet}
+                />
+              </motion.div>
             ))}
         </main>
       </div>
 
       <AddActivityModal isOpen={showForm} onClose={handleModalClose} />
+
+      <EditActivityModal
+        isOpen={!!editingActivity}
+        onClose={handleModalClose}
+        activity={editingActivity}
+      />
+
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        isLoading={confirmModal.isLoading}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+        {...confirmModal.options}
+      />
 
       {/* Click outside to close notifications */}
       {showNotifications && (
