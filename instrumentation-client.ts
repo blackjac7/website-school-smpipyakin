@@ -29,6 +29,4 @@ export function register() {
 // Hook to instrument client-side router transitions for Sentry
 // See Sentry docs: export onRouterTransitionStart = Sentry.captureRouterTransitionStart
 // Export router hook for Sentry to instrument navigations
-// @ts-ignore - Sentry types may not fully expose this helper in this environment
-export const onRouterTransitionStart = (Sentry as any)
-  .captureRouterTransitionStart;
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
