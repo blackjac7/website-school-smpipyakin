@@ -8,10 +8,12 @@ import {
   Edit,
   Trash2,
   MapPin,
+  ClipboardList
 } from "lucide-react";
 import { OsisActivity } from "./types";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
+import { motion } from "framer-motion";
 
 interface ActivitiesListProps {
   activities: OsisActivity[];
@@ -30,11 +32,11 @@ export default function ActivitiesList({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "APPROVED":
-        return "bg-green-100 text-green-700";
+        return "bg-green-100 text-green-700 border-green-200";
       case "REJECTED":
-        return "bg-red-100 text-red-700";
+        return "bg-red-100 text-red-700 border-red-200";
       default:
-        return "bg-yellow-100 text-yellow-700";
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
     }
   };
 
@@ -53,100 +55,101 @@ export default function ActivitiesList({
     <div className="lg:col-span-2 space-y-6">
       {/* Add Activity Button */}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900">Daftar Kegiatan</h3>
-        <button
+        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <ClipboardList className="w-5 h-5 text-blue-600"/>
+            Daftar Kegiatan
+        </h3>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={onAddActivity}
-          className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition-colors flex items-center gap-2 shadow-md shadow-blue-200"
         >
           <Plus className="w-4 h-4" />
-          Tambah Kegiatan Baru
-        </button>
+          <span className="hidden sm:inline">Tambah Kegiatan</span>
+          <span className="sm:hidden">Baru</span>
+        </motion.button>
       </div>
 
       {/* Activities List */}
       <div className="space-y-4">
         {activities.length === 0 ? (
-          <div className="text-center py-10 bg-white rounded-lg border border-gray-200 text-gray-500">
-            Belum ada kegiatan yang diajukan.
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300 text-gray-500"
+          >
+            <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p>Belum ada kegiatan yang diajukan.</p>
+          </motion.div>
         ) : (
-          activities.map((activity) => (
-            <div
+          activities.map((activity, index) => (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
               key={activity.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group"
             >
               <div className="flex justify-between items-start mb-3">
-                <h4 className="text-lg font-semibold text-gray-900">
-                  {activity.title}
-                </h4>
+                <div>
+                    <h4 className="text-lg font-bold text-gray-900 group-hover:text-blue-900 transition-colors">
+                    {activity.title}
+                    </h4>
+                    <span
+                        className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getStatusColor(activity.status)}`}
+                    >
+                        {getStatusLabel(activity.status)}
+                    </span>
+                </div>
+
                 <div className="flex items-center gap-2">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(activity.status)}`}
-                  >
-                    {getStatusLabel(activity.status)}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    {/*
-                  <button
-                    onClick={() => onViewActivity(activity)}
-                    className="p-1 text-gray-400 hover:text-blue-600"
-                    title="Lihat Detail"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
-                  */}
-                    {activity.status === "PENDING" && (
+                  {activity.status === "PENDING" && (
                       <>
                         <button
                           onClick={() => onEditActivity(activity)}
-                          className="p-1 text-gray-400 hover:text-green-600"
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title="Edit"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => onDeleteActivity(activity.id)}
-                          className="p-1 text-gray-400 hover:text-red-600"
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="Hapus"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </>
                     )}
-                  </div>
                 </div>
               </div>
-              <p className="text-gray-600 mb-3 line-clamp-2">
+              <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
                 {activity.description}
               </p>
-              <div className="grid grid-cols-2 gap-4 text-sm text-gray-500">
-                <div className="flex items-center gap-1">
-                  <CalendarIcon className="w-4 h-4" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="w-4 h-4 text-gray-400" />
                   <span>
                     {format(new Date(activity.date), "dd MMMM yyyy", {
                       locale: idLocale,
                     })}
                   </span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-gray-400" />
                   <span>{activity.time}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <User className="w-4 h-4" />
-                  <span>{activity.participants} peserta</span>
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4 text-gray-400" />
+                  <span>{activity.participants} Peserta</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-4 h-4" />
-                  <span>{activity.location}</span>
-                </div>
-                <div className="flex items-center gap-1 col-span-2">
-                  <span>
-                    Budget: Rp {activity.budget.toLocaleString("id-ID")}
-                  </span>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-gray-400" />
+                  <span className="truncate">{activity.location}</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))
         )}
       </div>
