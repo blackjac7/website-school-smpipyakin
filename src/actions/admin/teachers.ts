@@ -169,7 +169,8 @@ export async function createTeacher(input: TeacherInput): Promise<{
 
     // Revalidate paths
     revalidatePath("/profile/guru");
-    revalidatePath("/profile/struktur-organisasi");
+    revalidatePath("/profile/struktur");
+    revalidatePath("/profile/sambutan");
     revalidatePath("/dashboard-admin/teachers");
 
     return {
@@ -242,7 +243,8 @@ export async function updateTeacher(
 
     // Revalidate paths
     revalidatePath("/profile/guru");
-    revalidatePath("/profile/struktur-organisasi");
+    revalidatePath("/profile/struktur");
+    revalidatePath("/profile/sambutan");
     revalidatePath("/dashboard-admin/teachers");
 
     return {
@@ -292,7 +294,8 @@ export async function deleteTeacher(id: string): Promise<{
 
     // Revalidate paths
     revalidatePath("/profile/guru");
-    revalidatePath("/profile/struktur-organisasi");
+    revalidatePath("/profile/struktur");
+    revalidatePath("/profile/sambutan");
     revalidatePath("/dashboard-admin/teachers");
 
     return {
@@ -344,7 +347,8 @@ export async function toggleTeacherStatus(id: string): Promise<{
 
     // Revalidate paths
     revalidatePath("/profile/guru");
-    revalidatePath("/profile/struktur-organisasi");
+    revalidatePath("/profile/struktur");
+    revalidatePath("/profile/sambutan");
     revalidatePath("/dashboard-admin/teachers");
 
     return {
@@ -388,7 +392,8 @@ export async function reorderTeachers(reorderedIds: string[]): Promise<{
 
     // Revalidate paths
     revalidatePath("/profile/guru");
-    revalidatePath("/profile/struktur-organisasi");
+    revalidatePath("/profile/struktur");
+    revalidatePath("/profile/sambutan");
     revalidatePath("/dashboard-admin/teachers");
 
     return {
