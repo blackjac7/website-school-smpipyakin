@@ -62,14 +62,14 @@ export default function ContentList({
             <input
               type="text"
               placeholder="Cari konten..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div className="flex gap-2">
             <select
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
             >
@@ -81,7 +81,7 @@ export default function ContentList({
               <option value="Videografi">Videografi</option>
             </select>
             <select
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -108,7 +108,7 @@ export default function ContentList({
           filteredItems.map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -116,7 +116,7 @@ export default function ContentList({
                     className={`px-3 py-1 rounded-full text-xs font-medium ${
                       item.type === "achievement"
                         ? "bg-blue-100 text-blue-700"
-                        : "bg-purple-100 text-purple-700"
+                        : "bg-yellow-100 text-yellow-800"
                     }`}
                   >
                     {item.type === "achievement" ? "Prestasi" : "Karya"}

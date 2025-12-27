@@ -17,6 +17,7 @@ import {
 } from "@/components/dashboard/kesiswaan";
 import StudentList from "@/components/dashboard/kesiswaan/StudentList";
 import { DashboardSidebar } from "@/components/dashboard/layout";
+import LoadingEffect from "@/components/shared/LoadingEffect";
 import {
   validateContent,
   getValidationQueue,
@@ -97,16 +98,7 @@ export default function DashboardClient({
     { id: "settings", label: "Pengaturan", icon: Settings },
   ];
 
-  const notifications: Notification[] = [
-    {
-      id: 1,
-      type: "pending",
-      message: "Konten menunggu validasi",
-      detail: "Silahkan cek menu validasi",
-      time: "Baru saja",
-      read: false,
-    },
-  ];
+  const notifications: Notification[] = [];
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -162,9 +154,9 @@ export default function DashboardClient({
     }
   };
 
-  // Kesiswaan avatar - purple theme for student affairs
+  // Kesiswaan avatar - Blue/Yellow theme for student affairs
   const kesiswaanAvatar =
-    "https://ui-avatars.com/api/?name=Kesiswaan&background=7C3AED&color=fff&size=128&bold=true";
+    "https://ui-avatars.com/api/?name=Kesiswaan&background=1E3A8A&color=F59E0B&size=128&bold=true";
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -202,7 +194,7 @@ export default function DashboardClient({
               />
               {isLoading ? (
                 <div className="flex justify-center py-10">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                  <LoadingEffect showMessage={false} size="sm" />
                 </div>
               ) : (
                 <ContentList
