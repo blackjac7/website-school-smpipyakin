@@ -9,10 +9,10 @@ import {
   Phone,
   Mail,
   Lock,
-  Info
 } from "lucide-react";
 import Link from "next/link";
 import { AnimatedBackground } from "@/components/common/AnimatedBackground";
+import { useEffect, useState } from "react";
 
 interface PPDBClosedBannerClientProps {
   showFull: boolean;
@@ -23,6 +23,13 @@ interface PPDBClosedBannerClientProps {
   endDate: Date | null;
 }
 
+interface TimeLeft {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+
 export function PPDBClosedBannerClient({
   showFull,
   isQuotaFull,
@@ -31,6 +38,45 @@ export function PPDBClosedBannerClient({
   startDate,
   endDate,
 }: PPDBClosedBannerClientProps) {
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Countdown logic
+  useEffect(() => {
+    if (!startDate || isQuotaFull) return;
+
+    const calculateTimeLeft = () => {
+      const now = new Date().getTime();
+      const target = new Date(startDate).getTime();
+      const difference = target - now;
+
+      if (difference > 0) {
+        return {
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        };
+      }
+      return null;
+    };
+
+    // Initial calculation
+    setTimeLeft(calculateTimeLeft());
+
+    const timer = setInterval(() => {
+      const remaining = calculateTimeLeft();
+      setTimeLeft(remaining);
+      if (!remaining) clearInterval(timer);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [startDate, isQuotaFull]);
+
   if (showFull) {
     return (
       <div className="relative min-h-screen w-full overflow-hidden flex flex-col items-center justify-center pt-24 pb-12 px-4">
@@ -44,9 +90,12 @@ export function PPDBClosedBannerClient({
         >
           {/* Glassmorphism Card */}
           <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 rounded-3xl shadow-2xl p-8 md:p-12 text-center overflow-hidden">
-
             {/* Decorative top accent */}
-            <div className={`absolute top-0 left-0 w-full h-2 ${isQuotaFull ? "bg-red-500" : "bg-school-yellow"}`} />
+            <div
+              className={`absolute top-0 left-0 w-full h-2 ${
+                isQuotaFull ? "bg-red-500" : "bg-school-yellow"
+              }`}
+            />
 
             {/* Icon Animation */}
             <div className="mb-8 flex justify-center">
@@ -57,7 +106,7 @@ export function PPDBClosedBannerClient({
                   type: "spring",
                   stiffness: 260,
                   damping: 20,
-                  delay: 0.2
+                  delay: 0.2,
                 }}
                 className={`p-6 rounded-full shadow-lg ${
                   isQuotaFull
@@ -67,6 +116,8 @@ export function PPDBClosedBannerClient({
               >
                 {isQuotaFull ? (
                   <AlertTriangle className="w-16 h-16" />
+                ) : timeLeft ? (
+                  <Calendar className="w-16 h-16" />
                 ) : (
                   <Lock className="w-16 h-16" />
                 )}
@@ -82,6 +133,8 @@ export function PPDBClosedBannerClient({
             >
               {isQuotaFull
                 ? "Kuota Pendaftaran Penuh"
+                : timeLeft
+                ? "Segera Dibuka!"
                 : "Pendaftaran PPDB Ditutup"}
             </motion.h1>
 
@@ -94,6 +147,20 @@ export function PPDBClosedBannerClient({
             >
               Tahun Ajaran {academicYear}
             </motion.p>
+
+            {/* Countdown Timer */}
+            {timeLeft && !isQuotaFull && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="grid grid-cols-4 gap-2 md:gap-4 mb-8 max-w-lg mx-auto"
+              >
+                <CountdownUnit value={timeLeft.days} label="Hari" />
+                <CountdownUnit value={timeLeft.hours} label="Jam" />
+                <CountdownUnit value={timeLeft.minutes} label="Menit" />
+                <CountdownUnit value={timeLeft.seconds} label="Detik" />
+              </motion.div>
+            )}
 
             {/* Message Box */}
             <motion.div
@@ -122,13 +189,27 @@ export function PPDBClosedBannerClient({
                   </div>
                   <div className="flex flex-col md:flex-row gap-2 md:gap-6 text-blue-600 dark:text-blue-200">
                     <span>
-                      Mulai: {new Date(startDate).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })}
+                      Mulai:{" "}
+                      {isClient &&
+                        new Date(startDate).toLocaleDateString("id-ID", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
                     </span>
                     {endDate && (
                       <>
-                        <span className="hidden md:inline text-blue-300">•</span>
+                        <span className="hidden md:inline text-blue-300">
+                          •
+                        </span>
                         <span>
-                          Selesai: {new Date(endDate).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })}
+                          Selesai:{" "}
+                          {isClient &&
+                            new Date(endDate).toLocaleDateString("id-ID", {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            })}
                         </span>
                       </>
                     )}
@@ -151,7 +232,9 @@ export function PPDBClosedBannerClient({
                 <div className="p-2 bg-white dark:bg-slate-700 rounded-lg shadow-sm group-hover:scale-110 transition-transform">
                   <Phone className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                 </div>
-                <span className="text-slate-600 dark:text-slate-300 font-medium">(021) 5403540</span>
+                <span className="text-slate-600 dark:text-slate-300 font-medium">
+                  (021) 5403540
+                </span>
               </a>
               <a
                 href="mailto:info@smpipyakin.sch.id"
@@ -160,7 +243,9 @@ export function PPDBClosedBannerClient({
                 <div className="p-2 bg-white dark:bg-slate-700 rounded-lg shadow-sm group-hover:scale-110 transition-transform">
                   <Mail className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                 </div>
-                <span className="text-slate-600 dark:text-slate-300 font-medium">info@smpipyakin.sch.id</span>
+                <span className="text-slate-600 dark:text-slate-300 font-medium">
+                  info@smpipyakin.sch.id
+                </span>
               </a>
             </motion.div>
 
@@ -184,7 +269,7 @@ export function PPDBClosedBannerClient({
     );
   }
 
-  // Compact banner version (keep as is or modernize slightly)
+  // Compact banner version
   return (
     <motion.div
       initial={{ opacity: 0, height: 0 }}
@@ -196,9 +281,13 @@ export function PPDBClosedBannerClient({
       }`}
     >
       <div className="flex items-start gap-4">
-        <div className={`p-2 rounded-lg ${
-           isQuotaFull ? "bg-red-100 dark:bg-red-900/30" : "bg-yellow-100 dark:bg-yellow-900/30"
-        }`}>
+        <div
+          className={`p-2 rounded-lg ${
+            isQuotaFull
+              ? "bg-red-100 dark:bg-red-900/30"
+              : "bg-yellow-100 dark:bg-yellow-900/30"
+          }`}
+        >
           {isQuotaFull ? (
             <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
           ) : (
@@ -215,6 +304,8 @@ export function PPDBClosedBannerClient({
           >
             {isQuotaFull
               ? "Kuota Pendaftaran Penuh"
+              : timeLeft
+              ? "Pendaftaran Segera Dibuka"
               : "Pendaftaran Belum Dibuka"}
           </p>
           <p
@@ -229,5 +320,18 @@ export function PPDBClosedBannerClient({
         </div>
       </div>
     </motion.div>
+  );
+}
+
+function CountdownUnit({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="flex flex-col items-center p-3 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+      <span className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tabular-nums">
+        {value.toString().padStart(2, "0")}
+      </span>
+      <span className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-medium mt-1">
+        {label}
+      </span>
+    </div>
   );
 }

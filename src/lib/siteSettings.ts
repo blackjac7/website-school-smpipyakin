@@ -275,8 +275,14 @@ export async function isPPDBOpen(): Promise<{
   const academicYear = await getSetting("ppdb.academicYear");
 
   const now = new Date();
+
+  // Normalize start date to beginning of day
   const startDate = startDateStr ? new Date(startDateStr) : null;
+  if (startDate) startDate.setHours(0, 0, 0, 0);
+
+  // Normalize end date to end of day
   const endDate = endDateStr ? new Date(endDateStr) : null;
+  if (endDate) endDate.setHours(23, 59, 59, 999);
 
   // Check if enabled
   if (!enabled) {

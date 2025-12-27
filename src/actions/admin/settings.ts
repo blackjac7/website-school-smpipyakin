@@ -248,6 +248,18 @@ export async function updatePPDBSettings(data: {
   closedMessage?: string;
 }) {
   try {
+    // Validate dates
+    if (data.startDate && data.endDate) {
+      const start = new Date(data.startDate);
+      const end = new Date(data.endDate);
+      if (start > end) {
+        return {
+          success: false,
+          error: "Tanggal mulai tidak boleh lebih akhir dari tanggal berakhir",
+        };
+      }
+    }
+
     const updates: Record<string, string> = {
       "ppdb.enabled": String(data.enabled),
     };
