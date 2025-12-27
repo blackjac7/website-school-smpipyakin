@@ -15,6 +15,7 @@ import {
   Clock,
   MessageSquare,
   GraduationCap,
+  Info,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import {
@@ -202,6 +203,14 @@ export default function SettingsPage() {
 
   // Save PPDB Settings
   const handleSavePPDB = async () => {
+    // Client-side validation
+    if (ppdbForm.startDate && ppdbForm.endDate) {
+      if (new Date(ppdbForm.startDate) > new Date(ppdbForm.endDate)) {
+        toast.error("Tanggal mulai tidak boleh lebih akhir dari tanggal berakhir");
+        return;
+      }
+    }
+
     setSaving(true);
     const result = await updatePPDBSettings({
       enabled: ppdbForm.enabled,
@@ -398,26 +407,52 @@ export default function SettingsPage() {
               : "bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-700"
           }`}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {ppdbStatus.isOpen ? (
-                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-              ) : (
-                <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              )}
-              <span
-                className={`font-medium ${
-                  ppdbStatus.isOpen
-                    ? "text-green-800 dark:text-green-200"
-                    : "text-gray-800 dark:text-gray-200"
-                }`}
-              >
-                {ppdbStatus.isOpen ? "PPDB Sedang Dibuka" : "PPDB Ditutup"}
-              </span>
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3">
+              <div className={`mt-0.5 ${ppdbStatus.isOpen ? "text-green-600" : "text-gray-500"}`}>
+                {ppdbStatus.isOpen ? (
+                  <CheckCircle className="w-5 h-5" />
+                ) : (
+                  <Clock className="w-5 h-5" />
+                )}
+              </div>
+              <div>
+                <span
+                  className={`font-semibold text-lg block ${
+                    ppdbStatus.isOpen
+                      ? "text-green-800 dark:text-green-200"
+                      : "text-gray-800 dark:text-gray-200"
+                  }`}
+                >
+                  {ppdbStatus.isOpen ? "PPDB Sedang Dibuka" : "PPDB Ditutup"}
+                </span>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  {ppdbStatus.message}
+                </p>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Pendaftar: {ppdbStatus.registeredCount} / {ppdbStatus.quota}
+
+            <div className="text-right min-w-[150px]">
+              <div className="mb-2">
+                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                  <span>Terisi</span>
+                  <span>{Math.round((ppdbStatus.registeredCount / ppdbStatus.quota) * 100)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className={`h-2.5 rounded-full ${
+                      ppdbStatus.remainingQuota === 0
+                        ? 'bg-red-500'
+                        : ppdbStatus.remainingQuota < 10
+                          ? 'bg-orange-500'
+                          : 'bg-blue-600'
+                    }`}
+                    style={{ width: `${Math.min(100, (ppdbStatus.registeredCount / ppdbStatus.quota) * 100)}%` }}
+                  ></div>
+                </div>
+              </div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                {ppdbStatus.registeredCount} / {ppdbStatus.quota} Pendaftar
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-500">
                 Sisa kuota: {ppdbStatus.remainingQuota}
@@ -427,29 +462,48 @@ export default function SettingsPage() {
         </div>
 
         {/* PPDB Form */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="md:col-span-2 flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-900/30">
+            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+            <div className="text-sm text-blue-800 dark:text-blue-200">
+              <p className="font-medium mb-1">Informasi Pengaturan Otomatis</p>
+              <p>Jika tanggal diatur, sistem akan otomatis:</p>
+              <ul className="list-disc ml-4 mt-1 space-y-0.5 opacity-90">
+                <li>Menampilkan &quot;Akan Dibuka&quot; jika tanggal sekarang &lt; Tanggal Mulai.</li>
+                <li>Menutup pendaftaran jika tanggal sekarang &gt; Tanggal Berakhir.</li>
+                <li>Menutup pendaftaran jika Kuota terpenuhi.</li>
+              </ul>
+            </div>
+          </div>
+
           <div className="md:col-span-2">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={ppdbForm.enabled}
-                onChange={(e) =>
-                  setPPDBForm((prev) => ({
-                    ...prev,
-                    enabled: e.target.checked,
-                  }))
-                }
-                className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={ppdbForm.enabled}
+                  onChange={(e) =>
+                    setPPDBForm((prev) => ({
+                      ...prev,
+                      enabled: e.target.checked,
+                    }))
+                  }
+                  className="peer sr-only"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+              </div>
               <span className="font-medium text-gray-900 dark:text-white">
-                Buka Pendaftaran PPDB
+                Aktifkan Sistem PPDB
               </span>
             </label>
+            <p className="text-xs text-gray-500 mt-1 ml-14">
+              Switch utama untuk mengizinkan pendaftaran. Jika OFF, PPDB akan selalu tutup.
+            </p>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Tanggal Mulai
+              Tanggal Mulai (Opsional)
             </label>
             <input
               type="date"
@@ -457,13 +511,13 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setPPDBForm((prev) => ({ ...prev, startDate: e.target.value }))
               }
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Tanggal Berakhir
+              Tanggal Berakhir (Opsional)
             </label>
             <input
               type="date"
@@ -471,7 +525,7 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setPPDBForm((prev) => ({ ...prev, endDate: e.target.value }))
               }
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
             />
           </div>
 
@@ -524,20 +578,24 @@ export default function SettingsPage() {
                 }))
               }
               rows={2}
-              placeholder="Pendaftaran PPDB belum dibuka..."
+              placeholder="Contoh: Pendaftaran PPDB belum dibuka. Mohon kembali lagi nanti."
               className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
         </div>
 
-        <div className="mt-4 flex justify-end">
+        <div className="mt-6 flex justify-end pt-4 border-t border-gray-100 dark:border-gray-700">
           <button
             onClick={handleSavePPDB}
             disabled={saving}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow"
           >
-            <Save className="w-4 h-4" />
-            Simpan Pengaturan PPDB
+            {saving ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            {saving ? "Menyimpan..." : "Simpan Pengaturan PPDB"}
           </button>
         </div>
       </div>
