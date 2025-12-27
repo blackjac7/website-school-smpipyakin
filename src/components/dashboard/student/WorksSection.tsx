@@ -224,7 +224,7 @@ export default function WorksSection({
                      ${
                        isUploadDisabled
                          ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
-                         : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md hover:ring-2 hover:ring-blue-500/20"
+                         : "bg-[#1E3A8A] text-white hover:bg-blue-900 hover:shadow-md hover:ring-2 hover:ring-blue-500/20"
                      }
                   `}
               >
@@ -404,8 +404,8 @@ export default function WorksSection({
               animate={{ opacity: 1 }}
               className="flex flex-col items-center justify-center h-64 text-center"
             >
-              <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4">
-                <BookOpen className="w-8 h-8 text-gray-300" />
+              <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 border border-gray-100">
+                <BookOpen className="w-8 h-8 text-[#F59E0B]" />
               </div>
               <h4 className="text-gray-900 font-medium text-lg">
                 Tidak ada data
@@ -461,11 +461,11 @@ export default function WorksSection({
                             <div className="w-full h-full bg-gray-900 flex items-center justify-center text-white">
                               {/* Just a placeholder if no thumbnail fetch logic available in this view, simpler than before */}
                               {thumb ? (
-                                <Image
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
                                   src={thumb}
                                   alt=""
-                                  fill
-                                  className="object-cover opacity-80"
+                                  className="w-full h-full object-cover opacity-80"
                                 />
                               ) : (
                                 <div className="flex flex-col items-center">

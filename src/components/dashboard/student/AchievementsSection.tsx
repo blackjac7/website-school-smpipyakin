@@ -124,7 +124,7 @@ export default function AchievementsSection({
                      flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-all
                      ${isUploadDisabled
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
-                        : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md hover:ring-2 hover:ring-blue-500/20"}
+                        : "bg-[#1E3A8A] text-white hover:bg-blue-900 hover:shadow-md hover:ring-2 hover:ring-blue-500/20"}
                   `}
                >
                   <Plus className="w-4 h-4" />
@@ -261,8 +261,8 @@ export default function AchievementsSection({
                animate={{ opacity: 1 }}
                className="flex flex-col items-center justify-center h-64 text-center"
             >
-               <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4">
-                  <Trophy className="w-8 h-8 text-gray-300" />
+               <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 border border-gray-100">
+                  <Trophy className="w-8 h-8 text-[#F59E0B]" />
                </div>
                <h4 className="text-gray-900 font-medium text-lg">Tidak ada data</h4>
                <p className="text-gray-500 text-sm mt-1 max-w-xs">
