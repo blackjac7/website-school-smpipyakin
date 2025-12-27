@@ -1,4 +1,4 @@
-import { test, expect, request } from "@playwright/test";
+import { test, expect, APIResponse } from "@playwright/test";
 import prisma from "../src/lib/prisma";
 
 const samplePayload = (nisn: string) => ({
@@ -45,7 +45,7 @@ test.describe.serial("@smoke PPDB public registration gating", () => {
     await prisma.pPDBApplication.deleteMany({ where: { nisn } });
 
     // ensure server is responsive (retry a few times)
-    let health = null as any;
+    let health: APIResponse | null = null;
     for (let i = 0; i < 6; i++) {
       try {
         health = await request.get("/");
@@ -86,7 +86,7 @@ test.describe.serial("@smoke PPDB public registration gating", () => {
     await prisma.pPDBApplication.deleteMany({ where: { nisn } });
 
     // ensure server is responsive (retry a few times)
-    let health = null as any;
+    let health: APIResponse | null = null;
     for (let i = 0; i < 6; i++) {
       try {
         health = await request.get("/");
