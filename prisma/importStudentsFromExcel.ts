@@ -4,8 +4,6 @@ import * as XLSX from "xlsx";
 import * as fs from "fs";
 import * as path from "path";
 
-const prisma = new PrismaClient();
-
 /**
  * Interface untuk data siswa dari Excel Dapodik
  */
@@ -204,7 +202,7 @@ function parseExcelFile(filePath: string): StudentData[] {
 /**
  * Import students ke database
  */
-async function importStudents(students: StudentData[]) {
+async function importStudents(prisma: PrismaClient, students: StudentData[]) {
   const results = {
     success: 0,
     failed: 0,
@@ -228,9 +226,9 @@ async function importStudents(students: StudentData[]) {
       });
 
       if (existingStudent) {
-        console.log(
-          `⏭️  Skip: ${student.nisn} (${student.name}) - Already exists`
-        );
+        // console.log(
+        //   `⏭️  Skip: ${student.nisn} (${student.name}) - Already exists`
+        // );
         results.skipped++;
         continue;
       }
@@ -240,7 +238,7 @@ async function importStudents(students: StudentData[]) {
       });
 
       if (existingUser) {
-        console.log(`⏭️  Skip: ${student.nisn} - Username already taken`);
+        // console.log(`⏭️  Skip: ${student.nisn} - Username already taken`);
         results.skipped++;
         continue;
       }
@@ -277,9 +275,9 @@ async function importStudents(students: StudentData[]) {
         });
       });
 
-      console.log(
-        `✅ Created: ${student.nisn} (${student.name}) - ${student.class}`
-      );
+      // console.log(
+      //   `✅ Created: ${student.nisn} (${student.name}) - ${student.class}`
+      // );
       results.success++;
       results.credentials.push({
         nisn: student.nisn,
@@ -384,9 +382,9 @@ function exportCredentials(
 }
 
 /**
- * Main function
+ * Main function exposed for importing or running
  */
-async function main() {
+export async function seedStudentsFromExcel(prisma: PrismaClient) {
   console.log(
     "╔══════════════════════════════════════════════════════════════╗"
   );
@@ -400,14 +398,23 @@ async function main() {
     "╚══════════════════════════════════════════════════════════════╝\n"
   );
 
-  // Path ke file Excel
-  const excelPath = path.join(__dirname, "..", "data-siswa-SMP-IP-YAKIN.xlsx");
+  // Path ke file Excel - Assumed to be in project root
+  // When running from prisma/seed.ts, process.cwd() is usually project root
+  // or __dirname might be prisma/ if transpiled.
+  // Best to check generic locations.
+
+  let excelPath = path.join(process.cwd(), "data-siswa-SMP-IP-YAKIN.xlsx");
+
+  if (!fs.existsSync(excelPath)) {
+      // Try resolving relative to this file if process.cwd() is different
+      excelPath = path.resolve(__dirname, "..", "data-siswa-SMP-IP-YAKIN.xlsx");
+  }
 
   if (!fs.existsSync(excelPath)) {
     console.error(`❌ File not found: ${excelPath}`);
     console.log("\n📝 Pastikan file Excel ada di root project:");
-    console.log("   website-school-smpipyakin/data-siswa-SMP-IP-YAKIN.xlsx");
-    return;
+    console.log("   data-siswa-SMP-IP-YAKIN.xlsx");
+    return; // Exit function, but don't crash process
   }
 
   // Parse Excel
@@ -430,7 +437,7 @@ async function main() {
   console.log("");
 
   // Import ke database
-  const results = await importStudents(students);
+  const results = await importStudents(prisma, students);
 
   // Print summary
   console.log("\n" + "═".repeat(60));
@@ -451,7 +458,8 @@ async function main() {
   // Export credentials
   if (results.credentials.length > 0) {
     const credentialsPath = path.join(
-      __dirname,
+      process.cwd(),
+      "prisma",
       "data",
       "credentials-siswa.txt"
     );
@@ -463,21 +471,18 @@ async function main() {
     }
 
     exportCredentials(results.credentials, credentialsPath);
-
-    console.log("\n⚠️  PENTING:");
-    console.log("   1. File credentials berisi password dalam plain text");
-    console.log("   2. Bagikan dengan aman (jangan via email/WhatsApp)");
-    console.log("   3. Hapus file setelah credentials dibagikan ke siswa");
-    console.log("   4. Minta siswa segera ganti password setelah login");
   }
 }
 
-// Run
-main()
-  .catch((error) => {
-    console.error("❌ Import failed:", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+// Allow standalone execution if this file is run directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const prisma = new PrismaClient();
+  seedStudentsFromExcel(prisma)
+    .catch((error) => {
+      console.error("❌ Import failed:", error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

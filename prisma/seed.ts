@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { seedStudentsFromExcel } from "./importStudentsFromExcel";
 
 const prisma = new PrismaClient();
 
@@ -413,6 +414,12 @@ async function main() {
       },
     ],
   });
+
+  // -------------------------------------------------------------
+  // Seed Students from Excel
+  // -------------------------------------------------------------
+  console.log("\n📥 Importing students from Excel...");
+  await seedStudentsFromExcel(prisma);
 
   console.log("✅ Database seeded successfully!");
   console.log("");
