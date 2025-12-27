@@ -9,7 +9,6 @@ import {
   ArrowRight,
   TrendingUp,
   Activity,
-  UserPlus,
   School,
   FileText,
   UserCheck,
@@ -75,14 +74,6 @@ export default function DashboardClient({ stats, userName }: DashboardClientProp
       href: "/dashboard-admin/news",
     },
     {
-      title: "PPDB Pending",
-      value: stats.counts.ppdbPending,
-      subValue: "Perlu Cek",
-      icon: UserPlus,
-      color: "orange",
-      href: "/dashboard-ppdb", // Redirect to PPDB dashboard
-    },
-    {
       title: "Pengumuman",
       value: stats.counts.announcements,
       subValue: "Aktif",
@@ -126,8 +117,6 @@ export default function DashboardClient({ stats, userName }: DashboardClientProp
         return <Users size={16} className="text-blue-500" />;
       case "NEWS":
         return <Newspaper size={16} className="text-yellow-500" />;
-      case "PPDB":
-        return <UserPlus size={16} className="text-orange-500" />;
       case "ANNOUNCEMENT":
         return <Megaphone size={16} className="text-purple-500" />;
       default:
@@ -166,13 +155,6 @@ export default function DashboardClient({ stats, userName }: DashboardClientProp
             >
               <Users size={18} />
               Kelola User
-            </Link>
-            <Link
-              href="/dashboard-ppdb"
-              className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-5 py-2.5 rounded-xl transition border border-white/10 flex items-center gap-2"
-            >
-              <UserPlus size={18} />
-              Cek PPDB
             </Link>
           </div>
         </div>
@@ -311,15 +293,16 @@ export default function DashboardClient({ stats, userName }: DashboardClientProp
               <li className="flex gap-3 items-start">
                 <span className="text-yellow-500 mt-1">•</span>
                 <span>
-                  Cek <strong className="text-white">PPDB Pending</strong> secara
-                  berkala untuk memastikan calon siswa mendapat respon cepat.
+                  Validasi <strong className="text-white">Berita</strong> atau{" "}
+                  <strong className="text-white">Pengumuman</strong> terbaru
+                  untuk menjaga kualitas informasi sekolah.
                 </span>
               </li>
               <li className="flex gap-3 items-start">
                 <span className="text-yellow-500 mt-1">•</span>
                 <span>
-                  Validasi artikel berita sebelum dipublikasikan untuk menjaga
-                  kualitas informasi sekolah.
+                  Pantau data <strong className="text-white">User</strong> secara
+                  berkala untuk memastikan keamanan sistem.
                 </span>
               </li>
               <li className="flex gap-3 items-start">
@@ -334,13 +317,16 @@ export default function DashboardClient({ stats, userName }: DashboardClientProp
           </div>
 
           <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100">
-             <h3 className="font-bold text-gray-800 text-sm mb-3">Butuh Bantuan?</h3>
-             <p className="text-xs text-gray-500 mb-4">
-                Jika mengalami kendala teknis, silakan hubungi tim developer.
-             </p>
-             <button className="text-xs text-blue-600 font-semibold hover:underline">
-                Lihat Dokumentasi Teknis &rarr;
-             </button>
+            <h3 className="font-bold text-gray-800 text-sm mb-3">
+              Butuh Bantuan?
+            </h3>
+            <p className="text-xs text-gray-500 mb-4">
+              Jika mengalami kendala teknis atau pertanyaan fitur, silakan hubungi
+              tim developer.
+            </p>
+            <button className="text-xs text-blue-600 font-semibold hover:underline">
+              Lihat Dokumentasi Teknis &rarr;
+            </button>
           </div>
         </div>
       </div>
