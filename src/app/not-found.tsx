@@ -52,7 +52,7 @@ export default function NotFound() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] opacity-20" />
 
         {/* Floating Icons Background */}
-        <FloatingIcon icon={FileQuestion} size={100} className="w-24 h-24 top-1/4 left-1/4 text-school-blue" delay={0} duration={6} y={-20} x={10} />
+        <FloatingIcon icon={FileQuestion} className="w-24 h-24 top-1/4 left-1/4 text-school-blue" delay={0} duration={6} y={-20} x={10} />
         <FloatingIcon icon={Search} className="w-32 h-32 bottom-1/4 right-1/4 text-school-yellow" delay={1} duration={7} y={20} x={-10} />
         <FloatingIcon icon={AlertCircle} className="w-16 h-16 top-1/3 right-1/3 text-slate-400" delay={2} duration={5} y={-15} />
       </div>
