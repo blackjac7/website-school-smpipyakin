@@ -3,13 +3,21 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { Quote } from "lucide-react";
-import { teachers } from "@/lib/data/teachers";
 
-export default function SambutanContent() {
-  const kepsek = teachers.find((t) => t.position === "Kepala Sekolah");
+interface SambutanContentProps {
+  teacher: {
+    name: string;
+    photo: string | null;
+    position: string;
+  } | null;
+}
+
+export default function SambutanContent({ teacher }: SambutanContentProps) {
   const photoUrl =
-    kepsek?.photo ||
+    teacher?.photo ||
     "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=400&auto=format&fit=crop";
+
+  const name = teacher?.name || "Muhamad Abduh, S.T.";
 
   return (
     <div className="flex flex-col md:flex-row gap-8 items-start">
@@ -30,7 +38,7 @@ export default function SambutanContent() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
           <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
             <h3 className="font-bold text-lg leading-tight">
-              Muhamad Abduh, S.T.
+              {name}
             </h3>
             <p className="text-sm text-gray-200">Kepala Sekolah</p>
           </div>
@@ -94,7 +102,7 @@ export default function SambutanContent() {
         <div className="flex items-center gap-4 pt-6 border-t border-gray-100 dark:border-gray-700">
           <div>
             <p className="font-bold text-gray-900 dark:text-white">
-              Muhamad Abduh, S.T.
+              {name}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Kepala Sekolah SMP IP Yakin Jakarta
