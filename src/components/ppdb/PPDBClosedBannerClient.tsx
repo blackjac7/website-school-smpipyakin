@@ -143,7 +143,7 @@ export function PPDBClosedBannerClient({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-xl text-primary-600 dark:text-primary-400 font-medium mb-6"
+              className="text-xl text-school-yellow font-medium mb-6"
             >
               Tahun Ajaran {academicYear}
             </motion.p>
@@ -230,7 +230,7 @@ export function PPDBClosedBannerClient({
                 className="flex items-center justify-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
               >
                 <div className="p-2 bg-white dark:bg-slate-700 rounded-lg shadow-sm group-hover:scale-110 transition-transform">
-                  <Phone className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                  <Phone className="w-5 h-5 text-school-blue dark:text-school-yellow" />
                 </div>
                 <span className="text-slate-600 dark:text-slate-300 font-medium">
                   (021) 5403540
@@ -241,7 +241,7 @@ export function PPDBClosedBannerClient({
                 className="flex items-center justify-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
               >
                 <div className="p-2 bg-white dark:bg-slate-700 rounded-lg shadow-sm group-hover:scale-110 transition-transform">
-                  <Mail className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                  <Mail className="w-5 h-5 text-school-blue dark:text-school-yellow" />
                 </div>
                 <span className="text-slate-600 dark:text-slate-300 font-medium">
                   info@smpipyakin.sch.id
@@ -257,7 +257,7 @@ export function PPDBClosedBannerClient({
             >
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary-600 text-white rounded-full font-semibold shadow-lg shadow-primary-600/30 hover:shadow-primary-600/40 hover:-translate-y-0.5 transition-all"
+                className="inline-flex items-center gap-2 px-8 py-3.5 bg-school-blue text-white rounded-full font-semibold shadow-lg shadow-school-blue/30 hover:shadow-school-blue/40 hover:-translate-y-0.5 transition-all"
               >
                 <ArrowLeft className="w-5 h-5" />
                 Kembali ke Beranda
