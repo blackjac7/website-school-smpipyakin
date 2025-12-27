@@ -7,7 +7,7 @@
     "build": "next build",
     "postbuild": "next-sitemap",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "db:seed": "npx tsx prisma/seed.ts",
     "db:seed-content": "npx tsx prisma/seedContent.ts",
     "db:seed-all": "npx tsx prisma/seed.ts && npx tsx prisma/seedContent.ts",
@@ -68,7 +68,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
+    "@eslint/eslintrc": "^3.3.3",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/node": "^20",
