@@ -2,11 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { UserRole, PPDBStatus, StatusApproval } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 
 export type DashboardActivity = {
   id: string;
-  type: "USER" | "NEWS" | "PPDB" | "ANNOUNCEMENT";
+  type: "USER" | "NEWS" | "ANNOUNCEMENT";
   title: string;
   description: string;
   date: Date;
@@ -24,7 +24,6 @@ export type DashboardStats = {
     announcements: number;
     facilities: number;
     extracurriculars: number;
-    ppdbPending: number;
   };
   recentActivities: DashboardActivity[];
 };
@@ -54,7 +53,6 @@ export async function getAdminDashboardStats(): Promise<{
       announcementsCount,
       facilitiesCount,
       extracurricularsCount,
-      ppdbPendingCount,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: UserRole.ADMIN } }),
@@ -64,11 +62,10 @@ export async function getAdminDashboardStats(): Promise<{
       prisma.announcement.count(),
       prisma.facility.count(),
       prisma.extracurricular.count(),
-      prisma.pPDBApplication.count({ where: { status: PPDBStatus.PENDING } }),
     ]);
 
     // 2. Fetch Recent Items to build "Activity Feed"
-    const [recentUsers, recentNews, recentPPDB, recentAnnouncements] =
+    const [recentUsers, recentNews, recentAnnouncements] =
       await Promise.all([
         prisma.user.findMany({
           take: 5,
@@ -84,17 +81,6 @@ export async function getAdminDashboardStats(): Promise<{
             statusPersetujuan: true,
             createdAt: true,
             author: { select: { username: true } },
-          },
-        }),
-        prisma.pPDBApplication.findMany({
-          take: 5,
-          orderBy: { createdAt: "desc" },
-          select: {
-            id: true,
-            name: true,
-            status: true,
-            createdAt: true,
-            asalSekolah: true,
           },
         }),
         prisma.announcement.findMany({
@@ -121,14 +107,6 @@ export async function getAdminDashboardStats(): Promise<{
         description: `Oleh: ${n.author.username}`,
         date: n.createdAt,
         status: n.statusPersetujuan,
-      })),
-      ...recentPPDB.map((p) => ({
-        id: p.id,
-        type: "PPDB" as const,
-        title: "Pendaftar Baru PPDB",
-        description: `${p.name} - ${p.asalSekolah || "Umum"}`,
-        date: p.createdAt,
-        status: p.status,
       })),
       ...recentAnnouncements.map((a) => ({
         id: a.id,
@@ -157,7 +135,6 @@ export async function getAdminDashboardStats(): Promise<{
           announcements: announcementsCount,
           facilities: facilitiesCount,
           extracurriculars: extracurricularsCount,
-          ppdbPending: ppdbPendingCount,
         },
         recentActivities: sortedActivities,
       },
