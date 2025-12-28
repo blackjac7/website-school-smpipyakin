@@ -21,7 +21,9 @@ export async function getAuthenticatedUser() {
 
   try {
     const secret = getJWTSecret();
-    const { payload } = (await jwtVerify(token.value, secret)) as { payload: JWTPayload };
+    const { payload } = (await jwtVerify(token.value, secret)) as {
+      payload: JWTPayload;
+    };
 
     // Normalize role to Prisma UserRole string where possible to keep server-side checks consistent
     const normalizedRole = tokenRoleToUserRole(payload.role);

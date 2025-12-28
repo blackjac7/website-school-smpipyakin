@@ -124,10 +124,12 @@ export function useAuth(): UseAuthReturn {
   };
 
   const hasRole = (roles: string | string[]): boolean => {
-    if (!user) return false;
+    if (!user || !user.role) return false;
 
     const roleArray = Array.isArray(roles) ? roles : [roles];
-    return roleArray.includes(user.role);
+    const normalizedUserRole = String(user.role).toLowerCase();
+    const normalizedRoles = roleArray.map((r) => String(r).toLowerCase());
+    return normalizedRoles.includes(normalizedUserRole);
   };
 
   return {

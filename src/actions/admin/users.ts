@@ -15,7 +15,12 @@ async function verifyAdminRole() {
   // Use helper to check admin role in a centralized, normalized way
   if (!user || !isAdminRole(user.role)) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn("Admin authorization failed. User role:", user?.role, "normalized:", user?.role ? String(user.role).toLowerCase() : undefined);
+      console.warn(
+        "Admin authorization failed. User role:",
+        user?.role,
+        "normalized:",
+        user?.role ? String(user.role).toLowerCase() : undefined
+      );
     }
 
     return {
