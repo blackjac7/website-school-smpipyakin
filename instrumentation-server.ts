@@ -2,4 +2,3 @@
 export function register() {
   // intentionally empty: Sentry instrumentation removed
 }
-

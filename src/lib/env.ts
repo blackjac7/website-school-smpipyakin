@@ -22,7 +22,6 @@ const envSchema = z.object({
   EMAILJS_PUBLIC_KEY: z.string().optional(),
   EMAILJS_PRIVATE_KEY: z.string().optional(),
 
-
   // Node Environment
   NODE_ENV: z
     .enum(["development", "test", "production"])
