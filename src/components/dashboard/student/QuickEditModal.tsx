@@ -5,6 +5,7 @@ import { X, Save, Upload, User } from "lucide-react";
 import Image from "next/image";
 import { ProfileData } from "./types";
 import toast from "react-hot-toast";
+import { uploadImageAction } from "@/actions/upload";
 
 interface QuickEditModalProps {
   isOpen: boolean;
@@ -87,14 +88,9 @@ export default function QuickEditModal({
         formData.append("file", file);
         formData.append("folder", "profiles");
 
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
+        const result = await uploadImageAction(formData);
 
-        const result = await response.json();
-
-        if (result.success) {
+        if (result.success && result.data) {
           setFormData((prev) => ({
             ...prev,
             profileImage: result.data.url,

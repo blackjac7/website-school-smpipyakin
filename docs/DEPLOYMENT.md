@@ -9,11 +9,11 @@ This document provides a comprehensive guide for deploying the **SMP IP Yakin** 
 1. [Prerequisites](#prerequisites)
 2. [Project Architecture](#project-architecture)
 3. [Environment Configuration](#environment-configuration)
-4. [Local Development Setup](#local-development-setup)
-5. [Deployment Strategy (CI/CD)](#deployment-strategy-cicd)
+   - [Where to Configure Variables?](#where-to-configure-variables)
+4. [Deployment Strategy (CI/CD)](#deployment-strategy-cicd)
+   - [Hybrid Infrastructure Setup](#hybrid-infrastructure-setup-aiven--vps)
+5. [Local Development Setup](#local-development-setup)
 6. [Platform-Specific Deployment](#platform-specific-deployment)
-   - [Vercel (Recommended)](#option-1-vercel-recommended)
-   - [Docker / VPS](#option-2-docker--vps)
 7. [Database Management](#database-management)
 8. [Troubleshooting](#troubleshooting)
 
@@ -26,12 +26,13 @@ Before you begin, ensure you have the following:
 - **Node.js**: Version 20.x or later (`node -v`)
 - **Package Manager**: npm (v9+) or bun
 - **Database**: PostgreSQL (v14+)
-  - *Local:* Local Postgres server or Docker container.
-  - *Production:* Managed Postgres (Neon, Supabase, Railway, or AWS RDS).
+  - *Staging:* Aiven PostgreSQL.
+  - *Production:* Self-hosted VPS PostgreSQL.
 - **Accounts**:
   - [Cloudinary](https://cloudinary.com) (for Image Storage)
   - [EmailJS](https://www.emailjs.com) (for Contact Form)
   - [Vercel](https://vercel.com) (for Hosting)
+  - [Flowise](https://flowiseai.com) (for AI Chatbot)
 
 ---
 
@@ -39,10 +40,9 @@ Before you begin, ensure you have the following:
 
 This is a **Next.js 15** application using **App Router** and **Server Actions**.
 
-- **Frontend**: React 18, Tailwind CSS v4, Framer Motion.
-- **Backend**: Next.js Server Actions (No separate API server required).
-- **Database**: Prisma ORM with PostgreSQL.
-- **Auth**: Custom JWT-based authentication (`src/actions/auth.ts`).
+- **Frontend**: Hosted on Vercel.
+- **Database**: Hybrid (Aiven for Staging, VPS for Production).
+- **Storage**: Cloudinary (Images) + Cloudflare R2 (Documents).
 
 ---
 
@@ -50,19 +50,62 @@ This is a **Next.js 15** application using **App Router** and **Server Actions**
 
 The application relies on environment variables for configuration. **Never commit `.env` files.**
 
-### File Structure
-- `.env`: Used for Local Development (Git ignored).
-- `.env.example`: Template file (Committed).
+### Where to Configure Variables?
 
-### Key Variables
-Refer to `.env.example` for the complete list. Below are the critical ones:
+**Best Practice:** Separate your *Pipeline Credentials* from your *Application Secrets*.
 
-| Variable | Description | Local Example | Production Note |
-|----------|-------------|---------------|-----------------|
-| `DATABASE_URL` | Prisma Connection | `postgresql://user:pass@localhost:5432/db` | Use **Pooled** URL (port 6543 for Neon/Supabase) |
-| `DIRECT_URL` | Migration Connection | Same as `DATABASE_URL` | Use **Direct** URL (port 5432) for migrations |
-| `NEXT_PUBLIC_APP_URL` | Base URL | `http://localhost:3000` | Real Domain (e.g., `https://smpipyakin.sch.id`) |
-| `JWT_SECRET` | Auth Token Secret | `openssl rand -base64 32` | **Must** be strong and unique per env |
+#### 1. GitHub Secrets (CI/CD Pipeline)
+These are required for GitHub Actions to **authorize** the deployment to Vercel.
+*Go to: GitHub Repo > Settings > Secrets and variables > Actions*
+
+| Secret Name | Value Description |
+|-------------|-------------------|
+| `VERCEL_TOKEN` | Generate in Vercel Account Settings > Tokens. |
+| `VERCEL_ORG_ID` | Found in Vercel Dashboard > Settings. |
+| `VERCEL_PROJECT_ID` | Found in Vercel Project > Settings. |
+| `DATABASE_URL` | (Optional) If you run integration tests against a real DB in CI. |
+
+#### 2. Vercel Project Settings (Application Runtime)
+These are required for the **application** to run (connect to DB, send emails, etc.).
+*Go to: Vercel Project > Settings > Environment Variables*
+
+**Staging Environment (Preview Branch: `develop`)**
+- `DATABASE_URL`: `postgresql://avnadmin:pass@aiven-host:port/db?sslmode=require`
+- `NODE_ENV`: `production` (Vercel sets this automatically)
+- `NEXT_PUBLIC_APP_URL`: `https://staging.smpipyakin.sch.id`
+
+**Production Environment (Production Branch: `main`)**
+- `DATABASE_URL`: `postgresql://postgres:pass@YOUR_VPS_IP:5432/db?schema=public&sslmode=prefer`
+- `NEXT_PUBLIC_APP_URL`: `https://www.smpipyakin.sch.id`
+
+> **Note:** Variables like `CLOUDINARY_*`, `JWT_SECRET`, and `CRON_SECRET` should be set for **both** environments.
+
+---
+
+## 🚀 Deployment Strategy (CI/CD)
+
+The project follows a **Gitflow-lite** workflow using **GitHub Actions** (`.github/workflows/ci.yml`).
+
+### Workflow Overview
+1.  **Push to `develop`**
+    - Runs Linter & Type Check.
+    - Runs Tests (Critical Path).
+    - Deploys to **Vercel Preview** (Staging).
+2.  **Push to `main`**
+    - Runs Linter, Type Check, & Tests.
+    - Deploys to **Vercel Production**.
+
+### Hybrid Infrastructure Setup (Aiven + VPS)
+
+Since your production database is on a **VPS**, Vercel (Cloud) needs to reach it.
+
+1.  **VPS Firewall (Production)**
+    - You must allow incoming connections on port `5432` from Vercel's IP addresses.
+    - *Alternative (Easier/Safer):* Allow `0.0.0.0/0` (All IPs) but enforce strong passwords and **SSL** (`sslmode=prefer` or `require`).
+
+2.  **Aiven (Staging)**
+    - Aiven usually enforces SSL by default (`sslmode=require`).
+    - Copy the "Service URI" directly from the Aiven Console.
 
 ---
 
@@ -92,128 +135,9 @@ npm run db:migrate
 npm run db:seed
 ```
 
-> **Default Admin Credentials:**
-> - Email: `admin@sekolah.sch.id`
-> - Password: `admin123` (Change immediately in dashboard)
-
 ### 4. Run Development Server
 ```bash
 npm run dev
-# Open http://localhost:3000
-```
-
----
-
-## 🚀 Deployment Strategy (CI/CD)
-
-The project follows a **Gitflow-lite** workflow using **GitHub Actions**.
-
-### Branches
-- **`develop`** → Deploys to **Staging** Environment
-  - URL: `https://staging.smpipyakin.sch.id` (or Vercel Preview)
-  - Purpose: Internal testing, UAT.
-- **`main`** → Deploys to **Production** Environment
-  - URL: `https://www.smpipyakin.sch.id`
-  - Purpose: Live public site.
-
-### GitHub Configuration
-To enable the CI/CD pipeline defined in `.github/workflows/ci.yml`:
-
-1. Go to **Settings > Environments** in your GitHub Repo.
-2. Create environments: `staging` and `production`.
-3. Add Environment Secrets for each (e.g., `DATABASE_URL`, `JWT_SECRET`).
-   - *Note:* The CI pipeline uses `vercel-action`. You need to set `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` as **Repository Secrets**.
-
----
-
-## ☁️ Platform-Specific Deployment
-
-### Option 1: Vercel (Recommended)
-
-Vercel is the native platform for Next.js and offers the best performance.
-
-1.  **Import Project:**
-    - Go to Vercel Dashboard → Add New Project → Import from GitHub.
-    - Select the `smp-ip-yakin` repository.
-
-2.  **Build Configuration:**
-    - Framework: **Next.js**
-    - Build Command: `npm run build` (or `prisma generate && next build` if schema changes often)
-    - Output Directory: `.next`
-
-3.  **Environment Variables:**
-    - Copy all values from your `.env` (Production values) into the Vercel Environment Variables UI.
-    - **Crucial:** For `DATABASE_URL`, use the **Pooled** connection string if using Neon or Supabase to prevent connection exhaustion.
-
-4.  **Deploy:**
-    - Click **Deploy**. Vercel will build and serve the site.
-
----
-
-### Option 2: Docker / VPS
-
-For self-hosting on a VPS (Ubuntu/Debian) using Docker.
-
-#### 1. Build the Docker Image
-Create a `Dockerfile` (standard Next.js standalone build):
-
-```dockerfile
-FROM node:20-alpine AS base
-
-# Install dependencies only when needed
-FROM base AS deps
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
-
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-# Disable telemetry during build
-ENV NEXT_TELEMETRY_DISABLED 1
-# Generate Prisma Client
-RUN npx prisma generate
-RUN npm run build
-
-# Production image, copy all the files and run next
-FROM base AS runner
-WORKDIR /app
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-# Copy standalone output
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-EXPOSE 3000
-ENV PORT 3000
-CMD ["node", "server.js"]
-```
-
-#### 2. Run with Docker Compose
-Create `docker-compose.yml`:
-
-```yaml
-version: '3'
-services:
-  web:
-    build: .
-    ports:
-      - "3000:3000"
-    env_file: .env.production
-    restart: always
-```
-
-#### 3. Start Service
-```bash
-docker-compose up -d --build
 ```
 
 ---
@@ -221,24 +145,15 @@ docker-compose up -d --build
 ## 💾 Database Management
 
 ### Migrations
-In production, **do not** run `prisma migrate dev`. Instead, use `prisma migrate deploy` which applies pending migrations without resetting the DB.
+In production, **do not** run `prisma migrate dev`. Instead, use `prisma migrate deploy`.
 
-**On Vercel:**
-Add a "Build Command" override or use a `postinstall` script in `package.json`:
-```json
-"scripts": {
-  "postinstall": "prisma generate",
-  "build": "prisma migrate deploy && next build"
-}
-```
-*Warning: Running migrations during build can be risky if the DB is live. It's often safer to run migrations manually or via a separate CI job.*
-
-### Seeding Production Data
-To seed initial data (Roles, Admin) in production:
-```bash
-# Locally, pointing to Prod DB (Be careful!)
-DATABASE_URL="postgresql://user:pass@prod-host..." npm run db:seed
-```
+**Recommended Workflow:**
+1.  **Local:** Change `schema.prisma` -> `npm run db:migrate` (Creates migration file).
+2.  **Commit:** Push migration file to GitHub.
+3.  **Deploy:**
+    - Vercel builds the app.
+    - **You manually run migration** (safest for VPS) or configure a `postdeploy` script.
+    - *Command:* `DATABASE_URL="prod_url" npx prisma migrate deploy`
 
 ---
 
@@ -246,12 +161,11 @@ DATABASE_URL="postgresql://user:pass@prod-host..." npm run db:seed
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| **Prisma Client Error** | Schema changed but client not updated | Run `npx prisma generate` (or add to build script). |
-| **504 Gateway Timeout** | Database connection slow/full | Use Connection Pooling (`pgbouncer`). |
-| **Images 404** | Cloudinary vars missing | Check `NEXT_PUBLIC_CLOUDINARY_...` vars. |
-| **Build Fail: Type Error** | TypeScript issues | Run `npm run lint` locally and fix errors before pushing. |
-| **Auth Fails (Login)** | Invalid Secret/Cookie | Ensure `JWT_SECRET` matches across pods (if scaled). |
+| **Connection Refused (VPS)** | Firewall blocking Vercel | Check VPS `ufw` or Security Group settings. |
+| **SSL Error (Aiven)** | Missing SSL mode | Add `?sslmode=require` to connection string. |
+| **Deployment Fails** | Missing Secrets | Check GitHub Secrets for `VERCEL_TOKEN`. |
+| **App 500 Error** | Missing Env Vars | Check Vercel Project Settings for `DATABASE_URL`. |
 
 ---
 
-_Documentation v1.1 - Updated for Next.js 15 & Prisma 6_
+_Documentation v1.2 - Updated for Hybrid Infrastructure (Aiven/VPS)_
