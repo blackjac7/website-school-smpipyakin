@@ -15,7 +15,7 @@ import { TEST_USERS, UserRole } from "../fixtures/test-fixtures";
 // Mapping role dari test ke role form
 const FORM_ROLE_MAP: Record<UserRole, string> = {
   siswa: "siswa",
-  ppdb: "ppdb-officer",
+  ppdb: "ppdb_admin",
   admin: "admin",
   kesiswaan: "kesiswaan",
   osis: "osis",

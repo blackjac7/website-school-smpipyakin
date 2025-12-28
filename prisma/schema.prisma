@@ -356,7 +356,7 @@ enum UserRole {
   SISWA          @map("siswa")
   OSIS           @map("osis")
   KESISWAAN      @map("kesiswaan")
-  PPDB_STAFF     @map("ppdb_staff")
+  PPDB_ADMIN     @map("ppdb_admin")
 
   @@map("user_role")
 }

@@ -274,7 +274,7 @@ const loginSchema = z.object({
     .string()
     .min(6, "Password minimal 6 karakter")
     .max(100, "Password maksimal 100 karakter"),
-  role: z.enum(["admin", "kesiswaan", "siswa", "osis", "ppdb-officer"]),
+  role: z.enum(["admin", "kesiswaan", "siswa", "osis", "ppdb_admin"]),
 });
 ```
 

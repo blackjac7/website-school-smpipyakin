@@ -21,7 +21,7 @@ export const TEST_USERS = {
   ppdb: {
     username: "ppdb001",
     password: "admin123",
-    role: "PPDB_STAFF",
+    role: "PPDB_ADMIN",
     dashboardUrl: "/dashboard-ppdb",
   },
   admin: {
