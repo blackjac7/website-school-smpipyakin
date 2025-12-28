@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { PPDBStatus, Prisma } from "@prisma/client";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { isRoleMatch } from "@/lib/roles";
 
 // Re-export PPDBStatus for use in components
 export type { PPDBStatus } from "@prisma/client";
@@ -12,7 +13,7 @@ export type { PPDBStatus } from "@prisma/client";
 // Helper to verify PPDB access (admin or ppdb-officer)
 async function verifyPPDBAccess() {
   const user = await getAuthenticatedUser();
-  if (!user || !["admin", "ppdb-officer"].includes(user.role)) {
+  if (!user || !isRoleMatch(user.role, ["admin", "ppdb-officer"])) {
     return { authorized: false, error: "Unauthorized: PPDB access required" };
   }
   return { authorized: true, user };

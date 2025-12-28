@@ -6,11 +6,12 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { NotificationService } from "@/lib/notificationService";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { isRoleMatch } from "@/lib/roles";
 
 // Helper to verify kesiswaan role
 async function verifyKesiswaanRole() {
   const user = await getAuthenticatedUser();
-  if (!user || !["kesiswaan", "admin"].includes(user.role)) {
+  if (!user || !isRoleMatch(user.role, ["kesiswaan", "admin"])) {
     return {
       authorized: false,
       error: "Unauthorized: Kesiswaan access required",
