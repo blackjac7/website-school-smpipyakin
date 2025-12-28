@@ -227,7 +227,7 @@ export class NotificationAPIService {
   }> {
     let result;
 
-    if (userRole === "ppdb-officer") {
+    if (userRole === "ppdb_admin") {
       result = await this.fetchPPDBNotifications({
         limit: NOTIFICATION_CONFIG.ALL_NOTIFICATIONS_LIMIT,
         page,
@@ -258,7 +258,7 @@ export class NotificationAPIService {
     success: boolean;
     error?: string;
   }> {
-    if (userRole === "ppdb-officer") {
+    if (userRole === "ppdb_admin") {
       return this.markPPDBNotificationAsRead(notificationId);
     } else {
       return this.markNotificationAsRead(notificationId);

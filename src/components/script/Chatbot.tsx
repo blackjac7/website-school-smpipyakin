@@ -13,8 +13,13 @@ const BubbleChat = dynamic(
 const Chatbot = () => {
   return (
     <BubbleChat
-      chatflowid="79c764d6-ef03-4796-9885-cbdef2c0d903"
-      apiHost="https://flowise.zeabur.app"
+      chatflowid={
+        process.env.NEXT_PUBLIC_FLOWISE_CHATFLOW_ID ||
+        "79c764d6-ef03-4796-9885-cbdef2c0d903"
+      }
+      apiHost={
+        process.env.NEXT_PUBLIC_FLOWISE_API_URL || "https://flowise.zeabur.app"
+      }
       theme={{
         button: {
           backgroundColor: "#3B81F6",

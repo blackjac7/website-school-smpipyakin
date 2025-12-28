@@ -16,11 +16,7 @@ import {
   Calendar as CalendarIcon,
 } from "lucide-react";
 
-type Role = "siswa" | "kesiswaan" | "admin" | "osis" | "ppdb-officer";
-
-// Helper components for icons not in the main import to avoid clutter
-// Defined BEFORE usage in roleConfig to avoid ReferenceError
-const Trophy = Award;
+type Role = "siswa" | "kesiswaan" | "admin" | "osis" | "ppdb_admin";
 
 interface IllustrationConfig {
   icon: LucideIcon;
@@ -69,7 +65,7 @@ const roleConfig: Record<Role, IllustrationConfig> = {
     orbitIcons: [UserCog, FileSpreadsheet, Briefcase],
     particleColor: "bg-gray-400",
   },
-  "ppdb-officer": {
+  ppdb_admin: {
     icon: FileSpreadsheet,
     color: "text-purple-600",
     bgColor: "bg-purple-100",
