@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
-import type { StaticImageData } from "next/image";
 import { useAuth } from "@/components/shared/AuthProvider";
 import LoginAnimation from "@/components/shared/LoginAnimation";
 import { useAntiBot } from "@/hooks/useAntiBot";
@@ -12,12 +10,7 @@ import { loginAction } from "@/actions/auth";
 import LoginHeader from "./LoginHeader";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Lock, ChevronDown } from "lucide-react";
-
-import siswaIllustration from "@/assets/siswa-illustration.jpg";
-import kesiswaanIllustration from "@/assets/kesiswaan-illustration.jpg";
-import adminIllustration from "@/assets/admin-illustration.jpg";
-import osisIllustration from "@/assets/osis-illustration.jpg";
-import ppdbIllustration from "@/assets/ppdb-illustration.jpg";
+import LoginIllustration from "./LoginIllustration";
 
 type Role = "siswa" | "kesiswaan" | "admin" | "osis" | "ppdb-officer";
 
@@ -107,36 +100,13 @@ const LoginForm = () => {
     }
   };
 
-  // Mapping role → ilustrasi dan judul
-  const roleData: Record<
-    Role,
-    { illustration: StaticImageData; title: string; color: string }
-  > = {
-    siswa: {
-      illustration: siswaIllustration,
-      title: "Portal Siswa",
-      color: "bg-blue-50 text-blue-700",
-    },
-    osis: {
-      illustration: osisIllustration,
-      title: "Portal OSIS",
-      color: "bg-yellow-50 text-yellow-700",
-    },
-    kesiswaan: {
-      illustration: kesiswaanIllustration,
-      title: "Portal Kesiswaan",
-      color: "bg-green-50 text-green-700",
-    },
-    admin: {
-      illustration: adminIllustration,
-      title: "Portal Admin",
-      color: "bg-gray-50 text-gray-700",
-    },
-    "ppdb-officer": {
-      illustration: ppdbIllustration,
-      title: "Portal PPDB",
-      color: "bg-purple-50 text-purple-700",
-    },
+  // Mapping role → title only
+  const roleData: Record<Role, { title: string }> = {
+    siswa: { title: "Portal Siswa" },
+    osis: { title: "Portal OSIS" },
+    kesiswaan: { title: "Portal Kesiswaan" },
+    admin: { title: "Portal Admin" },
+    "ppdb-officer": { title: "Portal PPDB" },
   };
 
   const currentRole = roleData[role];
@@ -276,7 +246,7 @@ const LoginForm = () => {
                 disabled={isSubmitting}
                 className={`mt-4 w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider shadow-lg transform transition-all duration-200 hover:shadow-xl active:scale-[0.98] ${
                   isSubmitting
-                    ? "bg-gray-300 cursor-not-allowed text-gray-500 shadow-none"
+                    ? "bg-gray-300 cursor-not-allowed text-gray-500 shadow-none dark:bg-gray-600 dark:text-gray-400"
                     : "bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-white"
                 }`}
               >
@@ -311,12 +281,12 @@ const LoginForm = () => {
             </form>
           </div>
 
-          {/* Kolom Kanan: Ilustrasi Gambar Dinamis */}
-          <div className="w-full md:w-1/2 bg-gray-50 relative overflow-hidden flex flex-col items-center justify-center p-8 border-t md:border-t-0 md:border-l border-gray-100">
+          {/* Kolom Kanan: Ilustrasi Animasi Modern */}
+          <div className="w-full md:w-1/2 bg-gray-50 dark:bg-gray-800/50 relative overflow-hidden flex flex-col items-center justify-center p-8 border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-700/50">
             {/* Background Pattern for Illustration Side */}
             <div className="absolute inset-0 z-0 opacity-10">
               <svg
-                className="h-full w-full text-[#1E3A8A]"
+                className="h-full w-full text-[#1E3A8A] dark:text-[#F59E0B]"
                 width="100%"
                 height="100%"
                 viewBox="0 0 100 100"
@@ -336,17 +306,8 @@ const LoginForm = () => {
                   transition={{ duration: 0.3 }}
                   className="flex flex-col items-center"
                 >
-                  <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 relative mb-6">
-                    <div className="absolute inset-0 bg-[#F59E0B] rounded-full opacity-10 blur-2xl animate-pulse"></div>
-                    <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-2xl ring-4 ring-white">
-                      <Image
-                        src={currentRole.illustration}
-                        alt={`${currentRole.title} Illustration`}
-                        fill
-                        className="object-cover"
-                        priority
-                      />
-                    </div>
+                  <div className="w-64 h-64 relative mb-6">
+                    <LoginIllustration role={role} />
                   </div>
 
                   <motion.div
@@ -354,10 +315,10 @@ const LoginForm = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
                       {currentRole.title}
                     </h3>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">
                       Silakan login untuk mengakses dashboard{" "}
                       {role === "siswa"
                         ? "akademik dan informasi sekolah"
@@ -371,7 +332,7 @@ const LoginForm = () => {
 
             {/* Footer Text */}
             <div className="absolute bottom-4 text-center w-full z-10">
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-400 dark:text-gray-500">
                 © {new Date().getFullYear()} SMP IP YAKIN. All rights reserved.
               </p>
             </div>
