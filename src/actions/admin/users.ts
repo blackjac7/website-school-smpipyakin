@@ -6,16 +6,24 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { UserRole, GenderType } from "@prisma/client";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { isAdminRole } from "@/lib/roles";
 
 // Helper to verify admin role
 async function verifyAdminRole() {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "admin") {
+
+  // Use helper to check admin role in a centralized, normalized way
+  if (!user || !isAdminRole(user.role)) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Admin authorization failed. User role:", user?.role, "normalized:", user?.role ? String(user.role).toLowerCase() : undefined);
+    }
+
     return {
       authorized: false,
       error: "Unauthorized: Admin access required",
     };
   }
+
   return { authorized: true, user };
 }
 
