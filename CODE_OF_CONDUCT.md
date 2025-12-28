@@ -50,11 +50,7 @@ decisions when appropriate.
 
 ## Scope
 
-This Code of Conduct applies within all community spaces, and also applies when
-an individual is officially representing the community in public spaces.
-Examples of representing our community include using an official e-mail address,
-posting via an official social media account, or acting as an appointed
-representative at an online or offline event.
+This Code of Conduct applies to all team members, contributors, and staff working on the SMP IP YAKIN website project. It applies within all project spaces (repositories, issue trackers, internal chats) and also applies when an individual is officially representing the project or the school in public spaces.
 
 ## Enforcement
 
