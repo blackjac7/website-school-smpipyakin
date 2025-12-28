@@ -57,7 +57,7 @@ const roleConfig: Record<Role, IllustrationConfig> = {
     bgColor: "bg-green-100",
     darkColor: "dark:text-green-400",
     darkBgColor: "dark:bg-green-900/30",
-    orbitIcons: [GraduationCap, ShieldCheck, Trophy],
+    orbitIcons: [GraduationCap, ShieldCheck, Award],
     particleColor: "bg-green-400",
   },
   admin: {
