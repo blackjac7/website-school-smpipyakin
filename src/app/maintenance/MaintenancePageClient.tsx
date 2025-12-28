@@ -1,9 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, Mail, Phone, Settings, Hammer, AlertCircle } from "lucide-react";
+import { ArrowLeft, Clock, Mail, Phone, Settings, Hammer } from "lucide-react";
 import Link from "next/link";
-import { AnimatedBackground } from "@/components/common/AnimatedBackground";
 
 // Rotating Gear Component
 const RotatingGear = ({
@@ -11,7 +10,7 @@ const RotatingGear = ({
   color = "text-slate-400",
   duration = 10,
   reverse = false,
-  className = ""
+  className = "",
 }: {
   size?: number;
   color?: string;
@@ -28,7 +27,11 @@ const RotatingGear = ({
   </motion.div>
 );
 
-export default function MaintenancePageClient({ message }: { message?: string }) {
+export default function MaintenancePageClient({
+  message,
+}: {
+  message?: string;
+}) {
   const displayMessage =
     message ||
     "Website sedang dalam pemeliharaan sistem. Kami sedang meningkatkan performa dan fitur untuk pengalaman yang lebih baik.";
@@ -144,7 +147,7 @@ export default function MaintenancePageClient({ message }: { message?: string })
               transition={{ delay: 0.5 }}
               className="grid grid-cols-2 gap-3 mb-8"
             >
-               <a
+              <a
                 href="tel:0215403540"
                 className="flex flex-col items-center justify-center p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5"
               >
@@ -170,7 +173,10 @@ export default function MaintenancePageClient({ message }: { message?: string })
                 href="/"
                 className="group inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
               >
-                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                <ArrowLeft
+                  size={16}
+                  className="group-hover:-translate-x-1 transition-transform"
+                />
                 <span>Coba akses beranda</span>
               </Link>
             </motion.div>
