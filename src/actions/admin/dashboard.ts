@@ -35,7 +35,7 @@ export async function getAdminDashboardStats(): Promise<{
 }> {
   const user = await getAuthenticatedUser();
 
-  if (!user || user.role !== UserRole.ADMIN) {
+  if (!user || user.role !== "admin") {
     return {
       success: false,
       error: "Unauthorized",

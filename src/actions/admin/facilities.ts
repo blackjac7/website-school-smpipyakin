@@ -14,7 +14,7 @@ const FacilitySchema = z.object({
 
 export async function getFacilities() {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "ADMIN") {
+  if (!user || user.role !== "admin") {
     return { success: false, error: "Unauthorized" };
   }
 
@@ -31,7 +31,7 @@ export async function getFacilities() {
 
 export async function createFacility(formData: FormData) {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "ADMIN") {
+  if (!user || user.role !== "admin") {
     return { success: false, error: "Unauthorized" };
   }
 
@@ -65,7 +65,7 @@ export async function createFacility(formData: FormData) {
 
 export async function updateFacility(id: string, formData: FormData) {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "ADMIN") {
+  if (!user || user.role !== "admin") {
     return { success: false, error: "Unauthorized" };
   }
 
@@ -100,7 +100,7 @@ export async function updateFacility(id: string, formData: FormData) {
 
 export async function deleteFacility(id: string) {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "ADMIN") {
+  if (!user || user.role !== "admin") {
     return { success: false, error: "Unauthorized" };
   }
 

@@ -15,7 +15,7 @@ const ExtracurricularSchema = z.object({
 
 export async function getExtracurriculars() {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "ADMIN") {
+  if (!user || user.role !== "admin") {
     return { success: false, error: "Unauthorized" };
   }
 
@@ -32,7 +32,7 @@ export async function getExtracurriculars() {
 
 export async function createExtracurricular(formData: FormData) {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "ADMIN") {
+  if (!user || user.role !== "admin") {
     return { success: false, error: "Unauthorized" };
   }
 
@@ -68,7 +68,7 @@ export async function createExtracurricular(formData: FormData) {
 
 export async function updateExtracurricular(id: string, formData: FormData) {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "ADMIN") {
+  if (!user || user.role !== "admin") {
     return { success: false, error: "Unauthorized" };
   }
 
@@ -105,7 +105,7 @@ export async function updateExtracurricular(id: string, formData: FormData) {
 
 export async function deleteExtracurricular(id: string) {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "ADMIN") {
+  if (!user || user.role !== "admin") {
     return { success: false, error: "Unauthorized" };
   }
 
