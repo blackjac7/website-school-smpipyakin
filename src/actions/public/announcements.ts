@@ -1,7 +1,6 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { MOCK_ANNOUNCEMENTS } from "@/lib/data/homepage";
 
 export interface PublicAnnouncement {
   id: string;
@@ -23,18 +22,6 @@ export async function getPublicAnnouncements(): Promise<PublicAnnouncement[]> {
       },
     });
 
-    if (announcements.length === 0) {
-      // Fallback to mock data if no announcements in database
-      return MOCK_ANNOUNCEMENTS.map((item) => ({
-        id: item.id,
-        title: item.title,
-        content: item.content,
-        date: item.date.toISOString(),
-        location: item.location,
-        priority: item.priority as "HIGH" | "MEDIUM" | "LOW",
-      }));
-    }
-
     return announcements.map((item) => ({
       id: item.id,
       title: item.title,
@@ -45,15 +32,7 @@ export async function getPublicAnnouncements(): Promise<PublicAnnouncement[]> {
     }));
   } catch (error) {
     console.error("Error fetching public announcements:", error);
-    // Fallback to mock data on error
-    return MOCK_ANNOUNCEMENTS.map((item) => ({
-      id: item.id,
-      title: item.title,
-      content: item.content,
-      date: item.date.toISOString(),
-      location: item.location,
-      priority: item.priority as "HIGH" | "MEDIUM" | "LOW",
-    }));
+    return [];
   }
 }
 
@@ -69,20 +48,6 @@ export async function getAnnouncementById(
     });
 
     if (!announcement) {
-      // Try mock data
-      const mockAnnouncement = MOCK_ANNOUNCEMENTS.find(
-        (item) => item.id === id
-      );
-      if (mockAnnouncement) {
-        return {
-          id: mockAnnouncement.id,
-          title: mockAnnouncement.title,
-          content: mockAnnouncement.content,
-          date: mockAnnouncement.date.toISOString(),
-          location: mockAnnouncement.location,
-          priority: mockAnnouncement.priority as "HIGH" | "MEDIUM" | "LOW",
-        };
-      }
       return null;
     }
 
