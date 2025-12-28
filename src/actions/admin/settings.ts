@@ -14,6 +14,16 @@ import {
   DEFAULT_SETTINGS,
   type SettingKey,
 } from "@/lib/siteSettings";
+import { getAuthenticatedUser } from "@/lib/auth";
+
+// Helper to verify admin role
+async function verifyAdminRole() {
+  const user = await getAuthenticatedUser();
+  if (!user || user.role !== "admin") {
+    return { authorized: false, error: "Unauthorized: Admin access required" };
+  }
+  return { authorized: true, user };
+}
 
 // =============================================
 // GET SETTINGS
@@ -64,6 +74,11 @@ export async function getSettingAction(key: SettingKey) {
 // =============================================
 
 export async function updateSettingAction(key: string, value: string) {
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
     await updateSetting(key, value);
     revalidatePath("/dashboard-admin/settings");
@@ -76,6 +91,11 @@ export async function updateSettingAction(key: string, value: string) {
 }
 
 export async function updateSettingsAction(settings: Record<string, string>) {
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
     await updateSettings(settings);
     revalidatePath("/dashboard-admin/settings");
@@ -95,6 +115,11 @@ export async function toggleMaintenanceMode(
   enabled: boolean,
   message?: string
 ) {
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
     const updates: Record<string, string> = {
       "maintenance.enabled": String(enabled),
@@ -166,6 +191,11 @@ export async function createMaintenanceSchedule(data: {
   affectedPaths?: string[];
   message?: string;
 }) {
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
     const schedule = await prisma.maintenanceSchedule.create({
       data: {
@@ -202,6 +232,11 @@ export async function getMaintenanceSchedules() {
 }
 
 export async function deleteMaintenanceSchedule(id: string) {
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
     await prisma.maintenanceSchedule.delete({ where: { id } });
     revalidatePath("/dashboard-admin/settings");
@@ -247,6 +282,11 @@ export async function updatePPDBSettings(data: {
   quota?: number;
   closedMessage?: string;
 }) {
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
     // Validate dates
     if (data.startDate && data.endDate) {
@@ -303,6 +343,11 @@ export async function toggleFeature(
   feature: "chatbot" | "studentWorks" | "announcements",
   enabled: boolean
 ) {
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
     await updateSetting(`feature.${feature}`, String(enabled));
     revalidatePath("/");
@@ -345,6 +390,11 @@ export async function getFeatureFlags() {
 // =============================================
 
 export async function seedSettingsAction() {
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
     const entries = Object.entries(DEFAULT_SETTINGS);
 
