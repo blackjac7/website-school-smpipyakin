@@ -2,7 +2,7 @@
 CREATE TYPE "teacher_category" AS ENUM ('pimpinan', 'guru_mapel', 'staff');
 
 -- CreateEnum
-CREATE TYPE "user_role" AS ENUM ('admin', 'siswa', 'osis', 'kesiswaan', 'ppdb_staff');
+CREATE TYPE "user_role" AS ENUM ('admin', 'siswa', 'osis', 'kesiswaan', 'ppdb_admin');
 
 -- CreateEnum
 CREATE TYPE "gender_type" AS ENUM ('male', 'female');

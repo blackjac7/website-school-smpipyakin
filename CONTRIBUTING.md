@@ -1,6 +1,7 @@
-# Contributing to SMP IP Yakin Website
+# SMP IP Yakin Website - Development Guidelines
 
-Thank you for your interest in contributing to this project! This document provides guidelines and instructions for contributing.
+This document provides guidelines and instructions for internal development and contribution to the SMP IP Yakin Website project.
+Access to this repository is restricted to authorized personnel and development team members.
 
 ## 📋 Table of Contents
 
@@ -14,9 +15,9 @@ Thank you for your interest in contributing to this project! This document provi
 
 ---
 
-## 📜 Code of Conduct
+## 📜 Professional Conduct
 
-This project follows a professional code of conduct. Please be respectful and constructive in all interactions.
+This project follows a professional code of conduct applicable to all staff and developers. Please be respectful and constructive in all interactions.
 
 ---
 
@@ -31,7 +32,7 @@ This project follows a professional code of conduct. Please be respectful and co
 ### Setup Development Environment
 
 ```bash
-# Clone the repository
+# Clone the repository (Authorized Access Required)
 git clone https://github.com/your-repo/website-school-smpipyakin.git
 cd website-school-smpipyakin
 
@@ -282,8 +283,8 @@ How has this been tested?
 
 ## ❓ Questions?
 
-If you have questions about contributing, please open an issue with the `question` label.
+If you have questions about development procedures, please contact the Lead Developer or open an internal issue with the `question` label.
 
 ---
 
-Thank you for contributing! 🎉
+**SMP IP YAKIN Internal Development Team**

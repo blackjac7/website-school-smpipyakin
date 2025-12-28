@@ -111,7 +111,7 @@ enum Role {
   kesiswaan
   siswa
   osis
-  ppdb_officer @map("ppdb-officer")
+  ppdb_admin @map("ppdb_admin")
 }
 ```
 
@@ -209,13 +209,13 @@ const cookieOptions = {
 
 ### Role-Based Access Control
 
-| Role           | Dashboard              | Permissions                                  |
-| -------------- | ---------------------- | -------------------------------------------- |
-| `admin`        | `/dashboard-admin`     | Full system access, user management, backups |
-| `kesiswaan`    | `/dashboard-kesiswaan` | Student management, reports, announcements   |
-| `siswa`        | `/dashboard-siswa`     | View profile, submit works, view grades      |
-| `osis`         | `/dashboard-osis`      | Event management, OSIS news                  |
-| `ppdb-officer` | `/dashboard-ppdb`      | Application review, document verification    |
+| Role         | Dashboard              | Permissions                                  |
+| ------------ | ---------------------- | -------------------------------------------- |
+| `admin`      | `/dashboard-admin`     | Full system access, user management, backups |
+| `kesiswaan`  | `/dashboard-kesiswaan` | Student management, reports, announcements   |
+| `siswa`      | `/dashboard-siswa`     | View profile, submit works, view grades      |
+| `osis`       | `/dashboard-osis`      | Event management, OSIS news                  |
+| `ppdb_admin` | `/dashboard-ppdb`      | Application review, document verification    |
 
 ### Middleware Protection
 
@@ -226,7 +226,7 @@ const PROTECTED_ROUTES = {
   "/dashboard-kesiswaan": ["kesiswaan"],
   "/dashboard-siswa": ["siswa"],
   "/dashboard-osis": ["osis"],
-  "/dashboard-ppdb": ["ppdb-officer"],
+  "/dashboard-ppdb": ["ppdb_admin"],
 };
 ```
 
@@ -432,6 +432,8 @@ Integrated AI chatbot for answering visitor questions.
 ```env
 NEXT_PUBLIC_FLOWISE_API_URL=your-flowise-url
 NEXT_PUBLIC_FLOWISE_CHATFLOW_ID=your-chatflow-id
+
+Note: If your Flowise host responds from a custom domain (e.g., https://flowise.zeabur.app), add that host to your Content Security Policy (CSP) script-src / connect-src / frame-src so the browser won't block chat requests or framing.
 ```
 
 #### Implementation

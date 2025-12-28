@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { Users, FileText, LayoutDashboard } from "lucide-react";
-import { Header, MenuItem, ApplicantDetailModal } from "@/components/dashboard/ppdb";
+import {
+  Header,
+  MenuItem,
+  ApplicantDetailModal,
+} from "@/components/dashboard/ppdb";
 import { DashboardSidebar } from "@/components/dashboard/layout";
 import DashboardOverviewEnhanced from "@/components/dashboard/ppdb/DashboardOverviewEnhanced";
 import ValidationContentEnhanced from "@/components/dashboard/ppdb/ValidationContentEnhanced";
@@ -38,16 +42,21 @@ interface PPDBDashboardClientProps {
   initialNotifications?: FormattedNotification[];
 }
 
-export default function PPDBDashboardClient({ initialNotifications = [] }: PPDBDashboardClientProps) {
+export default function PPDBDashboardClient({
+  initialNotifications = [],
+}: PPDBDashboardClientProps) {
   // Use "dashboard" as default, but ideally this could be from URL
   const [activeMenu, setActiveMenu] = useState("dashboard");
-  const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } = useSidebar(true);
+  const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } =
+    useSidebar(true);
 
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<FormattedNotification[]>(initialNotifications);
+  const [notifications, setNotifications] =
+    useState<FormattedNotification[]>(initialNotifications);
 
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState<EnhancedApplicant | null>(null);
+  const [selectedApplicant, setSelectedApplicant] =
+    useState<EnhancedApplicant | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const menuItems: MenuItem[] = [
@@ -62,7 +71,7 @@ export default function PPDBDashboardClient({ initialNotifications = [] }: PPDBD
     try {
       const result = await NotificationAPIService.fetchAllNotifications({
         page: 1,
-        userRole: "ppdb-officer",
+        userRole: "ppdb_admin",
       });
 
       if (result.success) {
@@ -76,7 +85,7 @@ export default function PPDBDashboardClient({ initialNotifications = [] }: PPDBD
   const markAsRead = async (notificationId: string) => {
     const result = await NotificationAPIService.markNotificationAsReadByRole(
       notificationId,
-      "ppdb-officer"
+      "ppdb_admin"
     );
 
     if (result.success) {
@@ -146,7 +155,8 @@ export default function PPDBDashboardClient({ initialNotifications = [] }: PPDBD
     }
   }, []);
 
-  const ppdbAvatar = "https://ui-avatars.com/api/?name=PPDB&background=F59E0B&color=fff&size=128&bold=true";
+  const ppdbAvatar =
+    "https://ui-avatars.com/api/?name=PPDB&background=F59E0B&color=fff&size=128&bold=true";
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
@@ -178,7 +188,7 @@ export default function PPDBDashboardClient({ initialNotifications = [] }: PPDBD
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto bg-gray-50">
-           <div className="p-6 pb-20 max-w-7xl mx-auto w-full">
+          <div className="p-6 pb-20 max-w-7xl mx-auto w-full">
             {activeMenu === "dashboard" && <DashboardOverviewEnhanced />}
 
             {activeMenu === "validation" && (
@@ -194,8 +204,12 @@ export default function PPDBDashboardClient({ initialNotifications = [] }: PPDBD
         </main>
       </div>
 
-       {/* Hidden trigger for navigation from other components */}
-       <button id="tab-validation" className="hidden" onClick={() => setActiveMenu("validation")} />
+      {/* Hidden trigger for navigation from other components */}
+      <button
+        id="tab-validation"
+        className="hidden"
+        onClick={() => setActiveMenu("validation")}
+      />
 
       {/* Modals */}
       <ApplicantDetailModal

@@ -10,7 +10,7 @@ const ROLE_MAPPING = {
   KESISWAAN: "kesiswaan",
   SISWA: "siswa",
   OSIS: "osis",
-  PPDB_STAFF: "ppdb-officer",
+  PPDB_ADMIN: "ppdb_admin",
 } as const;
 
 // Permission mapping berdasarkan role
@@ -19,7 +19,7 @@ const ROLE_PERMISSIONS = {
   KESISWAAN: ["read", "write", "manage_students", "view_reports"],
   SISWA: ["read", "view_profile", "submit_assignments"],
   OSIS: ["read", "write", "manage_events", "view_reports"],
-  PPDB_STAFF: ["read", "write", "manage_ppdb", "view_applications"],
+  PPDB_ADMIN: ["read", "write", "manage_ppdb", "view_applications"],
 } as const;
 
 // Get real client IP with multiple fallbacks

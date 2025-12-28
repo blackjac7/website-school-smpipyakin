@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default function PPDBDashboardPage() {
   return (
-    <ProtectedRoute requiredRoles={["ppdb-officer"]}>
+    <ProtectedRoute requiredRoles={["ppdb_admin"]}>
       <PPDBDashboardClient />
     </ProtectedRoute>
   );

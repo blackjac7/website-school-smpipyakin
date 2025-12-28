@@ -11,7 +11,7 @@ const PROTECTED_ROUTES = {
   "/dashboard-kesiswaan": ["kesiswaan"],
   "/dashboard-siswa": ["siswa"],
   "/dashboard-osis": ["osis"],
-  "/dashboard-ppdb": ["ppdb-officer"],
+  "/dashboard-ppdb": ["ppdb_admin"],
 };
 
 // Routes that should be excluded from maintenance mode
@@ -42,9 +42,10 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   // Content Security Policy
   if (process.env.NODE_ENV === "production") {
     // Allow the specific font CDN, Lottie WASM CDN, Instagram framing, and enable Vercel speed insights domain in connect-src
+    // Also add Google Maps-related origins to support embedded maps and Maps JS API
     response.headers.set(
       "Content-Security-Policy",
-      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.emailjs.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' fonts.gstatic.com https://r2cdn.perplexity.ai; img-src 'self' data: https:; connect-src 'self' api.emailjs.com https://va.vercel-scripts.com https://cdn.jsdelivr.net; frame-src 'self' https://www.instagram.com;"
+      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.emailjs.com https://cdn.jsdelivr.net https://maps.googleapis.com https://maps.gstatic.com https://flowise.zeabur.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' fonts.gstatic.com https://r2cdn.perplexity.ai; img-src 'self' data: https: https://maps.gstatic.com; connect-src 'self' api.emailjs.com https://va.vercel-scripts.com https://cdn.jsdelivr.net https://maps.googleapis.com https://flowise.zeabur.app; frame-src 'self' https://www.instagram.com https://www.google.com https://maps.google.com https://www.google.com/maps https://flowise.zeabur.app;"
     );
   }
 
@@ -210,7 +211,7 @@ export async function middleware(request: NextRequest) {
         // Redirect to appropriate dashboard based on role (normalize to lowercase for URLs)
         const decodedRoleStr = String(decoded.role || "").toLowerCase();
         let dashboardUrl = `/dashboard-${decodedRoleStr}`;
-        if (decodedRoleStr === "ppdb-officer") {
+        if (decodedRoleStr === "ppdb_admin") {
           dashboardUrl = "/dashboard-ppdb";
         }
 
