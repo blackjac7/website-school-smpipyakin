@@ -352,11 +352,11 @@ enum TeacherCategory {
 }
 
 enum UserRole {
-  ADMIN          @map("admin")
-  SISWA          @map("siswa")
-  OSIS           @map("osis")
-  KESISWAAN      @map("kesiswaan")
-  PPDB_STAFF     @map("ppdb_staff")
+  ADMIN          @map("ADMIN")
+  SISWA          @map("SISWA")
+  OSIS           @map("OSIS")
+  KESISWAAN      @map("KESISWAAN")
+  PPDB_STAFF     @map("PPDB_STAFF")
 
   @@map("user_role")
 }
