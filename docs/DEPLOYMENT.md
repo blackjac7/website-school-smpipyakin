@@ -1,350 +1,257 @@
-# 🚀 Deployment Guide
+# 🚀 Deployment & Environment Guide
 
-This guide covers deploying the SMP IP Yakin website to production using Vercel with a PostgreSQL database.
+This document provides a comprehensive guide for deploying the **SMP IP Yakin** web application and managing its environments (Local, Staging, Production).
 
 ---
 
-## Table of Contents
+## 📋 Table of Contents
 
 1. [Prerequisites](#prerequisites)
-2. [Database Setup](#database-setup)
-3. [Vercel Deployment](#vercel-deployment)
-4. [Environment Variables](#environment-variables)
-5. [DNS & SSL Configuration](#dns--ssl-configuration)
-6. [Post-Deployment Checklist](#post-deployment-checklist)
-7. [Maintenance](#maintenance)
+2. [Project Architecture](#project-architecture)
+3. [Environment Configuration](#environment-configuration)
+4. [Local Development Setup](#local-development-setup)
+5. [Deployment Strategy (CI/CD)](#deployment-strategy-cicd)
+6. [Platform-Specific Deployment](#platform-specific-deployment)
+   - [Vercel (Recommended)](#option-1-vercel-recommended)
+   - [Docker / VPS](#option-2-docker--vps)
+7. [Database Management](#database-management)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
-## Prerequisites
+## 🛠 Prerequisites
 
-Before deploying, ensure you have:
+Before you begin, ensure you have the following:
 
-- [ ] GitHub account with repository access
-- [ ] Vercel account (free tier available)
-- [ ] PostgreSQL database (Neon, Supabase, or Railway recommended)
-- [ ] Cloudinary account for image storage
-- [ ] Domain name (optional, for custom domain)
+- **Node.js**: Version 20.x or later (`node -v`)
+- **Package Manager**: npm (v9+) or bun
+- **Database**: PostgreSQL (v14+)
+  - *Local:* Local Postgres server or Docker container.
+  - *Production:* Managed Postgres (Neon, Supabase, Railway, or AWS RDS).
+- **Accounts**:
+  - [Cloudinary](https://cloudinary.com) (for Image Storage)
+  - [EmailJS](https://www.emailjs.com) (for Contact Form)
+  - [Vercel](https://vercel.com) (for Hosting)
 
 ---
 
-## Database Setup
+## 🏗 Project Architecture
 
-### Recommended Providers
+This is a **Next.js 15** application using **App Router** and **Server Actions**.
 
-| Provider     | Free Tier | Connection Pooling | Notes               |
-| ------------ | --------- | ------------------ | ------------------- |
-| **Neon**     | 0.5GB     | ✅ Built-in        | Best for serverless |
-| **Supabase** | 500MB     | ✅ Built-in        | Feature-rich        |
-| **Railway**  | $5 credit | ✅ Available       | Easy setup          |
+- **Frontend**: React 18, Tailwind CSS v4, Framer Motion.
+- **Backend**: Next.js Server Actions (No separate API server required).
+- **Database**: Prisma ORM with PostgreSQL.
+- **Auth**: Custom JWT-based authentication (`src/actions/auth.ts`).
 
-### Connection Pooling (Critical)
+---
 
-Vercel uses serverless functions that create new database connections on each request. Without connection pooling, you'll hit "Too many connections" errors.
+## 🌍 Environment Configuration
 
-#### Neon Setup
+The application relies on environment variables for configuration. **Never commit `.env` files.**
 
-```env
-# Use the pooled connection string (port 5432 → 6543)
-DATABASE_URL="postgresql://user:pass@ep-xxx.region.neon.tech:5432/neondb?sslmode=require"
+### File Structure
+- `.env`: Used for Local Development (Git ignored).
+- `.env.example`: Template file (Committed).
 
-# Neon automatically handles pooling
+### Key Variables
+Refer to `.env.example` for the complete list. Below are the critical ones:
+
+| Variable | Description | Local Example | Production Note |
+|----------|-------------|---------------|-----------------|
+| `DATABASE_URL` | Prisma Connection | `postgresql://user:pass@localhost:5432/db` | Use **Pooled** URL (port 6543 for Neon/Supabase) |
+| `DIRECT_URL` | Migration Connection | Same as `DATABASE_URL` | Use **Direct** URL (port 5432) for migrations |
+| `NEXT_PUBLIC_APP_URL` | Base URL | `http://localhost:3000` | Real Domain (e.g., `https://smpipyakin.sch.id`) |
+| `JWT_SECRET` | Auth Token Secret | `openssl rand -base64 32` | **Must** be strong and unique per env |
+
+---
+
+## 💻 Local Development Setup
+
+### 1. Clone & Install
+```bash
+git clone https://github.com/your-org/smp-ip-yakin.git
+cd smp-ip-yakin
+npm install
 ```
 
-#### Supabase Setup
-
-```env
-# Use the "Transaction" pooler connection string
-DATABASE_URL="postgres://postgres.xxx:password@aws-0-region.pooler.supabase.com:6543/postgres?pgbouncer=true"
+### 2. Configure Environment
+```bash
+cp .env.example .env
+# Edit .env and fill in your local postgres credentials and API keys
 ```
 
-### Initialize Database
-
-After setting up your database:
+### 3. Setup Database
+Ensure your local PostgreSQL server is running.
 
 ```bash
-# Generate Prisma Client
-npx prisma generate
+# 1. Run Migrations (Create Tables)
+npm run db:migrate
 
-# Push schema to database
-npx prisma db push
-
-# Seed initial data
+# 2. Seed Initial Data (Admin User, Settings)
 npm run db:seed
 ```
 
----
+> **Default Admin Credentials:**
+> - Email: `admin@sekolah.sch.id`
+> - Password: `admin123` (Change immediately in dashboard)
 
-## Vercel Deployment
-
-### Step 1: Connect Repository
-
-1. Go to [vercel.com](https://vercel.com) and sign in
-2. Click "Add New Project"
-3. Import your GitHub repository
-4. Vercel auto-detects Next.js configuration
-
-### Step 2: Configure Build Settings
-
-Vercel should auto-detect these, but verify:
-
-| Setting          | Value           |
-| ---------------- | --------------- |
-| Framework Preset | Next.js         |
-| Build Command    | `npm run build` |
-| Output Directory | `.next`         |
-| Install Command  | `npm install`   |
-
-### Step 3: Add Environment Variables
-
-Add all required environment variables in Vercel dashboard:
-
-```
-# Database
-DATABASE_URL=your-pooled-database-url
-
-# Authentication
-JWT_SECRET=your-jwt-secret
-CRON_SECRET=your-cron-secret
-
-# Cloudinary (Images)
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
-CLOUDINARY_API_KEY=your-api-key
-CLOUDINARY_API_SECRET=your-api-secret
-
-# Cloudflare R2 (Files)
-R2_ACCOUNT_ID=your-account-id
-R2_ACCESS_KEY_ID=your-access-key-id
-R2_SECRET_ACCESS_KEY=your-secret-access-key
-R2_BUCKET_NAME=your-bucket-name
-R2_PUBLIC_URL=https://your-bucket.r2.dev
-
-# EmailJS (Optional)
-NEXT_PUBLIC_EMAILJS_SERVICE_ID=your-service-id
-NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=your-template-id
-NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=your-public-key
-
-# Flowise AI Chatbot (Optional)
-NEXT_PUBLIC_FLOWISE_API_URL=your-flowise-url
-NEXT_PUBLIC_FLOWISE_CHATFLOW_ID=your-chatflow-id
-```
-
-### Step 4: Deploy
-
-Click "Deploy" and wait for the build to complete.
-
----
-
-## Environment Variables
-
-### Required Variables
-
-| Variable       | Description                    | Example                       |
-| -------------- | ------------------------------ | ----------------------------- |
-| `DATABASE_URL` | PostgreSQL connection (pooled) | `postgresql://...`            |
-| `JWT_SECRET`   | JWT signing key (min 32 chars) | Use `openssl rand -base64 32` |
-| `CRON_SECRET`  | Cron job authentication        | Use `openssl rand -hex 16`    |
-
-### Cloudinary Variables
-
-| Variable                            | Description     |
-| ----------------------------------- | --------------- |
-| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Your cloud name |
-| `CLOUDINARY_API_KEY`                | API key         |
-| `CLOUDINARY_API_SECRET`             | API secret      |
-
-### Cloudflare R2 Variables
-
-| Variable               | Description                           |
-| ---------------------- | ------------------------------------- |
-| `R2_ACCOUNT_ID`        | Cloudflare account ID                 |
-| `R2_ACCESS_KEY_ID`     | R2 API access key ID                  |
-| `R2_SECRET_ACCESS_KEY` | R2 API secret access key              |
-| `R2_BUCKET_NAME`       | R2 bucket name                        |
-| `R2_PUBLIC_URL`        | Public URL for R2 bucket (if enabled) |
-
-### EmailJS Variables (Optional)
-
-| Variable                          | Description        |
-| --------------------------------- | ------------------ |
-| `NEXT_PUBLIC_EMAILJS_SERVICE_ID`  | EmailJS service ID |
-| `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` | Email template ID  |
-| `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY`  | Public key         |
-
-### Flowise Variables (Optional)
-
-| Variable                          | Description                |
-| --------------------------------- | -------------------------- |
-| `NEXT_PUBLIC_FLOWISE_API_URL`     | Flowise API endpoint URL   |
-| `NEXT_PUBLIC_FLOWISE_CHATFLOW_ID` | Chatflow ID for the widget |
-
-### Generating Secure Secrets
-
+### 4. Run Development Server
 ```bash
-# Generate JWT_SECRET (strong, 32+ characters)
-openssl rand -base64 32
-
-# Generate CRON_SECRET
-openssl rand -hex 16
+npm run dev
+# Open http://localhost:3000
 ```
 
 ---
 
-## DNS & SSL Configuration
+## 🚀 Deployment Strategy (CI/CD)
 
-### Custom Domain Setup
+The project follows a **Gitflow-lite** workflow using **GitHub Actions**.
 
-#### Vercel DNS (Recommended)
+### Branches
+- **`develop`** → Deploys to **Staging** Environment
+  - URL: `https://staging.smpipyakin.sch.id` (or Vercel Preview)
+  - Purpose: Internal testing, UAT.
+- **`main`** → Deploys to **Production** Environment
+  - URL: `https://www.smpipyakin.sch.id`
+  - Purpose: Live public site.
 
-1. Go to your project in Vercel Dashboard
-2. Navigate to Settings → Domains
-3. Add your custom domain
-4. Configure DNS records at your registrar:
+### GitHub Configuration
+To enable the CI/CD pipeline defined in `.github/workflows/ci.yml`:
 
-```
-Type  Name    Value
-A     @       76.76.21.21
-CNAME www     cname.vercel-dns.com
-```
-
-### Cloudflare Setup (Optional)
-
-If using Cloudflare for additional protection:
-
-1. Add your domain to Cloudflare
-2. **Critical**: Set SSL/TLS to "Full (Strict)"
-3. Configure DNS records pointing to Vercel
-4. Enable the following:
-   - Auto HTTPS Rewrites
-   - Always Use HTTPS
-   - Automatic HTTPS Rewrites
-
-#### Cloudflare Security Settings
-
-| Setting          | Value         | Purpose               |
-| ---------------- | ------------- | --------------------- |
-| SSL/TLS Mode     | Full (Strict) | End-to-end encryption |
-| Always Use HTTPS | On            | Force HTTPS           |
-| TLS 1.3          | On            | Latest TLS version    |
-| HSTS             | On            | HTTP Strict Transport |
+1. Go to **Settings > Environments** in your GitHub Repo.
+2. Create environments: `staging` and `production`.
+3. Add Environment Secrets for each (e.g., `DATABASE_URL`, `JWT_SECRET`).
+   - *Note:* The CI pipeline uses `vercel-action`. You need to set `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` as **Repository Secrets**.
 
 ---
 
-## Post-Deployment Checklist
+## ☁️ Platform-Specific Deployment
 
-### Security
+### Option 1: Vercel (Recommended)
 
-- [ ] All default passwords changed (especially `admin123`)
-- [ ] `JWT_SECRET` is unique and secure
-- [ ] `CRON_SECRET` is configured
-- [ ] SSL certificate is active (HTTPS)
-- [ ] Environment variables don't leak in client code
+Vercel is the native platform for Next.js and offers the best performance.
 
-### Database
+1.  **Import Project:**
+    - Go to Vercel Dashboard → Add New Project → Import from GitHub.
+    - Select the `smp-ip-yakin` repository.
 
-- [ ] Connection pooling is enabled
-- [ ] Initial data is seeded
-- [ ] Backup strategy is in place
+2.  **Build Configuration:**
+    - Framework: **Next.js**
+    - Build Command: `npm run build` (or `prisma generate && next build` if schema changes often)
+    - Output Directory: `.next`
 
-### Functionality
+3.  **Environment Variables:**
+    - Copy all values from your `.env` (Production values) into the Vercel Environment Variables UI.
+    - **Crucial:** For `DATABASE_URL`, use the **Pooled** connection string if using Neon or Supabase to prevent connection exhaustion.
 
-- [ ] Login/logout works correctly
-- [ ] All dashboard roles accessible
-- [ ] Image uploads work (Cloudinary)
-- [ ] Contact form works (EmailJS)
-- [ ] PWA manifests correctly
-
-### Performance
-
-- [ ] Build completes without errors
-- [ ] Page load times are acceptable
-- [ ] Images are optimized via Cloudinary
+4.  **Deploy:**
+    - Click **Deploy**. Vercel will build and serve the site.
 
 ---
 
-## Maintenance
+### Option 2: Docker / VPS
 
-### Cron Jobs
+For self-hosting on a VPS (Ubuntu/Debian) using Docker.
 
-The application includes automated cleanup jobs configured in `vercel.json`:
+#### 1. Build the Docker Image
+Create a `Dockerfile` (standard Next.js standalone build):
 
+```dockerfile
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+# Disable telemetry during build
+ENV NEXT_TELEMETRY_DISABLED 1
+# Generate Prisma Client
+RUN npx prisma generate
+RUN npm run build
+
+# Production image, copy all the files and run next
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy standalone output
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+EXPOSE 3000
+ENV PORT 3000
+CMD ["node", "server.js"]
+```
+
+#### 2. Run with Docker Compose
+Create `docker-compose.yml`:
+
+```yaml
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file: .env.production
+    restart: always
+```
+
+#### 3. Start Service
+```bash
+docker-compose up -d --build
+```
+
+---
+
+## 💾 Database Management
+
+### Migrations
+In production, **do not** run `prisma migrate dev`. Instead, use `prisma migrate deploy` which applies pending migrations without resetting the DB.
+
+**On Vercel:**
+Add a "Build Command" override or use a `postinstall` script in `package.json`:
 ```json
-{
-  "crons": [
-    {
-      "path": "/api/cron/cleanup-logs",
-      "schedule": "0 2 * * *"
-    }
-  ]
+"scripts": {
+  "postinstall": "prisma generate",
+  "build": "prisma migrate deploy && next build"
 }
 ```
+*Warning: Running migrations during build can be risky if the DB is live. It's often safer to run migrations manually or via a separate CI job.*
 
-This runs daily at 2 AM UTC to clean up old login attempt logs.
-
-### Database Backups
-
-Since free database tiers don't include automated backups:
-
-1. Use the Admin Dashboard export feature regularly
-2. Download JSON exports weekly
-3. Store backups securely (encrypted)
-
-### Manual Export Command
-
+### Seeding Production Data
+To seed initial data (Roles, Admin) in production:
 ```bash
-# Using Prisma
-npx prisma db pull   # Pull schema
-npx prisma studio    # Visual editor for data export
+# Locally, pointing to Prod DB (Be careful!)
+DATABASE_URL="postgresql://user:pass@prod-host..." npm run db:seed
 ```
 
-### Monitoring
+---
 
-Monitor your deployment via:
+## 🔧 Troubleshooting
 
-- **Vercel Dashboard**: Function logs, analytics
-- **Database Dashboard**: Connection count, query performance
-- **Cloudinary Dashboard**: Bandwidth usage, storage
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| **Prisma Client Error** | Schema changed but client not updated | Run `npx prisma generate` (or add to build script). |
+| **504 Gateway Timeout** | Database connection slow/full | Use Connection Pooling (`pgbouncer`). |
+| **Images 404** | Cloudinary vars missing | Check `NEXT_PUBLIC_CLOUDINARY_...` vars. |
+| **Build Fail: Type Error** | TypeScript issues | Run `npm run lint` locally and fix errors before pushing. |
+| **Auth Fails (Login)** | Invalid Secret/Cookie | Ensure `JWT_SECRET` matches across pods (if scaled). |
 
 ---
 
-## Troubleshooting
-
-### Common Issues
-
-#### "Too many connections"
-
-**Solution**: Ensure you're using a pooled database URL.
-
-#### Build fails with Prisma error
-
-**Solution**: Add build command:
-
-```json
-{
-  "scripts": {
-    "build": "prisma generate && next build"
-  }
-}
-```
-
-#### JWT verification fails
-
-**Solution**: Ensure `JWT_SECRET` is identical in all environments.
-
-#### Images not loading
-
-**Solution**: Verify Cloudinary environment variables are set correctly.
-
----
-
-## Support
-
-For deployment issues:
-
-1. Check Vercel deployment logs
-2. Review database connection status
-3. Verify all environment variables are set
-
----
-
-_Last updated: December 2024_
+_Documentation v1.1 - Updated for Next.js 15 & Prisma 6_

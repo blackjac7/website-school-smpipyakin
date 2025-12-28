@@ -18,11 +18,6 @@ import {
 
 type Role = "siswa" | "kesiswaan" | "admin" | "osis" | "ppdb-officer";
 
-// Helper components for icons not in the main import to avoid clutter
-// Defined BEFORE usage in roleConfig to avoid ReferenceError
-const Trophy = (props: any) => <Award {...props} />;
-const CalendarPlaceholder = (props: any) => <BookOpen {...props} />;
-
 interface IllustrationConfig {
   icon: LucideIcon;
   color: string;
@@ -58,7 +53,7 @@ const roleConfig: Record<Role, IllustrationConfig> = {
     bgColor: "bg-green-100",
     darkColor: "dark:text-green-400",
     darkBgColor: "dark:bg-green-900/30",
-    orbitIcons: [GraduationCap, ShieldCheck, Trophy],
+    orbitIcons: [GraduationCap, ShieldCheck, Award],
     particleColor: "bg-green-400",
   },
   admin: {
