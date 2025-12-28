@@ -5,4 +5,3 @@ export function register() {
 
 // Router instrumentation hook removed
 export const onRouterTransitionStart = undefined;
-
