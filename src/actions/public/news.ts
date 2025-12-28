@@ -1,7 +1,6 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { STATIC_NEWS } from "@/lib/data/homepage";
 
 export interface PublicNews {
   id: string;
@@ -26,18 +25,6 @@ export async function getPublicNews(): Promise<PublicNews[]> {
       },
     });
 
-    if (news.length === 0) {
-      // Fallback to static data if no news in database
-      return STATIC_NEWS.map((item) => ({
-        id: item.id,
-        title: item.title,
-        content: item.content,
-        image: item.image || "",
-        date: formatDate(item.date),
-        category: item.kategori === "ACHIEVEMENT" ? "achievement" : "activity",
-      }));
-    }
-
     return news.map((item) => ({
       id: item.id,
       title: item.title,
@@ -48,15 +35,7 @@ export async function getPublicNews(): Promise<PublicNews[]> {
     }));
   } catch (error) {
     console.error("Error fetching public news:", error);
-    // Fallback to static data on error
-    return STATIC_NEWS.map((item) => ({
-      id: item.id,
-      title: item.title,
-      content: item.content,
-      image: item.image || "",
-      date: formatDate(item.date),
-      category: item.kategori === "ACHIEVEMENT" ? "achievement" : "activity",
-    }));
+    return [];
   }
 }
 
@@ -70,19 +49,6 @@ export async function getNewsById(id: string): Promise<PublicNews | null> {
     });
 
     if (!news) {
-      // Try static data
-      const staticNews = STATIC_NEWS.find((item) => item.id === id);
-      if (staticNews) {
-        return {
-          id: staticNews.id,
-          title: staticNews.title,
-          content: staticNews.content,
-          image: staticNews.image || "",
-          date: formatDate(staticNews.date),
-          category:
-            staticNews.kategori === "ACHIEVEMENT" ? "achievement" : "activity",
-        };
-      }
       return null;
     }
 

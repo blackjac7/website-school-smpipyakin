@@ -1,7 +1,6 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { MOCK_ACTIVITIES } from "@/lib/data/homepage";
 
 export interface PublicActivity {
   id: string;
@@ -23,18 +22,6 @@ export async function getPublicActivities(): Promise<PublicActivity[]> {
       },
     });
 
-    if (activities.length === 0) {
-      // Fallback to mock data if no activities in database
-      return MOCK_ACTIVITIES.map((item) => ({
-        id: item.id,
-        title: item.title,
-        date: item.date.toISOString(),
-        information: item.information,
-        semester: item.semester as "GANJIL" | "GENAP",
-        tahunPelajaran: item.tahunPelajaran,
-      }));
-    }
-
     return activities.map((item) => ({
       id: item.id,
       title: item.title,
@@ -45,14 +32,6 @@ export async function getPublicActivities(): Promise<PublicActivity[]> {
     }));
   } catch (error) {
     console.error("Error fetching public activities:", error);
-    // Fallback to mock data on error
-    return MOCK_ACTIVITIES.map((item) => ({
-      id: item.id,
-      title: item.title,
-      date: item.date.toISOString(),
-      information: item.information,
-      semester: item.semester as "GANJIL" | "GENAP",
-      tahunPelajaran: item.tahunPelajaran,
-    }));
+    return [];
   }
 }
