@@ -6,6 +6,7 @@ import Image from "next/image";
 import { TeacherData, TeacherInput } from "@/actions/admin/teachers";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import { uploadImageAction } from "@/actions/upload";
 
 interface TeacherModalProps {
   show: boolean;
@@ -108,14 +109,9 @@ export default function TeacherModal({
       uploadFormData.append("file", file);
       uploadFormData.append("folder", "teachers");
 
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: uploadFormData,
-      });
+      const result = await uploadImageAction(uploadFormData);
 
-      const result = await response.json();
-
-      if (result.success) {
+      if (result.success && result.data) {
         setFormData((prev) => ({
           ...prev,
           photo: result.data.url,
