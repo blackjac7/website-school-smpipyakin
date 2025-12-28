@@ -50,20 +50,30 @@ export default function NewsAdmin({ news }: NewsPageProps) {
 
     try {
       if (editingItem) {
-        await updateNews(editingItem.id, {
+        const result = await updateNews(editingItem.id, {
           title: data.title,
           date: data.date,
           content: data.content,
           image: data.image,
           kategori: data.category,
         });
-        toast.success("News updated");
+        if (result.success) {
+          toast.success("News updated");
+          setIsModalOpen(false);
+          setEditingItem(null);
+        } else {
+          toast.error(result.error || "Failed to update news");
+        }
       } else {
-        await createNews(data);
-        toast.success("News created");
+        const result = await createNews(data);
+        if (result.success) {
+          toast.success("News created");
+          setIsModalOpen(false);
+          setEditingItem(null);
+        } else {
+          toast.error(result.error || "Failed to create news");
+        }
       }
-      setIsModalOpen(false);
-      setEditingItem(null);
     } catch (error) {
       console.error("Failed to save news:", error);
       toast.error("Failed to save news");
