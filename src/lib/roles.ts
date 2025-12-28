@@ -25,7 +25,9 @@ export function tokenRoleToUserRole(role?: RoleLike): string | undefined {
 /**
  * Normalize arbitrary role input for safe comparisons (lowercase string)
  */
-export function normalizeRoleForComparison(role?: RoleLike): string | undefined {
+export function normalizeRoleForComparison(
+  role?: RoleLike
+): string | undefined {
   if (!role) return undefined;
   const mapped = tokenRoleToUserRole(role);
   return mapped ? String(mapped).toLowerCase() : String(role).toLowerCase();
@@ -34,11 +36,16 @@ export function normalizeRoleForComparison(role?: RoleLike): string | undefined 
 /**
  * Check whether a candidate role matches one of the required roles (accepts multiple forms)
  */
-export function isRoleMatch(candidate?: RoleLike, required?: string | string[]): boolean {
+export function isRoleMatch(
+  candidate?: RoleLike,
+  required?: string | string[]
+): boolean {
   if (!candidate) return false;
   const candidateNorm = normalizeRoleForComparison(candidate);
   const req = Array.isArray(required) ? required : required ? [required] : [];
-  return req.map((r) => String(r).toLowerCase()).includes(candidateNorm as string);
+  return req
+    .map((r) => String(r).toLowerCase())
+    .includes(candidateNorm as string);
 }
 
 /**
