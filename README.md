@@ -258,7 +258,7 @@ CRON_SECRET="your-cron-secret"
 │   │   └── validations.ts  # Zod schemas
 │   ├── shared/             # Shared data & types
 │   └── utils/              # Utility functions
-├── sentry.*.config.ts      # Sentry error tracking config
+
 └── lighthouserc.json       # Lighthouse CI config
 ```
 
@@ -323,7 +323,7 @@ npm run test:e2e:ui
 
 ## 📊 Monitoring & Analytics
 
-- **Sentry** - Error tracking and performance monitoring
+
 - **Vercel Analytics** - Web analytics and user insights
 - **Vercel Speed Insights** - Core Web Vitals tracking
 - **Lighthouse CI** - Performance auditing in CI/CD

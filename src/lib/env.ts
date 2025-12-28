@@ -22,11 +22,6 @@ const envSchema = z.object({
   EMAILJS_PUBLIC_KEY: z.string().optional(),
   EMAILJS_PRIVATE_KEY: z.string().optional(),
 
-  // Sentry (Optional - for error tracking)
-  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
-  SENTRY_ORG: z.string().optional(),
-  SENTRY_PROJECT: z.string().optional(),
-  SENTRY_AUTH_TOKEN: z.string().optional(),
 
   // Node Environment
   NODE_ENV: z
