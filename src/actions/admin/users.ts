@@ -38,7 +38,7 @@ const UserSchema = z.object({
   email: z.string().email("Email tidak valid").optional().or(z.literal("")),
   username: z.string().min(3, "Username minimal 3 karakter"),
   password: z.string().min(6, "Password minimal 6 karakter").optional(),
-  role: z.enum(["ADMIN", "SISWA", "KESISWAAN", "OSIS", "PPDB_STAFF"]),
+  role: z.enum(["ADMIN", "SISWA", "KESISWAAN", "OSIS", "PPDB_ADMIN"]),
 
   // Specific fields
   nisn: z.string().optional(), // For Siswa
@@ -171,7 +171,7 @@ export async function createUser(data: UserFormData) {
           },
         });
       }
-      // For ADMIN, OSIS (special role), PPDB_STAFF, we might not have a profile table yet
+      // For ADMIN, OSIS (special role), PPDB_ADMIN, we might not have a profile table yet
       // or they are just Users.
       // Note: If 'OSIS' is selected as a distinct role (not Student+Osis),
       // we treat it as a User.

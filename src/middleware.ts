@@ -11,7 +11,7 @@ const PROTECTED_ROUTES = {
   "/dashboard-kesiswaan": ["kesiswaan"],
   "/dashboard-siswa": ["siswa"],
   "/dashboard-osis": ["osis"],
-  "/dashboard-ppdb": ["ppdb-officer"],
+  "/dashboard-ppdb": ["ppdb_admin"],
 };
 
 // Routes that should be excluded from maintenance mode
@@ -210,7 +210,7 @@ export async function middleware(request: NextRequest) {
         // Redirect to appropriate dashboard based on role (normalize to lowercase for URLs)
         const decodedRoleStr = String(decoded.role || "").toLowerCase();
         let dashboardUrl = `/dashboard-${decodedRoleStr}`;
-        if (decodedRoleStr === "ppdb-officer") {
+        if (decodedRoleStr === "ppdb_admin") {
           dashboardUrl = "/dashboard-ppdb";
         }
 

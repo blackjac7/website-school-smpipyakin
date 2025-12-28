@@ -34,7 +34,7 @@ export async function getPPDBNotifications(params?: {
       return { success: false, error: "Unauthorized" };
     }
 
-    if (auth.role !== "ppdb-officer") {
+    if (auth.role !== "ppdb_admin") {
       return { success: false, error: "Akses ditolak" };
     }
 
@@ -107,7 +107,7 @@ export async function markPPDBNotificationAsRead(notificationId: string) {
       return { success: false, error: "Unauthorized" };
     }
 
-    if (auth.role !== "ppdb-officer") {
+    if (auth.role !== "ppdb_admin") {
       return { success: false, error: "Akses ditolak" };
     }
 
@@ -143,7 +143,7 @@ export async function getPPDBUnreadNotificationCount() {
       return { success: false, error: "Unauthorized", count: 0 };
     }
 
-    if (auth.role !== "ppdb-officer") {
+    if (auth.role !== "ppdb_admin") {
       return { success: false, error: "Akses ditolak", count: 0 };
     }
 

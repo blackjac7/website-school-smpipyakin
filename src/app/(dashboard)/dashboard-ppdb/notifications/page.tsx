@@ -27,7 +27,7 @@ export default function PPDBOfficerNotificationsPage() {
       const result = await NotificationAPIService.fetchAllNotifications({
         page: pageNum,
         filter: filterType,
-        userRole: "ppdb-officer",
+        userRole: "ppdb_admin",
       });
 
       if (result.success) {
@@ -55,7 +55,7 @@ export default function PPDBOfficerNotificationsPage() {
   const markAsRead = async (notificationId: string) => {
     const result = await NotificationAPIService.markNotificationAsReadByRole(
       notificationId,
-      "ppdb-officer"
+      "ppdb_admin"
     );
 
     if (result.success) {
@@ -78,7 +78,7 @@ export default function PPDBOfficerNotificationsPage() {
       for (const notification of unreadNotifications) {
         await NotificationAPIService.markNotificationAsReadByRole(
           notification.id,
-          "ppdb-officer"
+          "ppdb_admin"
         );
       }
 

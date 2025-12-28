@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { User, Lock, ChevronDown } from "lucide-react";
 import LoginIllustration from "./LoginIllustration";
 
-type Role = "siswa" | "kesiswaan" | "admin" | "osis" | "ppdb-officer";
+type Role = "siswa" | "kesiswaan" | "admin" | "osis" | "ppdb_admin";
 
 const LoginForm = () => {
   const [username, setUsername] = useState("");
@@ -106,7 +106,7 @@ const LoginForm = () => {
     osis: { title: "Portal OSIS" },
     kesiswaan: { title: "Portal Kesiswaan" },
     admin: { title: "Portal Admin" },
-    "ppdb-officer": { title: "Portal PPDB" },
+    ppdb_admin: { title: "Portal PPDB" },
   };
 
   const currentRole = roleData[role];
@@ -123,7 +123,7 @@ const LoginForm = () => {
         kesiswaan: "/dashboard-kesiswaan",
         siswa: "/dashboard-siswa",
         osis: "/dashboard-osis",
-        "ppdb-officer": "/dashboard-ppdb",
+        ppdb_admin: "/dashboard-ppdb",
       };
       router.push(dashboardRoutes[role]);
     }
@@ -215,7 +215,7 @@ const LoginForm = () => {
                       <option value="siswa">Siswa</option>
                       <option value="osis">Pengurus OSIS</option>
                       <option value="kesiswaan">Staf Kesiswaan</option>
-                      <option value="ppdb-officer">Petugas PPDB</option>
+                      <option value="ppdb_admin">Petugas PPDB</option>
                       <option value="admin">Administrator</option>
                     </select>
                   </div>

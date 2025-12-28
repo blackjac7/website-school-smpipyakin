@@ -29,7 +29,9 @@ export class NotificationService {
           type: data.type as NotificationType,
           title: data.title,
           message: data.message,
-          data: data.data ? (JSON.parse(JSON.stringify(data.data)) as InputJsonValue) : undefined,
+          data: data.data
+            ? (JSON.parse(JSON.stringify(data.data)) as InputJsonValue)
+            : undefined,
         },
       });
 
@@ -134,7 +136,7 @@ export class NotificationService {
   static async createSystemAnnouncement(
     title: string,
     message: string,
-    userRole?: "SISWA" | "KESISWAAN" | "OSIS" | "PPDB_STAFF" | "ADMIN",
+    userRole?: "SISWA" | "KESISWAAN" | "OSIS" | "PPDB_ADMIN" | "ADMIN",
     data?: Record<string, unknown>
   ) {
     try {
@@ -151,7 +153,9 @@ export class NotificationService {
         type: "SYSTEM_ANNOUNCEMENT" as NotificationType,
         title,
         message,
-        data: data ? (JSON.parse(JSON.stringify(data)) as InputJsonValue) : undefined,
+        data: data
+          ? (JSON.parse(JSON.stringify(data)) as InputJsonValue)
+          : undefined,
       }));
 
       const result = await prisma.notification.createMany({

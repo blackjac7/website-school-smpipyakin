@@ -6,7 +6,7 @@ export const TOKEN_TO_USERROLE_MAP: Record<string, UserRole> = {
   siswa: UserRole.SISWA,
   osis: UserRole.OSIS,
   kesiswaan: UserRole.KESISWAAN,
-  "ppdb-officer": UserRole.PPDB_STAFF,
+  ppdb_admin: UserRole.PPDB_ADMIN,
 };
 
 export type RoleLike = string | UserRole | undefined | null;
@@ -41,11 +41,17 @@ export function isRoleMatch(
   required?: string | string[]
 ): boolean {
   if (!candidate) return false;
+
+  // Normalize candidate and required roles through the same normalizer so
+  // hyphen/underscore and legacy vs enum forms compare consistently.
   const candidateNorm = normalizeRoleForComparison(candidate);
   const req = Array.isArray(required) ? required : required ? [required] : [];
-  return req
-    .map((r) => String(r).toLowerCase())
-    .includes(candidateNorm as string);
+
+  const normalizedReqs = req.map(
+    (r) => normalizeRoleForComparison(r) || String(r).toLowerCase()
+  );
+
+  return normalizedReqs.includes(candidateNorm as string);
 }
 
 /**

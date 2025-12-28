@@ -12,7 +12,7 @@ import { getJWTSecret, getJWTCookieOptions, JWT_CONFIG } from "@/lib/jwt";
 const LoginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  role: z.enum(["admin", "kesiswaan", "siswa", "osis", "ppdb-officer"]),
+  role: z.enum(["admin", "kesiswaan", "siswa", "osis", "ppdb_admin"]),
   honeypot: z.string().max(0, "Spam detected"), // Must be empty
   // Note: Captcha validation is client-side for UX in this implementation.
   // For strict server-side captcha, we would need to store the expected hash in a session/cookie
@@ -26,7 +26,7 @@ const ROLE_MAPPING = {
   KESISWAAN: "kesiswaan",
   SISWA: "siswa",
   OSIS: "osis",
-  PPDB_STAFF: "ppdb-officer",
+  PPDB_ADMIN: "ppdb_admin",
 } as const;
 
 // Reverse mapping for DB lookup
@@ -35,7 +35,7 @@ const REVERSE_ROLE_MAPPING: Record<string, keyof typeof ROLE_MAPPING> = {
   kesiswaan: "KESISWAAN",
   siswa: "SISWA",
   osis: "OSIS",
-  "ppdb-officer": "PPDB_STAFF",
+  ppdb_admin: "PPDB_ADMIN",
 };
 
 // Permission mapping
@@ -44,7 +44,7 @@ const ROLE_PERMISSIONS = {
   KESISWAAN: ["read", "write", "manage_students", "view_reports"],
   SISWA: ["read", "view_profile", "submit_assignments"],
   OSIS: ["read", "write", "manage_events", "view_reports"],
-  PPDB_STAFF: ["read", "write", "manage_ppdb", "view_applications"],
+  PPDB_ADMIN: ["read", "write", "manage_ppdb", "view_applications"],
 } as const;
 
 // Helper to get IP address in Server Action

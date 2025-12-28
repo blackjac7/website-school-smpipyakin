@@ -212,7 +212,7 @@ export default function Header({
                           if (setShowNotifications) {
                             setShowNotifications(false);
                           }
-                          router.push("/dashboard-ppdb-officer/notifications");
+                          router.push("/dashboard-ppdb/notifications");
                         }}
                         className="text-sm text-amber-600 hover:text-orange-600 font-medium transition-colors cursor-pointer"
                       >
@@ -237,7 +237,7 @@ export default function Header({
               markAsRead && markAsRead(notification.id)
             }
             onViewAllNotifications={() => {
-              router.push("/dashboard-ppdb-officer/notifications");
+              router.push("/dashboard-ppdb/notifications");
             }}
           />
         </div>
