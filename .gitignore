@@ -48,3 +48,7 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# credential files
+prisma/data/credentials-siswa.csv
+prisma/data/credentials-siswa.txt
