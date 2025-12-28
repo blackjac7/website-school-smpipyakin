@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { getJWTSecret } from "@/lib/jwt";
+import { isAdminRole, isRoleMatch } from "@/lib/roles";
 
 const JWT_SECRET = getJWTSecret();
 
@@ -84,7 +85,7 @@ export async function middleware(request: NextRequest) {
     if (token) {
       try {
         const { payload: decoded } = await jwtVerify(token, JWT_SECRET);
-        isAdmin = decoded.role === "admin";
+        isAdmin = isAdminRole(decoded.role as string);
       } catch {
         // Token invalid, not admin
       }
@@ -161,7 +162,7 @@ export async function middleware(request: NextRequest) {
       // Check if user has required role
       const allowedRoles =
         PROTECTED_ROUTES[protectedRoute as keyof typeof PROTECTED_ROUTES];
-      if (!allowedRoles.includes(decoded.role as string)) {
+      if (!isRoleMatch(decoded.role as string, allowedRoles)) {
         console.log(
           `[SECURITY] Unauthorized role access: ${decoded.role} tried to access ${pathname} from IP: ${clientIP}`
         );
@@ -206,9 +207,10 @@ export async function middleware(request: NextRequest) {
       try {
         const { payload: decoded } = await jwtVerify(token, JWT_SECRET);
 
-        // Redirect to appropriate dashboard based on role
-        let dashboardUrl = `/dashboard-${decoded.role}`;
-        if (decoded.role === "ppdb-officer") {
+        // Redirect to appropriate dashboard based on role (normalize to lowercase for URLs)
+        const decodedRoleStr = String(decoded.role || "").toLowerCase();
+        let dashboardUrl = `/dashboard-${decodedRoleStr}`;
+        if (decodedRoleStr === "ppdb-officer") {
           dashboardUrl = "/dashboard-ppdb";
         }
 

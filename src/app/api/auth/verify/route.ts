@@ -3,6 +3,7 @@ import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getJWTSecret, JWT_CONFIG } from "@/lib/jwt";
+import { tokenRoleToUserRole } from "@/lib/roles";
 
 export async function GET() {
   try {
@@ -44,6 +45,7 @@ export async function GET() {
         username: user.username,
         name: displayName,
         role: decoded.role,
+        normalizedRole: tokenRoleToUserRole(decoded.role as string),
         email: user.email,
         permissions: decoded.permissions,
       },
