@@ -2,6 +2,8 @@
 import LoginForm from "@/components/auth/LoginForm";
 import { LogoutSuccessMessage } from "@/components/shared";
 
+export const dynamic = "force-dynamic";
+
 const LoginPage = () => {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-linear-to-br from-[#1E3A8A] to-[#111827] relative overflow-hidden p-4 pt-24">
