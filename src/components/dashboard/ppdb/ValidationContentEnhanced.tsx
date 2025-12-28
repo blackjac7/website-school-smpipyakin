@@ -319,7 +319,7 @@ export default function ValidationContentEnhanced({
                             {applicant.nisn}
                           </span>
                           <span>
-                            • {applicant.gender === "LAKI_LAKI" ? "L" : "P"}
+                            • {applicant.gender === "MALE" ? "L" : "P"}
                           </span>
                         </div>
                       </div>
