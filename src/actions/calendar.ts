@@ -4,11 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { SchoolActivity, SemesterType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { isRoleMatch } from "@/lib/roles";
 
 // Helper to verify admin/kesiswaan role for calendar management
 async function verifyCalendarAccess() {
   const user = await getAuthenticatedUser();
-  if (!user || !["admin", "kesiswaan"].includes(user.role)) {
+  if (!user || !isRoleMatch(user.role, ["admin", "kesiswaan"])) {
     return {
       authorized: false,
       error: "Unauthorized: Admin or Kesiswaan access required",
