@@ -432,6 +432,8 @@ Integrated AI chatbot for answering visitor questions.
 ```env
 NEXT_PUBLIC_FLOWISE_API_URL=your-flowise-url
 NEXT_PUBLIC_FLOWISE_CHATFLOW_ID=your-chatflow-id
+
+Note: If your Flowise host responds from a custom domain (e.g., https://flowise.zeabur.app), add that host to your Content Security Policy (CSP) script-src / connect-src / frame-src so the browser won't block chat requests or framing.
 ```
 
 #### Implementation
