@@ -20,8 +20,7 @@ type Role = "siswa" | "kesiswaan" | "admin" | "osis" | "ppdb-officer";
 
 // Helper components for icons not in the main import to avoid clutter
 // Defined BEFORE usage in roleConfig to avoid ReferenceError
-const Trophy = (props: any) => <Award {...props} />;
-const CalendarPlaceholder = (props: any) => <BookOpen {...props} />;
+const Trophy = Award;
 
 interface IllustrationConfig {
   icon: LucideIcon;
@@ -148,26 +147,26 @@ const LoginIllustration = ({ role }: LoginIllustrationProps) => {
       </motion.div>
 
       {/* Floating Particles */}
-       {[...Array(3)].map((_, i) => (
+      {[...Array(3)].map((_, i) => (
         <motion.div
-            key={`particle-${i}`}
-            className={`absolute w-2 h-2 rounded-full ${config.particleColor}`}
-            initial={{
-                x: Math.random() * 100 - 50,
-                y: Math.random() * 100 - 50,
-                opacity: 0
-            }}
-            animate={{
-                y: [0, -20, 0],
-                opacity: [0, 1, 0]
-            }}
-            transition={{
-                duration: 2 + Math.random(),
-                repeat: Infinity,
-                delay: Math.random() * 2
-            }}
+          key={`particle-${i}`}
+          className={`absolute w-2 h-2 rounded-full ${config.particleColor}`}
+          initial={{
+            x: Math.random() * 100 - 50,
+            y: Math.random() * 100 - 50,
+            opacity: 0,
+          }}
+          animate={{
+            y: [0, -20, 0],
+            opacity: [0, 1, 0],
+          }}
+          transition={{
+            duration: 2 + Math.random(),
+            repeat: Infinity,
+            delay: Math.random() * 2,
+          }}
         />
-       ))}
+      ))}
     </div>
   );
 };
