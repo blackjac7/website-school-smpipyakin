@@ -292,7 +292,6 @@ function SiswaDashboardContent() {
 
   const handleSubmitForm = async (data: AchievementFormData) => {
     try {
-      console.log("Achievement data:", data);
 
       const achievementData: AchievementInput = {
         title: data.title,
@@ -306,7 +305,6 @@ function SiswaDashboardContent() {
       const result = await createAchievement(achievementData);
 
       if (result.success) {
-        console.log("Achievement uploaded successfully");
         toast.success("Prestasi berhasil diunggah!");
         setShowUploadForm(false);
         await loadAchievements();
