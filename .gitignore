@@ -52,3 +52,5 @@ node_modules/
 # credential files
 prisma/data/credentials-siswa.csv
 prisma/data/credentials-siswa.txt
+
+data-siswa-SMP-IP-YAKIN.xlsx

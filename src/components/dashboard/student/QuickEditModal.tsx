@@ -90,12 +90,17 @@ export default function QuickEditModal({
 
         const result = await uploadImageAction(formData);
 
-        if (result.success && result.data) {
-          setFormData((prev) => ({
-            ...prev,
-            profileImage: result.data.url,
-          }));
-          toast.success("Foto profil berhasil diunggah!");
+        if (result.success && result.data && result.data.url) {
+          const url = result.data.url;
+          if (!url) {
+            toast.error("Gagal mengunggah foto profil");
+          } else {
+            setFormData((prev) => ({
+              ...prev,
+              profileImage: url,
+            }));
+            toast.success("Foto profil berhasil diunggah!");
+          }
         } else {
           toast.error("Gagal mengunggah foto profil");
         }
