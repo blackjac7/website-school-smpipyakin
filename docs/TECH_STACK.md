@@ -23,7 +23,7 @@
 - **Image Storage:** Cloudinary
 - **File Storage:** Cloudflare R2
 - **Email:** EmailJS (Client-side)
-- **Monitoring:** Sentry, Vercel Speed Insights
+- **Monitoring:** Vercel Speed Insights
 
 ## Dev Tools
 - **Linting:** ESLint 9 (Flat Config)
