@@ -1,367 +1,90 @@
-# 🏫 SMP IP Yakin - School Management System
+# SMP IP YAKIN - Modern School System
 
-<div align="center">
+A comprehensive school management system built with Next.js 15, Prisma, and Tailwind CSS.
 
-![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-316192?style=for-the-badge&logo=postgresql)
-![Prisma](https://img.shields.io/badge/Prisma-6.x-2D3748?style=for-the-badge&logo=prisma)
+## 🚀 Features
 
-**A modern, secure, and comprehensive school management system**
+- **Modern Tech Stack**: Next.js 15 (App Router), React 18, TypeScript, Tailwind CSS v4.
+- **Role-Based Access Control**: Secure dashboards for Admin, Students, OSIS, Kesiswaan, and PPDB Officers.
+- **Server Actions**: Fully typed, secure server-side logic replacing legacy API routes.
+- **Database**: PostgreSQL (Production/Staging) and SQLite (Local Development).
+- **Authentication**: Custom JWT-based auth with secure cookies and role management.
+- **Performance**: Optimized images, Lottie animations, and dynamic caching strategies.
+- **Monitoring**: Integrated with Sentry and Vercel Speed Insights.
 
-[Getting Started](#-getting-started) •
-[Documentation](#-documentation) •
-[Features](#-features) •
-[Security](#-security)
-
-</div>
-
----
-
-## 📖 Overview
-
-SMP IP Yakin Website is a full-featured school management platform designed to streamline administrative tasks, enhance communication, and provide a seamless digital experience for students, teachers, and administrators.
-
-Built with modern web technologies and industry best practices, this system prioritizes **security**, **performance**, and **user experience**.
-
----
-
-## ✨ Features
-
-### 🎯 Core Modules
-
-| Module                    | Description                                                               |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Multi-Role Dashboard**  | Dedicated dashboards for Admin, Kesiswaan, OSIS, PPDB Staff, and Students |
-| **PPDB System**           | Complete digital admission workflow with document management              |
-| **Content Management**    | News, announcements, and event management                                 |
-| **Academic Calendar**     | School schedule and event planning                                        |
-| **Student Works Gallery** | Showcase student achievements and projects                                |
-| **Facility Management**   | School facilities and extracurricular activities                          |
-
-### 🔐 Security Features
-
-- **Database-backed Rate Limiting** - Prevents brute force attacks
-- **JWT with HTTP-Only Cookies** - Secure session management
-- **IP Binding** - Session hijacking prevention
-- **Input Sanitization** - XSS protection
-- **CAPTCHA & Honeypot** - Anti-bot measures
-- **Role-Based Access Control** - Granular permission system
-
-### 🚀 Performance
-
-- **Progressive Web App (PWA)** - Installable and offline-capable
-- **Image Optimization** - Cloudinary CDN integration
-- **Responsive Design** - Mobile-first architecture
-- **SEO Optimized** - Sitemap, robots.txt, structured data
-
----
-
-## 🛠 Tech Stack
-
-### Core Technologies
-
-| Category       | Technology                                     |
-| -------------- | ---------------------------------------------- |
-| **Framework**  | [Next.js 15](https://nextjs.org/) (App Router) |
-| **Language**   | [TypeScript](https://www.typescriptlang.org/)  |
-| **Styling**    | [Tailwind CSS v4](https://tailwindcss.com/)    |
-| **Database**   | [PostgreSQL](https://www.postgresql.org/)      |
-| **ORM**        | [Prisma](https://www.prisma.io/)               |
-| **Validation** | [Zod](https://zod.dev/)                        |
-
-### Authentication & Security
-
-| Category          | Technology                                                |
-| ----------------- | --------------------------------------------------------- |
-| **JWT Library**   | [Jose](https://github.com/panva/jose) + HTTP-Only Cookies |
-| **Password Hash** | [bcryptjs](https://www.npmjs.com/package/bcryptjs)        |
-
-### Storage & Media
-
-| Category          | Technology                                                             |
-| ----------------- | ---------------------------------------------------------------------- |
-| **Image Storage** | [Cloudinary](https://cloudinary.com/) (CDN + Optimization)             |
-| **File Storage**  | [Cloudflare R2](https://developers.cloudflare.com/r2/) (S3-compatible) |
-
-### Third-Party Services
-
-| Category       | Technology                                   |
-| -------------- | -------------------------------------------- |
-| **Email**      | [EmailJS](https://www.emailjs.com/)          |
-| **AI Chatbot** | [Flowise](https://flowiseai.com/) (Embedded) |
-
-### UI/UX Libraries
-
-| Category       | Technology                                                                |
-| -------------- | ------------------------------------------------------------------------- |
-| **Animations** | [Framer Motion](https://www.framer.com/motion/)                           |
-| **Lottie**     | [@lottiefiles/dotlottie-react](https://lottiefiles.com/)                  |
-| **Icons**      | [Lucide React](https://lucide.dev/) + [Heroicons](https://heroicons.com/) |
-| **Charts**     | [Recharts](https://recharts.org/)                                         |
-| **Theme**      | [next-themes](https://github.com/pacocoursey/next-themes)                 |
-| **Toast**      | [react-hot-toast](https://react-hot-toast.com/)                           |
-
-### Utilities
-
-| Category         | Technology                                                                                |
-| ---------------- | ----------------------------------------------------------------------------------------- |
-| **Date/Time**    | [date-fns](https://date-fns.org/) + [date-fns-tz](https://github.com/marnusw/date-fns-tz) |
-| **Excel Export** | [xlsx (SheetJS)](https://sheetjs.com/)                                                    |
-| **PWA**          | [next-pwa](https://github.com/shadowwalker/next-pwa)                                      |
-
----
-
-## 🚀 Getting Started
+## 🛠️ Quick Start
 
 ### Prerequisites
 
-- **Node.js** 18.x or higher
-- **PostgreSQL** 14+ (or use a managed service like Neon, Supabase, or Railway)
-- **npm** or **yarn**
+- Node.js 18+
+- npm 9+
 
 ### Installation
 
-```bash
-# 1. Clone the repository
-git clone https://github.com/your-repo/website-school-smpipyakin.git
-cd website-school-smpipyakin
+1.  **Clone the repository**
+    ```bash
+    git clone <repository-url>
+    cd school-website
+    ```
 
-# 2. Install dependencies
-npm install
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
-# 3. Setup environment variables
-cp .env.example .env
-# Edit .env with your credentials
+3.  **Environment Setup**
+    Copy `.env.example` to `.env` and configure your local variables.
+    ```bash
+    cp .env.example .env
+    ```
+    *Note: For local development, `DATABASE_URL` defaults to a local SQLite file.*
 
-# 4. Setup database
-npm run db:generate    # Generate Prisma Client
-npm run db:migrate     # Run migrations
-npm run db:seed        # Seed sample data
+4.  **Database Setup**
+    Initialize the database and seed it with initial data.
+    ```bash
+    npm run db:reset
+    ```
+    *This command runs migrations and seeds the database.*
 
-# 5. Start development server
-npm run dev
-```
+5.  **Run Development Server**
+    ```bash
+    npm run dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+## 🏗️ Architecture Overview
 
-### Environment Variables
+### Key Directories
 
-Create a `.env` file with the following variables:
+- `src/app`: App Router pages and layouts.
+- `src/actions`: Server Actions for business logic (Auth, PPDB, Admin, etc.).
+- `src/components`: Reusable UI components.
+- `src/lib`: Utilities, Prisma client, and configuration.
+- `prisma`: Database schema and seed scripts.
+- `docs`: Detailed documentation.
 
-```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/smpipyakin"
+### Authentication
 
-# Authentication
-JWT_SECRET="your-super-secret-key-min-32-characters"
+The system uses a custom authentication flow powered by Server Actions (`src/actions/auth.ts`). Users are authenticated via secure HTTP-only cookies containing JWTs.
 
-# Cloudinary
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
-CLOUDINARY_API_KEY="your-api-key"
-CLOUDINARY_API_SECRET="your-api-secret"
+### Deployment
 
-# EmailJS (Optional)
-NEXT_PUBLIC_EMAILJS_SERVICE_ID="your-service-id"
-NEXT_PUBLIC_EMAILJS_TEMPLATE_ID="your-template-id"
-NEXT_PUBLIC_EMAILJS_PUBLIC_KEY="your-public-key"
-
-# Cron Jobs (Production)
-CRON_SECRET="your-cron-secret"
-```
-
----
-
-## 📜 Available Scripts
-
-| Command                   | Description                     |
-| ------------------------- | ------------------------------- |
-| `npm run dev`             | Start development server        |
-| `npm run build`           | Build for production            |
-| `npm run postbuild`       | Generate sitemap after build    |
-| `npm run start`           | Start production server         |
-| `npm run lint`            | Run ESLint                      |
-| `npm run db:generate`     | Generate Prisma Client          |
-| `npm run db:migrate`      | Run database migrations         |
-| `npm run db:seed`         | Seed database with sample data  |
-| `npm run db:seed-content` | Seed content data               |
-| `npm run db:reset`        | Reset database (⚠️ destructive) |
-| `npm run test:e2e`        | Run all E2E tests               |
-| `npm run test:auth`       | Run authentication tests        |
-| `npm run test:public`     | Run public pages tests          |
-| `npm run test:dashboards` | Run dashboard tests             |
-| `npm run test:coverage`   | Run tests with coverage report  |
-
----
-
-## 👥 Default Accounts
-
-> ⚠️ **Warning**: Change all default passwords before deploying to production!
-
-| Role       | Username    | Password   | Dashboard Access       |
-| ---------- | ----------- | ---------- | ---------------------- |
-| Admin      | `admin`     | `admin123` | `/dashboard-admin`     |
-| Kesiswaan  | `kesiswaan` | `admin123` | `/dashboard-kesiswaan` |
-| Student    | `siswa001`  | `admin123` | `/dashboard-siswa`     |
-| OSIS       | `osis001`   | `admin123` | `/dashboard-osis`      |
-| PPDB Staff | `ppdb001`   | `admin123` | `/dashboard-ppdb`      |
-
----
-
-## 📚 Documentation
-
-| Document                                       | Description                            |
-| ---------------------------------------------- | -------------------------------------- |
-| [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) | REST API endpoints documentation       |
-| [TECHNICAL_DOCS.md](./TECHNICAL_DOCS.md)       | Technical documentation & architecture |
-| [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)   | Production deployment guide            |
-| [TESTING_GUIDE.md](./TESTING_GUIDE.md)         | Testing documentation & best practices |
-| [DATABASE_SETUP.md](./DATABASE_SETUP.md)       | Database setup & configuration         |
-| [CLOUDINARY_SETUP.md](./CLOUDINARY_SETUP.md)   | Cloudinary integration guide           |
-| [EMAILJS_SETUP.md](./EMAILJS_SETUP.md)         | EmailJS configuration                  |
-
----
-
-## 📁 Project Structure
-
-```
-├── .github/                # GitHub Actions CI/CD
-│   └── workflows/
-│       ├── ci.yml          # Main CI/CD pipeline
-│       ├── backup.yml      # Database backup workflow
-│       └── dependency-update.yml
-├── prisma/                 # Database schema & migrations
-│   ├── schema.prisma
-│   ├── seed.ts
-│   └── migrations/
-├── public/                 # Static assets
-│   ├── icons/              # PWA icons
-│   └── manifest.json
-├── tests/                  # E2E Tests (Playwright)
-│   ├── fixtures/           # Test fixtures & helpers
-│   ├── pages/              # Page Object Models
-│   └── *.spec.ts           # Test specifications
-├── src/
-│   ├── actions/            # Server actions
-│   │   ├── admin/
-│   │   ├── osis/
-│   │   ├── public/
-│   │   └── student/
-│   ├── app/                # Next.js App Router
-│   │   ├── (dashboard)/    # Protected dashboard routes
-│   │   ├── (public)/       # Public pages
-│   │   └── api/            # API routes
-│   ├── components/         # React components
-│   ├── hooks/              # Custom React hooks
-│   ├── lib/                # Utility libraries
-│   │   └── validations.ts  # Zod schemas
-│   ├── shared/             # Shared data & types
-│   └── utils/              # Utility functions
-
-└── lighthouserc.json       # Lighthouse CI config
-```
-
----
-
-## 🔐 Security
-
-This application implements multiple layers of security:
-
-### Authentication & Authorization
-
-- JWT tokens with HTTP-Only cookies
-- IP binding to prevent session hijacking
-- Secure password hashing (bcrypt, 12 salt rounds)
-- Role-based access control with 5 distinct roles
-
-### Attack Prevention
-
-- **Brute Force**: Database-backed rate limiting (5 attempts/15 min per IP)
-- **SQL Injection**: Prisma ORM with prepared statements
-- **XSS**: React auto-escaping + input sanitization
-- **CSRF**: SameSite cookies + origin validation
-- **Bot Attacks**: Math CAPTCHA + honeypot fields
-
-For detailed security documentation, see [PENETRATION_TESTING_DOCUMENTATION.md](./PENETRATION_TESTING_DOCUMENTATION.md).
-
----
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed deployment instructions for Local, Staging (Aiven), and Production (VPS) environments.
 
 ## 🧪 Testing
 
-This project includes comprehensive E2E testing with Playwright using Page Object Model pattern.
-
-### Test Coverage
-
-| Test Suite          | Tests   | Description                     |
-| ------------------- | ------- | ------------------------------- |
-| Authentication      | 18      | Login, logout, session handling |
-| Public Pages        | 37      | All public facing pages         |
-| Dashboard Siswa     | 14      | Student dashboard functionality |
-| Dashboard PPDB      | 17      | PPDB officer dashboard          |
-| Dashboard Admin     | 24      | Admin management features       |
-| Dashboard OSIS      | 10      | OSIS dashboard features         |
-| Dashboard Kesiswaan | 10      | Student affairs dashboard       |
-| **Total**           | **128** | Full application coverage       |
-
-### Running Tests
+Run the critical path tests using Playwright:
 
 ```bash
-# Run all E2E tests
-npm run test:e2e
-
-# Run specific test suites
-npm run test:auth        # Authentication tests
-npm run test:public      # Public pages tests
-npm run test:dashboards  # All dashboard tests
-
-# Run with UI
-npm run test:e2e:ui
+npm run test:critical
 ```
 
----
-
-## 📊 Monitoring & Analytics
-
-- **Vercel Analytics** - Web analytics and user insights
-- **Vercel Speed Insights** - Core Web Vitals tracking
-- **Lighthouse CI** - Performance auditing in CI/CD
-
----
-
-## 🚀 Deployment
-
-### Recommended Stack
-
-| Service           | Purpose                            |
-| ----------------- | ---------------------------------- |
-| **Vercel**        | Hosting (optimized for Next.js)    |
-| **Neon/Supabase** | PostgreSQL with connection pooling |
-| **Cloudflare**    | DNS, SSL, and DDoS protection      |
-| **Cloudinary**    | Image storage and optimization     |
-
-### Quick Deploy
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
-
-See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed instructions.
-
----
+See [docs/TESTING.md](docs/TESTING.md) for more details.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read our [Contributing Guidelines](./CONTRIBUTING.md) before submitting a pull request.
-
----
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## 📄 License
 
-This project is proprietary software developed for SMP IP Yakin.
-
----
-
-<div align="center">
-
-**Built with ❤️ for SMP IP Yakin**
-
-</div>
+Proprietary Software. All Rights Reserved.
