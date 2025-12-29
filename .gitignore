@@ -58,3 +58,4 @@ prisma/data/credentials-siswa.txt
 *.sqlite
 *.sqlite-journal
 *.log
+data-siswa-SMP-IP-YAKIN.xlsx

@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { CloudArrowUpIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
+import { uploadImageAction, deleteImageAction } from "@/actions/upload";
 
 interface UploadedFile {
   url: string;
@@ -75,19 +76,15 @@ export default function ImageUpload({
       formData.append("file", file);
       formData.append("folder", folder);
 
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const result = await uploadImageAction(formData);
 
-      const result = await response.json();
-
-      if (!response.ok) {
+      if (!result.success || !result.data) {
         throw new Error(result.error || "Upload gagal");
       }
 
       if (result.success && onUpload) {
-        onUpload(result.data);
+        // Map the result to match expected format if needed, but action returns same structure
+        onUpload(result.data as UploadedFile);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload gagal");
@@ -131,14 +128,9 @@ export default function ImageUpload({
         if (matches && matches[1]) {
           const publicId = matches[1];
 
-          const response = await fetch(
-            `/api/upload?public_id=${encodeURIComponent(publicId)}`,
-            {
-              method: "DELETE",
-            }
-          );
+          const result = await deleteImageAction(publicId);
 
-          if (response.ok) {
+          if (result.success) {
             onRemove(publicId);
             setPreview(null);
           }

@@ -5,6 +5,7 @@ import { User, Camera, X } from "lucide-react";
 import Image from "next/image";
 import ImageUpload from "@/components/shared/ImageUpload";
 import toast from "react-hot-toast";
+import { uploadImageAction } from "@/actions/upload";
 
 interface ProfileImageUploadProps {
   currentImage?: string;
@@ -98,14 +99,9 @@ export default function ProfileImageUpload({
         formData.append("file", file);
         formData.append("folder", "profiles");
 
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
+        const result = await uploadImageAction(formData);
 
-        const result = await response.json();
-
-        if (result.success) {
+        if (result.success && result.data && result.data.url) {
           onImageUpdate(result.data.url);
           toast.success("Foto profil berhasil diunggah!", { id: toastId });
         } else {
