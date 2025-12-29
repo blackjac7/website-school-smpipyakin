@@ -188,14 +188,6 @@ export function PPDBPageClient({
         emailOrtu: formData.emailOrtu,
       });
 
-      // Debug: Log current state
-      console.log("=== DEBUGGING FORM SUBMISSION ===");
-      console.log("Sanitized Form Data:", sanitizedFormData);
-      console.log(
-        "Selected Documents:",
-        Object.entries(formData.documents).filter(([, file]) => file !== null)
-      );
-
       // Step 1: Check if NISN already exists
       toast.loading("Mengecek NISN...", { id: "nisn-check" });
 
@@ -223,22 +215,17 @@ export function PPDBPageClient({
         }
       }
 
-      console.log("NISN check passed:", checkResult.message);
-
-      // Step 2: Upload documents if NISN is available
-      let uploadedDocs: UploadedDocument[] = [];
-      const selectedFiles = Object.entries(formData.documents).filter(
-        ([, file]) => file !== null
+      // Determine if there are files to upload
+      const selectedFiles = Object.values(formData.documents).filter(
+        (file) => file !== null
       );
+      let uploadedDocs: UploadedDocument[] = [];
 
       if (selectedFiles.length > 0) {
         toast.loading("Mengupload dokumen...", { id: "upload-progress" });
         uploadedDocs = await uploadAllDocuments();
         toast.dismiss("upload-progress");
-        console.log("Uploaded Documents:", uploadedDocs);
       }
-
-      console.log("Uploaded Documents Count:", uploadedDocs.length);
 
       // Step 3: Submit basic data + document URLs to database
       const submissionData = {
@@ -255,10 +242,6 @@ export function PPDBPageClient({
         documents: uploadedDocs,
       };
 
-      console.log("Submission Data:", submissionData);
-
-      // Submit to backend API
-      toast.loading("Menyimpan data pendaftaran...", { id: "submit-progress" });
       const response = await fetch("/api/ppdb/register", {
         method: "POST",
         headers: {
@@ -269,10 +252,9 @@ export function PPDBPageClient({
 
       const result = await response.json();
       toast.dismiss("submit-progress");
-      console.log("API Response:", result);
 
       if (!response.ok) {
-        throw new Error(result.error || "Pendaftaran gagal");
+        throw new Error(result.error || "Gagal mengirim pendaftaran");
       }
 
       setSubmitStatus("success");

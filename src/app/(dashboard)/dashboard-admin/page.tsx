@@ -11,11 +11,8 @@ export default async function AdminDashboardPage() {
   // Development-only debug logs: surface why counts may be zero (Unauthorized or DB error)
   if (process.env.NODE_ENV !== "production") {
     try {
-      console.log("Admin dashboard user:", user);
       if (!statsResult.success) {
         console.error("Admin stats error:", statsResult.error);
-      } else if (statsResult.data) {
-        console.log("Admin stats counts:", statsResult.data.counts);
       }
     } catch (e) {
       // Defensive: avoid throwing from logging
