@@ -250,8 +250,12 @@ export function PPDBPageClient({
         body: JSON.stringify(submissionData),
       });
 
-      await response.json();
+      const result = await response.json();
       toast.dismiss("submit-progress");
+
+      if (!response.ok) {
+        throw new Error(result.error || "Gagal mengirim pendaftaran");
+      }
 
       setSubmitStatus("success");
       toast.success(
