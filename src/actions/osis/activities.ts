@@ -114,7 +114,7 @@ export async function updateActivity(prevState: unknown, formData: FormData) {
   // Allow edit if Author OR Admin OR OSIS (shared?)
   // Usually only pending can be edited? Or always?
   // Let's allow edit if PENDING or if User is Admin.
-  if (existing.status !== "PENDING" && user.role !== "admin") {
+  if (existing.status !== "PENDING" && user.role !== "ADMIN") {
     return {
       success: false,
       error: "Hanya kegiatan status PENDING yang dapat diubah",
@@ -164,7 +164,7 @@ export async function deleteActivity(id: string) {
   const existing = await prisma.osisActivity.findUnique({ where: { id } });
   if (!existing) return { success: false, error: "Not found" };
 
-  if (existing.status !== "PENDING" && user.role !== "admin") {
+  if (existing.status !== "PENDING" && user.role !== "ADMIN") {
     return { success: false, error: "Cannot delete processed activity" };
   }
 

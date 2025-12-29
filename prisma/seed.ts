@@ -598,6 +598,10 @@ function mapTeacherCategory(category: string): TeacherCategory {
 async function main() {
   console.log("🌱 Seeding database...");
 
+  // Clear Login Attempts to prevent rate limiting issues during testing
+  await prisma.loginAttempt.deleteMany();
+  console.log("🧹 Cleared login attempts");
+
   // Create users
   const hashedPassword = await bcrypt.hash("admin123", 12);
 

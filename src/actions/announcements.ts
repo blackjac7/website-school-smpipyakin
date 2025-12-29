@@ -23,7 +23,7 @@ const IdSchema = z.string().uuid("Invalid announcement ID");
 // Helper to verify admin role
 async function verifyAdminRole() {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "admin") {
+  if (!user || user.role !== "ADMIN") {
     return { authorized: false, error: "Unauthorized: Admin access required" };
   }
   return { authorized: true, user };

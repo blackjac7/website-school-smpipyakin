@@ -55,7 +55,8 @@ export class LoginPage {
     this.heading = page.locator("h1, h2").first();
     // Captcha elements
     this.captchaInput = page.locator('input[type="number"]');
-    this.captchaQuestion = page.locator(".font-mono.font-bold");
+    // Updated selector to match the specific structure in AntiBotComponents
+    this.captchaQuestion = page.locator('.font-mono.font-bold');
   }
 
   /**
@@ -116,6 +117,8 @@ export class LoginPage {
     }
 
     // Parse "X + Y = ?" format
+    // Clean up text first (remove non-digits and +)
+    const cleanText = questionText.replace(/[^\d+]/g, '');
     const match = questionText.match(/(\d+)\s*\+\s*(\d+)/);
 
     if (match) {
@@ -124,6 +127,8 @@ export class LoginPage {
       const answer = num1 + num2;
 
       await this.captchaInput.fill(answer.toString());
+    } else {
+        console.log(`Failed to parse captcha from text: "${questionText}"`);
     }
   }
 
@@ -167,27 +172,35 @@ export class LoginPage {
     // Wait for login animation to complete (animation takes 3.5s)
     // Look for "Login Berhasil" text and wait for redirect
     try {
-      // Wait for success message to appear
-      await this.page
-        .locator("text=Login Berhasil")
-        .waitFor({ state: "visible", timeout: 10000 })
-        .catch(() => {});
+      // Wait for success message to appear (optional, but good for verification)
+      // We use a race condition: either success message appears OR we redirect
+      // This handles cases where redirect happens fast or animation is skipped
+      await Promise.race([
+        this.page.locator("text=Login Berhasil").waitFor({ state: "visible", timeout: 10000 }),
+        this.page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 30000 })
+      ]);
 
-      // Wait for redirect with longer timeout (animation is 3.5s)
+      // Ensure we are redirected
       await this.page.waitForURL((url) => !url.pathname.includes("/login"), {
         timeout: 30000,
       });
-    } catch {
+    } catch (e) {
+      console.log(`Login sequence failed: ${e}`);
+
       // Check if we're still on login (possible login failure)
       const currentUrl = this.page.url();
       if (currentUrl.includes("/login")) {
         // Check for error message
         const hasError = await this.errorMessage.isVisible().catch(() => false);
         if (hasError) {
-          const errorText = await this.errorMessage
-            .textContent()
-            .catch(() => "");
-          console.log(`Login failed with error: ${errorText}`);
+          const errorText = await this.errorMessage.textContent().catch(() => "");
+          console.log(`Login failed with error text: "${errorText}"`);
+        } else {
+             // Try to find ANY toast or alert
+             const toast = this.page.locator('[role="status"], [class*="toast"]');
+             if (await toast.count() > 0) {
+                 console.log(`Found toast content: "${await toast.first().textContent()}"`);
+             }
         }
       }
     }

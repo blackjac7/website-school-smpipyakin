@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -596,7 +596,7 @@ model MaintenanceSchedule {
   isActive    Boolean  @default(true) @map("is_active")
   
   // Pages affected (null = all pages)
-  affectedPaths String[] @map("affected_paths")
+  affectedPaths String? @map("affected_paths")
   
   // Message to show during maintenance
   message     String   @default("Website sedang dalam pemeliharaan. Silakan kembali beberapa saat lagi.")

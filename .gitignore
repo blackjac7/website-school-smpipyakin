@@ -52,3 +52,9 @@ node_modules/
 # credential files
 prisma/data/credentials-siswa.csv
 prisma/data/credentials-siswa.txt
+
+# Local DB and Logs
+*.db
+*.sqlite
+*.sqlite-journal
+*.log
