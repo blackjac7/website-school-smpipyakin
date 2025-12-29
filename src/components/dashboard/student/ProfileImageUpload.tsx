@@ -101,7 +101,7 @@ export default function ProfileImageUpload({
 
         const result = await uploadImageAction(formData);
 
-        if (result.success && result.data) {
+        if (result.success && result.data && result.data.url) {
           onImageUpdate(result.data.url);
           toast.success("Foto profil berhasil diunggah!", { id: toastId });
         } else {
