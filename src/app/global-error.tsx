@@ -10,7 +10,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Sentry removed — log to console instead
+    // Log error to console
     console.error(error);
   }, [error]);
 
