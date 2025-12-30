@@ -246,7 +246,6 @@ export async function loginAction(prevState: unknown, formData: FormData) {
       role: role, // Use the input role (frontend friendly format)
       permissions: permissions,
       iat: Math.floor(Date.now() / 1000),
-      ip: clientIP,
     })
       .setProtectedHeader({ alg: JWT_CONFIG.ALGORITHM })
       .setExpirationTime(JWT_CONFIG.EXPIRATION)
