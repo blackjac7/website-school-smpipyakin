@@ -10,7 +10,6 @@ type JWTPayload = {
   permissions?: string[];
   iat?: number;
   exp?: number;
-  ip?: string;
 };
 
 export async function getAuthenticatedUser() {
