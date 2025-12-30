@@ -145,21 +145,6 @@ export async function middleware(request: NextRequest) {
         return addSecurityHeaders(response);
       }
 
-      // IP validation (optional: bind token to IP)
-      // Note: Commented out for development, enable in production if needed
-      /*
-      if (decoded.ip && decoded.ip !== clientIP) {
-        console.log(`[SECURITY] IP mismatch detected. Token IP: ${decoded.ip}, Request IP: ${clientIP}`);
-
-        const loginUrl = new URL("/login", request.url);
-        loginUrl.searchParams.set("error", "security_violation");
-
-        const response = NextResponse.redirect(loginUrl);
-        response.cookies.delete("auth-token");
-        return addSecurityHeaders(response);
-      }
-      */
-
       // Check if user has required role
       const allowedRoles =
         PROTECTED_ROUTES[protectedRoute as keyof typeof PROTECTED_ROUTES];
