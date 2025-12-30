@@ -1,20 +1,20 @@
 # 📋 Testing Documentation
 
-## Website School SMPI Yakin - E2E Testing Guide
+## SMP IP Yakin — E2E Testing Guide
 
-Dokumentasi ini menjelaskan cara menjalankan dan mengembangkan automated testing untuk website SMPI Yakin menggunakan **Playwright**.
+This document explains how to run and extend automated testing for the SMP IP Yakin website using **Playwright**.
 
 ---
 
-## 📑 Daftar Isi
+## 📑 Table of Contents
 
 1. [Overview](#overview)
-2. [Struktur Testing](#struktur-testing)
-3. [Setup & Instalasi](#setup--instalasi)
-4. [Menjalankan Test](#menjalankan-test)
+2. [Test Structure](#test-structure)
+3. [Setup & Installation](#setup--installation)
+4. [Running Tests](#running-tests)
 5. [Test Credentials](#test-credentials)
-6. [Penjelasan Test Files](#penjelasan-test-files)
-7. [Menulis Test Baru](#menulis-test-baru)
+6. [Test Files](#test-files)
+7. [Writing New Tests](#writing-new-tests)
 8. [Best Practices](#best-practices)
 9. [Troubleshooting](#troubleshooting)
 10. [CI/CD Integration](#cicd-integration)
@@ -23,64 +23,61 @@ Dokumentasi ini menjelaskan cara menjalankan dan mengembangkan automated testing
 
 ## Overview
 
-### Teknologi Testing
+### Testing Stack
 
-| Teknologi      | Versi   | Deskripsi                                   |
+| Technology     | Version | Description                                 |
 | -------------- | ------- | ------------------------------------------- |
-| **Playwright** | ^1.57.0 | Modern E2E testing framework dari Microsoft |
-| **TypeScript** | 5.9.3   | Type safety untuk test scripts              |
+| **Playwright** | ^1.57.0 | Modern E2E testing framework by Microsoft   |
+| **TypeScript** | 5.9.3   | Type safety for test scripts                |
 
-### Kenapa Playwright?
+### Why Playwright?
 
-- ✅ **Official Next.js recommendation** - Direkomendasikan oleh Next.js untuk E2E testing
-- ✅ **Cross-browser testing** - Chromium, Firefox, WebKit dalam satu tool
-- ✅ **Mobile testing** - Test responsive design dengan device emulation
-- ✅ **Auto-wait** - Otomatis menunggu elemen ready
-- ✅ **Parallel execution** - Test berjalan paralel untuk kecepatan
-- ✅ **Built-in reporters** - HTML, JSON, dan custom reporters
-- ✅ **Trace viewer** - Debug dengan visual timeline
+- ✅ **Official Next.js recommendation** for E2E testing
+- ✅ **Cross-browser testing** - Chromium, Firefox, and WebKit in one tool
+- ✅ **Mobile testing** - Device emulation for responsive checks
+- ✅ **Auto-wait** - Smart waiting for ready elements
+- ✅ **Parallel execution** - Faster suites through parallelism
+- ✅ **Built-in reporters** - HTML, JSON, and custom reporters
+- ✅ **Trace viewer** - Visual timeline for debugging
 
 ---
 
-## Struktur Testing
+## Test Structure
 
 ```
 tests/
+├── _global-hooks.ts           # Global setup/teardown
+├── critical-path.spec.ts      # Single file covering critical user flows
 ├── fixtures/
-│   └── test-fixtures.ts     # Centralized test utilities & fixtures
-├── pages/
-│   ├── index.ts             # Page object exports
-│   ├── LoginPage.ts         # Login page object model
-│   ├── DashboardPage.ts     # Dashboard page objects
-│   └── PublicPage.ts        # Public pages objects
-├── public-pages.spec.ts     # Test halaman publik (homepage, news, dll)
-├── auth.spec.ts             # Test login/logout & authorization
-├── dashboard-siswa.spec.ts  # Test fitur dashboard siswa
-└── dashboard-ppdb.spec.ts   # Test fitur dashboard PPDB
+│   └── test-fixtures.ts       # Utilities & data (POM helpers, waiters)
+└── pages/                     # Page Object Model helpers
+    ├── DashboardPage.ts
+    ├── LoginPage.ts
+    ├── PublicPage.ts
+    └── index.ts
 
-playwright.config.ts         # Konfigurasi Playwright
-playwright-report/           # HTML report (auto-generated)
-test-results/               # Artifacts & screenshots (auto-generated)
+playwright.config.ts           # Playwright configuration
+playwright-report/             # HTML report (auto-generated)
+test-results/                  # Artifacts & screenshots (auto-generated)
 ```
 
 ### Page Object Model (POM)
 
-Testing menggunakan **Page Object Model** pattern untuk maintainability dan reusability:
+Tests use the **Page Object Model** pattern for maintainability and reuse:
 
-#### Pages Tersedia
+#### Available Pages
 
-| Class                | File                   | Deskripsi                   |
-| -------------------- | ---------------------- | --------------------------- |
-| `LoginPage`          | pages/LoginPage.ts     | Handles login form, CAPTCHA |
-| `DashboardPage`      | pages/DashboardPage.ts | Base dashboard class        |
-| `DashboardSiswaPage` | pages/DashboardPage.ts | Siswa dashboard             |
-| `DashboardPPDBPage`  | pages/DashboardPage.ts | PPDB dashboard              |
-| `DashboardAdminPage` | pages/DashboardPage.ts | Admin dashboard             |
-| `HomePage`           | pages/PublicPage.ts    | Homepage                    |
-| `NewsPage`           | pages/PublicPage.ts    | News page                   |
-| `ContactPage`        | pages/PublicPage.ts    | Contact page                |
+| Class                | File                   | Description                          |
+| -------------------- | ---------------------- | ------------------------------------ |
+| `LoginPage`          | pages/LoginPage.ts     | Handles login form, CAPTCHA          |
+| `DashboardAdminPage` | pages/DashboardPage.ts | Common actions for the Admin dashboard |
+| `DashboardSiswaPage` | pages/DashboardPage.ts | Common actions for the Student dashboard |
+| `DashboardPPDBPage`  | pages/DashboardPage.ts | Common actions for the PPDB dashboard  |
+| `HomePage`           | pages/PublicPage.ts    | Homepage & public navigation           |
+| `NewsPage`           | pages/PublicPage.ts    | News page helpers                      |
+| `ContactPage`        | pages/PublicPage.ts    | Contact page helpers                   |
 
-#### Contoh Penggunaan POM
+#### Example POM Usage
 
 ```typescript
 import { LoginPage } from "./pages/LoginPage";
@@ -98,168 +95,106 @@ test("should login successfully", async ({ page }) => {
 
 ---
 
-## Setup & Instalasi
+## Setup & Installation
 
 ### Prerequisites
 
 1. Node.js >= 18
-2. npm atau yarn
-3. Database sudah di-seed dengan data testing
+2. npm or yarn
+3. Database seeded with testing data
 
-### Instalasi
+### Installation
 
 ```bash
-# Install dependencies (sudah termasuk di package.json)
+# Install dependencies (included in package.json)
 npm install
 
-# Install browser binaries (jika belum)
+# Install browser binaries (if not yet installed)
 npx playwright install
 ```
 
-### Persiapan Database
+### Database Preparation
 
 ```bash
-# Seed database dengan user testing
+# Seed database with testing users/content
 npm run db:seed
 npm run db:seed-content
 ```
 
 ---
 
-## Menjalankan Test
+## Running Tests
 
 ### NPM Scripts
 
-| Command               | Deskripsi                            |
-| --------------------- | ------------------------------------ |
-| `npm run test`        | Jalankan semua test (headless)       |
-| `npm run test:headed` | Jalankan test dengan browser visible |
-| `npm run test:ui`     | Buka Playwright UI mode (interaktif) |
-| `npm run test:debug`  | Jalankan test dengan debugger        |
-| `npm run test:report` | Buka HTML report                     |
-| `npm run test:public` | Test halaman publik saja             |
-| `npm run test:auth`   | Test autentikasi saja                |
-| `npm run test:siswa`  | Test dashboard siswa saja            |
-| `npm run test:ppdb`   | Test dashboard PPDB saja             |
+| Command               | Description |
+| --------------------- | ----------- |
+| `npm run test`        | Run all Playwright specs (headless) |
+| `npm run test:critical` | Run only `critical-path.spec.ts` (used in CI) |
+| `npm run test:ui`     | Open Playwright UI mode (interactive) |
+| `npm run test:report` | Open the latest HTML report |
 
-### Contoh Penggunaan
+### Example Usage
 
 ```bash
-# Jalankan semua test
+# Run all tests
 npm run test
 
-# Jalankan test spesifik dengan headed mode
-npm run test:auth -- --headed
+# Run only the critical path
+npm run test:critical
 
-# Jalankan test dengan browser tertentu
+# Run with a specific browser
 npx playwright test --project=chromium
 
-# Jalankan test dengan filter nama
+# Run with a test name filter
 npx playwright test -g "login"
 
-# Jalankan satu file test
-npx playwright test tests/auth.spec.ts
+# Run a single file in headed mode
+npx playwright test tests/critical-path.spec.ts --headed
 
-# Debug mode dengan browser visible
+# Debug mode with visible browser
 npx playwright test --debug
 
-# UI Mode (recommended untuk development)
+# UI Mode (recommended for development)
 npm run test:ui
+
+# Open the latest HTML report
+npm run test:report
 ```
 
 ---
 
 ## Test Credentials
 
-Credentials untuk testing (sesuai dengan database seeder `prisma/seed.ts`):
+Credentials for testing (matches the `prisma/seed.ts` seeder):
 
 | Role      | Username  | Password | Dashboard URL        |
 | --------- | --------- | -------- | -------------------- |
-| Siswa     | siswa001  | admin123 | /dashboard-siswa     |
+| Siswa (Student) | siswa001  | admin123 | /dashboard-siswa     |
 | PPDB      | ppdb001   | admin123 | /dashboard-ppdb      |
 | Admin     | admin     | admin123 | /dashboard-admin     |
 | Kesiswaan | kesiswaan | admin123 | /dashboard-kesiswaan |
 | OSIS      | osis001   | admin123 | /dashboard-osis      |
 
-> ⚠️ **Penting**: Pastikan database sudah di-seed dengan menjalankan `npm run db:seed`
+> ⚠️ **Important:** Seed the database first with `npm run db:seed`.
 
 ---
 
-## Penjelasan Test Files
+## Test Files
 
-### 1. `public-pages.spec.ts`
+### 1. `critical-path.spec.ts`
 
-Test untuk halaman yang dapat diakses tanpa login.
+Focuses on high-value and stable flows:
 
-**Halaman yang ditest:**
-
-- Homepage (`/`)
-- Login page (`/login`)
-- News (`/news`)
-- Announcements (`/announcements`)
-- Facilities (`/facilities`)
-- Extracurricular (`/extracurricular`)
-- Academic Calendar (`/academic-calendar`)
-- Contact (`/contact`)
-- PPDB (`/ppdb`)
-- Profile pages (`/profile/*`)
-- Karya Siswa (`/karya-siswa`)
-
-**Test cases:**
-
-- ✅ Page loads successfully
-- ✅ Content displayed correctly
-- ✅ Navigation works
-- ✅ Responsive on mobile/tablet
-- ✅ SEO elements present
-- ✅ Performance check
-
-### 2. `auth.spec.ts`
-
-Test untuk fitur autentikasi.
-
-**Test scenarios:**
-
-- ✅ Login form displayed correctly
-- ✅ Error on invalid credentials
-- ✅ Successful login untuk setiap role
-- ✅ Redirect ke dashboard yang benar
-- ✅ Logout functionality
-- ✅ Authorization (role-based access)
-- ✅ Session persistence
-
-### 3. `dashboard-siswa.spec.ts`
-
-Test untuk dashboard siswa.
-
-**Fitur yang ditest:**
-
-- ✅ Dashboard overview
-- ✅ Upload karya siswa
-- ✅ Lihat pengumuman
-- ✅ Notifikasi
-- ✅ Responsive design
-- ✅ Navigation
-
-### 4. `dashboard-ppdb.spec.ts`
-
-Test untuk dashboard PPDB officer.
-
-**Fitur yang ditest:**
-
-- ✅ Dashboard overview & statistik
-- ✅ List pendaftar
-- ✅ Detail pendaftar
-- ✅ Verifikasi dokumen
-- ✅ Update status
-- ✅ Export data
-- ✅ Pagination & sorting
+- **Public smoke:** homepage and login page load with key elements visible.
+- **Admin news flow:** login as admin, open news management, create news, verify it in the DB (direct Prisma check), then clean up the test data.
+- **RBAC check:** student cannot force access to `/dashboard-admin`.
 
 ---
 
-## Menulis Test Baru
+## Writing New Tests
 
-### Menggunakan Page Object Model (Recommended)
+### Using the Page Object Model (Recommended)
 
 ```typescript
 import { test, expect } from "@playwright/test";
@@ -276,17 +211,17 @@ test.describe("Dashboard Siswa Features", () => {
   });
 
   test("should display dashboard after login", async ({ page }) => {
-    // Login menggunakan POM
+    // Login via POM
     await loginPage.loginAs("siswa");
 
-    // Navigate dan assert menggunakan POM
+    // Navigate and assert via POM
     await dashboardPage.goto();
     await dashboardPage.assertDisplayed();
   });
 });
 ```
 
-### Membuat Page Object Baru
+### Creating a New Page Object
 
 ```typescript
 // tests/pages/NewPage.ts
@@ -313,31 +248,31 @@ export class NewPage {
 }
 ```
 
-### Struktur Dasar Test (Legacy)
+### Basic Test Structure (Legacy)
 
 ```typescript
 import { test, expect } from "@playwright/test";
 
 test.describe("Feature Name", () => {
-  // Setup sebelum setiap test
+  // Setup before each test
   test.beforeEach(async ({ page }) => {
     await page.goto("/some-page");
   });
 
   test("should do something", async ({ page }) => {
-    // Arrange - setup awal
+    // Arrange - initial setup
     await page.fill('input[name="field"]', "value");
 
-    // Act - lakukan aksi
+    // Act - perform action
     await page.click('button[type="submit"]');
 
-    // Assert - verifikasi hasil
+    // Assert - verify result
     await expect(page.locator(".success")).toBeVisible();
   });
 });
 ```
 
-### Contoh Test Dengan Login
+### Example Test With Login
 
 ```typescript
 import { test, expect, Page } from "@playwright/test";
@@ -417,23 +352,23 @@ expect(await items.count()).toBeGreaterThan(0);
 
 ## Best Practices
 
-### 1. Gunakan Page Object Model
+### 1. Use the Page Object Model
 
 ```typescript
-// ✅ Good: Menggunakan POM
+// ✅ Good: Use POM helpers
 const loginPage = new LoginPage(page);
 await loginPage.loginAs("siswa");
 
-// ❌ Avoid: Direct page manipulation di test
+// ❌ Avoid: Direct page manipulation in the test
 await page.goto("/login");
 await page.fill("#username", "siswa001");
 await page.fill("#password", "admin123");
 ```
 
-### 2. Centralized Test Data
+### 2. Centralize Test Data
 
 ```typescript
-// ✅ Good: Gunakan fixtures
+// ✅ Good: Use fixtures
 import { TEST_USERS } from "./fixtures/test-fixtures";
 const user = TEST_USERS.siswa;
 
@@ -455,7 +390,7 @@ test("login test", ...);
 ### 4. Wait Strategies
 
 ```typescript
-// ✅ Good: Use auto-wait dengan POM
+// ✅ Good: Use auto-wait with POM
 await loginPage.loginAs("siswa");
 await dashboardPage.waitForLoad();
 
@@ -482,7 +417,7 @@ page.locator('button:has-text("Submit")');
 page.locator(".btn-primary-v2-updated");
 ```
 
-### 4. Test Independence
+### 6. Test Independence
 
 ```typescript
 // ✅ Good: Each test is independent
@@ -494,7 +429,7 @@ test.beforeEach(async ({ page }) => {
 // ❌ Bad: Tests depend on each other's state
 ```
 
-### 5. Error Handling
+### 7. Error Handling
 
 ```typescript
 // ✅ Good: Check element exists before interacting
@@ -576,66 +511,9 @@ npx playwright show-trace test-results/path-to-trace.zip
 
 ## CI/CD Integration
 
-### GitHub Actions
-
-```yaml
-# .github/workflows/test.yml
-name: E2E Tests
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Setup database
-        run: |
-          npm run db:migrate
-          npm run db:seed
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-      - name: Run tests
-        run: npm run test
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-      - name: Upload test report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
-```
-
-### Test Report
-
-Setelah menjalankan test, HTML report akan di-generate di `playwright-report/`:
-
-```bash
-# Buka report
-npm run test:report
-```
+- Primary workflow: `.github/workflows/ci.yml`.
+- The `test` job starts a PostgreSQL service in the runner, runs `npm run db:reset`, then `npm run test:critical`.
+- Playwright reports are uploaded as artifacts on failure; locally, open with `npm run test:report`.
 
 ---
 
@@ -650,22 +528,22 @@ npm run test:report
 
 ## 📝 Changelog
 
-| Versi | Tanggal    | Perubahan                               |
-| ----- | ---------- | --------------------------------------- |
-| 1.0.0 | 2025-06-03 | Initial testing setup dengan Playwright |
+| Version | Date       | Changes                          |
+| ------- | ---------- | -------------------------------- |
+| 1.0.0   | 2025-06-03 | Initial testing setup with Playwright |
 
 ---
 
 ## 🤝 Contributing
 
-Untuk menambah test baru:
+To add new tests:
 
-1. Identifikasi fitur yang perlu di-test
-2. Buat file test baru atau tambahkan ke file existing
-3. Ikuti naming convention: `feature-name.spec.ts`
-4. Jalankan test secara lokal sebelum commit
-5. Update dokumentasi ini jika ada fitur baru
+1. Identify the feature to cover.
+2. Create a new spec file or extend an existing one.
+3. Follow the naming convention: `feature-name.spec.ts`.
+4. Run tests locally before committing.
+5. Update this document when new suites or patterns are added.
 
 ---
 
-_Dokumentasi ini di-maintain oleh Tim Development SMPI Yakin_
+_Maintained by the SMP IP Yakin Development Team._

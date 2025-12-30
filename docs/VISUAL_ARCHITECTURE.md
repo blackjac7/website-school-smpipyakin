@@ -19,8 +19,8 @@ graph TD
         PostgresProd[("PostgreSQL 15 (VPS)\n2 Core, 2GB RAM")]
     end
 
-    subgraph Database_Staging ["Staging Database (Aiven)"]
-        PostgresStaging[("PostgreSQL (Aiven Cloud)\nManaged Service")]
+    subgraph Database_Staging ["Staging Database (Managed)"]
+        PostgresStaging[("PostgreSQL (Managed Cloud)\nNeon/Aiven/Railway")]
     end
 
     subgraph External_Services ["External Services"]
@@ -46,13 +46,13 @@ graph TD
 ## 2. Database Environment Matrix
 The following table outlines the configuration differences between your environments.
 
-| Feature | Development (Local) | Staging (Aiven) | Production (VPS) |
+| Feature | Development (Local) | Staging (Managed Postgres) | Production (VPS) |
 | :--- | :--- | :--- | :--- |
-| **Database Engine** | SQLite (`file:./dev.db`) | PostgreSQL 16 | PostgreSQL 15 |
-| **Connection Mode** | Direct File Access | Transaction Mode | Session Mode |
-| **SSL Mode** | N/A | `sslmode=require` | `sslmode=prefer` |
-| **Connection String** | `file:./dev.db` | `postgres://user:pass@aiven-host:port/db?sslmode=require` | `postgresql://user:pass@vps-ip:5432/db` |
-| **Purpose** | Rapid Prototyping | Integration Testing | Live Traffic |
+| **Database Engine** | PostgreSQL (local instance/Docker) | PostgreSQL 15/16 (Neon/Aiven/Railway) | PostgreSQL 15 (VPS) |
+| **Connection Mode** | Direct TCP | Transaction/pooled | Session/pooled |
+| **SSL Mode** | Opsional (`prefer`) | `sslmode=require` | `sslmode=prefer` |
+| **Connection String** | `postgresql://user:pass@localhost:5432/db?schema=public` | `postgres://user:pass@managed-host:5432/db?sslmode=require` | `postgresql://user:pass@vps-ip:5432/db?schema=public&sslmode=prefer` |
+| **Purpose** | Development & seed | Preview/QA builds (branch `develop`) | Live traffic (branch `main`) |
 
 ## 3. Application Data Flow
 This sequence diagram shows how a typical request (e.g., Submitting a Form) travels through the system layers.
@@ -64,7 +64,7 @@ sequenceDiagram
     participant Client as Client Component
     participant Server as Server Action
     participant Prisma as Prisma ORM
-    participant DB as PostgreSQL (VPS/Aiven)
+    participant DB as PostgreSQL (Managed/VPS)
 
     User->>Client: Fills Form & Clicks Submit
     Client->>Client: Validate Inputs (Zod/Regex)
