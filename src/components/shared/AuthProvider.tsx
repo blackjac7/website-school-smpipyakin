@@ -61,22 +61,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showAnimation, setShowAnimation] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   // Check authentication status on mount (skip for login page)
   useEffect(() => {
-    // Don't check auth status on login page to avoid unnecessary 401 errors
+    // Avoid re-running on every navigation to keep UI smooth
+    if (hasInitialized) return;
+
     if (pathname !== "/login") {
-      checkAuthStatus();
+      checkAuthStatus({ silent: false });
     } else {
       setIsLoading(false);
+      setHasInitialized(true);
     }
-  }, [pathname]);
+  }, [hasInitialized, pathname]);
 
-  const checkAuthStatus = async () => {
+  // Revalidate session on window focus without blocking the UI
+  useEffect(() => {
+    if (!hasInitialized) return;
+
+    const handleFocus = () => {
+      checkAuthStatus({ silent: true });
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [hasInitialized]);
+
+  const checkAuthStatus = async ({ silent }: { silent?: boolean } = {}) => {
     try {
-      setIsLoading(true);
+      if (!silent) {
+        setIsLoading(true);
+      }
 
       // Silent fetch for auth verification - don't show 401 errors in console
       const response = await fetch("/api/auth/verify", {
@@ -105,7 +123,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.error("Unexpected auth check error:", error);
       setUser(null);
     } finally {
-      setIsLoading(false);
+      if (!silent) {
+        setIsLoading(false);
+      }
+      setHasInitialized(true);
     }
   };
 
