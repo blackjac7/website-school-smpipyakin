@@ -148,50 +148,46 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Environment Variables
 
-Create a `.env` file with the following variables:
+Create a `.env` file from [.env.example](./.env.example) and fill in the values. The table below shows where each secret should live during development and deployment.
 
-```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/smpipyakin"
+| Variable | Purpose | Where to set | How to obtain |
+| --- | --- | --- | --- |
+| `DATABASE_URL`, `DIRECT_URL` | PostgreSQL connection for Prisma (app + migrations) | **Local .env**, **Vercel** (Preview & Production), **GitHub Actions** (only if running migrations/tests in CI) | From your Postgres provider (VPS or managed DB connection string) |
+| `JWT_SECRET` | Signing key for login sessions | **Vercel**, local .env, optional GitHub for build checks | Generate with `openssl rand -base64 32` |
+| `CRON_SECRET` | Protects scheduled API routes | **Vercel**, local .env | Generate with `openssl rand -hex 16` |
+| `NEXT_PUBLIC_APP_URL` | Canonical URL for SEO & links | **Vercel** (Preview/Prod) and local .env | Use your site domain or `http://localhost:3000` locally |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Cloudinary uploads for news/facilities/gallery | **Vercel**, local .env | Cloudinary Dashboard → Settings → API Keys |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_PPDB`, `CLOUDINARY_API_KEY_PPDB`, `CLOUDINARY_API_SECRET_PPDB`, `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_PPDB` | Dedicated preset for PPDB & admin uploads | **Vercel**, local .env | Cloudinary Dashboard → Upload presets |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` | Cloudflare R2 for documents | **Vercel**, local .env | Cloudflare R2 → Create API token & bucket |
+| `NEXT_PUBLIC_EMAILJS_SERVICE_ID`, `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID`, `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY` | Contact form delivery (EmailJS) | **Vercel**, local .env | EmailJS Dashboard → Account → API Keys |
+| `NEXT_PUBLIC_FLOWISE_API_URL`, `NEXT_PUBLIC_FLOWISE_CHATFLOW_ID` | Flowise chatbot embed | **Vercel**, local .env | Flowise deployment → Chatflow details |
+| `NEXT_PUBLIC_VERCEL_SPEED_INSIGHTS` | Enable Vercel analytics widgets | **Vercel**, local .env | Set to `1` to enable |
+| `MAX_FILE_SIZE` | Upload limit (bytes) for file endpoints | **Vercel**, local .env | Keep default `5242880` or adjust as needed |
 
-# Authentication
-JWT_SECRET="your-super-secret-key-min-32-characters"
-
-# Cloudinary
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
-CLOUDINARY_API_KEY="your-api-key"
-CLOUDINARY_API_SECRET="your-api-secret"
-
-# EmailJS (Optional)
-NEXT_PUBLIC_EMAILJS_SERVICE_ID="your-service-id"
-NEXT_PUBLIC_EMAILJS_TEMPLATE_ID="your-template-id"
-NEXT_PUBLIC_EMAILJS_PUBLIC_KEY="your-public-key"
-
-# Cron Jobs (Production)
-CRON_SECRET="your-cron-secret"
-```
+> GitHub Actions only needs `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` to trigger deployments; runtime application secrets stay in **Vercel Project Settings**. See [Deployment](#-deployment) for a CI/CD diagram and step-by-step setup.
 
 ---
 
 ## 📜 Available Scripts
 
-| Command                   | Description                     |
-| ------------------------- | ------------------------------- |
-| `npm run dev`             | Start development server        |
-| `npm run build`           | Build for production            |
-| `npm run postbuild`       | Generate sitemap after build    |
-| `npm run start`           | Start production server         |
-| `npm run lint`            | Run ESLint                      |
-| `npm run db:generate`     | Generate Prisma Client          |
-| `npm run db:migrate`      | Run database migrations         |
-| `npm run db:seed`         | Seed database with sample data  |
-| `npm run db:seed-content` | Seed content data               |
-| `npm run db:reset`        | Reset database (⚠️ destructive) |
-| `npm run test:e2e`        | Run all E2E tests               |
-| `npm run test:auth`       | Run authentication tests        |
-| `npm run test:public`     | Run public pages tests          |
-| `npm run test:dashboards` | Run dashboard tests             |
-| `npm run test:coverage`   | Run tests with coverage report  |
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run postbuild` | Generate sitemap after build |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint (flat config) |
+| `npm run db:generate` | Generate Prisma Client |
+| `npm run db:migrate` | Apply migrations locally (`prisma migrate dev`) |
+| `npm run db:migrate-static` | Migrate static JSON content into the database |
+| `npm run db:seed` | Seed database with base users and settings |
+| `npm run db:seed-content` | Seed content (news, announcements, gallery) |
+| `npm run db:seed-all` | Run both base and content seeders |
+| `npm run db:reset` | Reset database (⚠️ destructive) |
+| `npm run test` | Run full Playwright suite (headless) |
+| `npm run test:critical` | Run critical-path Playwright spec used in CI |
+| `npm run test:ui` | Open Playwright UI mode |
+| `npm run test:report` | Open the latest Playwright HTML report |
 
 ---
 
@@ -214,12 +210,15 @@ CRON_SECRET="your-cron-secret"
 | Document                                       | Description                            |
 | ---------------------------------------------- | -------------------------------------- |
 | [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) | REST API endpoints documentation       |
-| [TECHNICAL_DOCS.md](./TECHNICAL_DOCS.md)       | Technical documentation & architecture |
-| [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)   | Production deployment guide            |
-| [TESTING_GUIDE.md](./TESTING_GUIDE.md)         | Testing documentation & best practices |
-| [DATABASE_SETUP.md](./DATABASE_SETUP.md)       | Database setup & configuration         |
-| [CLOUDINARY_SETUP.md](./CLOUDINARY_SETUP.md)   | Cloudinary integration guide           |
-| [EMAILJS_SETUP.md](./EMAILJS_SETUP.md)         | EmailJS configuration                  |
+| [docs/DOCS.md](./docs/DOCS.md)                  | Technical deep dive (architecture, flows, API) |
+| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)  | High-level system architecture & diagrams |
+| [docs/PROJECT_STRUCTURE.md](./docs/PROJECT_STRUCTURE.md) | Directory layout & module ownership |
+| [docs/TECH_STACK.md](./docs/TECH_STACK.md)      | Frameworks, libraries, and services used |
+| [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)      | CI/CD, environments, and secret management |
+| [docs/TESTING.md](./docs/TESTING.md)            | Playwright setup, commands, and fixtures |
+| [docs/TEST_STRATEGY.md](./docs/TEST_STRATEGY.md)| How we tag and scope Playwright suites   |
+| [docs/SECURITY.md](./docs/SECURITY.md)          | Security controls and recommendations    |
+| [docs/VISUAL_ARCHITECTURE.md](./docs/VISUAL_ARCHITECTURE.md) | Visual diagrams & role matrix |
 
 ---
 
@@ -289,34 +288,20 @@ For detailed security documentation, see [PENETRATION_TESTING_DOCUMENTATION.md](
 
 ## 🧪 Testing
 
-This project includes comprehensive E2E testing with Playwright using Page Object Model pattern.
+End-to-end tests use **Playwright** with a Page Object Model. The CI pipeline runs a **critical-path** spec that covers login, basic navigation, and admin news creation with direct database verification.
 
-### Test Coverage
-
-| Test Suite          | Tests   | Description                     |
-| ------------------- | ------- | ------------------------------- |
-| Authentication      | 18      | Login, logout, session handling |
-| Public Pages        | 37      | All public facing pages         |
-| Dashboard Siswa     | 14      | Student dashboard functionality |
-| Dashboard PPDB      | 17      | PPDB officer dashboard          |
-| Dashboard Admin     | 24      | Admin management features       |
-| Dashboard OSIS      | 10      | OSIS dashboard features         |
-| Dashboard Kesiswaan | 10      | Student affairs dashboard       |
-| **Total**           | **128** | Full application coverage       |
-
-### Running Tests
+### Running Tests Locally
 
 ```bash
-# Run all E2E tests
-npm run test:e2e
+# Full suite (headless)
+npm run test
 
-# Run specific test suites
-npm run test:auth        # Authentication tests
-npm run test:public      # Public pages tests
-npm run test:dashboards  # All dashboard tests
+# Critical path only (matches CI)
+npm run test:critical
 
-# Run with UI
-npm run test:e2e:ui
+# Inspect and debug
+npm run test:ui         # Interactive mode
+npm run test:report     # Open the latest HTML report
 ```
 
 ---
@@ -344,7 +329,11 @@ npm run test:e2e:ui
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
 
-See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed instructions.
+See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed instructions including:
+
+- Which secrets stay in **GitHub Actions** (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`) versus **Vercel Project** variables (database, JWT, Cloudinary, R2, Flowise, EmailJS).
+- How the `.github/workflows/ci.yml` pipeline promotes builds from quality checks → tests → build → staged/production deploys.
+- Step-by-step guidance for retrieving credentials from each provider.
 
 ---
 

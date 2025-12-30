@@ -1,142 +1,113 @@
 # 🚀 Deployment & Environment Guide
 
-This document provides a comprehensive guide for deploying the **SMP IP Yakin** web application and managing its environments (Local, Staging, Production).
+This guide explains how to manage environments, secrets, and the CI/CD workflow for the **SMP IP Yakin** project.
 
 ---
 
-## 📋 Table of Contents
+## 📋 Quick Reference
 
-1. [Prerequisites](#prerequisites)
-2. [Project Architecture](#project-architecture)
-3. [Environment Configuration](#environment-configuration)
-   - [Where to Configure Variables?](#where-to-configure-variables)
-4. [Deployment Strategy (CI/CD)](#deployment-strategy-cicd)
-   - [Hybrid Infrastructure Setup](#hybrid-infrastructure-setup-aiven--vps)
-5. [Local Development Setup](#local-development-setup)
-6. [Platform-Specific Deployment](#platform-specific-deployment)
-7. [Database Management](#database-management)
-8. [Troubleshooting](#troubleshooting)
+| Scope | Location | Purpose |
+| --- | --- | --- |
+| **Pipeline credentials** | GitHub → Settings → Secrets and variables → Actions | Authorize GitHub Actions to deploy to Vercel (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`). |
+| **Runtime secrets** | Vercel Project → Settings → Environment Variables | Values required at build/runtime (DB, JWT, Cloudinary, R2, Flowise, EmailJS, cron). |
+| **Local development** | `.env` (copy from `.env.example`) | Run the app locally and execute migrations/seeds. |
 
 ---
 
 ## 🛠 Prerequisites
 
-Before you begin, ensure you have the following:
-
-- **Node.js**: Version 20.x or later (`node -v`)
-- **Package Manager**: npm (v9+) or bun
-- **Database**: PostgreSQL (v14+)
-  - *Staging:* Aiven PostgreSQL.
-  - *Production:* Self-hosted VPS PostgreSQL.
-- **Accounts**:
-  - [Cloudinary](https://cloudinary.com) (for Image Storage)
-  - [EmailJS](https://www.emailjs.com) (for Contact Form)
-  - [Vercel](https://vercel.com) (for Hosting)
-  - [Flowise](https://flowiseai.com) (for AI Chatbot)
+- **Node.js** 20+
+- **npm** (use `npm ci` for repeatable installs)
+- **PostgreSQL 14+** (local or managed)
+- Accounts: **Vercel**, **Cloudinary**, **Cloudflare R2**, **EmailJS**, and a **Flowise** instance (if the chatbot is enabled).
 
 ---
 
-## 🏗 Project Architecture
+## 🌍 Environment Ownership & Sources
 
-This is a **Next.js 15** application using **App Router** and **Server Actions**.
+Use this table as a map for where each secret lives and how to obtain it:
 
-- **Frontend**: Hosted on Vercel.
-- **Database**: Hybrid (Aiven for Staging, VPS for Production).
-- **Storage**: Cloudinary (Images) + Cloudflare R2 (Documents).
+| Variable | Used by | Store in Vercel? | Store in GitHub Actions? | How to obtain |
+| --- | --- | --- | --- | --- |
+| `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | GitHub Actions deploy step | No | ✅ | Vercel → Account Settings → Tokens (token) and Project Settings (ORG/PROJECT ID). |
+| `DATABASE_URL`, `DIRECT_URL` | Prisma runtime & migrations | ✅ | Optional (only if CI runs migrations/tests) | From your Postgres provider (VPS/Aiven/Neon). Add `?sslmode=prefer` or `?sslmode=require` to match the host. |
+| `JWT_SECRET` | JWT signing | ✅ | Optional (can use dummy for CI build) | `openssl rand -base64 32` |
+| `CRON_SECRET` | Protects cron endpoints | ✅ | Optional | `openssl rand -hex 16` |
+| `NEXT_PUBLIC_APP_URL` | SEO & canonical URL | ✅ | No | Vercel domain or custom domain |
+| `NEXT_PUBLIC_CLOUDINARY_*`, `CLOUDINARY_API_KEY*` | Media uploads | ✅ | No | Cloudinary Dashboard → Settings → API Keys & Upload Preset |
+| `R2_*` | Cloudflare R2 (PPDB documents) | ✅ | No | Cloudflare R2 → Create API Token & Bucket |
+| `NEXT_PUBLIC_EMAILJS_*` | Contact form email | ✅ | No | EmailJS Dashboard → Account → API Keys & Template |
+| `NEXT_PUBLIC_FLOWISE_*` | Chatbot embed | ✅ | No | Flowise → Chatflow detail & host URL |
+| `NEXT_PUBLIC_VERCEL_SPEED_INSIGHTS`, `MAX_FILE_SIZE` | Optional features | ✅ | No | Set `1` to enable Speed Insights; adjust upload limit as needed |
 
----
-
-## 🌍 Environment Configuration
-
-The application relies on environment variables for configuration. **Never commit `.env` files.**
-
-### Where to Configure Variables?
-
-**Best Practice:** Separate your *Pipeline Credentials* from your *Application Secrets*.
-
-#### 1. GitHub Secrets (CI/CD Pipeline)
-These are required for GitHub Actions to **authorize** the deployment to Vercel.
-*Go to: GitHub Repo > Settings > Secrets and variables > Actions*
-
-| Secret Name | Value Description |
-|-------------|-------------------|
-| `VERCEL_TOKEN` | Generate in Vercel Account Settings > Tokens. |
-| `VERCEL_ORG_ID` | Found in Vercel Dashboard > Settings. |
-| `VERCEL_PROJECT_ID` | Found in Vercel Project > Settings. |
-| `DATABASE_URL` | (Optional) If you run integration tests against a real DB in CI. |
-
-#### 2. Vercel Project Settings (Application Runtime)
-These are required for the **application** to run (connect to DB, send emails, etc.).
-*Go to: Vercel Project > Settings > Environment Variables*
-
-**Staging Environment (Preview Branch: `develop`)**
-- `DATABASE_URL`: `postgresql://avnadmin:pass@aiven-host:port/db?sslmode=require`
-- `NODE_ENV`: `production` (Vercel sets this automatically)
-- `NEXT_PUBLIC_APP_URL`: `https://staging.smpipyakin.sch.id`
-
-**Production Environment (Production Branch: `main`)**
-- `DATABASE_URL`: `postgresql://postgres:pass@YOUR_VPS_IP:5432/db?schema=public&sslmode=prefer`
-- `NEXT_PUBLIC_APP_URL`: `https://www.smpipyakin.sch.id`
-
-> **Note:** Variables like `CLOUDINARY_*`, `JWT_SECRET`, and `CRON_SECRET` should be set for **both** environments.
+> **Tip:** Keep separate Vercel variable sets for **Preview (develop)** and **Production (main)**. Duplicate all required secrets unless the value differs by environment.
 
 ---
 
-## 🚀 Deployment Strategy (CI/CD)
+## 🔄 CI/CD Flow (`.github/workflows/ci.yml`)
 
-The project follows a **Gitflow-lite** workflow using **GitHub Actions** (`.github/workflows/ci.yml`).
+```mermaid
+flowchart LR
+  A[Push / PR] --> Q(Code Quality: lint + tsc)
+  Q --> T[Test: critical path + Postgres service]
+  T --> B[Build check]
+  B -->|develop| S[Deploy Staging (Vercel Preview)]
+  B -->|main| P[Deploy Production]
+```
 
-### Workflow Overview
-1.  **Push to `develop`**
-    - Runs Linter & Type Check.
-    - Runs Tests (Critical Path).
-    - Deploys to **Vercel Preview** (Staging).
-2.  **Push to `main`**
-    - Runs Linter, Type Check, & Tests.
-    - Deploys to **Vercel Production**.
+1. **Quality:** `npm run lint` and `tsc --noEmit`.
+2. **Test:** Start a PostgreSQL service in the runner, then `npm run db:reset` and `npm run test:critical`.
+3. **Build:** `npm run build` with dummy env values to ensure the app compiles.
+4. **Deploy:**
+   - Branch `develop` → Vercel Preview/Staging (`https://staging.smpipyakin.sch.id`).
+   - Branch `main` → Vercel Production (`https://www.smpipyakin.sch.id`).
 
-### Hybrid Infrastructure Setup (Aiven + VPS)
-
-Since your production database is on a **VPS**, Vercel (Cloud) needs to reach it.
-
-1.  **VPS Firewall (Production)**
-    - You must allow incoming connections on port `5432` from Vercel's IP addresses.
-    - *Alternative (Easier/Safer):* Allow `0.0.0.0/0` (All IPs) but enforce strong passwords and **SSL** (`sslmode=prefer` or `require`).
-
-2.  **Aiven (Staging)**
-    - Aiven usually enforces SSL by default (`sslmode=require`).
-    - Copy the "Service URI" directly from the Aiven Console.
+Required **GitHub Secrets**: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
 
 ---
 
-## 💻 Local Development Setup
+## 🧭 Environment Setup Checklist
 
-### 1. Clone & Install
+1. **Clone local template**
+   ```bash
+   cp .env.example .env
+   # Fill with local Postgres credentials and dev API keys
+   ```
+2. **Vercel Project Settings**
+   - Go to *Vercel Project → Settings → Environment Variables*.
+   - Add all variables listed above for **Preview** and **Production**.
+3. **GitHub Actions Secrets**
+   - Go to *GitHub Repo → Settings → Secrets and variables → Actions*.
+   - Add `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
+   - Add `DATABASE_URL` **only if** CI should run migrations/seeds (optional).
+4. **Database access**
+   - Staging (e.g., Aiven/Neon): ensure `?sslmode=require`.
+   - Production (VPS): open firewall port `5432` for Vercel IPs or an allowlist; use `?sslmode=prefer`.
+
+---
+
+## 📦 Manual Deploy (if needed)
+
 ```bash
-git clone https://github.com/your-org/smp-ip-yakin.git
-cd smp-ip-yakin
+# Staging (Preview)
+vercel --token $VERCEL_TOKEN --prod=false
+
+# Production
+vercel --token $VERCEL_TOKEN --prod
+```
+
+> GitHub Actions already deploys automatically on pushes to `develop` (staging) and `main` (production).
+
+---
+
+## 💻 Local Development
+
+```bash
 npm install
-```
-
-### 2. Configure Environment
-```bash
 cp .env.example .env
-# Edit .env and fill in your local postgres credentials and API keys
-```
-
-### 3. Setup Database
-Ensure your local PostgreSQL server is running.
-
-```bash
-# 1. Run Migrations (Create Tables)
+# Set local Postgres credentials & API keys
 npm run db:migrate
-
-# 2. Seed Initial Data (Admin User, Settings)
-npm run db:seed
-```
-
-### 4. Run Development Server
-```bash
+npm run db:seed && npm run db:seed-content
 npm run dev
 ```
 
@@ -144,28 +115,28 @@ npm run dev
 
 ## 💾 Database Management
 
-### Migrations
-In production, **do not** run `prisma migrate dev`. Instead, use `prisma migrate deploy`.
-
-**Recommended Workflow:**
-1.  **Local:** Change `schema.prisma` -> `npm run db:migrate` (Creates migration file).
-2.  **Commit:** Push migration file to GitHub.
-3.  **Deploy:**
-    - Vercel builds the app.
-    - **You manually run migration** (safest for VPS) or configure a `postdeploy` script.
-    - *Command:* `DATABASE_URL="prod_url" npx prisma migrate deploy`
+- Use `npm run db:migrate` locally to create migrations.
+- Commit migration files before deployment.
+- In production, run:
+  ```bash
+  DATABASE_URL="postgresql://user:pass@prod-host:5432/db?sslmode=prefer" npx prisma migrate deploy
+  ```
+- Additional scripts:
+  - `npm run db:reset` (drop & recreate) – **local/CI only**.
+  - `npm run db:migrate-static` (move static JSON content into the DB).
 
 ---
 
 ## 🔧 Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| **Connection Refused (VPS)** | Firewall blocking Vercel | Check VPS `ufw` or Security Group settings. |
-| **SSL Error (Aiven)** | Missing SSL mode | Add `?sslmode=require` to connection string. |
-| **Deployment Fails** | Missing Secrets | Check GitHub Secrets for `VERCEL_TOKEN`. |
-| **App 500 Error** | Missing Env Vars | Check Vercel Project Settings for `DATABASE_URL`. |
+| Symptom | Likely Cause | Resolution |
+| --- | --- | --- |
+| Vercel 500 / build fails | Missing envs in Vercel | Verify **Environment Variables** for both Preview & Production |
+| CI `test` job cannot connect DB | Postgres service not ready | Confirm `DATABASE_URL` in the `test` job matches the service and health checks pass |
+| Deploy fails in GitHub Actions | Missing Vercel token/IDs | Populate `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` in GitHub Secrets |
+| Production DB connection refused | VPS firewall blocks Vercel | Open port `5432` for Vercel IPs or allowlist appropriately |
+| Uploads fail | Incorrect Cloudinary/R2 credentials | Regenerate API keys and update Vercel & `.env` |
 
 ---
 
-_Documentation v1.2 - Updated for Hybrid Infrastructure (Aiven/VPS)_
+_Last updated: 2025-12-30_ 
