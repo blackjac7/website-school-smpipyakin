@@ -1,31 +1,24 @@
-Test Strategy Overview
+# Test Strategy Overview
 
-Goal: Keep E2E tests fast, reliable, and focused while preserving full coverage in nightly runs.
+Goal: keep E2E tests fast, deterministic, and focused on the highest-value flows.
 
-Tagging and Suites
+## Current Scope
+- **Critical path only** (`tests/critical-path.spec.ts`) runs in CI after `npm run db:reset`.
+- Covers: homepage/login smoke, admin news creation with DB verification, and RBAC guard (student vs admin).
+- **Browser:** Chromium only (installed with `npx playwright install --with-deps chromium` in CI).
+- **Network stubbing:** `tests/_global-hooks.ts` fulfills Cloudinary/Unsplash/UI-Avatars requests with a tiny SVG and aborts analytics calls.
 
-- @smoke: Core user flows that must pass on every PR (Homepage, Login, PPDB gating).
-- @nightly: Heavier or timing-sensitive tests (Performance, maintenance schedule, long pages).
-- @slow / @external: Tests that rely on heavy external dependencies or long fixtures.
+## Local Commands
+- Run CI-equivalent suite: `npm run test:critical`
+- Explore interactively: `npm run test:ui`
+- View latest report: `npm run test:report`
 
-Local Commands
+## When Adding More Coverage
+- Keep PR suites small and deterministic; add heavier specs behind tags (e.g., `@nightly`) if needed.
+- Use seeded users from `prisma/seed.ts` and clean up any created records inside the spec.
+- Prefer Page Objects under `tests/pages/` and shared helpers in `tests/fixtures/test-fixtures.ts`.
 
-- Run smoke tests (fast):
-  npx playwright test --grep "@smoke" --project=chromium
-
-- Run full suite (nightly/full-run):
-  npx playwright test
-
-Best practices
-
-- Avoid relying on external hosts in E2E; stub or route them in the global hook (`tests/_global-hooks.ts`).
-- Mark long or flaky tests with @nightly and keep them out of PR runs.
-- Keep smoke tests small (<= 20-30 tests) and independent.
-- Use unique test data where needed and clean up resource after tests.
-
-CI
-
-- PRs: run lint + smoke E2E (single browser, minimal workers)
-- Push/main & Nightly: run full E2E (matrix and higher workers)
-
-If you'd like, I can move more heavy tests to @nightly or split large files into smaller focused test files.
+## CI Expectations
+- Database is reset (`npm run db:reset`) before running the critical path.
+- Chromium binaries are installed in the workflow; no additional browsers are required.
+- Failures upload the Playwright HTML report as an artifact.

@@ -80,19 +80,20 @@ const isValid = await bcrypt.compare(inputPassword, hashedPassword);
 ### JWT Token Security
 
 ```typescript
-// Token configuration
+// Token configuration (src/lib/jwt.ts)
 const JWT_CONFIG = {
-  algorithm: "HS256",
-  expiresIn: "24h",
-  issuer: "smpipyakin",
+  ALGORITHM: "HS256",
+  EXPIRATION: "24h",
+  COOKIE_NAME: "auth-token",
 };
 
 // Token payload with IP binding
 interface TokenPayload {
   userId: string;
   username: string;
-  role: string;
-  clientIp: string; // Prevents session hijacking
+  role: string;        // Lowercase token role
+  permissions: string[];
+  ip: string;          // Prevents session hijacking
   iat: number;
   exp: number;
 }
@@ -103,8 +104,8 @@ interface TokenPayload {
 ```typescript
 const COOKIE_OPTIONS = {
   httpOnly: true, // Prevents XSS access to token
-  secure: true, // HTTPS only in production
-  sameSite: "lax", // CSRF protection
+  secure: process.env.NODE_ENV === "production", // HTTPS only in production
+  sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax", // CSRF protection
   path: "/",
   maxAge: 86400, // 24 hours
 };
@@ -136,6 +137,11 @@ if (payload.clientIp !== currentIp) {
 | ----------- | ----------- | ---------- | -------------------- |
 | Per IP      | 5 attempts  | 15 minutes | Block IP temporarily |
 | Per Account | 10 attempts | 24 hours   | Lock account         |
+
+#### PPDB Rate Limiting
+
+- Registration: **5 submissions per hour per IP** (in-memory limiter).
+- Uploads (R2): **20 uploads per hour per IP**, 5MB max, JPG/PNG/PDF only.
 
 #### Implementation
 
@@ -222,6 +228,7 @@ const user = await prisma.user.findUnique({
 export function sanitizeInput(input: string): string {
   return (
     input
+      .trim()
       // Remove script tags
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
       // Remove javascript: URLs
@@ -386,15 +393,18 @@ async function sendOTP(email: string) {
 
 ### Security Headers
 
-Recommended headers for production:
+Recommended headers for production (set in `src/middleware.ts` and `next.config.ts`):
 
 ```typescript
-// next.config.ts
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-XSS-Protection", value: "1; mode=block" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Content-Security-Policy",
+    value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.emailjs.com https://cdn.jsdelivr.net https://maps.googleapis.com https://maps.gstatic.com https://flowise.zeabur.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' fonts.gstatic.com https://r2cdn.perplexity.ai; img-src 'self' data: https: https://maps.gstatic.com; connect-src 'self' api.emailjs.com https://va.vercel-scripts.com https://cdn.jsdelivr.net https://maps.googleapis.com https://flowise.zeabur.app; frame-src 'self' https://www.instagram.com https://www.google.com https://maps.google.com https://www.google.com/maps https://flowise.zeabur.app;",
+  },
   {
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=()",
@@ -415,4 +425,4 @@ If you discover a security vulnerability, please:
 
 ---
 
-_Last updated: December 2024_
+_Last updated: February 2026_

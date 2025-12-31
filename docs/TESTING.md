@@ -29,6 +29,7 @@ This document explains how to run and extend automated testing for the SMP IP Ya
 | -------------- | ------- | ------------------------------------------- |
 | **Playwright** | ^1.57.0 | Modern E2E testing framework by Microsoft   |
 | **TypeScript** | 5.9.3   | Type safety for test scripts                |
+| **Node.js**    | 20.x    | Matches CI configuration                    |
 
 ### Why Playwright?
 
@@ -39,6 +40,8 @@ This document explains how to run and extend automated testing for the SMP IP Ya
 - ✅ **Parallel execution** - Faster suites through parallelism
 - ✅ **Built-in reporters** - HTML, JSON, and custom reporters
 - ✅ **Trace viewer** - Visual timeline for debugging
+
+> External image/analytics requests are stubbed in `tests/_global-hooks.ts` to keep runs deterministic and fast.
 
 ---
 
@@ -99,18 +102,18 @@ test("should login successfully", async ({ page }) => {
 
 ### Prerequisites
 
-1. Node.js >= 18
-2. npm or yarn
-3. Database seeded with testing data
+1. Node.js >= 20
+2. npm (use `npm ci` for parity with CI)
+3. PostgreSQL accessible locally; database seeded/reset with testing data
 
 ### Installation
 
 ```bash
-# Install dependencies (included in package.json)
-npm install
+# Install dependencies (included in package-lock.json)
+npm ci
 
 # Install browser binaries (if not yet installed)
-npx playwright install
+npx playwright install --with-deps chromium
 ```
 
 ### Database Preparation
@@ -530,6 +533,7 @@ npx playwright show-trace test-results/path-to-trace.zip
 
 | Version | Date       | Changes                          |
 | ------- | ---------- | -------------------------------- |
+| 1.1.0   | 2026-02-19 | Align docs with Node 20 CI, chromium install flags, and network stubbing expectations |
 | 1.0.0   | 2025-06-03 | Initial testing setup with Playwright |
 
 ---

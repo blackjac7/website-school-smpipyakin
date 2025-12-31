@@ -136,9 +136,11 @@ Understanding what each role can do within the system.
 | Feature / Module | SISWA (Student) | OSIS (Council) | KESISWAAN (Staff) | ADMIN | PPDB ADMIN |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Login Access** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **View News/Events** | ✅ | ✅ | ✅ | ✅ | N/A |
+| **View News/Events** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Create News** | ❌ | ✅ (Pending) | ✅ (Direct) | ✅ | ❌ |
 | **Validate Works** | ❌ | ❌ | ✅ | ✅ | ❌ |
+| **Religious Programs (Adzan/Carpet/Haid)** | ❌ | ✅ | ❌ | ✅ | ❌ |
 | **Manage Users** | ❌ | ❌ | ❌ | ✅ | ❌ |
-| **PPDB Access** | ❌ | ❌ | ❌ | ❌ | ✅ |
-| **Upload Works** | ✅ | ✅ | N/A | N/A | N/A |
+| **PPDB Access** | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Upload Works** | ✅ | ❌ | N/A | N/A | N/A |
+| **Site Settings & Maintenance** | ❌ | ❌ | ❌ | ✅ | ❌ |

@@ -103,7 +103,7 @@ vercel --token $VERCEL_TOKEN --prod
 ## 💻 Local Development
 
 ```bash
-npm install
+npm ci
 cp .env.example .env
 # Set local Postgres credentials & API keys
 npm run db:migrate

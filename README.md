@@ -35,19 +35,21 @@ Built with modern web technologies and industry best practices, this system prio
 | ------------------------- | ------------------------------------------------------------------------- |
 | **Multi-Role Dashboard**  | Dedicated dashboards for Admin, Kesiswaan, OSIS, PPDB Staff, and Students |
 | **PPDB System**           | Complete digital admission workflow with document management              |
-| **Content Management**    | News, announcements, and event management                                 |
+| **Content Management**    | News, announcements, hero sliders, stats, and event management            |
 | **Academic Calendar**     | School schedule and event planning                                        |
-| **Student Works Gallery** | Showcase student achievements and projects                                |
-| **Facility Management**   | School facilities and extracurricular activities                          |
+| **Student Works & Achievements** | Showcase and review student submissions, including OSIS access toggles |
+| **Facility Management**   | School facilities, extracurricular activities, and teacher profiles       |
+| **Religious Programs**    | Menstruation logs, adzan schedule, and carpet cleaning assignments (OSIS) |
+| **Maintenance & Settings**| Site-wide maintenance toggle, feature flags, and public site settings     |
 
 ### 🔐 Security Features
 
-- **Database-backed Rate Limiting** - Prevents brute force attacks
-- **JWT with HTTP-Only Cookies** - Secure session management
-- **IP Binding** - Session hijacking prevention
-- **Input Sanitization** - XSS protection
-- **CAPTCHA & Honeypot** - Anti-bot measures
-- **Role-Based Access Control** - Granular permission system
+- **Database-backed Login Rate Limiting** - 5 attempts/15m per IP and 10/24h per username
+- **JWT with HTTP-Only Cookies + IP Binding** - Secure session management (`auth-token`)
+- **Maintenance Bypass Rules** - Cookie-driven maintenance mode with admin exemption
+- **Input Sanitization & CSP** - XSS protection on both client and server
+- **CAPTCHA & Honeypot** - Anti-bot measures for public forms
+- **Role-Based Access Control** - Granular permission system across 5 roles
 
 ### 🚀 Performance
 
@@ -62,14 +64,14 @@ Built with modern web technologies and industry best practices, this system prio
 
 ### Core Technologies
 
-| Category       | Technology                                     |
-| -------------- | ---------------------------------------------- |
-| **Framework**  | [Next.js 15](https://nextjs.org/) (App Router) |
-| **Language**   | [TypeScript](https://www.typescriptlang.org/)  |
-| **Styling**    | [Tailwind CSS v4](https://tailwindcss.com/)    |
-| **Database**   | [PostgreSQL](https://www.postgresql.org/)      |
-| **ORM**        | [Prisma](https://www.prisma.io/)               |
-| **Validation** | [Zod](https://zod.dev/)                        |
+| Category       | Technology                                                    |
+| -------------- | ------------------------------------------------------------- |
+| **Framework**  | [Next.js 15.5](https://nextjs.org/) (App Router)              |
+| **Language**   | [TypeScript 5.9](https://www.typescriptlang.org/)             |
+| **Styling**    | [Tailwind CSS v4](https://tailwindcss.com/) (PostCSS pipeline) |
+| **Database**   | [PostgreSQL](https://www.postgresql.org/) (all environments)  |
+| **ORM**        | [Prisma 6](https://www.prisma.io/)                            |
+| **Validation** | [Zod](https://zod.dev/)                                       |
 
 ### Authentication & Security
 
@@ -82,8 +84,8 @@ Built with modern web technologies and industry best practices, this system prio
 
 | Category          | Technology                                                             |
 | ----------------- | ---------------------------------------------------------------------- |
-| **Image Storage** | [Cloudinary](https://cloudinary.com/) (CDN + Optimization)             |
-| **File Storage**  | [Cloudflare R2](https://developers.cloudflare.com/r2/) (S3-compatible) |
+| **Image Storage** | [Cloudinary](https://cloudinary.com/) (main + PPDB preset)             |
+| **File Storage**  | [Cloudflare R2](https://developers.cloudflare.com/r2/) (S3-compatible via AWS SDK) |
 
 ### Third-Party Services
 
@@ -109,6 +111,8 @@ Built with modern web technologies and industry best practices, this system prio
 | ---------------- | ----------------------------------------------------------------------------------------- |
 | **Date/Time**    | [date-fns](https://date-fns.org/) + [date-fns-tz](https://github.com/marnusw/date-fns-tz) |
 | **Excel Export** | [xlsx (SheetJS)](https://sheetjs.com/)                                                    |
+| **Storage SDK**  | [AWS SDK v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/) (Cloudflare R2)     |
+| **Media**        | [next-cloudinary](https://github.com/colbyfayock/next-cloudinary)                         |
 | **PWA**          | [next-pwa](https://github.com/shadowwalker/next-pwa)                                      |
 
 ---
@@ -117,9 +121,9 @@ Built with modern web technologies and industry best practices, this system prio
 
 ### Prerequisites
 
-- **Node.js** 18.x or higher
-- **PostgreSQL** 14+ (or use a managed service like Neon, Supabase, or Railway)
-- **npm** or **yarn**
+- **Node.js** 20.x (matches CI pipeline)
+- **PostgreSQL** 14+ (local instance or managed)
+- **npm** (use `npm ci` for reproducible installs)
 
 ### Installation
 
@@ -129,7 +133,7 @@ git clone https://github.com/your-repo/website-school-smpipyakin.git
 cd website-school-smpipyakin
 
 # 2. Install dependencies
-npm install
+npm ci
 
 # 3. Setup environment variables
 cp .env.example .env
@@ -137,8 +141,8 @@ cp .env.example .env
 
 # 4. Setup database
 npm run db:generate    # Generate Prisma Client
-npm run db:migrate     # Run migrations
-npm run db:seed        # Seed sample data
+npm run db:migrate     # Run migrations against Postgres
+npm run db:seed        # Seed base users/content
 
 # 5. Start development server
 npm run dev
@@ -207,57 +211,52 @@ Create a `.env` file from [.env.example](./.env.example) and fill in the values.
 
 ## 📚 Documentation
 
-| Document                                       | Description                            |
-| ---------------------------------------------- | -------------------------------------- |
-| [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) | REST API endpoints documentation       |
-| [docs/DOCS.md](./docs/DOCS.md)                  | Technical deep dive (architecture, flows, API) |
-| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)  | High-level system architecture & diagrams |
-| [docs/PROJECT_STRUCTURE.md](./docs/PROJECT_STRUCTURE.md) | Directory layout & module ownership |
-| [docs/TECH_STACK.md](./docs/TECH_STACK.md)      | Frameworks, libraries, and services used |
-| [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)      | CI/CD, environments, and secret management |
-| [docs/TESTING.md](./docs/TESTING.md)            | Playwright setup, commands, and fixtures |
-| [docs/TEST_STRATEGY.md](./docs/TEST_STRATEGY.md)| How we tag and scope Playwright suites   |
-| [docs/SECURITY.md](./docs/SECURITY.md)          | Security controls and recommendations    |
-| [docs/VISUAL_ARCHITECTURE.md](./docs/VISUAL_ARCHITECTURE.md) | Visual diagrams & role matrix |
+| Document                                       | Description                                      |
+| ---------------------------------------------- | ------------------------------------------------ |
+| [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) | REST API endpoints (auth, PPDB uploads/status)   |
+| [docs/DOCS.md](./docs/DOCS.md)                  | Technical deep dive (architecture, flows, API)   |
+| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)  | High-level system architecture & diagrams        |
+| [docs/PROJECT_STRUCTURE.md](./docs/PROJECT_STRUCTURE.md) | Directory layout & module ownership       |
+| [docs/TECH_STACK.md](./docs/TECH_STACK.md)      | Frameworks, libraries, and services used         |
+| [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)      | CI/CD, environments, and secret management       |
+| [docs/TESTING.md](./docs/TESTING.md)            | Playwright setup, commands, and fixtures         |
+| [docs/TEST_STRATEGY.md](./docs/TEST_STRATEGY.md)| Scope for critical-path suite and extensions     |
+| [docs/SECURITY.md](./docs/SECURITY.md)          | Security controls and recommendations            |
+| [docs/VISUAL_ARCHITECTURE.md](./docs/VISUAL_ARCHITECTURE.md) | Visual diagrams & role matrix           |
 
 ---
 
 ## 📁 Project Structure
 
 ```
-├── .github/                # GitHub Actions CI/CD
+├── .github/                # GitHub Actions (CI/CD on main/develop)
 │   └── workflows/
-│       ├── ci.yml          # Main CI/CD pipeline
-│       ├── backup.yml      # Database backup workflow
-│       └── dependency-update.yml
-├── prisma/                 # Database schema & migrations
+│       └── ci.yml          # Quality → tests (Postgres) → build → deploy
+├── prisma/                 # Database schema, migrations, and seeders
 │   ├── schema.prisma
 │   ├── seed.ts
 │   └── migrations/
-├── public/                 # Static assets
-│   ├── icons/              # PWA icons
-│   └── manifest.json
-├── tests/                  # E2E Tests (Playwright)
+├── public/                 # Static assets (PWA icons, manifest, images)
+├── scripts/                # Data utilities (e.g., migrate static JSON)
+├── src/
+│   ├── actions/            # Server Actions (admin, osis, ppdb, student, worship, public)
+│   ├── app/                # Next.js App Router
+│   │   ├── (public)/       # Public pages (home, news, announcements, contact, PPDB, karya siswa, etc.)
+│   │   ├── (dashboard)/    # Protected dashboards per role
+│   │   ├── api/            # API routes (auth, PPDB, cron/maintenance)
+│   │   └── maintenance/, not-found.tsx, unauthorized/
+│   ├── assets/             # Static data blobs (e.g., hero animations)
+│   ├── components/         # UI components (dashboard widgets, public UI, shared layouts)
+│   ├── hooks/              # Custom React hooks
+│   ├── lib/                # Core utilities (auth, JWT, Prisma client, storage, rate limiter, site settings)
+│   ├── shared/             # Shared data & typings
+│   ├── types/              # Type-only helpers for actions/components
+│   └── utils/              # Helper functions (formatting, guards)
+├── tests/                  # Playwright E2E (critical path)
+│   ├── _global-hooks.ts    # Stubs external assets/analytics for stable runs
 │   ├── fixtures/           # Test fixtures & helpers
 │   ├── pages/              # Page Object Models
-│   └── *.spec.ts           # Test specifications
-├── src/
-│   ├── actions/            # Server actions
-│   │   ├── admin/
-│   │   ├── osis/
-│   │   ├── public/
-│   │   └── student/
-│   ├── app/                # Next.js App Router
-│   │   ├── (dashboard)/    # Protected dashboard routes
-│   │   ├── (public)/       # Public pages
-│   │   └── api/            # API routes
-│   ├── components/         # React components
-│   ├── hooks/              # Custom React hooks
-│   ├── lib/                # Utility libraries
-│   │   └── validations.ts  # Zod schemas
-│   ├── shared/             # Shared data & types
-│   └── utils/              # Utility functions
-
+│   └── critical-path.spec.ts # Critical path suite executed in CI
 └── lighthouserc.json       # Lighthouse CI config
 ```
 
@@ -269,26 +268,28 @@ This application implements multiple layers of security:
 
 ### Authentication & Authorization
 
-- JWT tokens with HTTP-Only cookies
-- IP binding to prevent session hijacking
-- Secure password hashing (bcrypt, 12 salt rounds)
-- Role-based access control with 5 distinct roles
+- JWT tokens with HTTP-Only cookies (`auth-token`) and SameSite Strict in production
+- IP binding inside JWT payloads to prevent session hijacking
+- Secure password hashing (bcrypt, 12 salt rounds) for all seeded/auth users
+- Role-based access control for **ADMIN**, **KESISWAAN**, **OSIS**, **SISWA**, and **PPDB_ADMIN**
+- Login attempts logged and reset after successful authentication
 
 ### Attack Prevention
 
-- **Brute Force**: Database-backed rate limiting (5 attempts/15 min per IP)
+- **Brute Force**: Database-backed login limiter (5 attempts/15m per IP, 10/24h per username) with audit trails
+- **PPDB Abuse Protection**: In-memory limiter for registration (5/hour/IP) and uploads (20/hour/IP) plus file-type/size guards
 - **SQL Injection**: Prisma ORM with prepared statements
-- **XSS**: React auto-escaping + input sanitization
+- **XSS**: React auto-escaping, explicit sanitization, and production CSP headers
 - **CSRF**: SameSite cookies + origin validation
-- **Bot Attacks**: Math CAPTCHA + honeypot fields
+- **Bot Attacks**: Math CAPTCHA + honeypot fields on forms
 
-For detailed security documentation, see [PENETRATION_TESTING_DOCUMENTATION.md](./PENETRATION_TESTING_DOCUMENTATION.md).
+For detailed security documentation, see [docs/SECURITY.md](./docs/SECURITY.md).
 
 ---
 
 ## 🧪 Testing
 
-End-to-end tests use **Playwright** with a Page Object Model. The CI pipeline runs a **critical-path** spec that covers login, basic navigation, and admin news creation with direct database verification.
+End-to-end tests use **Playwright** with a Page Object Model. The CI pipeline runs a **critical-path** spec that covers login, basic navigation, and admin news creation with direct database verification. External assets/analytics are stubbed in `tests/_global-hooks.ts` to keep the suite deterministic.
 
 ### Running Tests Locally
 
@@ -321,7 +322,7 @@ npm run test:report     # Open the latest HTML report
 | Service           | Purpose                            |
 | ----------------- | ---------------------------------- |
 | **Vercel**        | Hosting (optimized for Next.js)    |
-| **Neon/Supabase** | PostgreSQL with connection pooling |
+| **Managed Postgres (e.g., Neon) / VPS** | PostgreSQL 15+ |
 | **Cloudflare**    | DNS, SSL, and DDoS protection      |
 | **Cloudinary**    | Image storage and optimization     |
 
