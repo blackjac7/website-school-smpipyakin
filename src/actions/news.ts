@@ -25,9 +25,13 @@ const DeleteNewsSchema = z.object({
 });
 
 // Helper to verify admin role for news management
+import { isAdminRole } from "@/lib/roles";
+
 async function verifyAdminRole() {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "admin") {
+  // Use centralized role helper to account for token/enumeration normalization
+  if (!user || !isAdminRole(user.role)) {
+    console.error("verifyAdminRole: unauthorized user or role", { user });
     return { authorized: false, error: "Unauthorized: Admin access required" };
   }
   return { authorized: true, user };
