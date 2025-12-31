@@ -66,11 +66,13 @@ export default function NewsAdmin({ news }: NewsPageProps) {
         }
       } else {
         const result = await createNews(data);
+        console.debug("createNews result:", result);
         if (result.success) {
           toast.success("News created");
           setIsModalOpen(false);
           setEditingItem(null);
         } else {
+          console.error("createNews failed client-side:", result);
           toast.error(result.error || "Failed to create news");
         }
       }

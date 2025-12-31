@@ -80,12 +80,19 @@ export async function createNews(data: {
   // Validate input
   const validation = CreateNewsSchema.safeParse(data);
   if (!validation.success) {
+    console.error("createNews validation failed:", validation.error.issues, {
+      input: data,
+      auth,
+    });
     return { success: false, error: validation.error.issues[0].message };
   }
 
   try {
     const authorId = auth.user!.userId;
     const validData = validation.data;
+
+    // Log input for debugging in CI if create fails
+    console.debug("createNews input:", { validData, authorId });
 
     const news = await prisma.news.create({
       data: {
