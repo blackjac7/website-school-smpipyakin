@@ -7,428 +7,311 @@ Base URL: `https://www.smpipyakin.sch.id/api`
 ### Table of Contents
 
 - [Authentication](#authentication)
-- [Public Endpoints](#public-endpoints)
-- [Protected Endpoints](#protected-endpoints)
-- [PPDB Endpoints](#ppdb-endpoints)
-- [Error Handling](#error-handling)
+- [PPDB (Admissions)](#ppdb-admissions)
+- [Cron & Maintenance](#cron--maintenance)
+- [Error Format](#error-format)
+- [Rate Limiting & Validation](#rate-limiting--validation)
 
 ---
 
 ## Authentication
 
-### POST /api/auth/login
+### POST `/api/auth/login`
 
-Login to the system.
+Login to the system. Sets an HTTP-only `auth-token` cookie with IP binding and role-based permissions.
 
-**Request Body:**
+**Request Body (JSON):**
 
 ```json
 {
   "username": "string",
   "password": "string",
-  "captcha": "string (optional)"
+  "role": "admin | kesiswaan | siswa | osis | ppdb_admin"
 }
 ```
+
+**Successful Response:**
+
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "user": {
+    "id": "uuid",
+    "username": "admin",
+    "name": "Administrator",
+    "role": "admin",
+    "email": "admin@example.com",
+    "permissions": ["read", "write", "delete", "manage_users", "view_reports"]
+  }
+}
+```
+
+**Error Responses:**
+
+```json
+{
+  "error": "Invalid credentials",
+  "remainingAttempts": 3,
+  "retryAfter": 0,
+  "lockType": null
+}
+```
+
+- Status **429** when IP rate limit is exceeded (5 attempts / 15 minutes).
+- Status **423** when account lock is hit (10 attempts / 24 hours).
+
+### POST `/api/auth/logout`
+
+Clears the `auth-token` cookie.
 
 **Response:**
 
 ```json
 {
   "success": true,
-  "message": "Login berhasil",
+  "message": "Logout successful"
+}
+```
+
+### GET `/api/auth/verify`
+
+Validates the current session cookie and returns fresh user info.
+
+**Headers:** `Cookie: auth-token=<JWT_TOKEN>`
+
+**Successful Response:**
+
+```json
+{
+  "success": true,
+  "user": {
+    "id": "uuid",
+    "username": "admin",
+    "name": "Administrator",
+    "role": "admin",
+    "normalizedRole": "ADMIN",
+    "email": "admin@example.com",
+    "permissions": ["read", "write", "delete", "manage_users", "view_reports"]
+  }
+}
+```
+
+**401 Response:**
+
+```json
+{ "error": "No token found" }
+```
+
+---
+
+## PPDB (Admissions)
+
+### GET `/api/ppdb/check-nisn?nisn=1234567890`
+
+Checks whether an applicant with the given NISN already exists and whether a retry is allowed.
+
+**Successful Response (existing):**
+
+```json
+{
+  "exists": true,
+  "message": "NISN 1234567890 sudah terdaftar atas nama Ananda",
   "data": {
-    "user": {
-      "id": "string",
-      "username": "string",
-      "name": "string",
-      "role": "admin | kesiswaan | osis | siswa | ppdb"
-    },
-    "token": "string (JWT)"
+    "id": "uuid",
+    "name": "Ananda",
+    "status": "REJECTED",
+    "retries": 0,
+    "allowRetry": true
   }
 }
 ```
 
-**Error Response:**
+**Successful Response (available):**
 
 ```json
 {
-  "success": false,
-  "error": "Username atau password salah"
+  "exists": false,
+  "message": "NISN 1234567890 tersedia untuk pendaftaran"
 }
 ```
 
----
+### POST `/api/ppdb/register`
 
-### POST /api/auth/logout
+Submits a PPDB registration (gated by `siteSettings` PPDB window). Rate limited to **5 submissions per hour per IP**.
 
-Logout from the system. Clears the authentication cookie.
-
-**Response:**
+**Request Body (JSON):**
 
 ```json
 {
-  "success": true,
-  "message": "Logout berhasil"
-}
-```
-
----
-
-### GET /api/auth/verify
-
-Verify the current authentication token.
-
-**Headers:**
-
-```
-Cookie: token=<JWT_TOKEN>
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": "string",
-      "username": "string",
-      "name": "string",
-      "role": "string"
-    }
-  }
-}
-```
-
----
-
-## Public Endpoints
-
-### News
-
-#### GET /api/public/news
-
-Get list of published news articles.
-
-**Query Parameters:**
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| page | number | 1 | Page number |
-| limit | number | 10 | Items per page |
-| category | string | - | Filter by category |
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "string",
-      "title": "string",
-      "excerpt": "string",
-      "image": "string",
-      "publishedAt": "2025-01-01T00:00:00.000Z",
-      "category": "string"
-    }
-  ],
-  "meta": {
-    "page": 1,
-    "limit": 10,
-    "total": 100,
-    "totalPages": 10
-  }
-}
-```
-
-#### GET /api/public/news/:id
-
-Get a single news article by ID.
-
----
-
-### Announcements
-
-#### GET /api/public/announcements
-
-Get list of active announcements.
-
-**Query Parameters:**
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| page | number | 1 | Page number |
-| limit | number | 10 | Items per page |
-| priority | string | - | Filter by priority (low, medium, high) |
-
----
-
-### Calendar
-
-#### GET /api/public/calendar
-
-Get academic calendar events.
-
-**Query Parameters:**
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| month | number | current | Month (1-12) |
-| year | number | current | Year |
-
----
-
-### Teachers
-
-#### GET /api/public/teachers
-
-Get list of teachers.
-
----
-
-### Facilities
-
-#### GET /api/public/facilities
-
-Get list of school facilities.
-
----
-
-### Extracurricular
-
-#### GET /api/public/extracurricular
-
-Get list of extracurricular activities.
-
----
-
-## PPDB Endpoints
-
-### POST /api/ppdb/check-nisn
-
-Check if NISN is already registered.
-
-**Request Body:**
-
-```json
-{
-  "nisn": "1234567890"
-}
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "isRegistered": false
-  }
-}
-```
-
----
-
-### POST /api/ppdb/register
-
-Submit a new PPDB registration.
-
-**Request Body:**
-
-```json
-{
-  "fullName": "string",
-  "birthPlace": "string",
-  "birthDate": "2010-01-01",
-  "gender": "L | P",
-  "religion": "string",
+  "namaLengkap": "Nama Lengkap",
   "nisn": "1234567890",
-  "address": "string",
-  "province": "string",
-  "city": "string",
-  "district": "string",
-  "postalCode": "12345",
-  "fatherName": "string",
-  "fatherPhone": "081234567890",
-  "motherName": "string",
-  "motherPhone": "081234567890",
-  "previousSchool": "string",
-  "email": "email@example.com",
-  "phone": "081234567890"
+  "jenisKelamin": "laki-laki | perempuan",
+  "tempatLahir": "Jakarta",
+  "tanggalLahir": "2010-01-01",
+  "alamatLengkap": "Alamat",
+  "asalSekolah": "SMP Contoh",
+  "kontakOrtu": "081234567890",
+  "namaOrtu": "Nama Orang Tua",
+  "emailOrtu": "ortu@example.com",
+  "documents": [
+    {
+      "cloudinaryId": "ppdb_uploads/abc",
+      "url": "https://res.cloudinary.com/...",
+      "fileName": "ijazah.pdf",
+      "fileSize": 12345,
+      "mimeType": "application/pdf",
+      "documentType": "ijazah"
+    }
+  ]
 }
 ```
 
-**Response:**
+**Successful Response:**
 
 ```json
 {
   "success": true,
-  "message": "Pendaftaran berhasil",
+  "message": "Pendaftaran PPDB berhasil dikirim",
   "data": {
-    "registrationId": "string",
-    "registrationNumber": "PPDB-2025-0001"
+    "id": "uuid",
+    "nisn": "1234567890",
+    "name": "Nama Lengkap",
+    "status": "PENDING",
+    "createdAt": "2025-01-01T00:00:00.000Z"
   }
 }
 ```
 
-**Notes & Behaviors:**
+**Notes & Conflict Handling:**
 
-- **Unique NISN rule:** Only one active registration per NISN is allowed. If a registration exists with status `PENDING` or `ACCEPTED`, new registration attempts using the same NISN will be rejected with HTTP **409 Conflict**.
-- **One-time re-registration after rejection:** If an existing application has status `REJECTED`, the applicant is allowed to re-register **exactly once**. The server stores a `retries` count on the application and increments it when a re-registration is performed. If `retries >= 1` and the application is `REJECTED`, further attempts will be rejected with HTTP **409 Conflict** and an explanatory error message.
-- **Rate limiting (anti-abuse):** The registration endpoint enforces a per-IP rate limit of **5 registration attempts per hour**. If the limit is exceeded, the endpoint returns HTTP **429 Too Many Requests** with an error message. The upload endpoint (`/api/ppdb/upload` or `/api/ppdb/upload-r2`) enforces a per-IP rate limit of **20 uploads per hour**.
-- **Check NISN endpoint:** Use `GET /api/ppdb/check-nisn?nisn={nisn}` to determine if a NISN already exists and whether a retry is allowed. When the NISN exists, the response includes `status`, `retries`, and `allowRetry` flags in the `data` object.
+- Duplicate **PENDING**/**ACCEPTED** applications return **409**.
+- **REJECTED** applications may re-register **once** (increments `retries`); further attempts return **409**.
+- Document URLs are mapped into `ijazahUrl`, `aktaKelahiranUrl`, `kartuKeluargaUrl`, and `pasFotoUrl` in the database.
 
-**Example error responses:**
+### GET `/api/ppdb/status?nisn=1234567890`
 
-- Duplicate / conflict:
+Returns the application status for a given NISN.
 
-```json
-{ "error": "NISN sudah terdaftar dan berstatus PENDING." }
-```
-
-- Re-registration limit reached:
-
-```json
-{ "error": "Tidak dapat mendaftar ulang lebih dari sekali setelah penolakan." }
-```
-
-- Rate limit exceeded:
-
-```json
-{ "error": "Terlalu banyak percobaan pendaftaran. Silakan coba lagi nanti." }
-```
-
----
-
-### GET /api/ppdb/status/:registrationNumber
-
-Check PPDB registration status.
-
-**Response:**
+**Successful Response:**
 
 ```json
 {
   "success": true,
   "data": {
-    "registrationNumber": "PPDB-2025-0001",
-    "status": "pending | verified | accepted | rejected",
-    "fullName": "string",
-    "submittedAt": "2025-01-01T00:00:00.000Z"
+    "nisn": "1234567890",
+    "name": "Nama Lengkap",
+    "status": "pending | accepted | rejected",
+    "statusMessage": "Pendaftaran Anda sedang dalam tahap verifikasi dokumen. Estimasi waktu: 2-3 hari kerja.",
+    "feedback": "Optional feedback",
+    "submittedAt": "2025-01-01T00:00:00.000Z",
+    "documentsCount": 3,
+    "documents": [
+      { "type": "ijazah", "url": "https://..." }
+    ]
   }
 }
 ```
 
----
+### POST `/api/ppdb/upload`
 
-### POST /api/ppdb/upload
-
-Upload documents for PPDB registration.
+Uploads a document to **Cloudinary** using the PPDB preset.
 
 **Content-Type:** `multipart/form-data`
 
-**Form Data:**
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| file | File | Yes | Document file (max 5MB) |
-| registrationId | string | Yes | Registration ID |
-| documentType | string | Yes | Type of document (photo, ijazah, kk, akta) |
+**Form Fields:**
 
----
+| Field         | Required | Description                                      |
+| ------------- | -------- | ------------------------------------------------ |
+| `file`        | Yes      | JPG / PNG / PDF, max 5MB                         |
+| `documentType`| Yes      | `ijazah` \| `aktaKelahiran` \| `kartuKeluarga` \| `pasFoto` |
+| `nisn`        | Yes      | Applicant NISN (used for folder naming)          |
 
-## Protected Endpoints
-
-These endpoints require authentication. Include the JWT token in cookies.
-
-### Admin Endpoints
-
-#### GET /api/admin/users
-
-Get list of users (admin only).
-
-#### POST /api/admin/users
-
-Create a new user (admin only).
-
-#### PUT /api/admin/users/:id
-
-Update a user (admin only).
-
-#### DELETE /api/admin/users/:id
-
-Delete a user (admin only).
-
----
-
-### Student Endpoints
-
-#### GET /api/student/works
-
-Get student's submitted works.
-
-#### POST /api/student/works
-
-Submit a new work.
-
----
-
-## Error Handling
-
-### Error Response Format
+**Successful Response:**
 
 ```json
 {
-  "success": false,
-  "error": "Error message description",
-  "code": "ERROR_CODE"
+  "success": true,
+  "data": {
+    "cloudinaryId": "ppdb_uploads/abc",
+    "url": "https://res.cloudinary.com/...",
+    "fileName": "ijazah.pdf",
+    "fileSize": 12345,
+    "mimeType": "application/pdf",
+    "documentType": "ijazah"
+  }
 }
 ```
 
-### Common Error Codes
+### POST `/api/ppdb/upload-r2`
 
-| Code             | Status | Description              |
-| ---------------- | ------ | ------------------------ |
-| UNAUTHORIZED     | 401    | Authentication required  |
-| FORBIDDEN        | 403    | Insufficient permissions |
-| NOT_FOUND        | 404    | Resource not found       |
-| VALIDATION_ERROR | 400    | Invalid input data       |
-| RATE_LIMITED     | 429    | Too many requests        |
-| SERVER_ERROR     | 500    | Internal server error    |
+Uploads a document to **Cloudflare R2** (S3-compatible). Rate limited to **20 uploads per hour per IP**.
 
----
+**Content-Type:** `multipart/form-data` (same fields and validation as `/upload`).
 
-## Rate Limiting
-
-API endpoints are rate limited to prevent abuse:
-
-- Public endpoints: 100 requests per minute
-- Authentication endpoints: 5 requests per minute
-- Protected endpoints: 60 requests per minute
-
-When rate limited, you'll receive:
+**Successful Response:**
 
 ```json
 {
-  "success": false,
-  "error": "Terlalu banyak permintaan. Silakan coba lagi nanti.",
-  "code": "RATE_LIMITED"
+  "success": true,
+  "data": {
+    "cloudinaryId": "1234567890/ijazah_1730000000000.pdf",
+    "url": "https://pub-xxxx.r2.dev/1234567890/ijazah_1730000000000.pdf",
+    "fileName": "ijazah.pdf",
+    "fileSize": 12345,
+    "mimeType": "application/pdf",
+    "documentType": "ijazah"
+  }
 }
 ```
 
 ---
 
-## Security
+## Cron & Maintenance
 
-- All API requests must be made over HTTPS
-- JWT tokens expire after 24 hours
-- Passwords are hashed using bcrypt
-- Input sanitization is applied to all user inputs
-- CAPTCHA is required after failed login attempts
+### GET `/api/cron/cleanup-logs`
+
+Deletes login attempt records older than 30 days.
+
+- **Headers:** `Authorization: Bearer <CRON_SECRET>` (required in production)
+- **Response:** `{ "success": true, "deletedCount": number }`
+
+### POST `/api/cron/maintenance-check`
+
+Activates/deactivates maintenance mode based on active `maintenanceSchedules`.
+
+- **Headers:** `Authorization: Bearer <CRON_SECRET>` (falls back to `test-cron-secret` if unset for local use)
+- **Response (maintenance on):** `{ "success": true, "active": true, "scheduleId": "uuid" }`
+- **Response (off):** `{ "success": true, "active": false }`
 
 ---
 
-## Changelog
+## Error Format
 
-### v1.0.0 (December 2025)
+Common structure for failures:
 
-- Initial API release
-- Authentication system
-- PPDB registration
-- Public content endpoints
+```json
+{
+  "error": "Human readable message",
+  "success": false
+}
+```
+
+Authentication and rate-limit responses also include `remainingAttempts`, `retryAfter`, and `lockType` when applicable.
+
+---
+
+## Rate Limiting & Validation
+
+- **Login:** 5 failed attempts / 15 minutes per IP; 10 / 24 hours per username (database-backed, logged in `login_attempts`).
+- **PPDB register:** 5 submissions / hour / IP (in-memory limiter).
+- **PPDB upload (R2):** 20 uploads / hour / IP (in-memory limiter).
+- **Uploads:** Only JPG / PNG / PDF up to 5MB.
+- **Sessions:** JWT stored in `auth-token` cookie (HttpOnly, SameSite Strict in production) with IP binding.
+- **Transport:** All endpoints must be called over HTTPS in production.
+
+---
+
+### Changelog
+
+- **2026-02:** Updated to align with Next.js 15.5 codebase, PPDB retry rules, Cloudinary/R2 uploads, and cron endpoints.

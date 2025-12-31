@@ -9,70 +9,70 @@ This project is a modern school management system built with Next.js 15, utilizi
 ### 1. Framework & Routing
 
 - **Next.js 15 (App Router):** The application uses the directory-based routing system in `src/app`.
-  - `(public)`: Publicly accessible pages (Homepage, News, Login).
-  - `(dashboard)`: Protected routes requiring authentication.
-  - `api`: Legacy REST endpoints (transitioning to Server Actions).
+  - `(public)`: Public pages (Homepage, News, Announcements, PPDB, Karya Siswa, Contact, Academic Calendar).
+  - `(dashboard)`: Protected routes requiring authentication by role.
+  - `api`: REST endpoints for authentication, PPDB (check/register/status/uploads), and cron/maintenance hooks.
 
 ### 2. Data Fetching & State
 
-- **Server Actions:** The primary method for data mutation and fetching in Client Components. Located in `src/actions/`.
-- **Server Components:** Used for initial data fetching where possible (e.g., Dashboard Layouts, Public Pages).
-- **Hybrid Approach:** Client Components (`useClient`) are used for interactive elements (Forms, Modals) while fetching data via props or Server Actions.
+- **Server Actions:** Primary method for dashboard and public data mutations (admin/osis/student/ppdb/worship) in `src/actions/`, with `revalidatePath` for freshness.
+- **Server Components:** Used for initial data fetch on dashboards and public pages to keep payloads small.
+- **Hybrid Approach:** Client Components are used for interactive flows (forms, modals, charts) while data flows through Server Actions/props.
 
 ### 3. Authentication & Security
 
-- **Custom Auth System:** Implemented via `src/actions/auth.ts` using `jose` for JWT handling and `bcryptjs` for password hashing.
+- **Custom Auth System:** Implemented via `/api/auth/login` using `jose` for JWT handling and `bcryptjs` for password hashing (12 rounds in seed data). Cookies are set via `JWT_CONFIG` (`auth-token`).
 - **RBAC:** 5 distinct roles:
   - `ADMIN`: Full system access.
   - `KESISWAAN`: Student affairs management.
   - `SISWA`: Student portal access.
-  - `OSIS`: Student council management.
+  - `OSIS`: Student council management (including OSIS-access students).
   - `PPDB_ADMIN`: Admission system management.
 - **Security Measures:**
-  - HttpOnly Cookies for JWT storage.
-  - Zod validation for all inputs.
-  - Honeypot fields & Math Captcha for forms.
-  - Rate limiting on login endpoints.
+  - HttpOnly cookies with SameSite Strict in production + IP binding in JWT payloads.
+  - Zod validation on Server Actions and API routes.
+  - Honeypot fields & Math Captcha on forms.
+  - Database-backed login attempt logging with IP/account rate limiting; in-memory limiter for PPDB register/upload.
+  - Maintenance mode support with admin bypass and cron-driven schedule enforcement.
 
 ### 4. Database
 
 - **Prisma ORM:** Type-safe database client.
-- **Hybrid Database Support:**
-  - **Development:** SQLite (`dev.db`).
-  - **Production:** PostgreSQL (VPS/Aiven).
-  - Configured via `DATABASE_URL` and `DIRECT_URL`.
+- **Database:** PostgreSQL for all environments (configured via `DATABASE_URL` / `DIRECT_URL`).
+- **Schema Highlights:** Users + role-specific profiles, PPDB applications (with retries & document URLs), news/announcements/hero slides/stats, facilities/extracurriculars/teachers, notifications, login attempts, site settings & maintenance schedules, worship modules (menstruation/adzan/carpet assignments), and student achievements/works.
 
 ## Key Modules
 
 ### Public Portal
 
-- **CMS:** News, Announcements, and Gallery managed by Admin/OSIS.
-- **PPDB (Admissions):** Public registration flow with status tracking.
+- **CMS:** News, announcements, hero slides, stats, facilities, extracurriculars, and teacher profiles curated by Admin/OSIS.
+- **PPDB (Admissions):** Public registration flow with Cloudinary/R2 uploads, retries for rejected applicants, and status tracking by NISN.
+- **Karya Siswa & Calendar:** Public gallery and academic calendar data sourced from Server Actions.
 
 ### Dashboards
 
-- **Student:** View grades, achievements, and submit works.
-- **Admin:** Management of users, content, and school data.
-- **Kesiswaan:** Validation of student submissions.
+- **Student:** Profile management, achievements, works submissions, and notification center.
+- **Admin:** User management, content modules, site settings/feature flags, maintenance schedules, and backups.
+- **Kesiswaan:** Validation of student submissions and student affairs data.
+- **OSIS:** Activity planning, news, and religious program management (menstruation/adzan/carpet schedules).
+- **PPDB Admin:** Applicant review, status updates, and dashboard analytics.
 
-## Legacy Components
+## Legacy/Interop Endpoints
 
-_Note: The project is in a transitional state regarding some architectural patterns._
-
-- **`src/app/api/auth`**: Legacy REST endpoints still used by `AuthProvider.tsx` for session persistence.
-- **`src/app/api/ppdb`**: Used by the PPDB public client for specific operations (file uploads, checks).
-- **`src/lib/data`**: Contains fallback static data and type definitions shared across the app.
+- **`src/app/api/auth`**: Central login/logout/verify endpoints used by the login page and middleware.
+- **`src/app/api/ppdb`**: Public PPDB operations (check, register, status, uploads to Cloudinary/R2).
+- **`src/app/api/cron`**: Cleanup of login logs and maintenance schedule enforcement (secured by `CRON_SECRET`).
 
 ## File Storage
 
-- **Cloudinary:** Used for general image hosting (News, Profiles).
-- **Cloudflare R2:** Used for private/secure document storage (PPDB requirements).
+- **Cloudinary:** General image hosting (news, profiles, hero) plus dedicated PPDB preset.
+- **Cloudflare R2:** Private/secure document storage for PPDB (via AWS SDK v3).
 
 ---
 
 ### ERD (Entity-Relationship Diagram) ✅
 
-A compact ERD is included for use in your thesis proposal (clean, focused view of the main domain entities and relations). Editable source files are added to `docs/diagrams/` in three formats: **Mermaid** (`erd.mmd`), **PlantUML** (`erd.puml`), and **Graphviz DOT** (`erd.dot`). Use the instructions in `docs/diagrams/README.md` to export PNG/SVG for inclusion in documents.
+A compact ERD is included for use in your thesis proposal (clean, focused view of the main domain entities and relations). Editable source files are added to `docs/diagrams/` in three formats: **Mermaid** (`erd.mmd`), **PlantUML** (`erd.puml`), and **Graphviz DOT** (`erd.dot`). Use the instructions in `docs/diagrams/README.md` to export PNG/SVG for inclusion in documents. The simplified ERD omits some auxiliary tables (notifications, worship schedules, maintenance/site settings) that are present in the Prisma schema.
 
 You can embed the Mermaid directly below (renders where Mermaid is supported):
 
