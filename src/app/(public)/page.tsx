@@ -6,6 +6,11 @@ import ServerHero from "@/components/home/ServerHero";
 import Announcements from "@/components/home/Announcements";
 import NewsSection from "@/components/home/NewsSection";
 import Events from "@/components/home/Events";
+import {
+  AnnouncementsSkeleton,
+  EventsSkeleton,
+  NewsSectionSkeleton,
+} from "@/components/home/HomeSkeletons";
 import EducationalMotivation from "@/components/home/EducationalMotivation";
 import InstagramEmbed from "@/components/home/InstagramEmbed";
 import {
@@ -148,17 +153,17 @@ export default async function HomePage() {
       <QuickStats stats={schoolStats} />
 
       {/* Announcements Section */}
-      <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse" />}>
+      <Suspense fallback={<AnnouncementsSkeleton />}>
         <Announcements announcements={upcomingAnnouncements} />
       </Suspense>
 
       {/* News Section */}
-      <Suspense fallback={<div className="h-96 bg-white animate-pulse" />}>
+      <Suspense fallback={<NewsSectionSkeleton />}>
         <NewsSection news={latestNews} />
       </Suspense>
 
       {/* Events Section - Using Activities data for now */}
-      <Suspense fallback={<div className="h-80 bg-gray-50 animate-pulse" />}>
+      <Suspense fallback={<EventsSkeleton />}>
         <Events events={upcomingActivities} />
       </Suspense>
 
