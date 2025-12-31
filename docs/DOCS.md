@@ -57,77 +57,80 @@ This document provides comprehensive technical information about the SMP IP Yaki
 | --------------------------------- | -------------------------------------------------- |
 | **Next.js App Router**            | Server Components by default, improved performance |
 | **Server Actions**                | Type-safe mutations without API boilerplate        |
-| **Prisma ORM**                    | Type-safe database queries, migration management   |
-| **JWT in HTTP-Only Cookies**      | Secure token storage, XSS protection               |
-| **Database-backed Rate Limiting** | Persistent protection across restarts              |
+| **Targeted API Routes**           | Auth + PPDB + cron keep compatibility for public flows |
+| **Prisma + PostgreSQL**           | Single source of truth for relational data         |
+| **JWT in HTTP-Only Cookies**      | Secure token storage with IP binding               |
+| **Login Audit & Rate Limits**     | Database-backed logging with cron cleanup          |
+| **Feature Flags & Maintenance**   | Runtime toggles via `siteSettings` and schedules   |
 
 ---
 
 ## 2. Database Design
 
-### Entity Relationship Overview
+### Schema Highlights
 
-```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│    User      │────▶│    Siswa     │     │    News      │
-│              │     │              │     │              │
-│ - id         │     │ - userId     │     │ - authorId   │
-│ - username   │     │ - nisn       │     │ - title      │
-│ - password   │     │ - nama       │     │ - content    │
-│ - role       │     │ - kelas      │     │ - createdAt  │
-└──────────────┘     └──────────────┘     └──────────────┘
-       │
-       ▼
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│ LoginAttempt │     │   PPDBApp    │     │ Announcement │
-│              │     │              │     │              │
-│ - ip         │     │ - status     │     │ - title      │
-│ - username   │     │ - documents  │     │ - content    │
-│ - success    │     │ - createdAt  │     │ - priority   │
-│ - createdAt  │     └──────────────┘     └──────────────┘
-└──────────────┘
-```
+- **PostgreSQL only** (all environments) with UUID primary keys.
+- **Core domain:** `User` + role profiles (`Siswa`, `Kesiswaan`), content (`News`, `Announcement`, `HeroSlide`, `SchoolStat`, `SchoolActivity`, `OsisActivity`), and academic data (`Facility`, `Extracurricular`, `Teacher`).
+- **Student output:** `StudentAchievement`, `StudentWork`, and notifications per user.
+- **PPDB:** `PPDBApplication` with retry counter, feedback, and document URLs (ijazah, akta, KK, pas foto).
+- **Security:** `LoginAttempt` audit trail with IP/account limits; cron cleans records older than 30 days.
+- **Settings:** `SiteSettings` (feature flags & maintenance) and `MaintenanceSchedule`.
+- **Religious programs:** `WorshipMenstruationRecord`, `WorshipAdzanSchedule`, `WorshipCarpetSchedule/Assignment`.
 
-### Core Models
-
-#### User Model
+### Key Models (Prisma excerpts)
 
 ```prisma
 model User {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   username  String   @unique
-  email     String?
+  email     String?  @unique
   password  String
-  role      Role     @default(siswa)
+  role      UserRole
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  siswa     Siswa?
-  news      News[]
+  siswa         Siswa?
+  kesiswaan     Kesiswaan?
+  newsArticles  News[]           @relation("NewsAuthor")
+  osisActivities OsisActivity[]  @relation("OsisActivityCreator")
 }
 
-enum Role {
-  admin
-  kesiswaan
-  siswa
-  osis
-  ppdb_admin @map("ppdb_admin")
+model PPDBApplication {
+  id               String     @id @default(uuid())
+  name             String
+  nisn             String     @unique
+  gender           GenderType?
+  birthPlace       String?
+  birthDate        DateTime?
+  address          String?
+  asalSekolah      String?
+  parentContact    String?
+  parentName       String?
+  parentEmail      String?
+  status           PPDBStatus @default(PENDING)
+  feedback         String?
+  ijazahUrl        String?
+  aktaKelahiranUrl String?
+  kartuKeluargaUrl String?
+  pasFotoUrl       String?
+  retries          Int        @default(0)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 }
-```
 
-#### LoginAttempt Model (Security)
-
-```prisma
 model LoginAttempt {
-  id        String   @id @default(cuid())
-  ip        String
-  username  String
-  success   Boolean
-  userAgent String?
-  createdAt DateTime @default(now())
+  id            String   @id @default(uuid())
+  ip            String
+  username      String
+  userAgent     String
+  success       Boolean  @default(false)
+  failureReason String?
+  resolved      Boolean  @default(false)
+  createdAt     DateTime @default(now())
 
   @@index([ip, createdAt])
   @@index([username, createdAt])
+  @@index([success, createdAt])
 }
 ```
 
@@ -162,22 +165,23 @@ npm run db:reset
 └──────┬──────┘     └──────┬──────┘     └──────┬──────┘
        │                   │                   │
        │ POST /api/auth/login                  │
-       │ (username, password)                  │
+       │ (username, password, role)            │
        │──────────────────▶│                   │
        │                   │                   │
-       │                   │ Check rate limit  │
+       │                   │ Rate-limit check  │
+       │                   │ (IP + account)    │
        │                   │──────────────────▶│
        │                   │◀──────────────────│
-       │                   │                   │
-       │                   │ Validate user     │
+       │                   │ Validate user +   │
+       │                   │ role mapping      │
        │                   │──────────────────▶│
        │                   │◀──────────────────│
        │                   │                   │
        │                   │ Generate JWT      │
-       │                   │ (includes IP)     │
+       │                   │ (includes IP +    │
+       │                   │ permissions)      │
        │                   │                   │
-       │ Set-Cookie: token │                   │
-       │ (HTTP-Only)       │                   │
+       │ Set-Cookie: auth-token (HTTP-Only)    │
        │◀──────────────────│                   │
        │                   │                   │
 ```
@@ -188,20 +192,22 @@ npm run db:reset
 interface JWTPayload {
   userId: string;
   username: string;
-  role: string;
-  clientIp: string; // IP binding for security
-  iat: number; // Issued at
-  exp: number; // Expiration (24 hours)
+  role: string;        // Lowercase token role (mapped from Prisma enum)
+  permissions: string[];
+  ip: string;          // IP binding for security
+  iat: number;         // Issued at
+  exp: number;         // Expiration (24 hours)
 }
 ```
 
 ### Cookie Configuration
 
 ```typescript
+// src/lib/jwt.ts
 const cookieOptions = {
-  httpOnly: true, // Prevent XSS access
-  secure: true, // HTTPS only in production
-  sameSite: "lax", // CSRF protection
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
   path: "/",
   maxAge: 60 * 60 * 24, // 24 hours
 };
@@ -214,7 +220,7 @@ const cookieOptions = {
 | `admin`      | `/dashboard-admin`     | Full system access, user management, backups |
 | `kesiswaan`  | `/dashboard-kesiswaan` | Student management, reports, announcements   |
 | `siswa`      | `/dashboard-siswa`     | View profile, submit works, view grades      |
-| `osis`       | `/dashboard-osis`      | Event management, OSIS news                  |
+| `osis`       | `/dashboard-osis`      | Event management, OSIS news, religious tasks (adzan/karpet) |
 | `ppdb_admin` | `/dashboard-ppdb`      | Application review, document verification    |
 
 ### Middleware Protection
@@ -249,9 +255,10 @@ const PROTECTED_ROUTES = {
 ┌─────────────────────────────────────────────────────────────┐
 │                    Layer 2: Server-Side                      │
 ├─────────────────────────────────────────────────────────────┤
-│  • Rate limiting (database-backed)                           │
+│  • Rate limiting (login: DB-backed; PPDB: in-memory)        │
 │  • Input sanitization (XSS prevention)                       │
 │  • JWT validation (with IP binding)                          │
+│  • Maintenance gating (feature flags + schedules)            │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -281,12 +288,16 @@ const RATE_LIMITS = {
 };
 ```
 
+- PPDB registration uses an in-memory limiter (5 submissions/hour/IP).
+- PPDB uploads to R2 are limited to 20 uploads/hour/IP with 5MB + type validation.
+
 ### Input Sanitization
 
 ```typescript
 // src/utils/security.ts
 export function sanitizeInput(input: string): string {
   return input
+    .trim()
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
     .replace(/javascript:/gi, "")
     .replace(/on\w+\s*=/gi, "")
@@ -304,6 +315,7 @@ const securityHeaders = {
   "X-Frame-Options": "DENY",
   "X-XSS-Protection": "1; mode=block",
   "Referrer-Policy": "strict-origin-when-cross-origin",
+  // Content-Security-Policy is applied in middleware for production, allowing maps/Flowise/CDN assets.
 };
 ```
 
@@ -319,17 +331,12 @@ const securityHeaders = {
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
 CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret
-```
 
-#### Folder Structure
-
-```
-school/
-├── uploads/          # General uploads
-├── profiles/         # User profile pictures
-├── news/             # News article images
-├── ppdb/             # PPDB application documents
-└── works/            # Student work submissions
+# PPDB preset/credentials
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_PPDB=your-ppdb-cloud
+CLOUDINARY_API_KEY_PPDB=your-ppdb-key
+CLOUDINARY_API_SECRET_PPDB=your-ppdb-secret
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_PPDB=ppdb_uploads
 ```
 
 #### Usage Example
@@ -523,74 +530,23 @@ if (!result.success) {
 
 ## 6. API Reference
 
-### Authentication Endpoints
+See [API_DOCUMENTATION.md](../API_DOCUMENTATION.md) for full payload examples. Key endpoints:
 
-#### POST `/api/auth/login`
+### Authentication
+- **POST `/api/auth/login`** — JSON body `{ username, password, role }`; sets `auth-token` cookie. Rate limited (5 attempts/15m per IP, 10/24h per account). Response includes `permissions` array.
+- **POST `/api/auth/logout`** — Clears the `auth-token` cookie.
+- **GET `/api/auth/verify`** — Validates session cookie, returns user info + `normalizedRole`.
 
-```typescript
-// Request
-{
-  username: string;
-  password: string;
-  role: string;
-  captchaAnswer?: string;
-}
+### PPDB (Admissions)
+- **GET `/api/ppdb/check-nisn?nisn=`** — Returns existence and retry allowance.
+- **POST `/api/ppdb/register`** — JSON body with applicant data + optional `documents` array. Enforces PPDB open window via site settings; 5 submissions/hour/IP.
+- **GET `/api/ppdb/status?nisn=`** — Returns status, feedback, and uploaded document URLs.
+- **POST `/api/ppdb/upload`** — `multipart/form-data` (JPG/PNG/PDF ≤5MB) to Cloudinary PPDB preset.
+- **POST `/api/ppdb/upload-r2`** — `multipart/form-data` to Cloudflare R2; 20 uploads/hour/IP.
 
-// Response (Success)
-{
-  success: true;
-  message: "Login berhasil";
-  data: {
-    role: string;
-    username: string;
-  }
-}
-
-// Response (Error)
-{
-  success: false;
-  error: string;
-  remainingAttempts?: number;
-}
-```
-
-#### POST `/api/auth/logout`
-
-```typescript
-// Response
-{
-  success: true;
-  message: "Logout berhasil";
-}
-```
-
-#### GET `/api/auth/me`
-
-```typescript
-// Response (Authenticated)
-{
-  user: {
-    userId: string;
-    username: string;
-    role: string;
-  }
-}
-
-// Response (Not Authenticated)
-{
-  user: null;
-}
-```
-
-### Rate Limit Headers
-
-All API responses include rate limit information:
-
-```
-X-RateLimit-Limit: 5
-X-RateLimit-Remaining: 3
-X-RateLimit-Reset: 1703577600
-```
+### Cron / Maintenance
+- **GET `/api/cron/cleanup-logs`** — Deletes login attempts older than 30 days; secured with `Authorization: Bearer <CRON_SECRET>`.
+- **POST `/api/cron/maintenance-check`** — Toggles maintenance based on `maintenanceSchedule`; secured with the same header (test secret fallback for local).
 
 ---
 
@@ -602,4 +558,4 @@ X-RateLimit-Reset: 1703577600
 
 ---
 
-_Last updated: December 2025_
+_Last updated: February 2026_
