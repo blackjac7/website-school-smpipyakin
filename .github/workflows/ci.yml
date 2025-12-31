@@ -62,7 +62,7 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:password@localhost:5432/testdb
       # Mock secrets for testing
-      JWT_SECRET: "mock_jwt_secret_for_testing"
+      JWT_SECRET: "mock_jwt_secret_for_testing_abcdefghijklmnopqrstuvwxyz"
       NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: "mock_cloud"
       CLOUDINARY_API_KEY: "mock_key"
       CLOUDINARY_API_SECRET: "mock_secret"
@@ -84,6 +84,9 @@ jobs:
 
       - name: Reset Test Database
         run: npm run db:reset
+
+      - name: Seed Test Database
+        run: npm run db:seed
 
       - name: Run Critical Path Tests
         run: npm run test:critical
