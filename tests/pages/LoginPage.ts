@@ -161,8 +161,18 @@ export class LoginPage {
     // Solve the CAPTCHA
     await this.solveCaptcha();
 
-    // Submit
-    await this.submit();
+    // Submit and capture auth response
+    const [authResponse] = await Promise.all([
+      this.page
+        .waitForResponse(
+          (resp) =>
+            resp.url().includes("/api/auth/login") &&
+            resp.request().method() === "POST",
+          { timeout: 10000 }
+        )
+        .catch(() => null),
+      this.submit(),
+    ]);
 
     // Wait for login animation to complete (animation takes 3.5s)
     // Look for "Login Berhasil" text and wait for redirect
@@ -178,6 +188,23 @@ export class LoginPage {
         timeout: 30000,
       });
     } catch {
+      // Log auth response if available
+      if (authResponse) {
+        try {
+          console.log(`Login response status: ${authResponse.status()}`);
+          const ctype = authResponse.headers()["content-type"] || "";
+          let body = "";
+          if (ctype.includes("application/json")) {
+            body = JSON.stringify(await authResponse.json());
+          } else {
+            body = await authResponse.text();
+          }
+          console.log(`Login failed response body: ${body}`);
+        } catch (e) {
+          console.log("Failed to read login response body", e);
+        }
+      }
+
       // Check if we're still on login (possible login failure)
       const currentUrl = this.page.url();
       if (currentUrl.includes("/login")) {
@@ -187,7 +214,7 @@ export class LoginPage {
           const errorText = await this.errorMessage
             .textContent()
             .catch(() => "");
-          console.log(`Login failed with error: ${errorText}`);
+          console.log(`Login failed with error element: ${errorText}`);
         }
       }
     }
