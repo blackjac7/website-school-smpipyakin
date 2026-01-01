@@ -411,7 +411,7 @@ export default function UsersTable({
                     )}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full flex items-center justify-center overflow-hidden border border-blue-100">
+                        <div className="w-10 h-10 bg-linear-to-br from-blue-100 to-blue-50 rounded-full flex items-center justify-center overflow-hidden border border-blue-100">
                           <UserIcon
                             className="w-5 h-5 text-blue-600"
                             aria-hidden="true"

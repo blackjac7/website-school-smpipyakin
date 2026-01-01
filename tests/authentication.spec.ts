@@ -27,8 +27,8 @@ test.describe("Authentication Flow", () => {
 
   test("should show error for invalid credentials", async ({ page }) => {
     const loginPage = new LoginPage(page);
-    await loginPage.fillCredentials("wronguser", "wrongpass");
-    await loginPage.selectRole("admin");
+    await loginPage.fillForm("wronguser", "wrongpass", "admin");
+    await loginPage.solveCaptcha();
     await loginPage.submit();
 
     // Should stay on login page or show error
