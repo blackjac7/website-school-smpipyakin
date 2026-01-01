@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Plus,
   Calendar as CalendarIcon,
@@ -8,7 +9,9 @@ import {
   Edit,
   Trash2,
   MapPin,
-  ClipboardList
+  ClipboardList,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { OsisActivity } from "./types";
 import { format } from "date-fns";
@@ -29,6 +32,16 @@ export default function ActivitiesList({
   onEditActivity,
   onDeleteActivity,
 }: ActivitiesListProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const totalPages = Math.ceil(activities.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedActivities = activities.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "APPROVED":
@@ -56,8 +69,8 @@ export default function ActivitiesList({
       {/* Add Activity Button */}
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <ClipboardList className="w-5 h-5 text-blue-600"/>
-            Daftar Kegiatan
+          <ClipboardList className="w-5 h-5 text-blue-600" />
+          Daftar Kegiatan
         </h3>
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -83,7 +96,7 @@ export default function ActivitiesList({
             <p>Belum ada kegiatan yang diajukan.</p>
           </motion.div>
         ) : (
-          activities.map((activity, index) => (
+          paginatedActivities.map((activity, index) => (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -93,35 +106,35 @@ export default function ActivitiesList({
             >
               <div className="flex justify-between items-start mb-3">
                 <div>
-                    <h4 className="text-lg font-bold text-gray-900 group-hover:text-blue-900 transition-colors">
+                  <h4 className="text-lg font-bold text-gray-900 group-hover:text-blue-900 transition-colors">
                     {activity.title}
-                    </h4>
-                    <span
-                        className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getStatusColor(activity.status)}`}
-                    >
-                        {getStatusLabel(activity.status)}
-                    </span>
+                  </h4>
+                  <span
+                    className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getStatusColor(activity.status)}`}
+                  >
+                    {getStatusLabel(activity.status)}
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   {activity.status === "PENDING" && (
-                      <>
-                        <button
-                          onClick={() => onEditActivity(activity)}
-                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => onDeleteActivity(activity.id)}
-                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Hapus"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </>
-                    )}
+                    <>
+                      <button
+                        onClick={() => onEditActivity(activity)}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => onDeleteActivity(activity.id)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Hapus"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
               <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
@@ -153,6 +166,38 @@ export default function ActivitiesList({
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white rounded-xl border border-gray-200 p-4">
+          <p className="text-sm text-gray-600">
+            Menampilkan {startIndex + 1}-
+            {Math.min(startIndex + itemsPerPage, activities.length)} dari{" "}
+            {activities.length} kegiatan
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              aria-label="Halaman sebelumnya"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-sm font-medium text-gray-700 px-3">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              aria-label="Halaman selanjutnya"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

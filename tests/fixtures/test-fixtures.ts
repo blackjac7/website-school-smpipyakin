@@ -176,16 +176,32 @@ export function getMainContent(page: Page) {
 }
 
 /**
- * Assert page has loaded successfully
+ * Assert page loaded successfully without server errors
+ * Uses specific error patterns to avoid false positives with color codes
  */
 export async function assertPageLoaded(page: Page): Promise<void> {
   await waitForPageReady(page);
   const body = page.locator("body");
   await expect(body).toBeVisible();
-  // Check no error page
+  // Check no error page - use specific patterns to avoid false positives
   const pageContent = await page.textContent("body");
-  expect(pageContent).not.toContain("500");
+  expect(pageContent).not.toContain("500 Internal Server Error");
   expect(pageContent).not.toContain("Internal Server Error");
+  expect(pageContent).not.toContain("Application error");
+}
+
+/**
+ * Check if page has server error
+ * Returns true if page shows error, false otherwise
+ */
+export async function hasServerError(page: Page): Promise<boolean> {
+  const pageContent = await page.textContent("body");
+  if (!pageContent) return false;
+  return (
+    pageContent.includes("500 Internal Server Error") ||
+    pageContent.includes("Internal Server Error") ||
+    pageContent.includes("Application error")
+  );
 }
 
 /**

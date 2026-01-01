@@ -69,16 +69,16 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
           semester: data.semester,
           tahunPelajaran: data.tahunPelajaran,
         });
-        toast.success("Activity updated");
+        toast.success("Kegiatan berhasil diperbarui");
       } else {
         await createCalendarEvent(data);
-        toast.success("Activity created");
+        toast.success("Kegiatan berhasil ditambahkan");
       }
       setIsModalOpen(false);
       setEditingItem(null);
     } catch (error) {
       console.error("Failed to save activity:", error);
-      toast.error("Failed to save activity");
+      toast.error("Gagal menyimpan kegiatan");
     } finally {
       setIsLoading(false);
     }
@@ -97,10 +97,10 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
       async () => {
         try {
           await deleteCalendarEvent(id);
-          toast.success("Activity deleted");
+          toast.success("Kegiatan berhasil dihapus");
         } catch (error) {
           console.error("Failed to delete activity:", error);
-          toast.error("Failed to delete activity");
+          toast.error("Gagal menghapus kegiatan");
         }
       }
     );
@@ -109,7 +109,14 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
   return (
     <div className="p-6">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Academic Calendar</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Kalender Akademik
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Kelola jadwal kegiatan sekolah
+          </p>
+        </div>
         <div className="flex gap-2">
           <div className="relative">
             <Filter
@@ -121,9 +128,10 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
               onChange={(e) =>
                 setFilterSemester(e.target.value as SemesterType | "ALL")
               }
+              aria-label="Filter semester"
               className="pl-8 pr-4 py-2 border rounded-lg bg-white appearance-none cursor-pointer hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="ALL">All Semesters</option>
+              <option value="ALL">Semua Semester</option>
               <option value="GANJIL">Ganjil</option>
               <option value="GENAP">Genap</option>
             </select>
@@ -133,9 +141,10 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
               setEditingItem(null);
               setIsModalOpen(true);
             }}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
+            aria-label="Tambah kegiatan baru"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            <Plus size={20} /> New Activity
+            <Plus size={20} /> Tambah Kegiatan
           </button>
         </div>
       </div>
@@ -145,17 +154,29 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Tanggal
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Activity
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Kegiatan
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Semester
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Aksi
                 </th>
               </tr>
             </thead>
@@ -200,13 +221,15 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
                             setEditingItem(item);
                             setIsModalOpen(true);
                           }}
-                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                          aria-label={`Edit kegiatan ${item.title}`}
+                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <Pencil size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(item.id)}
-                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
+                          aria-label={`Hapus kegiatan ${item.title}`}
+                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
                         >
                           <Trash2 size={18} />
                         </button>
@@ -220,7 +243,7 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
                     colSpan={4}
                     className="px-6 py-8 text-center text-gray-500"
                   >
-                    No activities found.
+                    Tidak ada kegiatan ditemukan.
                   </td>
                 </tr>
               )}
@@ -230,19 +253,25 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="calendar-modal-title"
+        >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
           >
             <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white">
-              <h2 className="text-xl font-bold">
-                {editingItem ? "Edit Activity" : "New Activity"}
+              <h2 id="calendar-modal-title" className="text-xl font-bold">
+                {editingItem ? "Edit Kegiatan" : "Tambah Kegiatan"}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
+                aria-label="Tutup modal"
+                className="text-gray-500 hover:text-gray-700 text-2xl leading-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
               >
                 &times;
               </button>
@@ -250,19 +279,32 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Title</label>
+                <label
+                  htmlFor="cal-title"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Judul Kegiatan
+                </label>
                 <input
+                  id="cal-title"
                   name="title"
                   required
                   defaultValue={editingItem?.title}
-                  className="w-full p-2 border rounded-lg"
+                  placeholder="Masukkan judul kegiatan"
+                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Date</label>
+                  <label
+                    htmlFor="cal-date"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Tanggal
+                  </label>
                   <input
+                    id="cal-date"
                     type="date"
                     name="date"
                     required
@@ -271,26 +313,39 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
                         ? new Date(editingItem.date).toISOString().split("T")[0]
                         : ""
                     }
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">School Year</label>
+                  <label
+                    htmlFor="cal-tahun"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Tahun Pelajaran
+                  </label>
                   <input
+                    id="cal-tahun"
                     name="tahunPelajaran"
                     required
                     defaultValue={editingItem?.tahunPelajaran || "2025/2026"}
-                    className="w-full p-2 border rounded-lg"
+                    placeholder="Contoh: 2025/2026"
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Semester</label>
+                <label
+                  htmlFor="cal-semester"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Semester
+                </label>
                 <select
+                  id="cal-semester"
                   name="semester"
                   defaultValue={editingItem?.semester || "GANJIL"}
-                  className="w-full p-2 border rounded-lg bg-white"
+                  className="w-full p-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="GANJIL">Ganjil</option>
                   <option value="GENAP">Genap</option>
@@ -298,15 +353,20 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Information/Description
+                <label
+                  htmlFor="cal-info"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Keterangan/Deskripsi
                 </label>
                 <textarea
+                  id="cal-info"
                   name="information"
                   required
                   defaultValue={editingItem?.information}
                   rows={3}
-                  className="w-full p-2 border rounded-lg"
+                  placeholder="Masukkan deskripsi kegiatan"
+                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
@@ -314,16 +374,16 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400"
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
-                  {isLoading ? "Saving..." : "Save Activity"}
+                  {isLoading ? "Menyimpan..." : "Simpan Kegiatan"}
                 </button>
               </div>
             </form>

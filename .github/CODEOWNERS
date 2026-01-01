@@ -1,0 +1,32 @@
+# CODEOWNERS - Define code ownership for automatic review requests
+
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+
+- @Blackjac7
+
+# Specific areas (uncomment and adjust as team grows)
+
+# CI/CD configuration
+
+/.github/ @Blackjac7
+
+# Database schema changes require careful review
+
+/prisma/schema.prisma @Blackjac7
+/prisma/migrations/ @Blackjac7
+
+# Security-related files
+
+/src/middleware.ts @Blackjac7
+/src/lib/auth/ @Blackjac7
+
+# API routes
+
+/src/app/api/ @Blackjac7
+
+# Critical components
+
+/src/app/(auth)/ @Blackjac7
+/src/app/dashboard/ @Blackjac7

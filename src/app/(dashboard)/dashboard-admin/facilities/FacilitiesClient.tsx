@@ -13,13 +13,18 @@ import {
   deleteFacility,
 } from "@/actions/admin/facilities";
 import { Facility } from "@prisma/client";
-import { CldUploadWidget, CloudinaryUploadWidgetResults } from "next-cloudinary";
+import {
+  CldUploadWidget,
+  CloudinaryUploadWidgetResults,
+} from "next-cloudinary";
 
 interface FacilitiesClientProps {
   initialFacilities: Facility[];
 }
 
-export default function FacilitiesClient({ initialFacilities }: FacilitiesClientProps) {
+export default function FacilitiesClient({
+  initialFacilities,
+}: FacilitiesClientProps) {
   const router = useRouter();
   const [facilities, setFacilities] = useState<Facility[]>(initialFacilities);
   const [searchQuery, setSearchQuery] = useState("");
@@ -116,7 +121,9 @@ export default function FacilitiesClient({ initialFacilities }: FacilitiesClient
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Manajemen Fasilitas</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Manajemen Fasilitas
+          </h1>
           <p className="text-gray-600">Kelola daftar fasilitas sekolah</p>
         </div>
         <button
@@ -254,10 +261,17 @@ export default function FacilitiesClient({ initialFacilities }: FacilitiesClient
                     </div>
                   )}
                   <CldUploadWidget
-                    uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_PPDB || "ml_default"}
+                    uploadPreset={
+                      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ||
+                      "ml_default"
+                    }
                     onSuccess={(result: CloudinaryUploadWidgetResults) => {
                       const info = result?.info;
-                      if (info && typeof info === 'object' && 'secure_url' in info) {
+                      if (
+                        info &&
+                        typeof info === "object" &&
+                        "secure_url" in info
+                      ) {
                         setFormData({
                           ...formData,
                           image: (info as { secure_url: string }).secure_url,

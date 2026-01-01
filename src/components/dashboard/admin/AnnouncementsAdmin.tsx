@@ -55,16 +55,16 @@ export default function AnnouncementsAdmin({
     try {
       if (editingItem) {
         await updateAnnouncement(editingItem.id, data);
-        toast.success("Announcement updated");
+        toast.success("Pengumuman berhasil diperbarui");
       } else {
         await createAnnouncement(data);
-        toast.success("Announcement created");
+        toast.success("Pengumuman berhasil dibuat");
       }
       setIsModalOpen(false);
       setEditingItem(null);
     } catch (error) {
       console.error("Failed to save announcement:", error);
-      toast.error("Failed to save announcement");
+      toast.error("Gagal menyimpan pengumuman");
     } finally {
       setIsLoading(false);
     }
@@ -83,10 +83,10 @@ export default function AnnouncementsAdmin({
       async () => {
         try {
           await deleteAnnouncement(id);
-          toast.success("Announcement deleted");
+          toast.success("Pengumuman berhasil dihapus");
         } catch (error) {
           console.error("Failed to delete announcement:", error);
-          toast.error("Failed to delete announcement");
+          toast.error("Gagal menghapus pengumuman");
         }
       }
     );
@@ -94,18 +94,22 @@ export default function AnnouncementsAdmin({
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Announcements Management
-        </h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Manajemen Pengumuman
+          </h1>
+          <p className="text-gray-600 text-sm">Kelola pengumuman sekolah</p>
+        </div>
         <button
           onClick={() => {
             setEditingItem(null);
             setIsModalOpen(true);
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
+          className="bg-blue-600 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors shadow-sm"
+          aria-label="Tambah pengumuman baru"
         >
-          <Plus size={20} /> New Announcement
+          <Plus size={20} aria-hidden="true" /> Tambah Pengumuman
         </button>
       </div>
 
@@ -161,7 +165,7 @@ export default function AnnouncementsAdmin({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-blue-600 text-sm mt-2 hover:underline"
                   >
-                    <FileText size={14} /> Attachment
+                    <FileText size={14} aria-hidden="true" /> Lampiran
                   </a>
                 )}
               </div>
@@ -196,11 +200,12 @@ export default function AnnouncementsAdmin({
           >
             <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white">
               <h2 className="text-xl font-bold">
-                {editingItem ? "Edit Announcement" : "New Announcement"}
+                {editingItem ? "Edit Pengumuman" : "Tambah Pengumuman"}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 text-2xl font-light w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+                aria-label="Tutup modal"
               >
                 &times;
               </button>
@@ -209,18 +214,25 @@ export default function AnnouncementsAdmin({
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Title</label>
+                  <label htmlFor="title" className="text-sm font-medium">
+                    Judul <span className="text-red-500">*</span>
+                  </label>
                   <input
+                    id="title"
                     name="title"
                     required
                     defaultValue={editingItem?.title}
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Masukkan judul pengumuman"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Date</label>
+                  <label htmlFor="date" className="text-sm font-medium">
+                    Tanggal <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="date"
+                    id="date"
                     name="date"
                     required
                     defaultValue={
@@ -228,54 +240,66 @@ export default function AnnouncementsAdmin({
                         ? new Date(editingItem.date).toISOString().split("T")[0]
                         : ""
                     }
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Location</label>
+                  <label htmlFor="location" className="text-sm font-medium">
+                    Lokasi
+                  </label>
                   <input
+                    id="location"
                     name="location"
                     defaultValue={editingItem?.location || ""}
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Contoh: Aula Sekolah"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Priority</label>
+                  <label htmlFor="priority" className="text-sm font-medium">
+                    Prioritas
+                  </label>
                   <select
+                    id="priority"
                     name="priority"
                     defaultValue={editingItem?.priority || "MEDIUM"}
-                    className="w-full p-2 border rounded-lg bg-white"
+                    className="w-full p-2 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="HIGH">High (Red)</option>
-                    <option value="MEDIUM">Medium (Yellow)</option>
-                    <option value="LOW">Low (Green)</option>
+                    <option value="HIGH">Tinggi (Merah)</option>
+                    <option value="MEDIUM">Sedang (Kuning)</option>
+                    <option value="LOW">Rendah (Hijau)</option>
                   </select>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Content</label>
+                <label htmlFor="content" className="text-sm font-medium">
+                  Isi Pengumuman <span className="text-red-500">*</span>
+                </label>
                 <textarea
+                  id="content"
                   name="content"
                   required
                   defaultValue={editingItem?.content}
                   rows={5}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Tulis isi pengumuman di sini..."
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Attachment Link (Optional)
+                <label htmlFor="linkFile" className="text-sm font-medium">
+                  Link Lampiran (Opsional)
                 </label>
                 <input
+                  id="linkFile"
                   name="linkFile"
                   defaultValue={editingItem?.linkFile || ""}
-                  placeholder="https://..."
-                  className="w-full p-2 border rounded-lg"
+                  placeholder="https://contoh.com/file.pdf"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -283,16 +307,16 @@ export default function AnnouncementsAdmin({
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                 >
-                  {isLoading ? "Saving..." : "Save Announcement"}
+                  {isLoading ? "Menyimpan..." : "Simpan Pengumuman"}
                 </button>
               </div>
             </form>

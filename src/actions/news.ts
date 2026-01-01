@@ -25,9 +25,13 @@ const DeleteNewsSchema = z.object({
 });
 
 // Helper to verify admin role for news management
+import { isAdminRole } from "@/lib/roles";
+
 async function verifyAdminRole() {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "admin") {
+  // Use centralized role helper to account for token/enumeration normalization
+  if (!user || !isAdminRole(user.role)) {
+    console.error("verifyAdminRole: unauthorized user or role", { user });
     return { authorized: false, error: "Unauthorized: Admin access required" };
   }
   return { authorized: true, user };
@@ -76,12 +80,19 @@ export async function createNews(data: {
   // Validate input
   const validation = CreateNewsSchema.safeParse(data);
   if (!validation.success) {
+    console.error("createNews validation failed:", validation.error.issues, {
+      input: data,
+      auth,
+    });
     return { success: false, error: validation.error.issues[0].message };
   }
 
   try {
     const authorId = auth.user!.userId;
     const validData = validation.data;
+
+    // Log input for debugging in CI if create fails
+    console.log("createNews called", { input: validData, authorId });
 
     const news = await prisma.news.create({
       data: {
