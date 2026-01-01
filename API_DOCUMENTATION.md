@@ -206,9 +206,7 @@ Returns the application status for a given NISN.
     "feedback": "Optional feedback",
     "submittedAt": "2025-01-01T00:00:00.000Z",
     "documentsCount": 3,
-    "documents": [
-      { "type": "ijazah", "url": "https://..." }
-    ]
+    "documents": [{ "type": "ijazah", "url": "https://..." }]
   }
 }
 ```
@@ -221,11 +219,11 @@ Uploads a document to **Cloudinary** using the PPDB preset.
 
 **Form Fields:**
 
-| Field         | Required | Description                                      |
-| ------------- | -------- | ------------------------------------------------ |
-| `file`        | Yes      | JPG / PNG / PDF, max 5MB                         |
-| `documentType`| Yes      | `ijazah` \| `aktaKelahiran` \| `kartuKeluarga` \| `pasFoto` |
-| `nisn`        | Yes      | Applicant NISN (used for folder naming)          |
+| Field          | Required | Description                                                 |
+| -------------- | -------- | ----------------------------------------------------------- |
+| `file`         | Yes      | JPG / PNG / PDF, max 5MB                                    |
+| `documentType` | Yes      | `ijazah` \| `aktaKelahiran` \| `kartuKeluarga` \| `pasFoto` |
+| `nisn`         | Yes      | Applicant NISN (used for folder naming)                     |
 
 **Successful Response:**
 

@@ -91,9 +91,9 @@ const JWT_CONFIG = {
 interface TokenPayload {
   userId: string;
   username: string;
-  role: string;        // Lowercase token role
+  role: string; // Lowercase token role
   permissions: string[];
-  ip: string;          // Prevents session hijacking
+  ip: string; // Prevents session hijacking
   iat: number;
   exp: number;
 }
@@ -403,7 +403,8 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
     key: "Content-Security-Policy",
-    value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.emailjs.com https://cdn.jsdelivr.net https://maps.googleapis.com https://maps.gstatic.com https://flowise.zeabur.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' fonts.gstatic.com https://r2cdn.perplexity.ai; img-src 'self' data: https: https://maps.gstatic.com; connect-src 'self' api.emailjs.com https://va.vercel-scripts.com https://cdn.jsdelivr.net https://maps.googleapis.com https://flowise.zeabur.app; frame-src 'self' https://www.instagram.com https://www.google.com https://maps.google.com https://www.google.com/maps https://flowise.zeabur.app;",
+    value:
+      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.emailjs.com https://cdn.jsdelivr.net https://maps.googleapis.com https://maps.gstatic.com https://flowise.zeabur.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' fonts.gstatic.com https://r2cdn.perplexity.ai; img-src 'self' data: https: https://maps.gstatic.com; connect-src 'self' api.emailjs.com https://va.vercel-scripts.com https://cdn.jsdelivr.net https://maps.googleapis.com https://flowise.zeabur.app; frame-src 'self' https://www.instagram.com https://www.google.com https://maps.google.com https://www.google.com/maps https://flowise.zeabur.app;",
   },
   {
     key: "Permissions-Policy",

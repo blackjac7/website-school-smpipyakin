@@ -25,12 +25,12 @@ This document explains how to run and extend automated testing for the SMP IP Ya
 
 ### Testing Stack
 
-| Technology     | Version  | Description                                 |
-| -------------- | -------- | ------------------------------------------- |
-| **Playwright** | ^1.57.0  | Modern E2E testing framework by Microsoft   |
-| **TypeScript** | 5.9.3    | Type safety for test scripts                |
-| **Node.js**    | 20.x     | Matches CI configuration                    |
-| **PostgreSQL** | 15+      | Database for test environment               |
+| Technology     | Version | Description                               |
+| -------------- | ------- | ----------------------------------------- |
+| **Playwright** | ^1.57.0 | Modern E2E testing framework by Microsoft |
+| **TypeScript** | 5.9.3   | Type safety for test scripts              |
+| **Node.js**    | 20.x    | Matches CI configuration                  |
+| **PostgreSQL** | 15+     | Database for test environment             |
 
 ### Why Playwright?
 
@@ -78,15 +78,15 @@ Tests use the **Page Object Model** pattern for maintainability and reuse:
 
 #### Available Pages
 
-| Class                | File                   | Description                          |
-| -------------------- | ---------------------- | ------------------------------------ |
-| `LoginPage`          | pages/LoginPage.ts     | Handles login form, CAPTCHA          |
-| `DashboardAdminPage` | pages/DashboardPage.ts | Common actions for the Admin dashboard |
+| Class                | File                   | Description                              |
+| -------------------- | ---------------------- | ---------------------------------------- |
+| `LoginPage`          | pages/LoginPage.ts     | Handles login form, CAPTCHA              |
+| `DashboardAdminPage` | pages/DashboardPage.ts | Common actions for the Admin dashboard   |
 | `DashboardSiswaPage` | pages/DashboardPage.ts | Common actions for the Student dashboard |
-| `DashboardPPDBPage`  | pages/DashboardPage.ts | Common actions for the PPDB dashboard  |
-| `HomePage`           | pages/PublicPage.ts    | Homepage & public navigation           |
-| `NewsPage`           | pages/PublicPage.ts    | News page helpers                      |
-| `ContactPage`        | pages/PublicPage.ts    | Contact page helpers                   |
+| `DashboardPPDBPage`  | pages/DashboardPage.ts | Common actions for the PPDB dashboard    |
+| `HomePage`           | pages/PublicPage.ts    | Homepage & public navigation             |
+| `NewsPage`           | pages/PublicPage.ts    | News page helpers                        |
+| `ContactPage`        | pages/PublicPage.ts    | Contact page helpers                     |
 
 #### Example POM Usage
 
@@ -138,12 +138,12 @@ npm run db:seed-content
 
 ### NPM Scripts
 
-| Command               | Description |
-| --------------------- | ----------- |
-| `npm run test`        | Run all Playwright specs (headless) |
+| Command                 | Description                                   |
+| ----------------------- | --------------------------------------------- |
+| `npm run test`          | Run all Playwright specs (headless)           |
 | `npm run test:critical` | Run only `critical-path.spec.ts` (used in CI) |
-| `npm run test:ui`     | Open Playwright UI mode (interactive) |
-| `npm run test:report` | Open the latest HTML report |
+| `npm run test:ui`       | Open Playwright UI mode (interactive)         |
+| `npm run test:report`   | Open the latest HTML report                   |
 
 ### Example Usage
 
@@ -179,13 +179,13 @@ npm run test:report
 
 Credentials for testing (matches the `prisma/seed.ts` seeder):
 
-| Role      | Username  | Password | Dashboard URL        |
-| --------- | --------- | -------- | -------------------- |
+| Role            | Username  | Password | Dashboard URL        |
+| --------------- | --------- | -------- | -------------------- |
 | Siswa (Student) | siswa001  | admin123 | /dashboard-siswa     |
-| PPDB      | ppdb001   | admin123 | /dashboard-ppdb      |
-| Admin     | admin     | admin123 | /dashboard-admin     |
-| Kesiswaan | kesiswaan | admin123 | /dashboard-kesiswaan |
-| OSIS      | osis001   | admin123 | /dashboard-osis      |
+| PPDB            | ppdb001   | admin123 | /dashboard-ppdb      |
+| Admin           | admin     | admin123 | /dashboard-admin     |
+| Kesiswaan       | kesiswaan | admin123 | /dashboard-kesiswaan |
+| OSIS            | osis001   | admin123 | /dashboard-osis      |
 
 > ⚠️ **Important:** Seed the database first with `npm run db:seed`.
 
@@ -539,11 +539,11 @@ npx playwright show-trace test-results/path-to-trace.zip
 
 ## 📝 Changelog
 
-| Version | Date       | Changes                          |
-| ------- | ---------- | -------------------------------- |
-| 1.2.0   | 2026-01-01 | Added all spec files documentation, updated test structure |
+| Version | Date       | Changes                                                                               |
+| ------- | ---------- | ------------------------------------------------------------------------------------- |
+| 1.2.0   | 2026-01-01 | Added all spec files documentation, updated test structure                            |
 | 1.1.0   | 2026-02-19 | Align docs with Node 20 CI, chromium install flags, and network stubbing expectations |
-| 1.0.0   | 2025-06-03 | Initial testing setup with Playwright |
+| 1.0.0   | 2025-06-03 | Initial testing setup with Playwright                                                 |
 
 ---
 

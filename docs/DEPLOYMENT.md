@@ -6,11 +6,11 @@ This guide explains how to manage environments, secrets, and the CI/CD workflow 
 
 ## 📋 Quick Reference
 
-| Scope | Location | Purpose |
-| --- | --- | --- |
+| Scope                    | Location                                            | Purpose                                                                                              |
+| ------------------------ | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | **Pipeline credentials** | GitHub → Settings → Secrets and variables → Actions | Authorize GitHub Actions to deploy to Vercel (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`). |
-| **Runtime secrets** | Vercel Project → Settings → Environment Variables | Values required at build/runtime (DB, JWT, Cloudinary, R2, Flowise, EmailJS, cron). |
-| **Local development** | `.env` (copy from `.env.example`) | Run the app locally and execute migrations/seeds. |
+| **Runtime secrets**      | Vercel Project → Settings → Environment Variables   | Values required at build/runtime (DB, JWT, Cloudinary, R2, Flowise, EmailJS, cron).                  |
+| **Local development**    | `.env` (copy from `.env.example`)                   | Run the app locally and execute migrations/seeds.                                                    |
 
 ---
 
@@ -27,18 +27,18 @@ This guide explains how to manage environments, secrets, and the CI/CD workflow 
 
 Use this table as a map for where each secret lives and how to obtain it:
 
-| Variable | Used by | Store in Vercel? | Store in GitHub Actions? | How to obtain |
-| --- | --- | --- | --- | --- |
-| `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | GitHub Actions deploy step | No | ✅ | Vercel → Account Settings → Tokens (token) and Project Settings (ORG/PROJECT ID). |
-| `DATABASE_URL`, `DIRECT_URL` | Prisma runtime & migrations | ✅ | Optional (only if CI runs migrations/tests) | From your Postgres provider (VPS/Aiven/Neon). Add `?sslmode=prefer` or `?sslmode=require` to match the host. |
-| `JWT_SECRET` | JWT signing | ✅ | Optional (can use dummy for CI build) | `openssl rand -base64 32` |
-| `CRON_SECRET` | Protects cron endpoints | ✅ | Optional | `openssl rand -hex 16` |
-| `NEXT_PUBLIC_APP_URL` | SEO & canonical URL | ✅ | No | Vercel domain or custom domain |
-| `NEXT_PUBLIC_CLOUDINARY_*`, `CLOUDINARY_API_KEY*` | Media uploads | ✅ | No | Cloudinary Dashboard → Settings → API Keys & Upload Preset |
-| `R2_*` | Cloudflare R2 (PPDB documents) | ✅ | No | Cloudflare R2 → Create API Token & Bucket |
-| `NEXT_PUBLIC_EMAILJS_*` | Contact form email | ✅ | No | EmailJS Dashboard → Account → API Keys & Template |
-| `NEXT_PUBLIC_FLOWISE_*` | Chatbot embed | ✅ | No | Flowise → Chatflow detail & host URL |
-| `NEXT_PUBLIC_VERCEL_SPEED_INSIGHTS`, `MAX_FILE_SIZE` | Optional features | ✅ | No | Set `1` to enable Speed Insights; adjust upload limit as needed |
+| Variable                                             | Used by                        | Store in Vercel? | Store in GitHub Actions?                    | How to obtain                                                                                                |
+| ---------------------------------------------------- | ------------------------------ | ---------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | GitHub Actions deploy step     | No               | ✅                                          | Vercel → Account Settings → Tokens (token) and Project Settings (ORG/PROJECT ID).                            |
+| `DATABASE_URL`, `DIRECT_URL`                         | Prisma runtime & migrations    | ✅               | Optional (only if CI runs migrations/tests) | From your Postgres provider (VPS/Aiven/Neon). Add `?sslmode=prefer` or `?sslmode=require` to match the host. |
+| `JWT_SECRET`                                         | JWT signing                    | ✅               | Optional (can use dummy for CI build)       | `openssl rand -base64 32`                                                                                    |
+| `CRON_SECRET`                                        | Protects cron endpoints        | ✅               | Optional                                    | `openssl rand -hex 16`                                                                                       |
+| `NEXT_PUBLIC_APP_URL`                                | SEO & canonical URL            | ✅               | No                                          | Vercel domain or custom domain                                                                               |
+| `NEXT_PUBLIC_CLOUDINARY_*`, `CLOUDINARY_API_KEY*`    | Media uploads                  | ✅               | No                                          | Cloudinary Dashboard → Settings → API Keys & Upload Preset                                                   |
+| `R2_*`                                               | Cloudflare R2 (PPDB documents) | ✅               | No                                          | Cloudflare R2 → Create API Token & Bucket                                                                    |
+| `NEXT_PUBLIC_EMAILJS_*`                              | Contact form email             | ✅               | No                                          | EmailJS Dashboard → Account → API Keys & Template                                                            |
+| `NEXT_PUBLIC_FLOWISE_*`                              | Chatbot embed                  | ✅               | No                                          | Flowise → Chatflow detail & host URL                                                                         |
+| `NEXT_PUBLIC_VERCEL_SPEED_INSIGHTS`, `MAX_FILE_SIZE` | Optional features              | ✅               | No                                          | Set `1` to enable Speed Insights; adjust upload limit as needed                                              |
 
 > **Tip:** Keep separate Vercel variable sets for **Preview (develop)** and **Production (main)**. Duplicate all required secrets unless the value differs by environment.
 
@@ -74,10 +74,10 @@ Required **GitHub Secrets**: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID
    # Fill with local Postgres credentials and dev API keys
    ```
 2. **Vercel Project Settings**
-   - Go to *Vercel Project → Settings → Environment Variables*.
+   - Go to _Vercel Project → Settings → Environment Variables_.
    - Add all variables listed above for **Preview** and **Production**.
 3. **GitHub Actions Secrets**
-   - Go to *GitHub Repo → Settings → Secrets and variables → Actions*.
+   - Go to _GitHub Repo → Settings → Secrets and variables → Actions_.
    - Add `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
    - Add `DATABASE_URL` **only if** CI should run migrations/seeds (optional).
 4. **Database access**
@@ -129,14 +129,14 @@ npm run dev
 
 ## 🔧 Troubleshooting
 
-| Symptom | Likely Cause | Resolution |
-| --- | --- | --- |
-| Vercel 500 / build fails | Missing envs in Vercel | Verify **Environment Variables** for both Preview & Production |
-| CI `test` job cannot connect DB | Postgres service not ready | Confirm `DATABASE_URL` in the `test` job matches the service and health checks pass |
-| Deploy fails in GitHub Actions | Missing Vercel token/IDs | Populate `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` in GitHub Secrets |
-| Production DB connection refused | VPS firewall blocks Vercel | Open port `5432` for Vercel IPs or allowlist appropriately |
-| Uploads fail | Incorrect Cloudinary/R2 credentials | Regenerate API keys and update Vercel & `.env` |
+| Symptom                          | Likely Cause                        | Resolution                                                                          |
+| -------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------- |
+| Vercel 500 / build fails         | Missing envs in Vercel              | Verify **Environment Variables** for both Preview & Production                      |
+| CI `test` job cannot connect DB  | Postgres service not ready          | Confirm `DATABASE_URL` in the `test` job matches the service and health checks pass |
+| Deploy fails in GitHub Actions   | Missing Vercel token/IDs            | Populate `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` in GitHub Secrets     |
+| Production DB connection refused | VPS firewall blocks Vercel          | Open port `5432` for Vercel IPs or allowlist appropriately                          |
+| Uploads fail                     | Incorrect Cloudinary/R2 credentials | Regenerate API keys and update Vercel & `.env`                                      |
 
 ---
 
-_Last updated: 2026-01-01_ 
+_Last updated: 2026-01-01_

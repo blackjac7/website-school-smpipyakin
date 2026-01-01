@@ -53,15 +53,15 @@ This document provides comprehensive technical information about the SMP IP Yaki
 
 ### Key Design Decisions
 
-| Decision                          | Rationale                                          |
-| --------------------------------- | -------------------------------------------------- |
-| **Next.js App Router**            | Server Components by default, improved performance |
-| **Server Actions**                | Type-safe mutations without API boilerplate        |
-| **Targeted API Routes**           | Auth + PPDB + cron keep compatibility for public flows |
-| **Prisma + PostgreSQL**           | Single source of truth for relational data         |
-| **JWT in HTTP-Only Cookies**      | Secure token storage with IP binding               |
-| **Login Audit & Rate Limits**     | Database-backed logging with cron cleanup          |
-| **Feature Flags & Maintenance**   | Runtime toggles via `siteSettings` and schedules   |
+| Decision                        | Rationale                                              |
+| ------------------------------- | ------------------------------------------------------ |
+| **Next.js App Router**          | Server Components by default, improved performance     |
+| **Server Actions**              | Type-safe mutations without API boilerplate            |
+| **Targeted API Routes**         | Auth + PPDB + cron keep compatibility for public flows |
+| **Prisma + PostgreSQL**         | Single source of truth for relational data             |
+| **JWT in HTTP-Only Cookies**    | Secure token storage with IP binding                   |
+| **Login Audit & Rate Limits**   | Database-backed logging with cron cleanup              |
+| **Feature Flags & Maintenance** | Runtime toggles via `siteSettings` and schedules       |
 
 ---
 
@@ -192,11 +192,11 @@ npm run db:reset
 interface JWTPayload {
   userId: string;
   username: string;
-  role: string;        // Lowercase token role (mapped from Prisma enum)
+  role: string; // Lowercase token role (mapped from Prisma enum)
   permissions: string[];
-  ip: string;          // IP binding for security
-  iat: number;         // Issued at
-  exp: number;         // Expiration (24 hours)
+  ip: string; // IP binding for security
+  iat: number; // Issued at
+  exp: number; // Expiration (24 hours)
 }
 ```
 
@@ -215,13 +215,13 @@ const cookieOptions = {
 
 ### Role-Based Access Control
 
-| Role         | Dashboard              | Permissions                                  |
-| ------------ | ---------------------- | -------------------------------------------- |
-| `admin`      | `/dashboard-admin`     | Full system access, user management, backups |
-| `kesiswaan`  | `/dashboard-kesiswaan` | Student management, reports, announcements   |
-| `siswa`      | `/dashboard-siswa`     | View profile, submit works, view grades      |
+| Role         | Dashboard              | Permissions                                                 |
+| ------------ | ---------------------- | ----------------------------------------------------------- |
+| `admin`      | `/dashboard-admin`     | Full system access, user management, backups                |
+| `kesiswaan`  | `/dashboard-kesiswaan` | Student management, reports, announcements                  |
+| `siswa`      | `/dashboard-siswa`     | View profile, submit works, view grades                     |
 | `osis`       | `/dashboard-osis`      | Event management, OSIS news, religious tasks (adzan/karpet) |
-| `ppdb_admin` | `/dashboard-ppdb`      | Application review, document verification    |
+| `ppdb_admin` | `/dashboard-ppdb`      | Application review, document verification                   |
 
 ### Middleware Protection
 
@@ -533,11 +533,13 @@ if (!result.success) {
 See [API_DOCUMENTATION.md](../API_DOCUMENTATION.md) for full payload examples. Key endpoints:
 
 ### Authentication
+
 - **POST `/api/auth/login`** — JSON body `{ username, password, role }`; sets `auth-token` cookie. Rate limited (5 attempts/15m per IP, 10/24h per account). Response includes `permissions` array.
 - **POST `/api/auth/logout`** — Clears the `auth-token` cookie.
 - **GET `/api/auth/verify`** — Validates session cookie, returns user info + `normalizedRole`.
 
 ### PPDB (Admissions)
+
 - **GET `/api/ppdb/check-nisn?nisn=`** — Returns existence and retry allowance.
 - **POST `/api/ppdb/register`** — JSON body with applicant data + optional `documents` array. Enforces PPDB open window via site settings; 5 submissions/hour/IP.
 - **GET `/api/ppdb/status?nisn=`** — Returns status, feedback, and uploaded document URLs.
@@ -545,6 +547,7 @@ See [API_DOCUMENTATION.md](../API_DOCUMENTATION.md) for full payload examples. K
 - **POST `/api/ppdb/upload-r2`** — `multipart/form-data` to Cloudflare R2; 20 uploads/hour/IP.
 
 ### Cron / Maintenance
+
 - **GET `/api/cron/cleanup-logs`** — Deletes login attempts older than 30 days; secured with `Authorization: Bearer <CRON_SECRET>`.
 - **POST `/api/cron/maintenance-check`** — Toggles maintenance based on `maintenanceSchedule`; secured with the same header (test secret fallback for local).
 

@@ -1,6 +1,7 @@
 # Project Directory Structure
 
 ## Root Files
+
 - `package.json` — Dependencies and scripts (Next.js 15.5.9, Prisma 6.19, Playwright 1.57)
 - `next.config.ts` — Next.js configuration with PWA and security headers
 - `tsconfig.json` — TypeScript configuration
@@ -10,6 +11,7 @@
 - `vercel.json` — Vercel deployment configuration
 
 ## Root Directories
+
 - `src/` — Next.js application code (main source)
 - `prisma/` — Prisma schema, migrations, seeders, and data files
 - `public/` — Static assets (PWA icons, manifests, images, service worker)
@@ -20,6 +22,7 @@
 ## Source (`src/`)
 
 ### `app/` — Next.js App Router
+
 - `(public)/` — **10+ Public pages:**
   - `page.tsx` — Homepage
   - `news/` — News listing and detail pages
@@ -48,7 +51,9 @@
 - `robots.ts`, `sitemap.ts` — Dynamic SEO files
 
 ### `actions/` — Server Actions (15+ files)
+
 Organized per domain for type-safe mutations:
+
 - `admin/` — Users, teachers, facilities, extracurriculars, backups, settings, dashboard stats
 - `osis/` — Activities, news, stats for OSIS dashboard
 - `ppdb/` — Dashboard stats, notifications, status updates
@@ -62,7 +67,9 @@ Organized per domain for type-safe mutations:
 - `upload.ts` — File upload handlers
 
 ### `components/` — React Components (16 directories)
+
 Feature-focused organization:
+
 - `layout/` — Global layouts (Navbar, Footer, Sidebar)
 - `common/` — Shared UI utilities (buttons, modals, loading states)
 - `shared/` — Reusable elements across features
@@ -81,6 +88,7 @@ Feature-focused organization:
 - `script/` — Embed/utility scripts (Flowise chatbot)
 
 ### `lib/` — Backend Utilities (12 files)
+
 - `prisma.ts` — Prisma client singleton
 - `auth.ts`, `jwt.ts`, `roles.ts` — Authentication & RBAC
 - `rateLimiter.ts` — Database-backed and in-memory rate limiting
@@ -92,6 +100,7 @@ Feature-focused organization:
 - `data/` — Static fallback data
 
 ### `hooks/` — Custom React Hooks (5 files)
+
 - `useAuth.ts` — Authentication state management
 - `useAntiBot.ts` — CAPTCHA and honeypot logic
 - `useSidebar.ts` — Sidebar state for dashboards
@@ -99,12 +108,14 @@ Feature-focused organization:
 - `useNotifications.ts` — Real-time notification handling
 
 ### `shared/` & `utils/`
+
 - `shared/` — Shared types and data across modules
 - `utils/` — General helpers (formatting, guards, security)
 - `types/` — Type-only helpers for actions/components
 - `assets/` — Static asset references (Lottie paths)
 
 ## Prisma (`prisma/`)
+
 - `schema.prisma` — **25+ models** with full relationship mapping
 - `seed.ts` — Base users and settings seeder
 - `seedContent.ts` — Content seeder (news, announcements, gallery)
@@ -114,7 +125,9 @@ Feature-focused organization:
 - `data/` — Seed data files
 
 ## Tests (`tests/`)
+
 Playwright Page Object Model & fixtures:
+
 - `_global-hooks.ts` — Global setup with network stubs
 - `critical-path.spec.ts` — Primary CI test suite
 - `authentication.spec.ts` — Login/auth tests

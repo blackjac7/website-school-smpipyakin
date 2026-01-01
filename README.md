@@ -32,16 +32,16 @@ Built with modern web technologies and industry best practices, this system prio
 
 ### 🎯 Core Modules
 
-| Module                    | Description                                                               |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Multi-Role Dashboard**  | Dedicated dashboards for Admin, Kesiswaan, OSIS, PPDB Staff, and Students |
-| **PPDB System**           | Complete digital admission workflow with document management              |
-| **Content Management**    | News, announcements, hero sliders, stats, and event management            |
-| **Academic Calendar**     | School schedule and event planning                                        |
-| **Student Works & Achievements** | Showcase and review student submissions, including OSIS access toggles |
-| **Facility Management**   | School facilities, extracurricular activities, and teacher profiles       |
-| **Religious Programs**    | Menstruation logs, adzan schedule, and carpet cleaning assignments (OSIS) |
-| **Maintenance & Settings**| Site-wide maintenance toggle, feature flags, and public site settings     |
+| Module                           | Description                                                               |
+| -------------------------------- | ------------------------------------------------------------------------- |
+| **Multi-Role Dashboard**         | Dedicated dashboards for Admin, Kesiswaan, OSIS, PPDB Staff, and Students |
+| **PPDB System**                  | Complete digital admission workflow with document management              |
+| **Content Management**           | News, announcements, hero sliders, stats, and event management            |
+| **Academic Calendar**            | School schedule and event planning                                        |
+| **Student Works & Achievements** | Showcase and review student submissions, including OSIS access toggles    |
+| **Facility Management**          | School facilities, extracurricular activities, and teacher profiles       |
+| **Religious Programs**           | Menstruation logs, adzan schedule, and carpet cleaning assignments (OSIS) |
+| **Maintenance & Settings**       | Site-wide maintenance toggle, feature flags, and public site settings     |
 
 ### 🔐 Security Features
 
@@ -65,14 +65,14 @@ Built with modern web technologies and industry best practices, this system prio
 
 ### Core Technologies
 
-| Category       | Technology                                                    |
-| -------------- | ------------------------------------------------------------- |
-| **Framework**  | [Next.js 15.5.9](https://nextjs.org/) (App Router)              |
-| **Language**   | [TypeScript 5.9.3](https://www.typescriptlang.org/)             |
+| Category       | Technology                                                       |
+| -------------- | ---------------------------------------------------------------- |
+| **Framework**  | [Next.js 15.5.9](https://nextjs.org/) (App Router)               |
+| **Language**   | [TypeScript 5.9.3](https://www.typescriptlang.org/)              |
 | **Styling**    | [Tailwind CSS v4.1](https://tailwindcss.com/) (PostCSS pipeline) |
-| **Database**   | [PostgreSQL 15+](https://www.postgresql.org/) (all environments)  |
+| **Database**   | [PostgreSQL 15+](https://www.postgresql.org/) (all environments) |
 | **ORM**        | [Prisma 6.19](https://www.prisma.io/)                            |
-| **Validation** | [Zod 4.x](https://zod.dev/)                                       |
+| **Validation** | [Zod 4.x](https://zod.dev/)                                      |
 
 ### Authentication & Security
 
@@ -83,9 +83,9 @@ Built with modern web technologies and industry best practices, this system prio
 
 ### Storage & Media
 
-| Category          | Technology                                                             |
-| ----------------- | ---------------------------------------------------------------------- |
-| **Image Storage** | [Cloudinary](https://cloudinary.com/) (main + PPDB preset)             |
+| Category          | Technology                                                                         |
+| ----------------- | ---------------------------------------------------------------------------------- |
+| **Image Storage** | [Cloudinary](https://cloudinary.com/) (main + PPDB preset)                         |
 | **File Storage**  | [Cloudflare R2](https://developers.cloudflare.com/r2/) (S3-compatible via AWS SDK) |
 
 ### Third-Party Services
@@ -156,19 +156,19 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 Create a `.env` file from [.env.example](./.env.example) and fill in the values. The table below shows where each secret should live during development and deployment.
 
-| Variable | Purpose | Where to set | How to obtain |
-| --- | --- | --- | --- |
-| `DATABASE_URL`, `DIRECT_URL` | PostgreSQL connection for Prisma (app + migrations) | **Local .env**, **Vercel** (Preview & Production), **GitHub Actions** (only if running migrations/tests in CI) | From your Postgres provider (VPS or managed DB connection string) |
-| `JWT_SECRET` | Signing key for login sessions | **Vercel**, local .env, optional GitHub for build checks | Generate with `openssl rand -base64 32` |
-| `CRON_SECRET` | Protects scheduled API routes | **Vercel**, local .env | Generate with `openssl rand -hex 16` |
-| `NEXT_PUBLIC_APP_URL` | Canonical URL for SEO & links | **Vercel** (Preview/Prod) and local .env | Use your site domain or `http://localhost:3000` locally |
-| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Cloudinary uploads for news/facilities/gallery | **Vercel**, local .env | Cloudinary Dashboard → Settings → API Keys |
-| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_PPDB`, `CLOUDINARY_API_KEY_PPDB`, `CLOUDINARY_API_SECRET_PPDB`, `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_PPDB` | Dedicated preset for PPDB & admin uploads | **Vercel**, local .env | Cloudinary Dashboard → Upload presets |
-| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` | Cloudflare R2 for documents | **Vercel**, local .env | Cloudflare R2 → Create API token & bucket |
-| `NEXT_PUBLIC_EMAILJS_SERVICE_ID`, `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID`, `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY` | Contact form delivery (EmailJS) | **Vercel**, local .env | EmailJS Dashboard → Account → API Keys |
-| `NEXT_PUBLIC_FLOWISE_API_URL`, `NEXT_PUBLIC_FLOWISE_CHATFLOW_ID` | Flowise chatbot embed | **Vercel**, local .env | Flowise deployment → Chatflow details |
-| `NEXT_PUBLIC_VERCEL_SPEED_INSIGHTS` | Enable Vercel analytics widgets | **Vercel**, local .env | Set to `1` to enable |
-| `MAX_FILE_SIZE` | Upload limit (bytes) for file endpoints | **Vercel**, local .env | Keep default `5242880` or adjust as needed |
+| Variable                                                                                                                                       | Purpose                                             | Where to set                                                                                                   | How to obtain                                                     |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `DATABASE_URL`, `DIRECT_URL`                                                                                                                   | PostgreSQL connection for Prisma (app + migrations) | **Local .env**, **Vercel** (Preview & Production), **GitHub Actions** (only if running migrations/tests in CI) | From your Postgres provider (VPS or managed DB connection string) |
+| `JWT_SECRET`                                                                                                                                   | Signing key for login sessions                      | **Vercel**, local .env, optional GitHub for build checks                                                       | Generate with `openssl rand -base64 32`                           |
+| `CRON_SECRET`                                                                                                                                  | Protects scheduled API routes                       | **Vercel**, local .env                                                                                         | Generate with `openssl rand -hex 16`                              |
+| `NEXT_PUBLIC_APP_URL`                                                                                                                          | Canonical URL for SEO & links                       | **Vercel** (Preview/Prod) and local .env                                                                       | Use your site domain or `http://localhost:3000` locally           |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`                                                             | Cloudinary uploads for news/facilities/gallery      | **Vercel**, local .env                                                                                         | Cloudinary Dashboard → Settings → API Keys                        |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_PPDB`, `CLOUDINARY_API_KEY_PPDB`, `CLOUDINARY_API_SECRET_PPDB`, `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_PPDB` | Dedicated preset for PPDB & admin uploads           | **Vercel**, local .env                                                                                         | Cloudinary Dashboard → Upload presets                             |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`                                                 | Cloudflare R2 for documents                         | **Vercel**, local .env                                                                                         | Cloudflare R2 → Create API token & bucket                         |
+| `NEXT_PUBLIC_EMAILJS_SERVICE_ID`, `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID`, `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY`                                          | Contact form delivery (EmailJS)                     | **Vercel**, local .env                                                                                         | EmailJS Dashboard → Account → API Keys                            |
+| `NEXT_PUBLIC_FLOWISE_API_URL`, `NEXT_PUBLIC_FLOWISE_CHATFLOW_ID`                                                                               | Flowise chatbot embed                               | **Vercel**, local .env                                                                                         | Flowise deployment → Chatflow details                             |
+| `NEXT_PUBLIC_VERCEL_SPEED_INSIGHTS`                                                                                                            | Enable Vercel analytics widgets                     | **Vercel**, local .env                                                                                         | Set to `1` to enable                                              |
+| `MAX_FILE_SIZE`                                                                                                                                | Upload limit (bytes) for file endpoints             | **Vercel**, local .env                                                                                         | Keep default `5242880` or adjust as needed                        |
 
 > GitHub Actions only needs `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` to trigger deployments; runtime application secrets stay in **Vercel Project Settings**. See [Deployment](#-deployment) for a CI/CD diagram and step-by-step setup.
 
@@ -176,24 +176,24 @@ Create a `.env` file from [.env.example](./.env.example) and fill in the values.
 
 ## 📜 Available Scripts
 
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run postbuild` | Generate sitemap after build |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint (flat config) |
-| `npm run db:generate` | Generate Prisma Client |
-| `npm run db:migrate` | Apply migrations locally (`prisma migrate dev`) |
-| `npm run db:migrate-static` | Migrate static JSON content into the database |
-| `npm run db:seed` | Seed database with base users and settings |
-| `npm run db:seed-content` | Seed content (news, announcements, gallery) |
-| `npm run db:seed-all` | Run both base and content seeders |
-| `npm run db:reset` | Reset database (⚠️ destructive) |
-| `npm run test` | Run full Playwright suite (headless) |
-| `npm run test:critical` | Run critical-path Playwright spec used in CI |
-| `npm run test:ui` | Open Playwright UI mode |
-| `npm run test:report` | Open the latest Playwright HTML report |
+| Command                     | Description                                     |
+| --------------------------- | ----------------------------------------------- |
+| `npm run dev`               | Start development server                        |
+| `npm run build`             | Build for production                            |
+| `npm run postbuild`         | Generate sitemap after build                    |
+| `npm run start`             | Start production server                         |
+| `npm run lint`              | Run ESLint (flat config)                        |
+| `npm run db:generate`       | Generate Prisma Client                          |
+| `npm run db:migrate`        | Apply migrations locally (`prisma migrate dev`) |
+| `npm run db:migrate-static` | Migrate static JSON content into the database   |
+| `npm run db:seed`           | Seed database with base users and settings      |
+| `npm run db:seed-content`   | Seed content (news, announcements, gallery)     |
+| `npm run db:seed-all`       | Run both base and content seeders               |
+| `npm run db:reset`          | Reset database (⚠️ destructive)                 |
+| `npm run test`              | Run full Playwright suite (headless)            |
+| `npm run test:critical`     | Run critical-path Playwright spec used in CI    |
+| `npm run test:ui`           | Open Playwright UI mode                         |
+| `npm run test:report`       | Open the latest Playwright HTML report          |
 
 ---
 
@@ -213,18 +213,18 @@ Create a `.env` file from [.env.example](./.env.example) and fill in the values.
 
 ## 📚 Documentation
 
-| Document                                       | Description                                      |
-| ---------------------------------------------- | ------------------------------------------------ |
-| [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) | REST API endpoints (auth, PPDB uploads/status)   |
-| [docs/DOCS.md](./docs/DOCS.md)                  | Technical deep dive (architecture, flows, API)   |
-| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)  | High-level system architecture & diagrams        |
-| [docs/PROJECT_STRUCTURE.md](./docs/PROJECT_STRUCTURE.md) | Directory layout & module ownership       |
-| [docs/TECH_STACK.md](./docs/TECH_STACK.md)      | Frameworks, libraries, and services used         |
-| [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)      | CI/CD, environments, and secret management       |
-| [docs/TESTING.md](./docs/TESTING.md)            | Playwright setup, commands, and fixtures         |
-| [docs/TEST_STRATEGY.md](./docs/TEST_STRATEGY.md)| Scope for critical-path suite and extensions     |
-| [docs/SECURITY.md](./docs/SECURITY.md)          | Security controls and recommendations            |
-| [docs/VISUAL_ARCHITECTURE.md](./docs/VISUAL_ARCHITECTURE.md) | Visual diagrams & role matrix           |
+| Document                                                     | Description                                    |
+| ------------------------------------------------------------ | ---------------------------------------------- |
+| [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)               | REST API endpoints (auth, PPDB uploads/status) |
+| [docs/DOCS.md](./docs/DOCS.md)                               | Technical deep dive (architecture, flows, API) |
+| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)               | High-level system architecture & diagrams      |
+| [docs/PROJECT_STRUCTURE.md](./docs/PROJECT_STRUCTURE.md)     | Directory layout & module ownership            |
+| [docs/TECH_STACK.md](./docs/TECH_STACK.md)                   | Frameworks, libraries, and services used       |
+| [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)                   | CI/CD, environments, and secret management     |
+| [docs/TESTING.md](./docs/TESTING.md)                         | Playwright setup, commands, and fixtures       |
+| [docs/TEST_STRATEGY.md](./docs/TEST_STRATEGY.md)             | Scope for critical-path suite and extensions   |
+| [docs/SECURITY.md](./docs/SECURITY.md)                       | Security controls and recommendations          |
+| [docs/VISUAL_ARCHITECTURE.md](./docs/VISUAL_ARCHITECTURE.md) | Visual diagrams & role matrix                  |
 
 ---
 
@@ -333,12 +333,12 @@ npm run test:report     # Open the latest HTML report
 
 ### Recommended Stack
 
-| Service           | Purpose                            |
-| ----------------- | ---------------------------------- |
-| **Vercel**        | Hosting (optimized for Next.js)    |
-| **Managed Postgres (e.g., Neon) / VPS** | PostgreSQL 15+ |
-| **Cloudflare**    | DNS, SSL, and DDoS protection      |
-| **Cloudinary**    | Image storage and optimization     |
+| Service                                 | Purpose                         |
+| --------------------------------------- | ------------------------------- |
+| **Vercel**                              | Hosting (optimized for Next.js) |
+| **Managed Postgres (e.g., Neon) / VPS** | PostgreSQL 15+                  |
+| **Cloudflare**                          | DNS, SSL, and DDoS protection   |
+| **Cloudinary**                          | Image storage and optimization  |
 
 ### Quick Deploy
 
