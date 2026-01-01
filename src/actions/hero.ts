@@ -4,11 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { HeroSlide } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { isAdminRole } from "@/lib/roles";
 
 // Helper to verify admin role
 async function verifyAdminRole() {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "admin") {
+  if (!user || !isAdminRole(user.role)) {
     return { authorized: false, error: "Unauthorized: Admin access required" };
   }
   return { authorized: true, user };

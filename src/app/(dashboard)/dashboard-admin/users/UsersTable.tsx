@@ -30,8 +30,19 @@ interface UsersTableProps {
   onExportCSV?: () => void;
   isExporting?: boolean;
   totalUsers?: number;
+  // Server-side pagination
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  onPageChange?: (page: number) => void;
+  onSearch?: (search: string) => void;
+  onRoleFilter?: (role: string) => void;
 }
 
+// Only used for client-side pagination fallback
 const ITEMS_PER_PAGE = 10;
 
 export default function UsersTable({
@@ -45,14 +56,22 @@ export default function UsersTable({
   onExportCSV,
   isExporting = false,
   totalUsers,
+  pagination,
+  onPageChange,
+  onSearch,
+  onRoleFilter,
 }: UsersTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // Filter users based on search and role
+  // Determine if using server-side pagination
+  const useServerPagination = Boolean(pagination && onPageChange);
+
+  // For client-side filtering (only if not using server-side)
   const filteredUsers = useMemo(() => {
+    if (useServerPagination) return users; // Server already filtered
     return users.filter((user) => {
       const matchesSearch =
         searchQuery === "" ||
@@ -66,24 +85,46 @@ export default function UsersTable({
 
       return matchesSearch && matchesRole;
     });
-  }, [users, searchQuery, roleFilter]);
+  }, [users, searchQuery, roleFilter, useServerPagination]);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+  // Pagination calculations
+  const totalPages = useServerPagination
+    ? pagination!.totalPages
+    : Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+
+  const effectivePage = useServerPagination ? pagination!.page : currentPage;
+
   const paginatedUsers = useMemo(() => {
+    if (useServerPagination) return users; // Server already paginated
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredUsers.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredUsers, currentPage]);
+  }, [filteredUsers, currentPage, useServerPagination, users]);
 
   // Reset page when filter changes
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    setCurrentPage(1);
+    if (useServerPagination && onSearch) {
+      onSearch(value);
+    } else {
+      setCurrentPage(1);
+    }
   };
 
   const handleRoleFilterChange = (value: string) => {
     setRoleFilter(value);
-    setCurrentPage(1);
+    if (useServerPagination && onRoleFilter) {
+      onRoleFilter(value);
+    } else {
+      setCurrentPage(1);
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    if (useServerPagination && onPageChange) {
+      onPageChange(page);
+    } else {
+      setCurrentPage(page);
+    }
   };
 
   // Selection handlers
@@ -254,11 +295,21 @@ export default function UsersTable({
       {/* Results Info */}
       {!isLoading && (
         <div className="mb-4 text-sm text-gray-600">
-          Menampilkan {paginatedUsers.length} dari {filteredUsers.length}{" "}
-          pengguna
-          {totalUsers &&
-            totalUsers > filteredUsers.length &&
-            ` (${totalUsers} total)`}
+          {useServerPagination && pagination ? (
+            <>
+              Menampilkan {(effectivePage - 1) * pagination.limit + 1}-
+              {Math.min(effectivePage * pagination.limit, pagination.total)}{" "}
+              dari {pagination.total} pengguna
+            </>
+          ) : (
+            <>
+              Menampilkan {paginatedUsers.length} dari {filteredUsers.length}{" "}
+              pengguna
+              {totalUsers &&
+                totalUsers > filteredUsers.length &&
+                ` (${totalUsers} total)`}
+            </>
+          )}
           {searchQuery && ` untuk "${searchQuery}"`}
           {roleFilter !== "all" && ` dengan role ${roleFilter}`}
         </div>
@@ -506,12 +557,17 @@ export default function UsersTable({
         {!isLoading && totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50">
             <div className="text-sm text-gray-600">
-              Halaman {currentPage} dari {totalPages}
+              Halaman {effectivePage} dari {totalPages}
+              {useServerPagination && pagination && (
+                <span className="ml-2 text-gray-400">
+                  ({pagination.total} total pengguna)
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
+                onClick={() => handlePageChange(Math.max(1, effectivePage - 1))}
+                disabled={effectivePage === 1}
                 className="p-2 rounded-lg border border-gray-300 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:ring-2 focus:ring-blue-300 focus:outline-none"
                 aria-label="Halaman sebelumnya"
               >
@@ -524,26 +580,26 @@ export default function UsersTable({
                   let pageNum: number;
                   if (totalPages <= 5) {
                     pageNum = i + 1;
-                  } else if (currentPage <= 3) {
+                  } else if (effectivePage <= 3) {
                     pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
+                  } else if (effectivePage >= totalPages - 2) {
                     pageNum = totalPages - 4 + i;
                   } else {
-                    pageNum = currentPage - 2 + i;
+                    pageNum = effectivePage - 2 + i;
                   }
 
                   return (
                     <button
                       key={pageNum}
-                      onClick={() => setCurrentPage(pageNum)}
+                      onClick={() => handlePageChange(pageNum)}
                       className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors focus:ring-2 focus:ring-blue-300 focus:outline-none ${
-                        currentPage === pageNum
+                        effectivePage === pageNum
                           ? "bg-blue-600 text-white"
                           : "hover:bg-white border border-gray-300"
                       }`}
                       aria-label={`Halaman ${pageNum}`}
                       aria-current={
-                        currentPage === pageNum ? "page" : undefined
+                        effectivePage === pageNum ? "page" : undefined
                       }
                     >
                       {pageNum}
@@ -554,9 +610,9 @@ export default function UsersTable({
 
               <button
                 onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  handlePageChange(Math.min(totalPages, effectivePage + 1))
                 }
-                disabled={currentPage === totalPages}
+                disabled={effectivePage === totalPages}
                 className="p-2 rounded-lg border border-gray-300 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:ring-2 focus:ring-blue-300 focus:outline-none"
                 aria-label="Halaman berikutnya"
               >

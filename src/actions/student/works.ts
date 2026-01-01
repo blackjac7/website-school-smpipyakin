@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { isSiswaRole } from "@/lib/roles";
 import { revalidatePath } from "next/cache";
 
 // Validation schemas
@@ -57,7 +58,7 @@ export type WorkInput = {
 export async function getStudentWorks() {
   try {
     const user = await getAuthenticatedUser();
-    if (!user || user.role !== "siswa") {
+    if (!user || !isSiswaRole(user.role)) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -102,7 +103,7 @@ export async function getStudentWorks() {
 export async function createWork(data: WorkInput) {
   try {
     const user = await getAuthenticatedUser();
-    if (!user || user.role !== "siswa") {
+    if (!user || !isSiswaRole(user.role)) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -172,7 +173,7 @@ export async function createWork(data: WorkInput) {
 export async function updateWork(id: string, data: Partial<WorkInput>) {
   try {
     const user = await getAuthenticatedUser();
-    if (!user || user.role !== "siswa") {
+    if (!user || !isSiswaRole(user.role)) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -242,7 +243,7 @@ export async function updateWork(id: string, data: Partial<WorkInput>) {
 export async function deleteWork(id: string) {
   try {
     const user = await getAuthenticatedUser();
-    if (!user || user.role !== "siswa") {
+    if (!user || !isSiswaRole(user.role)) {
       return { success: false, error: "Unauthorized" };
     }
 

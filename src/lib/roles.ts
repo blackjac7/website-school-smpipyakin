@@ -60,3 +60,31 @@ export function isRoleMatch(
 export function isAdminRole(role?: RoleLike): boolean {
   return tokenRoleToUserRole(role) === UserRole.ADMIN;
 }
+
+/**
+ * Convenience check for siswa (student) role
+ */
+export function isSiswaRole(role?: RoleLike): boolean {
+  return tokenRoleToUserRole(role) === UserRole.SISWA;
+}
+
+/**
+ * Convenience check for kesiswaan role
+ */
+export function isKesiswaanRole(role?: RoleLike): boolean {
+  return tokenRoleToUserRole(role) === UserRole.KESISWAAN;
+}
+
+/**
+ * Convenience check for osis role
+ */
+export function isOsisRole(role?: RoleLike): boolean {
+  return tokenRoleToUserRole(role) === UserRole.OSIS;
+}
+
+/**
+ * Convenience check for ppdb admin role
+ */
+export function isPpdbAdminRole(role?: RoleLike): boolean {
+  return tokenRoleToUserRole(role) === UserRole.PPDB_ADMIN;
+}

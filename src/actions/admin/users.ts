@@ -121,10 +121,14 @@ export async function getUsers(
     // Get total count for pagination
     const total = await prisma.user.count({ where });
 
-    // Get paginated users
+    // Get paginated users - ordered alphabetically by related name
     const users = await prisma.user.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: [
+        { siswa: { name: "asc" } },
+        { kesiswaan: { name: "asc" } },
+        { username: "asc" },
+      ],
       include: {
         siswa: true,
         kesiswaan: true,

@@ -20,10 +20,12 @@ const CreateAnnouncementSchema = z.object({
 
 const IdSchema = z.string().uuid("Invalid announcement ID");
 
+import { isAdminRole } from "@/lib/roles";
+
 // Helper to verify admin role
 async function verifyAdminRole() {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "admin") {
+  if (!user || !isAdminRole(user.role)) {
     return { authorized: false, error: "Unauthorized: Admin access required" };
   }
   return { authorized: true, user };

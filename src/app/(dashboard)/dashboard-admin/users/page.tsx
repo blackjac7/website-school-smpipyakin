@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import UsersTable from "./UsersTable";
 import UserModal from "@/components/dashboard/admin/UserModal";
 import {
@@ -27,19 +27,23 @@ export default function UsersPage() {
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const confirmModal = useToastConfirm();
 
-  // Pagination state
+  // Pagination and filter state
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 50,
+    limit: 25, // Show 25 users per page
     total: 0,
     totalPages: 0,
   });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
 
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
     const result = await getUsers({
       page: pagination.page,
       limit: pagination.limit,
+      search: searchQuery,
+      role: roleFilter,
     });
     if (result.success && result.data) {
       const data = result.data;
@@ -53,11 +57,33 @@ export default function UsersPage() {
       toast.error(result.error || "Gagal memuat data pengguna");
     }
     setIsLoading(false);
-  }, [pagination.page, pagination.limit]);
+  }, [pagination.page, pagination.limit, searchQuery, roleFilter]);
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+  // Server-side pagination handlers
+  const handlePageChange = (page: number) => {
+    setPagination((prev) => ({ ...prev, page }));
+  };
+
+  // Debounce search to avoid too many requests
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const handleSearch = useCallback((search: string) => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    searchTimeoutRef.current = setTimeout(() => {
+      setSearchQuery(search);
+      setPagination((prev) => ({ ...prev, page: 1 }));
+    }, 300); // 300ms debounce
+  }, []);
+
+  const handleRoleFilter = useCallback((role: string) => {
+    setRoleFilter(role === "all" ? "" : role);
+    setPagination((prev) => ({ ...prev, page: 1 })); // Reset to page 1 on filter
+  }, []);
 
   const handleAddUser = () => {
     setModalMode("add");
@@ -191,6 +217,11 @@ export default function UsersPage() {
         onExportCSV={handleExportCSV}
         isExporting={isExporting}
         totalUsers={pagination.total}
+        // Server-side pagination props
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onSearch={handleSearch}
+        onRoleFilter={handleRoleFilter}
       />
 
       <UserModal
