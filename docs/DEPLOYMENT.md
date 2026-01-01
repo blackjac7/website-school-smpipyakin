@@ -1,16 +1,88 @@
 # 🚀 Deployment & Environment Guide
 
-This guide explains how to manage environments, secrets, and the CI/CD workflow for the **SMP IP Yakin** project.
+Panduan lengkap untuk mengelola environments, secrets, dan CI/CD workflow untuk proyek **SMP IP Yakin**.
+
+---
+
+## 📑 Table of Contents
+
+1. [Quick Reference](#-quick-reference)
+2. [Deployment Architecture](#deployment-architecture)
+3. [Prerequisites](#-prerequisites)
+4. [Environment Configuration](#-environment-ownership--sources)
+5. [CI/CD Pipeline](#-cicd-flow)
+6. [Setup Checklist](#-environment-setup-checklist)
+7. [Database Management](#-database-management)
+8. [Troubleshooting](#-troubleshooting)
 
 ---
 
 ## 📋 Quick Reference
 
-| Scope                    | Location                                            | Purpose                                                                                              |
-| ------------------------ | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Pipeline credentials** | GitHub → Settings → Secrets and variables → Actions | Authorize GitHub Actions to deploy to Vercel (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`). |
-| **Runtime secrets**      | Vercel Project → Settings → Environment Variables   | Values required at build/runtime (DB, JWT, Cloudinary, R2, Flowise, EmailJS, cron).                  |
-| **Local development**    | `.env` (copy from `.env.example`)                   | Run the app locally and execute migrations/seeds.                                                    |
+| Scope                    | Location                                          | Purpose                                        |
+| ------------------------ | ------------------------------------------------- | ---------------------------------------------- |
+| **Pipeline Credentials** | GitHub → Settings → Secrets                       | Authorize GitHub Actions to deploy to Vercel   |
+| **Runtime Secrets**      | Vercel Project → Settings → Environment Variables | Build/runtime values (DB, JWT, Cloudinary, R2) |
+| **Local Development**    | `.env` (copy from `.env.example`)                 | Run app locally                                |
+
+---
+
+## Deployment Architecture
+
+### Infrastructure Overview
+
+```mermaid
+graph TB
+    subgraph Developer["👨‍💻 Developer"]
+        Local[Local Machine]
+        Git[Git Push]
+    end
+
+    subgraph CI["🔄 GitHub Actions"]
+        Lint[Lint & TypeCheck]
+        Test[Playwright Tests]
+        Build[Build Check]
+    end
+
+    subgraph Staging["🔵 Staging Environment"]
+        VercelPreview[Vercel Preview]
+        StagingDB[(Managed PostgreSQL<br/>Neon/Aiven)]
+    end
+
+    subgraph Production["🟢 Production Environment"]
+        VercelProd[Vercel Production]
+        ProdDB[(VPS PostgreSQL)]
+    end
+
+    subgraph External["☁️ External Services"]
+        Cloudinary[Cloudinary]
+        R2[Cloudflare R2]
+        EmailJS[EmailJS]
+        Flowise[Flowise AI]
+    end
+
+    Local --> Git
+    Git --> CI
+    CI --> |develop| Staging
+    CI --> |main| Production
+
+    VercelPreview --> StagingDB
+    VercelPreview --> External
+
+    VercelProd --> ProdDB
+    VercelProd --> External
+
+    style Staging fill:#3b82f6,color:#fff
+    style Production fill:#10b981,color:#fff
+```
+
+### Environment Matrix
+
+| Environment     | Database                   | SSL Mode            | Branch     | URL                       |
+| --------------- | -------------------------- | ------------------- | ---------- | ------------------------- |
+| **Development** | Local PostgreSQL           | Optional (`prefer`) | feature/\* | localhost:3000            |
+| **Staging**     | Managed Cloud (Neon/Aiven) | `require`           | develop    | staging.smpipyakin.sch.id |
+| **Production**  | VPS PostgreSQL             | `prefer`            | main       | www.smpipyakin.sch.id     |
 
 ---
 
@@ -46,23 +118,81 @@ Use this table as a map for where each secret lives and how to obtain it:
 
 ## 🔄 CI/CD Flow (`.github/workflows/ci.yml`)
 
+### Pipeline Diagram
+
 ```mermaid
 flowchart LR
-  A[Push / PR] --> Q(Code Quality: lint + tsc)
-  Q --> T[Test: critical path + Postgres service]
-  T --> B[Build check]
-  B -->|develop| S[Deploy Staging (Vercel Preview)]
-  B -->|main| P[Deploy Production]
+    subgraph Trigger["🎯 Trigger"]
+        Push[Push / PR]
+    end
+
+    subgraph Quality["✅ Quality Gate"]
+        Lint[npm run lint]
+        TSC[tsc --noEmit]
+    end
+
+    subgraph Test["🧪 Test Gate"]
+        DB[(PostgreSQL Service)]
+        Reset[npm run db:reset]
+        Critical[npm run test:critical]
+    end
+
+    subgraph Build["🔨 Build Gate"]
+        BuildCheck[npm run build]
+    end
+
+    subgraph Deploy["🚀 Deploy"]
+        Staging[Vercel Preview<br/>develop branch]
+        Prod[Vercel Production<br/>main branch]
+    end
+
+    Push --> Quality
+    Quality --> Test
+    Test --> Build
+    Build --> |develop| Staging
+    Build --> |main| Prod
+
+    DB --> Reset
+    Reset --> Critical
+
+    style Quality fill:#f59e0b,color:#fff
+    style Test fill:#3b82f6,color:#fff
+    style Build fill:#8b5cf6,color:#fff
+    style Deploy fill:#10b981,color:#fff
 ```
 
-1. **Quality:** `npm run lint` and `tsc --noEmit`.
-2. **Test:** Start a PostgreSQL service in the runner, then `npm run db:reset` and `npm run test:critical`.
-3. **Build:** `npm run build` with dummy env values to ensure the app compiles.
-4. **Deploy:**
-   - Branch `develop` → Vercel Preview/Staging (`https://staging.smpipyakin.sch.id`).
-   - Branch `main` → Vercel Production (`https://www.smpipyakin.sch.id`).
+### Pipeline Stages
 
-Required **GitHub Secrets**: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
+| Stage       | Commands                                    | Purpose                           |
+| ----------- | ------------------------------------------- | --------------------------------- |
+| **Quality** | `npm run lint`, `tsc --noEmit`              | Code quality & type safety        |
+| **Test**    | `npm run db:reset`, `npm run test:critical` | E2E tests with PostgreSQL service |
+| **Build**   | `npm run build`                             | Verify production build           |
+| **Deploy**  | Vercel CLI                                  | Auto-deploy to Vercel             |
+
+### Required GitHub Secrets
+
+```mermaid
+graph LR
+    subgraph GitHub["🔐 GitHub Secrets"]
+        Token[VERCEL_TOKEN]
+        Org[VERCEL_ORG_ID]
+        Project[VERCEL_PROJECT_ID]
+    end
+
+    subgraph Optional["🔧 Optional"]
+        DBUrl[DATABASE_URL<br/>Only if CI runs migrations]
+    end
+
+    GitHub --> |Deploy| Vercel[Vercel Platform]
+```
+
+| Secret              | Required    | How to obtain                       |
+| ------------------- | ----------- | ----------------------------------- |
+| `VERCEL_TOKEN`      | ✅          | Vercel → Account Settings → Tokens  |
+| `VERCEL_ORG_ID`     | ✅          | Vercel → Project Settings → General |
+| `VERCEL_PROJECT_ID` | ✅          | Vercel → Project Settings → General |
+| `DATABASE_URL`      | ❌ Optional | Only if CI runs migrations/tests    |
 
 ---
 
@@ -115,28 +245,156 @@ npm run dev
 
 ## 💾 Database Management
 
-- Use `npm run db:migrate` locally to create migrations.
-- Commit migration files before deployment.
-- In production, run:
-  ```bash
-  DATABASE_URL="postgresql://user:pass@prod-host:5432/db?sslmode=prefer" npx prisma migrate deploy
-  ```
-- Additional scripts:
-  - `npm run db:reset` (drop & recreate) – **local/CI only**.
-  - `npm run db:migrate-static` (move static JSON content into the DB).
+### Database Operations Diagram
+
+```mermaid
+flowchart TB
+    subgraph Local["💻 Local Development"]
+        LocalPG[(Local PostgreSQL)]
+        Migrate[npm run db:migrate]
+        Seed[npm run db:seed]
+    end
+
+    subgraph CI["🔄 CI Environment"]
+        CIPG[(PostgreSQL Service)]
+        Reset[npm run db:reset]
+    end
+
+    subgraph Production["🚀 Production"]
+        ProdPG[(VPS PostgreSQL)]
+        ProdMigrate[prisma migrate deploy]
+    end
+
+    Migrate --> LocalPG
+    Seed --> LocalPG
+    Reset --> CIPG
+    ProdMigrate --> ProdPG
+```
+
+### Database Commands
+
+| Command                     | Environment | Purpose                    |
+| --------------------------- | ----------- | -------------------------- |
+| `npm run db:generate`       | All         | Generate Prisma Client     |
+| `npm run db:migrate`        | Local       | Create & apply migrations  |
+| `npm run db:seed`           | Local       | Seed base users & settings |
+| `npm run db:seed-content`   | Local       | Seed content data          |
+| `npm run db:seed-all`       | Local       | Run both seeders           |
+| `npm run db:reset`          | Local/CI    | Drop & recreate database   |
+| `npm run db:migrate-static` | Local       | Migrate static JSON to DB  |
+
+### Production Migration
+
+```bash
+# SSH into VPS or run from local with production credentials
+DATABASE_URL="postgresql://user:pass@prod-host:5432/db?sslmode=prefer" \
+  npx prisma migrate deploy
+```
+
+### Connection String Formats
+
+| Environment    | Format                                                               |
+| -------------- | -------------------------------------------------------------------- |
+| **Local**      | `postgresql://user:pass@localhost:5432/db?schema=public`             |
+| **Staging**    | `postgres://user:pass@managed-host:5432/db?sslmode=require`          |
+| **Production** | `postgresql://user:pass@vps-ip:5432/db?schema=public&sslmode=prefer` |
 
 ---
 
 ## 🔧 Troubleshooting
 
-| Symptom                          | Likely Cause                        | Resolution                                                                          |
-| -------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------- |
-| Vercel 500 / build fails         | Missing envs in Vercel              | Verify **Environment Variables** for both Preview & Production                      |
-| CI `test` job cannot connect DB  | Postgres service not ready          | Confirm `DATABASE_URL` in the `test` job matches the service and health checks pass |
-| Deploy fails in GitHub Actions   | Missing Vercel token/IDs            | Populate `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` in GitHub Secrets     |
-| Production DB connection refused | VPS firewall blocks Vercel          | Open port `5432` for Vercel IPs or allowlist appropriately                          |
-| Uploads fail                     | Incorrect Cloudinary/R2 credentials | Regenerate API keys and update Vercel & `.env`                                      |
+### Common Issues
+
+```mermaid
+flowchart TB
+    subgraph Issues["🔴 Common Issues"]
+        V500[Vercel 500 Error]
+        DBConn[DB Connection Failed]
+        Deploy[Deploy Failed]
+        Upload[Upload Failed]
+    end
+
+    subgraph Solutions["🟢 Solutions"]
+        CheckEnv[Check Environment Variables]
+        CheckFirewall[Check Firewall Rules]
+        CheckSecrets[Check GitHub Secrets]
+        CheckKeys[Regenerate API Keys]
+    end
+
+    V500 --> CheckEnv
+    DBConn --> CheckFirewall
+    Deploy --> CheckSecrets
+    Upload --> CheckKeys
+```
+
+| Symptom                          | Likely Cause                        | Resolution                                                |
+| -------------------------------- | ----------------------------------- | --------------------------------------------------------- |
+| Vercel 500 / build fails         | Missing envs in Vercel              | Verify **Environment Variables** for Preview & Production |
+| CI `test` job cannot connect DB  | PostgreSQL service not ready        | Confirm `DATABASE_URL` matches the service container      |
+| Deploy fails in GitHub Actions   | Missing Vercel token/IDs            | Populate secrets in GitHub                                |
+| Production DB connection refused | VPS firewall blocks Vercel          | Open port `5432` for Vercel IPs                           |
+| Uploads fail                     | Incorrect Cloudinary/R2 credentials | Regenerate API keys and update Vercel                     |
+| Maintenance mode stuck           | Cron job not running                | Check `CRON_SECRET` and Vercel cron config                |
+
+### Debug Checklist
+
+- [ ] Verify all required environment variables are set
+- [ ] Check Vercel deployment logs
+- [ ] Verify database connection with `npx prisma db pull`
+- [ ] Test API endpoints with curl/Postman
+- [ ] Check GitHub Actions workflow logs
 
 ---
 
-_Last updated: 2026-01-01_
+## 📦 Manual Deploy (if needed)
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Staging (Preview)
+vercel --token $VERCEL_TOKEN --prod=false
+
+# Production
+vercel --token $VERCEL_TOKEN --prod
+```
+
+> **Note:** GitHub Actions automatically deploys on pushes to `develop` (staging) and `main` (production).
+
+---
+
+## 💻 Local Development Quick Start
+
+```bash
+# 1. Clone & install
+git clone https://github.com/your-repo/website-school-smpipyakin.git
+cd website-school-smpipyakin
+npm ci
+
+# 2. Setup environment
+cp .env.example .env
+# Edit .env with local credentials
+
+# 3. Setup database
+npm run db:generate
+npm run db:migrate
+npm run db:seed-all
+
+# 4. Start development
+npm run dev
+```
+
+---
+
+## 📚 Related Documentation
+
+| Document                             | Description            |
+| ------------------------------------ | ---------------------- |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | System architecture    |
+| [SECURITY.md](./SECURITY.md)         | Security configuration |
+| [TESTING.md](./TESTING.md)           | E2E testing guide      |
+| [.env.example](../.env.example)      | Environment template   |
+
+---
+
+_Last Updated: January 2026_

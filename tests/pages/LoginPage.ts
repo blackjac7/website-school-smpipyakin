@@ -152,8 +152,9 @@ export class LoginPage {
 
     await this.goto();
 
-    // Wait for form to be ready
-    await this.usernameInput.waitFor({ state: "visible" });
+    // Wait for form to be attached first, then visible (replaces waitForTimeout)
+    await this.usernameInput.waitFor({ state: "attached", timeout: 20000 });
+    await this.usernameInput.waitFor({ state: "visible", timeout: 15000 });
 
     // Fill the form with correct role
     await this.fillForm(user.username, user.password, formRole);
@@ -214,7 +215,10 @@ export class LoginPage {
           const errorText = await this.errorMessage
             .textContent()
             .catch(() => "");
-          console.log(`Login failed with error element: ${errorText}`);
+          // Only log if there's actual error text
+          if (errorText && errorText.trim()) {
+            console.log(`Login failed with error: ${errorText}`);
+          }
         }
       }
     }

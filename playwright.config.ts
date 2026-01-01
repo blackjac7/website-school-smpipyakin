@@ -60,7 +60,7 @@ export default defineConfig({
 
   // Browser configurations
   projects: [
-    // Desktop Browsers
+    // Desktop Browser
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },

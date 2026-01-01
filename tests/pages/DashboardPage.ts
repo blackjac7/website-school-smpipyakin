@@ -269,7 +269,10 @@ export class DashboardAdminPage extends DashboardPage {
   }
 
   async gotoNews(): Promise<void> {
-    await this.page.goto(`${this.dashboardUrl}/news`);
+    await this.page.goto(`${this.dashboardUrl}/news`, {
+      waitUntil: "domcontentloaded",
+      timeout: 60000,
+    });
     await this.waitForLoad();
   }
 

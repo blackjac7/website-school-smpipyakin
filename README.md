@@ -8,13 +8,16 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-316192?style=for-the-badge&logo=postgresql)
 ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748?style=for-the-badge&logo=prisma)
 ![Playwright](https://img.shields.io/badge/Playwright-1.57-45ba4b?style=for-the-badge&logo=playwright)
+![License](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-11%20E2E-green?style=for-the-badge)
 
-**A modern, secure, and comprehensive school management system**
+**Sistem Manajemen Sekolah Modern, Aman, dan Komprehensif**
 
-[Getting Started](#-getting-started) •
-[Documentation](#-documentation) •
-[Features](#-features) •
-[Security](#-security)
+[🚀 Getting Started](#-getting-started) •
+[📚 Documentation](#-documentation) •
+[✨ Features](#-features) •
+[🔐 Security](#-security) •
+[🧪 Testing](#-testing)
 
 </div>
 
@@ -22,9 +25,66 @@
 
 ## 📖 Overview
 
-SMP IP Yakin Website is a full-featured school management platform designed to streamline administrative tasks, enhance communication, and provide a seamless digital experience for students, teachers, and administrators.
+**SMP IP Yakin Website** adalah platform manajemen sekolah lengkap yang dirancang untuk menyederhanakan tugas administratif, meningkatkan komunikasi, dan memberikan pengalaman digital yang seamless untuk siswa, guru, dan administrator.
 
-Built with modern web technologies and industry best practices, this system prioritizes **security**, **performance**, and **user experience**.
+Dibangun dengan teknologi web modern dan best practice industri, sistem ini memprioritaskan **keamanan (security)**, **performa (performance)**, dan **pengalaman pengguna (user experience)**.
+
+### 🎯 Key Highlights
+
+| Aspect                  | Description                                        |
+| ----------------------- | -------------------------------------------------- |
+| **5 Role Dashboards**   | Admin, Kesiswaan, OSIS, Siswa, PPDB Admin          |
+| **25+ Database Models** | Comprehensive data structure with Prisma ORM       |
+| **Enterprise Security** | JWT + IP Binding, Rate Limiting, CAPTCHA           |
+| **Modern Stack**        | Next.js 15 App Router, TypeScript, Tailwind CSS v4 |
+| **Cloud Integration**   | Cloudinary, Cloudflare R2, EmailJS, Flowise AI     |
+| **PWA Ready**           | Installable, offline-capable Progressive Web App   |
+
+### 📊 System Architecture Overview
+
+```mermaid
+graph TB
+    subgraph Client["🌐 Client Layer"]
+        Browser[Browser/PWA]
+    end
+
+    subgraph Frontend["⚡ Frontend - Vercel"]
+        NextJS[Next.js 15 App Router]
+        RSC[React Server Components]
+        SA[Server Actions]
+    end
+
+    subgraph Backend["🔧 Backend Services"]
+        API[API Routes]
+        Auth[JWT Authentication]
+        RBAC[Role-Based Access]
+    end
+
+    subgraph Data["💾 Data Layer"]
+        Prisma[Prisma ORM]
+        PG[(PostgreSQL 15+)]
+    end
+
+    subgraph External["☁️ External Services"]
+        Cloudinary[Cloudinary CDN]
+        R2[Cloudflare R2]
+        EmailJS[EmailJS]
+        Flowise[Flowise AI]
+    end
+
+    Browser --> NextJS
+    NextJS --> RSC
+    NextJS --> SA
+    RSC --> Prisma
+    SA --> Prisma
+    API --> Auth
+    Auth --> RBAC
+    Prisma --> PG
+    SA --> Cloudinary
+    SA --> R2
+    Browser --> EmailJS
+    Browser --> Flowise
+```
 
 ---
 
@@ -32,89 +92,168 @@ Built with modern web technologies and industry best practices, this system prio
 
 ### 🎯 Core Modules
 
-| Module                           | Description                                                               |
-| -------------------------------- | ------------------------------------------------------------------------- |
-| **Multi-Role Dashboard**         | Dedicated dashboards for Admin, Kesiswaan, OSIS, PPDB Staff, and Students |
-| **PPDB System**                  | Complete digital admission workflow with document management              |
-| **Content Management**           | News, announcements, hero sliders, stats, and event management            |
-| **Academic Calendar**            | School schedule and event planning                                        |
-| **Student Works & Achievements** | Showcase and review student submissions, including OSIS access toggles    |
-| **Facility Management**          | School facilities, extracurricular activities, and teacher profiles       |
-| **Religious Programs**           | Menstruation logs, adzan schedule, and carpet cleaning assignments (OSIS) |
-| **Maintenance & Settings**       | Site-wide maintenance toggle, feature flags, and public site settings     |
+| Module                           | Description                                                      | Roles              |
+| -------------------------------- | ---------------------------------------------------------------- | ------------------ |
+| **Multi-Role Dashboard**         | Dedicated dashboards dengan fitur spesifik per role              | All                |
+| **PPDB System**                  | Workflow pendaftaran digital lengkap dengan document management  | PPDB Admin, Public |
+| **Content Management**           | News, announcements, hero sliders, stats, dan event management   | Admin, OSIS        |
+| **Academic Calendar**            | Jadwal sekolah dan perencanaan event                             | Admin, Kesiswaan   |
+| **Student Works & Achievements** | Showcase dan review submission siswa, termasuk toggle akses OSIS | Siswa, Kesiswaan   |
+| **Facility Management**          | Fasilitas sekolah, ekstrakurikuler, dan profil guru              | Admin              |
+| **Religious Programs**           | Log menstruasi, jadwal adzan, dan tugas pembersihan karpet       | OSIS, Kesiswaan    |
+| **Maintenance & Settings**       | Toggle maintenance mode, feature flags, dan pengaturan situs     | Admin              |
+
+### 🔄 User Flow Diagram
+
+```mermaid
+flowchart LR
+    subgraph Public["🌐 Public Access"]
+        Home[Homepage]
+        News[Berita]
+        PPDB[Pendaftaran PPDB]
+        Facilities[Fasilitas]
+        Contact[Kontak]
+    end
+
+    subgraph Auth["🔐 Authentication"]
+        Login[Login Page]
+        RateLimit[Rate Limiting]
+        CAPTCHA[Math CAPTCHA]
+    end
+
+    subgraph Dashboards["📊 Role Dashboards"]
+        DAdmin[Dashboard Admin]
+        DKesiswaan[Dashboard Kesiswaan]
+        DOSIS[Dashboard OSIS]
+        DSiswa[Dashboard Siswa]
+        DPPDB[Dashboard PPDB]
+    end
+
+    Home --> Login
+    PPDB --> Login
+    Login --> RateLimit
+    RateLimit --> CAPTCHA
+    CAPTCHA -->|Admin| DAdmin
+    CAPTCHA -->|Kesiswaan| DKesiswaan
+    CAPTCHA -->|OSIS| DOSIS
+    CAPTCHA -->|Siswa| DSiswa
+    CAPTCHA -->|PPDB Admin| DPPDB
+```
 
 ### 🔐 Security Features
 
-- **Database-backed Login Rate Limiting** - 5 attempts/15m per IP and 10/24h per username
-- **JWT with HTTP-Only Cookies + IP Binding** - Secure session management (`auth-token`)
-- **Maintenance Bypass Rules** - Cookie-driven maintenance mode with admin exemption
-- **Input Sanitization & CSP** - XSS protection on both client and server
-- **CAPTCHA & Honeypot** - Anti-bot measures for public forms
-- **Role-Based Access Control** - Granular permission system across 5 roles
+| Feature                       | Implementation                                              | Protection          |
+| ----------------------------- | ----------------------------------------------------------- | ------------------- |
+| **Login Rate Limiting**       | Database-backed: 5 attempts/15m per IP, 10/24h per username | Brute Force         |
+| **JWT + HTTP-Only Cookies**   | IP Binding dalam payload, SameSite Strict                   | Session Hijacking   |
+| **Maintenance Bypass**        | Cookie-driven dengan admin exemption                        | Controlled Access   |
+| **Input Sanitization & CSP**  | Zod validation + React auto-escaping                        | XSS                 |
+| **CAPTCHA & Honeypot**        | Math CAPTCHA + hidden honeypot fields                       | Bot Attacks         |
+| **Role-Based Access Control** | 5 roles dengan permission granular                          | Unauthorized Access |
 
-### 🚀 Performance
+### 🚀 Performance Features
 
-- **Progressive Web App (PWA)** - Installable and offline-capable
-- **Image Optimization** - Cloudinary CDN integration
-- **Responsive Design** - Mobile-first architecture
-- **SEO Optimized** - Sitemap, robots.txt, structured data
+| Feature                 | Technology                       | Benefit                         |
+| ----------------------- | -------------------------------- | ------------------------------- |
+| **Progressive Web App** | next-pwa                         | Installable & offline-capable   |
+| **Image Optimization**  | Cloudinary CDN + next-cloudinary | Fast loading, auto-optimization |
+| **Responsive Design**   | Tailwind CSS v4                  | Mobile-first architecture       |
+| **SEO Optimized**       | next-sitemap + robots.ts         | Search engine visibility        |
+| **Server Components**   | React 18 RSC                     | Reduced bundle size             |
 
 ---
 
 ## 🛠 Tech Stack
 
+### 📊 Technology Overview Diagram
+
+```mermaid
+graph TB
+    subgraph Core["🎯 Core Framework"]
+        Next[Next.js 15.5.9]
+        React[React 18.3.1]
+        TS[TypeScript 5.9.3]
+    end
+
+    subgraph Styling["🎨 UI/UX"]
+        Tailwind[Tailwind CSS v4.1]
+        Framer[Framer Motion 12.x]
+        Lucide[Lucide React]
+        Heroicons[Heroicons 2.2]
+    end
+
+    subgraph Data["💾 Data & State"]
+        Prisma[Prisma 6.19]
+        Postgres[(PostgreSQL 15+)]
+        Zod[Zod 4.x]
+    end
+
+    subgraph Security["🔒 Security"]
+        Jose[Jose JWT]
+        Bcrypt[bcryptjs]
+        RateLimit[DB Rate Limiter]
+    end
+
+    subgraph Cloud["☁️ Cloud Services"]
+        Cloudinary[Cloudinary]
+        R2[Cloudflare R2]
+        EmailJS[EmailJS]
+        Flowise[Flowise AI]
+    end
+
+    Next --> React
+    Next --> TS
+    Next --> Tailwind
+    Next --> Prisma
+    Prisma --> Postgres
+    Next --> Jose
+    Jose --> Bcrypt
+    Next --> Cloudinary
+    Next --> R2
+```
+
 ### Core Technologies
 
-| Category       | Technology                                                       |
-| -------------- | ---------------------------------------------------------------- |
-| **Framework**  | [Next.js 15.5.9](https://nextjs.org/) (App Router)               |
-| **Language**   | [TypeScript 5.9.3](https://www.typescriptlang.org/)              |
-| **Styling**    | [Tailwind CSS v4.1](https://tailwindcss.com/) (PostCSS pipeline) |
-| **Database**   | [PostgreSQL 15+](https://www.postgresql.org/) (all environments) |
-| **ORM**        | [Prisma 6.19](https://www.prisma.io/)                            |
-| **Validation** | [Zod 4.x](https://zod.dev/)                                      |
+| Category       | Technology                                    | Version | Purpose                                      |
+| -------------- | --------------------------------------------- | ------- | -------------------------------------------- |
+| **Framework**  | [Next.js](https://nextjs.org/)                | 15.5.9  | Full-stack React framework dengan App Router |
+| **Language**   | [TypeScript](https://www.typescriptlang.org/) | 5.9.3   | Type-safe development                        |
+| **Runtime**    | [Node.js](https://nodejs.org/)                | 20.x    | Server runtime environment                   |
+| **Styling**    | [Tailwind CSS](https://tailwindcss.com/)      | v4.1.11 | Utility-first CSS framework                  |
+| **Database**   | [PostgreSQL](https://www.postgresql.org/)     | 15+     | Relational database                          |
+| **ORM**        | [Prisma](https://www.prisma.io/)              | 6.19    | Type-safe database client                    |
+| **Validation** | [Zod](https://zod.dev/)                       | 4.x     | Runtime schema validation                    |
 
-### Authentication & Security
+### Authentication & Security Stack
 
-| Category          | Technology                                                |
-| ----------------- | --------------------------------------------------------- |
-| **JWT Library**   | [Jose](https://github.com/panva/jose) + HTTP-Only Cookies |
-| **Password Hash** | [bcryptjs](https://www.npmjs.com/package/bcryptjs)        |
+| Category          | Technology                                         | Implementation                    |
+| ----------------- | -------------------------------------------------- | --------------------------------- |
+| **JWT Library**   | [Jose](https://github.com/panva/jose)              | Token signing & verification      |
+| **Password Hash** | [bcryptjs](https://www.npmjs.com/package/bcryptjs) | 12 salt rounds                    |
+| **Session**       | HTTP-Only Cookies                                  | auth-token dengan IP binding      |
+| **Rate Limiting** | Database-backed                                    | LoginAttempt model + cron cleanup |
 
-### Storage & Media
+### Cloud & External Services
 
-| Category          | Technology                                                                         |
-| ----------------- | ---------------------------------------------------------------------------------- |
-| **Image Storage** | [Cloudinary](https://cloudinary.com/) (main + PPDB preset)                         |
-| **File Storage**  | [Cloudflare R2](https://developers.cloudflare.com/r2/) (S3-compatible via AWS SDK) |
-
-### Third-Party Services
-
-| Category       | Technology                                   |
-| -------------- | -------------------------------------------- |
-| **Email**      | [EmailJS](https://www.emailjs.com/)          |
-| **AI Chatbot** | [Flowise](https://flowiseai.com/) (Embedded) |
+| Service           | Provider                                               | Usage                                     |
+| ----------------- | ------------------------------------------------------ | ----------------------------------------- |
+| **Image Storage** | [Cloudinary](https://cloudinary.com/)                  | News, profiles, hero images + PPDB preset |
+| **File Storage**  | [Cloudflare R2](https://developers.cloudflare.com/r2/) | PPDB documents (S3-compatible)            |
+| **Email**         | [EmailJS](https://www.emailjs.com/)                    | Contact form delivery                     |
+| **AI Chatbot**    | [Flowise](https://flowiseai.com/)                      | Embedded assistant                        |
+| **Hosting**       | [Vercel](https://vercel.com/)                          | Edge deployment                           |
 
 ### UI/UX Libraries
 
-| Category       | Technology                                                                |
-| -------------- | ------------------------------------------------------------------------- |
-| **Animations** | [Framer Motion](https://www.framer.com/motion/)                           |
-| **Lottie**     | [@lottiefiles/dotlottie-react](https://lottiefiles.com/)                  |
-| **Icons**      | [Lucide React](https://lucide.dev/) + [Heroicons](https://heroicons.com/) |
-| **Charts**     | [Recharts](https://recharts.org/)                                         |
-| **Theme**      | [next-themes](https://github.com/pacocoursey/next-themes)                 |
-| **Toast**      | [react-hot-toast](https://react-hot-toast.com/)                           |
-
-### Utilities
-
-| Category         | Technology                                                                                |
-| ---------------- | ----------------------------------------------------------------------------------------- |
-| **Date/Time**    | [date-fns](https://date-fns.org/) + [date-fns-tz](https://github.com/marnusw/date-fns-tz) |
-| **Excel Export** | [xlsx (SheetJS)](https://sheetjs.com/)                                                    |
-| **Storage SDK**  | [AWS SDK v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/) (Cloudflare R2)     |
-| **Media**        | [next-cloudinary](https://github.com/colbyfayock/next-cloudinary)                         |
-| **PWA**          | [next-pwa](https://github.com/shadowwalker/next-pwa)                                      |
+| Category       | Library                      | Purpose                              |
+| -------------- | ---------------------------- | ------------------------------------ |
+| **Animations** | Framer Motion 12.x           | Page transitions, micro-interactions |
+| **Lottie**     | @lottiefiles/dotlottie-react | Loading animations                   |
+| **Icons**      | Lucide React + Heroicons     | Icon system                          |
+| **Charts**     | Recharts 3.6                 | Dashboard visualizations             |
+| **Theme**      | next-themes                  | Dark/light mode                      |
+| **Toast**      | react-hot-toast              | Notifications                        |
+| **Date**       | date-fns + date-fns-tz       | Date formatting                      |
 
 ---
 
@@ -266,11 +405,12 @@ Create a `.env` file from [.env.example](./.env.example) and fill in the values.
 │   ├── shared/             # Shared data & typings
 │   ├── types/              # Type-only helpers
 │   └── utils/              # Helper functions
-├── tests/                  # Playwright E2E testing
+├── tests/                  # Playwright E2E testing (11 tests)
 │   ├── _global-hooks.ts    # Network stubbing for deterministic tests
+│   ├── critical-path.spec.ts  # 6 critical tests (public, CRUD, RBAC)
+│   ├── dashboards.spec.ts  # 5 dashboard smoke tests
 │   ├── fixtures/           # Test fixtures & helpers
-│   ├── pages/              # Page Object Models
-│   └── *.spec.ts           # Test specifications
+│   └── pages/              # Page Object Models (Login, Dashboard, Public)
 └── lighthouserc.json       # Lighthouse CI config
 ```
 
@@ -303,21 +443,32 @@ For detailed security documentation, see [docs/SECURITY.md](./docs/SECURITY.md).
 
 ## 🧪 Testing
 
-End-to-end tests use **Playwright** with a Page Object Model. The CI pipeline runs a **critical-path** spec that covers login, basic navigation, and admin news creation with direct database verification. External assets/analytics are stubbed in `tests/_global-hooks.ts` to keep the suite deterministic.
+End-to-end tests use **Playwright 1.57** with Page Object Model pattern. The test suite is streamlined to **11 focused tests** that run in ~2 minutes.
+
+### Test Structure
+
+| Spec File               | Tests | Coverage                                                          |
+| ----------------------- | ----- | ----------------------------------------------------------------- |
+| `critical-path.spec.ts` | 6     | Public pages, admin news CRUD with DB verification, RBAC security |
+| `dashboards.spec.ts`    | 5     | Smoke tests for all 5 role dashboards                             |
+
+External assets and analytics are stubbed in `tests/_global-hooks.ts` to keep tests deterministic.
 
 ### Running Tests Locally
 
 ```bash
+# Critical path only (matches CI) — recommended
+npm run test:critical
+
 # Full suite (headless)
 npm run test
-
-# Critical path only (matches CI)
-npm run test:critical
 
 # Inspect and debug
 npm run test:ui         # Interactive mode
 npm run test:report     # Open the latest HTML report
 ```
+
+For detailed testing documentation, see [docs/TESTING.md](./docs/TESTING.md) and [docs/TEST_STRATEGY.md](./docs/TEST_STRATEGY.md).
 
 ---
 
