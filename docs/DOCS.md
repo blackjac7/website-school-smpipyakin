@@ -558,4 +558,4 @@ See [API_DOCUMENTATION.md](../API_DOCUMENTATION.md) for full payload examples. K
 
 ---
 
-_Last updated: February 2026_
+_Last updated: January 2026_

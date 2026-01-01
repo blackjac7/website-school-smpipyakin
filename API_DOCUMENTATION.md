@@ -314,4 +314,4 @@ Authentication and rate-limit responses also include `remainingAttempts`, `retry
 
 ### Changelog
 
-- **2026-02:** Updated to align with Next.js 15.5 codebase, PPDB retry rules, Cloudinary/R2 uploads, and cron endpoints.
+- **2026-01:** Updated to align with Next.js 15.5.9 codebase, PPDB retry rules, Cloudinary/R2 uploads, cron endpoints, and Zod 4.x validation.

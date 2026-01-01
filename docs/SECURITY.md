@@ -425,4 +425,4 @@ If you discover a security vulnerability, please:
 
 ---
 
-_Last updated: February 2026_
+_Last updated: January 2026_

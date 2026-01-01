@@ -25,9 +25,10 @@ This project follows a professional code of conduct applicable to all staff and 
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20+ (matches CI pipeline)
 - PostgreSQL 14+
 - Git
+- npm (use `npm ci` for reproducible installs)
 
 ### Setup Development Environment
 

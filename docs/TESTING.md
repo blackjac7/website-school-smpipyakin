@@ -25,11 +25,12 @@ This document explains how to run and extend automated testing for the SMP IP Ya
 
 ### Testing Stack
 
-| Technology     | Version | Description                                 |
-| -------------- | ------- | ------------------------------------------- |
-| **Playwright** | ^1.57.0 | Modern E2E testing framework by Microsoft   |
-| **TypeScript** | 5.9.3   | Type safety for test scripts                |
-| **Node.js**    | 20.x    | Matches CI configuration                    |
+| Technology     | Version  | Description                                 |
+| -------------- | -------- | ------------------------------------------- |
+| **Playwright** | ^1.57.0  | Modern E2E testing framework by Microsoft   |
+| **TypeScript** | 5.9.3    | Type safety for test scripts                |
+| **Node.js**    | 20.x     | Matches CI configuration                    |
+| **PostgreSQL** | 15+      | Database for test environment               |
 
 ### Why Playwright?
 
@@ -49,15 +50,22 @@ This document explains how to run and extend automated testing for the SMP IP Ya
 
 ```
 tests/
-├── _global-hooks.ts           # Global setup/teardown
-├── critical-path.spec.ts      # Single file covering critical user flows
+├── _global-hooks.ts           # Global setup/teardown with network stubs
+├── critical-path.spec.ts      # Critical user flows (CI priority)
+├── authentication.spec.ts     # Login/auth flow tests
+├── admin-dashboard.spec.ts    # Admin dashboard features
+├── student-dashboard.spec.ts  # Student portal tests
+├── kesiswaan-dashboard.spec.ts# Kesiswaan features
+├── osis-dashboard.spec.ts     # OSIS dashboard tests
+├── ppdb-dashboard.spec.ts     # PPDB functionality tests
+├── public-pages.spec.ts       # Public page smoke tests
 ├── fixtures/
 │   └── test-fixtures.ts       # Utilities & data (POM helpers, waiters)
 └── pages/                     # Page Object Model helpers
-    ├── DashboardPage.ts
-    ├── LoginPage.ts
-    ├── PublicPage.ts
-    └── index.ts
+    ├── DashboardPage.ts       # Dashboard POMs for all roles
+    ├── LoginPage.ts           # Login form handling
+    ├── PublicPage.ts          # Public page helpers
+    └── index.ts               # Export aggregator
 
 playwright.config.ts           # Playwright configuration
 playwright-report/             # HTML report (auto-generated)
@@ -533,6 +541,7 @@ npx playwright show-trace test-results/path-to-trace.zip
 
 | Version | Date       | Changes                          |
 | ------- | ---------- | -------------------------------- |
+| 1.2.0   | 2026-01-01 | Added all spec files documentation, updated test structure |
 | 1.1.0   | 2026-02-19 | Align docs with Node 20 CI, chromium install flags, and network stubbing expectations |
 | 1.0.0   | 2025-06-03 | Initial testing setup with Playwright |
 

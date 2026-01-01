@@ -2,11 +2,12 @@
 
 <div align="center">
 
-![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
+![Next.js](https://img.shields.io/badge/Next.js-15.5-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38B2AC?style=for-the-badge&logo=tailwind-css)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-316192?style=for-the-badge&logo=postgresql)
-![Prisma](https://img.shields.io/badge/Prisma-6.x-2D3748?style=for-the-badge&logo=prisma)
+![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748?style=for-the-badge&logo=prisma)
+![Playwright](https://img.shields.io/badge/Playwright-1.57-45ba4b?style=for-the-badge&logo=playwright)
 
 **A modern, secure, and comprehensive school management system**
 
@@ -66,12 +67,12 @@ Built with modern web technologies and industry best practices, this system prio
 
 | Category       | Technology                                                    |
 | -------------- | ------------------------------------------------------------- |
-| **Framework**  | [Next.js 15.5](https://nextjs.org/) (App Router)              |
-| **Language**   | [TypeScript 5.9](https://www.typescriptlang.org/)             |
-| **Styling**    | [Tailwind CSS v4](https://tailwindcss.com/) (PostCSS pipeline) |
-| **Database**   | [PostgreSQL](https://www.postgresql.org/) (all environments)  |
-| **ORM**        | [Prisma 6](https://www.prisma.io/)                            |
-| **Validation** | [Zod](https://zod.dev/)                                       |
+| **Framework**  | [Next.js 15.5.9](https://nextjs.org/) (App Router)              |
+| **Language**   | [TypeScript 5.9.3](https://www.typescriptlang.org/)             |
+| **Styling**    | [Tailwind CSS v4.1](https://tailwindcss.com/) (PostCSS pipeline) |
+| **Database**   | [PostgreSQL 15+](https://www.postgresql.org/) (all environments)  |
+| **ORM**        | [Prisma 6.19](https://www.prisma.io/)                            |
+| **Validation** | [Zod 4.x](https://zod.dev/)                                       |
 
 ### Authentication & Security
 
@@ -121,9 +122,10 @@ Built with modern web technologies and industry best practices, this system prio
 
 ### Prerequisites
 
-- **Node.js** 20.x (matches CI pipeline)
-- **PostgreSQL** 14+ (local instance or managed)
+- **Node.js** 20.x or higher (matches CI pipeline)
+- **PostgreSQL** 14+ (local instance or managed service like Neon/Aiven)
 - **npm** (use `npm ci` for reproducible installs)
+- **Git** for version control
 
 ### Installation
 
@@ -232,31 +234,43 @@ Create a `.env` file from [.env.example](./.env.example) and fill in the values.
 ├── .github/                # GitHub Actions (CI/CD on main/develop)
 │   └── workflows/
 │       └── ci.yml          # Quality → tests (Postgres) → build → deploy
+├── docs/                   # Project documentation & diagrams
+│   ├── ARCHITECTURE.md     # System architecture & ERD
+│   ├── DEPLOYMENT.md       # CI/CD & environment setup
+│   ├── SECURITY.md         # Security implementations
+│   ├── TESTING.md          # E2E testing guide
+│   └── diagrams/           # Mermaid, PlantUML, DOT diagrams
 ├── prisma/                 # Database schema, migrations, and seeders
-│   ├── schema.prisma
-│   ├── seed.ts
-│   └── migrations/
+│   ├── schema.prisma       # 25+ models with full relationship mapping
+│   ├── seed.ts             # Base users & settings seeder
+│   ├── seedContent.ts      # Content seeder (news, announcements, etc.)
+│   └── migrations/         # Database migration history
 ├── public/                 # Static assets (PWA icons, manifest, images)
 ├── scripts/                # Data utilities (e.g., migrate static JSON)
 ├── src/
-│   ├── actions/            # Server Actions (admin, osis, ppdb, student, worship, public)
+│   ├── actions/            # Server Actions organized by domain
+│   │   ├── admin/          # User, teacher, facility management
+│   │   ├── osis/           # OSIS activities & news
+│   │   ├── ppdb/           # PPDB dashboard & notifications
+│   │   ├── student/        # Profile, works, achievements
+│   │   ├── public/         # Public page data fetching
+│   │   └── worship.ts      # Religious program management
 │   ├── app/                # Next.js App Router
-│   │   ├── (public)/       # Public pages (home, news, announcements, contact, PPDB, karya siswa, etc.)
-│   │   ├── (dashboard)/    # Protected dashboards per role
-│   │   ├── api/            # API routes (auth, PPDB, cron/maintenance)
+│   │   ├── (public)/       # 10+ public pages (home, news, PPDB, etc.)
+│   │   ├── (dashboard)/    # 5 role-based dashboard areas
+│   │   ├── api/            # REST endpoints (auth, PPDB, cron)
 │   │   └── maintenance/, not-found.tsx, unauthorized/
-│   ├── assets/             # Static data blobs (e.g., hero animations)
-│   ├── components/         # UI components (dashboard widgets, public UI, shared layouts)
-│   ├── hooks/              # Custom React hooks
-│   ├── lib/                # Core utilities (auth, JWT, Prisma client, storage, rate limiter, site settings)
+│   ├── components/         # 16 feature-focused component directories
+│   ├── hooks/              # 5 custom React hooks (useAuth, useAntiBot, etc.)
+│   ├── lib/                # Core utilities (auth, JWT, Prisma, storage, rate limiting)
 │   ├── shared/             # Shared data & typings
-│   ├── types/              # Type-only helpers for actions/components
-│   └── utils/              # Helper functions (formatting, guards)
-├── tests/                  # Playwright E2E (critical path)
-│   ├── _global-hooks.ts    # Stubs external assets/analytics for stable runs
+│   ├── types/              # Type-only helpers
+│   └── utils/              # Helper functions
+├── tests/                  # Playwright E2E testing
+│   ├── _global-hooks.ts    # Network stubbing for deterministic tests
 │   ├── fixtures/           # Test fixtures & helpers
 │   ├── pages/              # Page Object Models
-│   └── critical-path.spec.ts # Critical path suite executed in CI
+│   └── *.spec.ts           # Test specifications
 └── lighthouserc.json       # Lighthouse CI config
 ```
 
