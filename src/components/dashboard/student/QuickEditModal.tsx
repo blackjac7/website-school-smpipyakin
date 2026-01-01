@@ -121,16 +121,13 @@ export default function QuickEditModal({
       return;
     }
 
-    if (!formData.email.trim()) {
-      toast.error("Email harus diisi");
-      return;
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error("Format email tidak valid");
-      return;
+    // Email validation - only validate format if provided
+    if (formData.email?.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        toast.error("Format email tidak valid");
+        return;
+      }
     }
 
     setIsSubmitting(true);
