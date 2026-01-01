@@ -56,15 +56,35 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
 function getClientIP(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
   const real = request.headers.get("x-real-ip");
+  const cfConnectingIP = request.headers.get("cf-connecting-ip"); // Cloudflare
 
+  if (cfConnectingIP) {
+    return cfConnectingIP;
+  }
   if (forwarded) {
-    return forwarded.split(",")[0].trim();
+    const ip = forwarded.split(",")[0].trim();
+    // Normalize IPv6 localhost
+    if (ip === "::1") {
+      return "localhost-ipv6";
+    }
+    return ip;
   }
   if (real) {
     return real;
   }
 
   return "127.0.0.1";
+}
+
+// Helper to check if IP is localhost variant
+function isLocalhostIP(ip: string): boolean {
+  return (
+    ip === "127.0.0.1" ||
+    ip === "::1" ||
+    ip === "localhost-ipv6" ||
+    ip === "localhost-dev" ||
+    ip.startsWith("localhost")
+  );
 }
 
 export async function middleware(request: NextRequest) {
@@ -128,6 +148,29 @@ export async function middleware(request: NextRequest) {
       const { payload: decoded } = await jwtVerify(token, JWT_SECRET);
 
       // Additional security checks
+
+      // IP Binding Check - Prevent session hijacking
+      // Token contains the IP from login, verify it matches current request IP
+      if (decoded.ip && decoded.ip !== clientIP) {
+        // Allow localhost variations in development
+        const isLocalDev =
+          process.env.NODE_ENV === "development" &&
+          isLocalhostIP(decoded.ip as string) &&
+          isLocalhostIP(clientIP);
+
+        if (!isLocalDev) {
+          console.log(
+            `[SECURITY] Session hijacking attempt detected! Token IP: ${decoded.ip}, Request IP: ${clientIP}, Path: ${pathname}`
+          );
+
+          const loginUrl = new URL("/login", request.url);
+          loginUrl.searchParams.set("error", "session_invalid");
+
+          const response = NextResponse.redirect(loginUrl);
+          response.cookies.delete("auth-token");
+          return addSecurityHeaders(response);
+        }
+      }
 
       // Check token age (optional: force re-login after certain time)
       const tokenAge = Date.now() / 1000 - (decoded.iat as number);

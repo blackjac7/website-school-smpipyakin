@@ -473,12 +473,12 @@ graph LR
     Chat --> |Embed React| Flowise
 ```
 
-| Service           | SDK/Integration                 | Use Cases                                              |
-| ----------------- | ------------------------------- | ------------------------------------------------------ |
-| **Cloudinary**    | `next-cloudinary`, `cloudinary` | News images, hero slides, profile photos, PPDB uploads |
-| **Cloudflare R2** | `@aws-sdk/client-s3`            | PPDB documents (ijazah, akta, KK, pas foto)            |
-| **EmailJS**       | `@emailjs/browser`              | Contact form email delivery                            |
-| **Flowise**       | `flowise-embed-react`           | AI chatbot assistant                                   |
+| Service           | SDK/Integration                 | Use Cases                                                                  |
+| ----------------- | ------------------------------- | -------------------------------------------------------------------------- |
+| **Cloudinary**    | `next-cloudinary`, `cloudinary` | News images, hero slides, profile photos, PPDB uploads                     |
+| **Cloudflare R2** | `@aws-sdk/client-s3`            | PPDB documents (ijazah, akta, KK, pas foto)                                |
+| **EmailJS**       | `@emailjs/browser`              | Contact form email delivery                                                |
+| **Flowise**       | `flowise-embed-react`           | AI chatbot assistant (RAG-based, lihat [CHATBOT_RAG.md](./CHATBOT_RAG.md)) |
 
 ---
 

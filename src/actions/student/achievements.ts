@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { isSiswaRole } from "@/lib/roles";
 import { revalidatePath } from "next/cache";
 
 // Validation schemas
@@ -45,7 +46,7 @@ export type AchievementInput = z.infer<typeof CreateAchievementSchema>;
 // Helper to verify student role
 async function verifyStudentRole() {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== "siswa") {
+  if (!user || !isSiswaRole(user.role)) {
     return {
       authorized: false,
       error: "Unauthorized: Student access required",

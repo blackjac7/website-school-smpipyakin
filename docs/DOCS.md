@@ -432,7 +432,9 @@ NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=your-public-key
 
 ### Flowise (AI Chatbot)
 
-Integrated AI chatbot for answering visitor questions.
+Integrated AI chatbot for answering visitor questions using **RAG (Retrieval-Augmented Generation)** architecture.
+
+> 📖 **Dokumentasi lengkap:** Lihat [CHATBOT_RAG.md](./CHATBOT_RAG.md) untuk arsitektur RAG, konfigurasi Vector Store, Embeddings, dan proses ingestion dokumen.
 
 #### Configuration
 

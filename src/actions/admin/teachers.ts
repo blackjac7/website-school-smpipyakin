@@ -53,7 +53,8 @@ async function verifyAdminRole(): Promise<{
   try {
     const { payload } = await jwtVerify(token, getJWTSecret());
 
-    if (payload.role !== "admin") {
+    // Check for both lowercase token role and uppercase enum
+    if (payload.role !== "admin" && payload.role !== "ADMIN") {
       return { success: false, error: "Unauthorized: Admin access required" };
     }
 

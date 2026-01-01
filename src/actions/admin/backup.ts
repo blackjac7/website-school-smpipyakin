@@ -14,7 +14,9 @@ async function verifyAdmin() {
 
   try {
     const { payload } = await jwtVerify(token, getJWTSecret());
-    if (payload.role !== "admin") throw new Error("Unauthorized access");
+    // Accept both lowercase (from token) and uppercase (normalized)
+    if (payload.role !== "admin" && payload.role !== "ADMIN")
+      throw new Error("Unauthorized access");
     return payload;
   } catch (error) {
     console.error("Token verification error:", error);
