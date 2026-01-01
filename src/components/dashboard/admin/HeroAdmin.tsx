@@ -50,16 +50,16 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
     try {
       if (editingSlide) {
         await updateHeroSlide(editingSlide.id, data);
-        toast.success("Hero slide updated");
+        toast.success("Slide berhasil diperbarui");
       } else {
         await createHeroSlide(data);
-        toast.success("Hero slide created");
+        toast.success("Slide berhasil ditambahkan");
       }
       setIsModalOpen(false);
       setEditingSlide(null);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to save slide");
+      toast.error("Gagal menyimpan slide");
     } finally {
       setIsLoading(false);
     }
@@ -78,10 +78,10 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
       async () => {
         try {
           await deleteHeroSlide(id);
-          toast.success("Slide deleted");
+          toast.success("Slide berhasil dihapus");
         } catch (error) {
           console.error("Failed to delete slide:", error);
-          toast.error("Failed to delete slide");
+          toast.error("Gagal menghapus slide");
         }
       }
     );
@@ -90,17 +90,23 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Hero Carousel Management
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Manajemen Hero Carousel
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Kelola slide hero di halaman utama
+          </p>
+        </div>
         <button
           onClick={() => {
             setEditingSlide(null);
             setIsModalOpen(true);
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
+          aria-label="Tambah slide baru"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          <Plus size={20} /> Add Slide
+          <Plus size={20} /> Tambah Slide
         </button>
       </div>
 
@@ -145,13 +151,15 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
                     setEditingSlide(slide);
                     setIsModalOpen(true);
                   }}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                  aria-label={`Edit slide ${slide.title}`}
+                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <Pencil size={18} />
                 </button>
                 <button
                   onClick={() => handleDelete(slide.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                  aria-label={`Hapus slide ${slide.title}`}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   <Trash2 size={18} />
                 </button>
@@ -162,19 +170,25 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="hero-modal-title"
+        >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
           >
             <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white">
-              <h2 className="text-xl font-bold">
-                {editingSlide ? "Edit Slide" : "New Slide"}
+              <h2 id="hero-modal-title" className="text-xl font-bold">
+                {editingSlide ? "Edit Slide" : "Tambah Slide"}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
+                aria-label="Tutup modal"
+                className="text-gray-500 hover:text-gray-700 text-2xl leading-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
               >
                 &times;
               </button>
@@ -183,99 +197,141 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Title</label>
+                  <label
+                    htmlFor="hero-title"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Judul
+                  </label>
                   <input
+                    id="hero-title"
                     name="title"
                     required
                     defaultValue={editingSlide?.title}
-                    className="w-full p-2 border rounded-lg"
+                    placeholder="Masukkan judul slide"
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Subtitle</label>
+                  <label
+                    htmlFor="hero-subtitle"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Subjudul
+                  </label>
                   <input
+                    id="hero-subtitle"
                     name="subtitle"
                     required
                     defaultValue={editingSlide?.subtitle}
-                    className="w-full p-2 border rounded-lg"
+                    placeholder="Masukkan subjudul slide"
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Image URL (Small/Mobile)
+                <label
+                  htmlFor="hero-image-small"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  URL Gambar (Kecil/Mobile)
                 </label>
                 <div className="flex items-center gap-2">
                   <ImageIcon size={18} className="text-gray-400" />
                   <input
+                    id="hero-image-small"
                     name="imageSmall"
                     required
                     defaultValue={editingSlide?.imageSmall}
                     placeholder="https://..."
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Image URL (Medium/Desktop)
+                <label
+                  htmlFor="hero-image-medium"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  URL Gambar (Sedang/Desktop)
                 </label>
                 <div className="flex items-center gap-2">
                   <ImageIcon size={18} className="text-gray-400" />
                   <input
+                    id="hero-image-medium"
                     name="imageMedium"
                     required
                     defaultValue={editingSlide?.imageMedium}
                     placeholder="https://..."
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Primary Link Text
+                  <label
+                    htmlFor="hero-link-primary-text"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Teks Tombol Utama
                   </label>
                   <input
+                    id="hero-link-primary-text"
                     name="linkPrimaryText"
                     defaultValue={editingSlide?.linkPrimaryText || ""}
-                    className="w-full p-2 border rounded-lg"
+                    placeholder="Contoh: Daftar Sekarang"
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Primary Link URL
+                  <label
+                    htmlFor="hero-link-primary-href"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    URL Tombol Utama
                   </label>
                   <input
+                    id="hero-link-primary-href"
                     name="linkPrimaryHref"
                     defaultValue={editingSlide?.linkPrimaryHref || ""}
-                    className="w-full p-2 border rounded-lg"
+                    placeholder="/ppdb"
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Secondary Link Text
+                  <label
+                    htmlFor="hero-link-secondary-text"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Teks Tombol Sekunder
                   </label>
                   <input
+                    id="hero-link-secondary-text"
                     name="linkSecondaryText"
                     defaultValue={editingSlide?.linkSecondaryText || ""}
-                    className="w-full p-2 border rounded-lg"
+                    placeholder="Contoh: Pelajari Lebih Lanjut"
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Secondary Link URL
+                  <label
+                    htmlFor="hero-link-secondary-href"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    URL Tombol Sekunder
                   </label>
                   <input
+                    id="hero-link-secondary-href"
                     name="linkSecondaryHref"
                     defaultValue={editingSlide?.linkSecondaryHref || ""}
-                    className="w-full p-2 border rounded-lg"
+                    placeholder="/tentang"
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -284,16 +340,16 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400"
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
-                  {isLoading ? "Saving..." : "Save Slide"}
+                  {isLoading ? "Menyimpan..." : "Simpan Slide"}
                 </button>
               </div>
             </form>

@@ -54,16 +54,16 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
     try {
       if (editingStat) {
         await updateSchoolStat(editingStat.id, data);
-        toast.success("Stat updated");
+        toast.success("Statistik berhasil diperbarui");
       } else {
         await createSchoolStat(data);
-        toast.success("Stat created");
+        toast.success("Statistik berhasil ditambahkan");
       }
       setIsModalOpen(false);
       setEditingStat(null);
     } catch (error) {
       console.error("Failed to save stat:", error);
-      toast.error("Failed to save stat");
+      toast.error("Gagal menyimpan statistik");
     } finally {
       setIsLoading(false);
     }
@@ -82,10 +82,10 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
       async () => {
         try {
           await deleteSchoolStat(id);
-          toast.success("Stat deleted");
+          toast.success("Statistik berhasil dihapus");
         } catch (error) {
           console.error("Failed to delete stat:", error);
-          toast.error("Failed to delete stat");
+          toast.error("Gagal menghapus statistik");
         }
       }
     );
@@ -94,17 +94,23 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Quick Stats Management
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Manajemen Statistik
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Kelola angka statistik yang ditampilkan
+          </p>
+        </div>
         <button
           onClick={() => {
             setEditingStat(null);
             setIsModalOpen(true);
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
+          aria-label="Tambah statistik baru"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          <Plus size={20} /> Add Stat
+          <Plus size={20} /> Tambah Statistik
         </button>
       </div>
 
@@ -122,13 +128,15 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
                   setEditingStat(stat);
                   setIsModalOpen(true);
                 }}
-                className="p-1.5 text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100"
+                aria-label={`Edit statistik ${stat.label}`}
+                className="p-1.5 text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <Pencil size={14} />
               </button>
               <button
                 onClick={() => handleDelete(stat.id)}
-                className="p-1.5 text-red-600 bg-red-50 rounded-md hover:bg-red-100"
+                aria-label={`Hapus statistik ${stat.label}`}
+                className="p-1.5 text-red-600 bg-red-50 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500"
               >
                 <Trash2 size={14} />
               </button>
@@ -148,19 +156,25 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="stats-modal-title"
+        >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="bg-white rounded-2xl w-full max-w-md"
           >
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-              <h2 className="text-xl font-bold">
-                {editingStat ? "Edit Stat" : "New Stat"}
+              <h2 id="stats-modal-title" className="text-xl font-bold">
+                {editingStat ? "Edit Statistik" : "Tambah Statistik"}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
+                aria-label="Tutup modal"
+                className="text-gray-500 hover:text-gray-700 text-2xl leading-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
               >
                 &times;
               </button>
@@ -168,40 +182,56 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Label</label>
+                <label
+                  htmlFor="stat-label"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Label
+                </label>
                 <input
+                  id="stat-label"
                   name="label"
                   required
                   defaultValue={editingStat?.label}
-                  placeholder="e.g. Siswa Aktif"
-                  className="w-full p-2 border rounded-lg"
+                  placeholder="Contoh: Siswa Aktif"
+                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Value</label>
+                <label
+                  htmlFor="stat-value"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Nilai
+                </label>
                 <input
+                  id="stat-value"
                   name="value"
                   required
                   defaultValue={editingStat?.value}
-                  placeholder="e.g. 450+"
-                  className="w-full p-2 border rounded-lg"
+                  placeholder="Contoh: 450+"
+                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Icon Name (Lucide React)
+                <label
+                  htmlFor="stat-icon"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Nama Ikon (Lucide React)
                 </label>
                 <input
+                  id="stat-icon"
                   name="iconName"
                   required
                   defaultValue={editingStat?.iconName}
-                  placeholder="e.g. GraduationCap, Users, Award"
-                  className="w-full p-2 border rounded-lg"
+                  placeholder="Contoh: GraduationCap, Users, Award"
+                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <p className="text-xs text-gray-500">
-                  Use exact component names from lucide-react
+                  Gunakan nama komponen yang tepat dari lucide-react
                 </p>
               </div>
 
@@ -209,16 +239,16 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400"
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
-                  {isLoading ? "Saving..." : "Save Stat"}
+                  {isLoading ? "Menyimpan..." : "Simpan Statistik"}
                 </button>
               </div>
             </form>

@@ -1,20 +1,20 @@
-# 📋 Testing Documentation
+# 🧪 Testing Documentation
 
 ## SMP IP Yakin — E2E Testing Guide
 
-This document explains how to run and extend automated testing for the SMP IP Yakin website using **Playwright**.
+Dokumentasi lengkap untuk automated testing menggunakan **Playwright**.
 
 ---
 
 ## 📑 Table of Contents
 
 1. [Overview](#overview)
-2. [Test Structure](#test-structure)
-3. [Setup & Installation](#setup--installation)
-4. [Running Tests](#running-tests)
-5. [Test Credentials](#test-credentials)
-6. [Test Files](#test-files)
-7. [Writing New Tests](#writing-new-tests)
+2. [Test Architecture Diagram](#test-architecture-diagram)
+3. [Test Structure](#test-structure)
+4. [Setup & Installation](#setup--installation)
+5. [Running Tests](#running-tests)
+6. [Test Files Explained](#test-files-explained)
+7. [Page Object Model](#page-object-model)
 8. [Best Practices](#best-practices)
 9. [Troubleshooting](#troubleshooting)
 10. [CI/CD Integration](#cicd-integration)
@@ -23,25 +23,152 @@ This document explains how to run and extend automated testing for the SMP IP Ya
 
 ## Overview
 
+### Testing Philosophy
+
+```mermaid
+graph TB
+    subgraph Pyramid["🔺 Testing Pyramid"]
+        E2E["E2E Tests (11 tests)<br/>Critical user flows"]
+        Smoke["Smoke Tests<br/>Dashboard accessibility"]
+        Unit["Unit Tests<br/>(Future: Component tests)"]
+    end
+
+    subgraph Focus["Focus Areas"]
+        Critical["✅ Critical Paths"]
+        DB["✅ Database Integration"]
+        RBAC["✅ RBAC Security"]
+        Speed["✅ Fast Execution"]
+    end
+
+    E2E --> Critical
+    E2E --> DB
+    E2E --> RBAC
+    Smoke --> Speed
+```
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Testing Pyramid                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│                         ▲                                       │
+│                        ╱ ╲                                      │
+│                       ╱   ╲     E2E Tests (11 tests)            │
+│                      ╱─────╲    - Critical user flows           │
+│                     ╱       ╲   - Database integration          │
+│                    ╱─────────╲                                  │
+│                   ╱           ╲  Smoke Tests                    │
+│                  ╱─────────────╲ - All dashboards load          │
+│                 ╱               ╲- Public pages accessible      │
+│                ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔                                │
+│                                                                 │
+│   Focus: High-value flows, not comprehensive UI coverage        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ### Testing Stack
 
-| Technology     | Version | Description                                 |
-| -------------- | ------- | ------------------------------------------- |
-| **Playwright** | ^1.57.0 | Modern E2E testing framework by Microsoft   |
-| **TypeScript** | 5.9.3   | Type safety for test scripts                |
-| **Node.js**    | 20.x    | Matches CI configuration                    |
+| Technology     | Version | Purpose                            |
+| -------------- | ------- | ---------------------------------- |
+| **Playwright** | ^1.57.0 | E2E testing framework by Microsoft |
+| **TypeScript** | 5.9.3   | Type safety for test scripts       |
+| **Prisma**     | 6.19    | Direct database verification       |
+| **Node.js**    | 20.x    | Runtime environment                |
 
-### Why Playwright?
+### Why This Approach?
 
-- ✅ **Official Next.js recommendation** for E2E testing
-- ✅ **Cross-browser testing** - Chromium, Firefox, and WebKit in one tool
-- ✅ **Mobile testing** - Device emulation for responsive checks
-- ✅ **Auto-wait** - Smart waiting for ready elements
-- ✅ **Parallel execution** - Faster suites through parallelism
-- ✅ **Built-in reporters** - HTML, JSON, and custom reporters
-- ✅ **Trace viewer** - Visual timeline for debugging
+| Benefit                  | Implementation                               |
+| ------------------------ | -------------------------------------------- |
+| ✅ **Fast & Focused**    | 11 tests instead of 100+, runs in ~2 minutes |
+| ✅ **Reliable**          | Explicit waits, no flaky `waitForTimeout`    |
+| ✅ **Maintainable**      | Page Object Model pattern                    |
+| ✅ **CI-Ready**          | Optimized for GitHub Actions                 |
+| ✅ **Database Verified** | Tests confirm data persistence               |
 
-> External image/analytics requests are stubbed in `tests/_global-hooks.ts` to keep runs deterministic and fast.
+---
+
+## Test Architecture Diagram
+
+```mermaid
+flowchart TB
+    subgraph TestFiles["📁 Test Files"]
+        CP[critical-path.spec.ts<br/>6 tests]
+        DS[dashboards.spec.ts<br/>5 tests]
+    end
+
+    subgraph PageObjects["📦 Page Objects"]
+        LP[LoginPage.ts]
+        DP[DashboardPage.ts]
+        PP[PublicPage.ts]
+    end
+
+    subgraph Fixtures["🔧 Fixtures"]
+        TF[test-fixtures.ts]
+        GH[_global-hooks.ts]
+    end
+
+    subgraph Application["🌐 Application"]
+        APP[Next.js App<br/>localhost:3000]
+        DB[(PostgreSQL)]
+    end
+
+    subgraph External["☁️ External Services"]
+        Cloudinary[Cloudinary]
+        Analytics[Analytics]
+    end
+
+    CP --> LP
+    CP --> DP
+    DS --> LP
+
+    LP --> TF
+    DP --> TF
+
+    GH -.->|stubs| External
+
+    CP -->|verifies| DB
+    DS --> APP
+
+    style CP fill:#10b981,color:#fff
+    style DS fill:#3b82f6,color:#fff
+    style DB fill:#f59e0b,color:#fff
+```
+
+### Test Flow Sequence
+
+```mermaid
+sequenceDiagram
+    participant T as Test Runner
+    participant B as Browser (Chromium)
+    participant A as Next.js App
+    participant D as PostgreSQL
+
+    Note over T,D: 🔧 Setup Phase
+    T->>B: Launch Chromium
+    T->>A: Start dev server (port 3000)
+    T->>D: Reset database (if needed)
+
+    Note over T,D: 🧪 Critical Path Test
+    B->>A: Navigate to /login
+    B->>A: Fill form + solve CAPTCHA
+    B->>A: Submit login
+    A->>D: Verify credentials
+    A-->>B: Redirect to dashboard
+
+    B->>A: Create news article
+    A->>D: INSERT INTO news
+    T->>D: Verify record exists (Prisma)
+
+    Note over T,D: 🧹 Cleanup Phase
+    T->>D: DELETE test records
+
+    Note over T,D: 💨 Dashboard Smoke Test
+    loop For each role (5x)
+        B->>A: Login as role
+        B->>A: Navigate to dashboard
+        T->>B: Assert no errors
+    end
+```
 
 ---
 
@@ -49,52 +176,25 @@ This document explains how to run and extend automated testing for the SMP IP Ya
 
 ```
 tests/
-├── _global-hooks.ts           # Global setup/teardown
-├── critical-path.spec.ts      # Single file covering critical user flows
+├── critical-path.spec.ts      # 🎯 Critical user flows (6 tests)
+├── dashboards.spec.ts         # 🚀 Dashboard smoke tests (5 tests)
+├── _global-hooks.ts           # 🔧 Network stubs for external requests
 ├── fixtures/
-│   └── test-fixtures.ts       # Utilities & data (POM helpers, waiters)
-└── pages/                     # Page Object Model helpers
-    ├── DashboardPage.ts
-    ├── LoginPage.ts
-    ├── PublicPage.ts
-    └── index.ts
-
-playwright.config.ts           # Playwright configuration
-playwright-report/             # HTML report (auto-generated)
-test-results/                  # Artifacts & screenshots (auto-generated)
+│   └── test-fixtures.ts       # 📦 Utilities, test users, helpers
+└── pages/
+    ├── LoginPage.ts           # 🔐 Login form handling + CAPTCHA
+    ├── DashboardPage.ts       # 📊 Dashboard actions for all roles
+    ├── PublicPage.ts          # 🌐 Public page helpers
+    └── index.ts               # 📤 Export aggregator
 ```
 
-### Page Object Model (POM)
+### Test Count Summary
 
-Tests use the **Page Object Model** pattern for maintainability and reuse:
-
-#### Available Pages
-
-| Class                | File                   | Description                          |
-| -------------------- | ---------------------- | ------------------------------------ |
-| `LoginPage`          | pages/LoginPage.ts     | Handles login form, CAPTCHA          |
-| `DashboardAdminPage` | pages/DashboardPage.ts | Common actions for the Admin dashboard |
-| `DashboardSiswaPage` | pages/DashboardPage.ts | Common actions for the Student dashboard |
-| `DashboardPPDBPage`  | pages/DashboardPage.ts | Common actions for the PPDB dashboard  |
-| `HomePage`           | pages/PublicPage.ts    | Homepage & public navigation           |
-| `NewsPage`           | pages/PublicPage.ts    | News page helpers                      |
-| `ContactPage`        | pages/PublicPage.ts    | Contact page helpers                   |
-
-#### Example POM Usage
-
-```typescript
-import { LoginPage } from "./pages/LoginPage";
-import { DashboardSiswaPage } from "./pages/DashboardPage";
-
-test("should login successfully", async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  const dashboardPage = new DashboardSiswaPage(page);
-
-  await loginPage.loginAs("siswa");
-  await dashboardPage.goto();
-  await dashboardPage.assertDisplayed();
-});
-```
+| File                    | Tests  | Description                        |
+| ----------------------- | ------ | ---------------------------------- |
+| `critical-path.spec.ts` | 6      | Core flows + DB integration        |
+| `dashboards.spec.ts`    | 5      | Smoke test for all role dashboards |
+| **Total**               | **11** | Focused, fast, reliable            |
 
 ---
 
@@ -102,26 +202,35 @@ test("should login successfully", async ({ page }) => {
 
 ### Prerequisites
 
-1. Node.js >= 20
-2. npm (use `npm ci` for parity with CI)
-3. PostgreSQL accessible locally; database seeded/reset with testing data
+```bash
+# Required
+- Node.js >= 20
+- PostgreSQL 15+ (running)
+- npm (use npm ci for lockfile parity)
+```
 
 ### Installation
 
 ```bash
-# Install dependencies (included in package-lock.json)
+# 1. Install all dependencies
 npm ci
 
-# Install browser binaries (if not yet installed)
+# 2. Install Playwright browser
 npx playwright install --with-deps chromium
-```
 
-### Database Preparation
-
-```bash
-# Seed database with testing users/content
+# 3. Setup database
+npm run db:push
 npm run db:seed
 npm run db:seed-content
+```
+
+### Environment Variables
+
+Create `.env.local` with:
+
+```env
+DATABASE_URL="postgresql://user:pass@localhost:5432/smpipyakin"
+JWT_SECRET="your-secret-key"
 ```
 
 ---
@@ -130,321 +239,188 @@ npm run db:seed-content
 
 ### NPM Scripts
 
-| Command               | Description |
-| --------------------- | ----------- |
-| `npm run test`        | Run all Playwright specs (headless) |
-| `npm run test:critical` | Run only `critical-path.spec.ts` (used in CI) |
-| `npm run test:ui`     | Open Playwright UI mode (interactive) |
-| `npm run test:report` | Open the latest HTML report |
+| Command                 | Description                           |
+| ----------------------- | ------------------------------------- |
+| `npm run test`          | Run ALL tests (11 tests)              |
+| `npm run test:critical` | Run critical path only (6 tests) — CI |
+| `npm run test:ui`       | Interactive Playwright UI             |
+| `npm run test:report`   | Open HTML report                      |
 
-### Example Usage
+### Quick Commands
 
 ```bash
-# Run all tests
-npm run test
+# Run specific test file
+npx playwright test tests/dashboards.spec.ts
 
-# Run only the critical path
-npm run test:critical
+# Run with headed browser (visible)
+npx playwright test --headed
 
-# Run with a specific browser
-npx playwright test --project=chromium
-
-# Run with a test name filter
-npx playwright test -g "login"
-
-# Run a single file in headed mode
-npx playwright test tests/critical-path.spec.ts --headed
-
-# Debug mode with visible browser
+# Debug mode
 npx playwright test --debug
 
-# UI Mode (recommended for development)
-npm run test:ui
-
-# Open the latest HTML report
-npm run test:report
+# Run single test by name
+npx playwright test -g "Homepage loads correctly"
 ```
 
 ---
 
-## Test Credentials
+## Test Files Explained
 
-Credentials for testing (matches the `prisma/seed.ts` seeder):
-
-| Role      | Username  | Password | Dashboard URL        |
-| --------- | --------- | -------- | -------------------- |
-| Siswa (Student) | siswa001  | admin123 | /dashboard-siswa     |
-| PPDB      | ppdb001   | admin123 | /dashboard-ppdb      |
-| Admin     | admin     | admin123 | /dashboard-admin     |
-| Kesiswaan | kesiswaan | admin123 | /dashboard-kesiswaan |
-| OSIS      | osis001   | admin123 | /dashboard-osis      |
-
-> ⚠️ **Important:** Seed the database first with `npm run db:seed`.
-
----
-
-## Test Files
-
-### 1. `critical-path.spec.ts`
-
-Focuses on high-value and stable flows:
-
-- **Public smoke:** homepage and login page load with key elements visible.
-- **Admin news flow:** login as admin, open news management, create news, verify it in the DB (direct Prisma check), then clean up the test data.
-- **RBAC check:** student cannot force access to `/dashboard-admin`.
-
----
-
-## Writing New Tests
-
-### Using the Page Object Model (Recommended)
+### 1. `critical-path.spec.ts` — Core Flows
 
 ```typescript
-import { test, expect } from "@playwright/test";
+// What it tests:
+describe("Public Pages Smoke Test")
+  ✓ Homepage loads correctly
+  ✓ Login page loads with form elements
+  ✓ Login fails with invalid credentials
+
+describe("Admin Critical Flow")
+  ✓ Admin can create news and it persists to DB
+
+describe("Security & RBAC")
+  ✓ Student cannot access Admin Dashboard
+  ✓ Unauthenticated user is redirected from dashboard
+```
+
+**Key Features:**
+
+- Database verification with Prisma
+- Automatic cleanup with `afterEach`
+- Extended timeout (120s) for login flows
+
+### 2. `dashboards.spec.ts` — Smoke Tests
+
+```typescript
+// What it tests:
+describe("Dashboard Smoke Tests")
+  ✓ admin dashboard loads correctly
+  ✓ siswa dashboard loads correctly
+  ✓ kesiswaan dashboard loads correctly
+  ✓ osis dashboard loads correctly
+  ✓ ppdb dashboard loads correctly
+```
+
+**Key Features:**
+
+- Parameterized tests for all 5 roles
+- Verifies no server errors
+- Simple but comprehensive coverage
+
+---
+
+## Page Object Model
+
+### Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                     Page Object Pattern                       │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
+│   │  LoginPage  │    │ Dashboard   │    │ PublicPage  │     │
+│   │             │    │    Page     │    │             │     │
+│   │ - goto()    │    │ - gotoNews()│    │ - goto()    │     │
+│   │ - loginAs() │    │ - waitFor   │    │ - assert    │     │
+│   │ - solveCap  │    │   Load()    │    │   Displayed │     │
+│   │   tcha()    │    │             │    │             │     │
+│   └─────────────┘    └─────────────┘    └─────────────┘     │
+│          │                  │                  │             │
+│          └──────────────────┴──────────────────┘             │
+│                            │                                 │
+│                     ┌──────┴──────┐                         │
+│                     │   Fixtures   │                         │
+│                     │              │                         │
+│                     │ TEST_USERS   │                         │
+│                     │ waitForPage  │                         │
+│                     │   Ready()    │                         │
+│                     └──────────────┘                         │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Usage Example
+
+```typescript
 import { LoginPage } from "./pages/LoginPage";
-import { DashboardSiswaPage } from "./pages/DashboardPage";
+import { DashboardAdminPage } from "./pages/DashboardPage";
 
-test.describe("Dashboard Siswa Features", () => {
-  let loginPage: LoginPage;
-  let dashboardPage: DashboardSiswaPage;
+test("Admin creates news", async ({ page }) => {
+  // Initialize page objects
+  const loginPage = new LoginPage(page);
+  const dashboard = new DashboardAdminPage(page);
 
-  test.beforeEach(async ({ page }) => {
-    loginPage = new LoginPage(page);
-    dashboardPage = new DashboardSiswaPage(page);
-  });
+  // Use page object methods
+  await loginPage.loginAs("admin");
+  await dashboard.gotoNews();
 
-  test("should display dashboard after login", async ({ page }) => {
-    // Login via POM
-    await loginPage.loginAs("siswa");
-
-    // Navigate and assert via POM
-    await dashboardPage.goto();
-    await dashboardPage.assertDisplayed();
-  });
+  // Interact with page
+  await page.click('button:has-text("Tambah Berita")');
 });
 ```
 
-### Creating a New Page Object
+### Available Page Objects
 
-```typescript
-// tests/pages/NewPage.ts
-import { Page, Locator, expect } from "@playwright/test";
-import { waitForPageReady } from "../fixtures/test-fixtures";
-
-export class NewPage {
-  readonly page: Page;
-  readonly mainContent: Locator;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.mainContent = page.locator("main").first();
-  }
-
-  async goto(): Promise<void> {
-    await this.page.goto("/your-page");
-    await waitForPageReady(this.page);
-  }
-
-  async assertDisplayed(): Promise<void> {
-    await expect(this.mainContent).toBeVisible();
-  }
-}
-```
-
-### Basic Test Structure (Legacy)
-
-```typescript
-import { test, expect } from "@playwright/test";
-
-test.describe("Feature Name", () => {
-  // Setup before each test
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/some-page");
-  });
-
-  test("should do something", async ({ page }) => {
-    // Arrange - initial setup
-    await page.fill('input[name="field"]', "value");
-
-    // Act - perform action
-    await page.click('button[type="submit"]');
-
-    // Assert - verify result
-    await expect(page.locator(".success")).toBeVisible();
-  });
-});
-```
-
-### Example Test With Login
-
-```typescript
-import { test, expect, Page } from "@playwright/test";
-
-// Helper function
-async function login(page: Page, username: string, password: string) {
-  await page.goto("/login");
-  await page.fill('input[name="username"]', username);
-  await page.fill('input[type="password"]', password);
-  await page.click('button[type="submit"]');
-  await page.waitForTimeout(3000);
-}
-
-test.describe("Protected Feature", () => {
-  test.beforeEach(async ({ page }) => {
-    await login(page, "siswa001", "siswa123");
-  });
-
-  test("should access protected page", async ({ page }) => {
-    await page.goto("/dashboard-siswa/karya");
-    await expect(page.locator("main")).toBeVisible();
-  });
-});
-```
-
-### Locator Strategies
-
-```typescript
-// By CSS selector
-page.locator(".class-name");
-page.locator("#element-id");
-page.locator('button[type="submit"]');
-
-// By text content
-page.locator('text="Login"');
-page.locator('button:has-text("Submit")');
-
-// By role
-page.locator('[role="button"]');
-page.locator('[role="navigation"]');
-
-// By attribute
-page.locator('[aria-label="menu"]');
-page.locator('[data-testid="submit-btn"]');
-
-// Combining selectors
-page.locator('form button[type="submit"]');
-page.locator('.card:has-text("Title")');
-```
-
-### Assertions
-
-```typescript
-// Visibility
-await expect(element).toBeVisible();
-await expect(element).toBeHidden();
-
-// Text content
-await expect(element).toHaveText("expected text");
-await expect(element).toContainText("partial text");
-
-// Attributes
-await expect(element).toHaveAttribute("href", "/path");
-await expect(element).toHaveClass("active");
-
-// URL
-await expect(page).toHaveURL(/expected-path/);
-await expect(page).toHaveTitle(/Page Title/);
-
-// Count
-const items = page.locator(".item");
-await expect(items).toHaveCount(5);
-expect(await items.count()).toBeGreaterThan(0);
-```
+| Class                | Methods                                      |
+| -------------------- | -------------------------------------------- |
+| `LoginPage`          | `goto()`, `loginAs(role)`, `solveCaptcha()`  |
+| `DashboardAdminPage` | `gotoNews()`, `gotoUsers()`, `waitForLoad()` |
+| `DashboardSiswaPage` | `goto()`, `waitForLoad()`                    |
+| `DashboardPPDBPage`  | `goto()`, `waitForLoad()`                    |
 
 ---
 
 ## Best Practices
 
-### 1. Use the Page Object Model
+### ✅ DO
 
 ```typescript
-// ✅ Good: Use POM helpers
+// 1. Use explicit waits
+await element.waitFor({ state: "visible", timeout: 15000 });
+
+// 2. Use Page Objects
 const loginPage = new LoginPage(page);
-await loginPage.loginAs("siswa");
+await loginPage.loginAs("admin");
 
-// ❌ Avoid: Direct page manipulation in the test
-await page.goto("/login");
-await page.fill("#username", "siswa001");
-await page.fill("#password", "admin123");
-```
-
-### 2. Centralize Test Data
-
-```typescript
-// ✅ Good: Use fixtures
-import { TEST_USERS } from "./fixtures/test-fixtures";
-const user = TEST_USERS.siswa;
-
-// ❌ Avoid: Hardcoded credentials
-await page.fill("#username", "siswa001");
-```
-
-### 3. Test Organization
-
-```typescript
-// ✅ Good: Descriptive test names
-test("should redirect to login when accessing protected page without auth", ...);
-
-// ❌ Bad: Vague test names
-test("test1", ...);
-test("login test", ...);
-```
-
-### 4. Wait Strategies
-
-```typescript
-// ✅ Good: Use auto-wait with POM
-await loginPage.loginAs("siswa");
-await dashboardPage.waitForLoad();
-
-// ✅ Good: Use Playwright assertions (auto-retry)
-await expect(page.locator(".result")).toBeVisible();
-
-// ❌ Avoid: Hardcoded waits
-await page.waitForTimeout(5000);
-
-// ✅ OK: Wait for network idle
-await page.waitForLoadState("networkidle");
-```
-
-### 5. Reliable Selectors
-
-```typescript
-// ✅ Good: Data-testid (most reliable)
-page.locator('[data-testid="submit-button"]');
-
-// ✅ Good: Role + text combination
-page.locator('button:has-text("Submit")');
-
-// ❌ Avoid: Brittle CSS class selectors
-page.locator(".btn-primary-v2-updated");
-```
-
-### 6. Test Independence
-
-```typescript
-// ✅ Good: Each test is independent
-test.beforeEach(async ({ page }) => {
-  await page.context().clearCookies();
-  await login(page, credentials);
+// 3. Clean up test data
+test.afterEach(async () => {
+  await prisma.news.deleteMany({
+    where: { title: { startsWith: "Test" } },
+  });
 });
 
-// ❌ Bad: Tests depend on each other's state
+// 4. Use first() for multiple elements
+await page.locator("h1").first().toBeVisible();
+
+// 5. Set appropriate timeouts
+test.setTimeout(120000); // For login flows
 ```
 
-### 7. Error Handling
+### ❌ DON'T
 
 ```typescript
-// ✅ Good: Check element exists before interacting
-const button = page.locator('button:has-text("Submit")');
-if ((await button.count()) > 0) {
-  await button.click();
-}
+// 1. Don't use arbitrary timeouts
+await page.waitForTimeout(5000); // ❌ Flaky
 
-// ✅ Good: Soft assertions for optional elements
-const optional = page.locator(".optional-element");
-expect((await optional.count()) >= 0).toBeTruthy();
+// 2. Don't hardcode selectors inline
+await page.click("#btn-xyz"); // ❌ Put in Page Object
+
+// 3. Don't leave test data behind
+// ❌ Missing cleanup
+
+// 4. Don't use strict mode violating selectors
+await page.locator("h1").toBeVisible(); // ❌ Multiple h1s
 ```
+
+### Timeout Guidelines
+
+| Scenario               | Recommended Timeout |
+| ---------------------- | ------------------- |
+| Element visibility     | 10-15s              |
+| Page navigation        | 30-60s              |
+| Login flow (with anim) | 120s (test timeout) |
+| API responses          | 10-15s              |
 
 ---
 
@@ -452,102 +428,159 @@ expect((await optional.count()) >= 0).toBeTruthy();
 
 ### Common Issues
 
-#### 1. Tests failing due to timeout
+#### 1. "Timeout waiting for element"
 
 ```bash
-# Increase timeout
-npx playwright test --timeout=60000
-
-# Or in test file
-test.setTimeout(60000);
+# Solution: Increase timeout or use explicit wait
+await element.waitFor({ state: "visible", timeout: 20000 });
 ```
 
-#### 2. Element not found
-
-```typescript
-// Increase wait time
-await page.locator(".element").waitFor({ state: "visible", timeout: 10000 });
-
-// Use networkidle for dynamic content
-await page.waitForLoadState("networkidle");
-```
-
-#### 3. Authentication issues
-
-```typescript
-// Clear cookies before login
-await page.context().clearCookies();
-
-// Wait longer after login
-await page.waitForTimeout(3000);
-```
-
-#### 4. Flaky tests
-
-```typescript
-// Add retry mechanism in config
-{
-  retries: 2,
-  use: {
-    actionTimeout: 10000,
-  }
-}
-```
-
-### Debug Commands
+#### 2. "Strict mode violation"
 
 ```bash
-# Visual debug with Playwright Inspector
+# Solution: Use .first() or more specific selector
+await page.locator("h1").first().toBeVisible();
+```
+
+#### 3. "ECONNRESET" in terminal
+
+```bash
+# This is NORMAL - happens when browser closes
+# Tests still pass ✅
+```
+
+#### 4. Login animation timeout
+
+```bash
+# Solution: Increase test timeout for login flows
+test.setTimeout(120000);
+```
+
+### Debug Tools
+
+```bash
+# Open Playwright Inspector
 npx playwright test --debug
 
-# Generate trace for failed tests
-npx playwright test --trace on
+# View trace file
+npx playwright show-trace test-results/.../trace.zip
 
-# View trace
-npx playwright show-trace test-results/path-to-trace.zip
-
-# Take screenshot on failure (configured by default)
-# Screenshots saved in test-results/
+# See HTML report
+npm run test:report
 ```
 
 ---
 
 ## CI/CD Integration
 
-- Primary workflow: `.github/workflows/ci.yml`.
-- The `test` job starts a PostgreSQL service in the runner, runs `npm run db:reset`, then `npm run test:critical`.
-- Playwright reports are uploaded as artifacts on failure; locally, open with `npm run test:report`.
+### GitHub Actions Workflow
+
+```yaml
+# .github/workflows/test.yml
+name: E2E Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Setup Database
+        run: npm run db:reset
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+
+      - name: Run Critical Tests
+        run: npm run test:critical
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+
+      - name: Upload Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+```
+
+### CI Best Practices
+
+1. **Run only critical tests in CI** — `npm run test:critical`
+2. **Use single browser** — Chromium only for speed
+3. **Reset database before tests** — `npm run db:reset`
+4. **Upload artifacts on failure** — HTML report for debugging
+5. **Parallelize with workers** — Set `workers: 1` in CI for stability
 
 ---
 
-## 📚 Resources
+## Quick Reference
 
-- [Playwright Documentation](https://playwright.dev/docs/intro)
-- [Next.js Testing Guide](https://nextjs.org/docs/testing#playwright)
-- [Playwright Best Practices](https://playwright.dev/docs/best-practices)
-- [Locator Strategies](https://playwright.dev/docs/locators)
+### 📋 Test Commands Cheatsheet
+
+```bash
+# 🚀 Primary Commands
+npm run test              # Run ALL tests (11 tests)
+npm run test:critical     # Run critical path only (6 tests) — CI
+npm run test:ui           # Interactive Playwright UI
+npm run test:report       # Open HTML report
+
+# 🔍 Debug Commands
+npx playwright test --debug              # Inspector mode
+npx playwright test --headed             # Visible browser
+npx playwright test -g "test name"       # Run single test
+
+# 📁 File-specific Commands
+npx playwright test tests/dashboards.spec.ts
+npx playwright test tests/critical-path.spec.ts
+```
+
+### 🧪 Test Coverage Summary
+
+```mermaid
+pie title Test Distribution
+    "Critical Path Tests" : 6
+    "Dashboard Smoke Tests" : 5
+```
+
+| File                    | Tests  | Coverage                       |
+| ----------------------- | ------ | ------------------------------ |
+| `critical-path.spec.ts` | 6      | Public pages, Admin CRUD, RBAC |
+| `dashboards.spec.ts`    | 5      | All 5 role dashboards          |
+| **Total**               | **11** | ~2 min runtime                 |
 
 ---
 
-## 📝 Changelog
+## 📚 Related Documentation
 
-| Version | Date       | Changes                          |
-| ------- | ---------- | -------------------------------- |
-| 1.1.0   | 2026-02-19 | Align docs with Node 20 CI, chromium install flags, and network stubbing expectations |
-| 1.0.0   | 2025-06-03 | Initial testing setup with Playwright |
-
----
-
-## 🤝 Contributing
-
-To add new tests:
-
-1. Identify the feature to cover.
-2. Create a new spec file or extend an existing one.
-3. Follow the naming convention: `feature-name.spec.ts`.
-4. Run tests locally before committing.
-5. Update this document when new suites or patterns are added.
+| Document                                        | Description               |
+| ----------------------------------------------- | ------------------------- |
+| [TEST_STRATEGY.md](./TEST_STRATEGY.md)          | Testing strategy overview |
+| [ARCHITECTURE.md](./ARCHITECTURE.md)            | System architecture       |
+| [playwright.config.ts](../playwright.config.ts) | Playwright configuration  |
 
 ---
 
-_Maintained by the SMP IP Yakin Development Team._
+_Last Updated: January 2026_

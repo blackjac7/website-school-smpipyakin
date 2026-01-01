@@ -150,10 +150,14 @@ export default function UploadAchievementModal({
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="achievement-category"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Kategori Prestasi
             </label>
             <select
+              id="achievement-category"
               value={formData.category}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, category: e.target.value }))
@@ -172,10 +176,14 @@ export default function UploadAchievementModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="achievement-title"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Judul Prestasi
             </label>
             <input
+              id="achievement-title"
               type="text"
               value={formData.title}
               onChange={(e) =>
@@ -188,10 +196,14 @@ export default function UploadAchievementModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="achievement-description"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Deskripsi Prestasi
             </label>
             <textarea
+              id="achievement-description"
               value={formData.description}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -208,10 +220,14 @@ export default function UploadAchievementModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="achievement-date"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Tanggal Prestasi
               </label>
               <input
+                id="achievement-date"
                 type="date"
                 value={formData.achievementDate}
                 max={getTodayWIB()} // Prevent future dates
@@ -230,10 +246,14 @@ export default function UploadAchievementModal({
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="achievement-level"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Tingkat Prestasi
               </label>
               <select
+                id="achievement-level"
                 value={formData.level}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, level: e.target.value }))

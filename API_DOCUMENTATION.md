@@ -1,16 +1,87 @@
-# API Documentation
+# 🔌 API Documentation
 
-## SMP IP Yakin Jakarta - REST API
+## SMP IP Yakin Jakarta - REST API Reference
 
-Base URL: `https://www.smpipyakin.sch.id/api`
+**Base URL:** `https://www.smpipyakin.sch.id/api`
 
-### Table of Contents
+---
 
-- [Authentication](#authentication)
-- [PPDB (Admissions)](#ppdb-admissions)
-- [Cron & Maintenance](#cron--maintenance)
-- [Error Format](#error-format)
-- [Rate Limiting & Validation](#rate-limiting--validation)
+## 📑 Table of Contents
+
+1. [Overview](#overview)
+2. [API Architecture](#api-architecture)
+3. [Authentication](#authentication)
+4. [PPDB (Admissions)](#ppdb-admissions)
+5. [Cron & Maintenance](#cron--maintenance)
+6. [Error Handling](#error-handling)
+7. [Rate Limiting](#rate-limiting)
+8. [Security Best Practices](#security-best-practices)
+
+---
+
+## Overview
+
+### API Design Philosophy
+
+| Principle     | Implementation                    |
+| ------------- | --------------------------------- |
+| **RESTful**   | Standard HTTP methods (GET, POST) |
+| **JSON**      | Request/response bodies in JSON   |
+| **Stateless** | JWT-based authentication          |
+| **Secure**    | HTTPS, rate limiting, validation  |
+
+### Available Endpoints
+
+```mermaid
+graph LR
+    subgraph Auth["🔐 Authentication"]
+        Login[POST /auth/login]
+        Logout[POST /auth/logout]
+        Verify[GET /auth/verify]
+    end
+
+    subgraph PPDB["📝 PPDB"]
+        CheckNISN[GET /ppdb/check-nisn]
+        Register[POST /ppdb/register]
+        Status[GET /ppdb/status]
+        Upload[POST /ppdb/upload]
+        UploadR2[POST /ppdb/upload-r2]
+    end
+
+    subgraph Cron["⏰ Cron Jobs"]
+        Cleanup[GET /cron/cleanup-logs]
+        Maintenance[POST /cron/maintenance-check]
+    end
+```
+
+---
+
+## API Architecture
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant M as Middleware
+    participant R as API Route
+    participant V as Zod Validation
+    participant RL as Rate Limiter
+    participant DB as PostgreSQL
+
+    C->>M: HTTP Request
+    M->>M: Check Headers/Cookies
+    M->>R: Forward Request
+    R->>RL: Check Rate Limits
+    alt Rate Limited
+        RL-->>C: 429 Too Many Requests
+    end
+    R->>V: Validate Request Body
+    alt Invalid
+        V-->>C: 400 Bad Request
+    end
+    R->>DB: Execute Query
+    DB-->>R: Result
+    R-->>C: JSON Response
+```
 
 ---
 
@@ -206,9 +277,7 @@ Returns the application status for a given NISN.
     "feedback": "Optional feedback",
     "submittedAt": "2025-01-01T00:00:00.000Z",
     "documentsCount": 3,
-    "documents": [
-      { "type": "ijazah", "url": "https://..." }
-    ]
+    "documents": [{ "type": "ijazah", "url": "https://..." }]
   }
 }
 ```
@@ -221,11 +290,11 @@ Uploads a document to **Cloudinary** using the PPDB preset.
 
 **Form Fields:**
 
-| Field         | Required | Description                                      |
-| ------------- | -------- | ------------------------------------------------ |
-| `file`        | Yes      | JPG / PNG / PDF, max 5MB                         |
-| `documentType`| Yes      | `ijazah` \| `aktaKelahiran` \| `kartuKeluarga` \| `pasFoto` |
-| `nisn`        | Yes      | Applicant NISN (used for folder naming)          |
+| Field          | Required | Description                                                 |
+| -------------- | -------- | ----------------------------------------------------------- |
+| `file`         | Yes      | JPG / PNG / PDF, max 5MB                                    |
+| `documentType` | Yes      | `ijazah` \| `aktaKelahiran` \| `kartuKeluarga` \| `pasFoto` |
+| `nisn`         | Yes      | Applicant NISN (used for folder naming)                     |
 
 **Successful Response:**
 
@@ -273,45 +342,209 @@ Uploads a document to **Cloudflare R2** (S3-compatible). Rate limited to **20 up
 
 Deletes login attempt records older than 30 days.
 
-- **Headers:** `Authorization: Bearer <CRON_SECRET>` (required in production)
-- **Response:** `{ "success": true, "deletedCount": number }`
+**Security:** Protected by `CRON_SECRET`
+
+**Headers:**
+
+```
+Authorization: Bearer <CRON_SECRET>
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "deletedCount": 42
+}
+```
 
 ### POST `/api/cron/maintenance-check`
 
 Activates/deactivates maintenance mode based on active `maintenanceSchedules`.
 
-- **Headers:** `Authorization: Bearer <CRON_SECRET>` (falls back to `test-cron-secret` if unset for local use)
-- **Response (maintenance on):** `{ "success": true, "active": true, "scheduleId": "uuid" }`
-- **Response (off):** `{ "success": true, "active": false }`
+**Headers:**
 
----
+```
+Authorization: Bearer <CRON_SECRET>
+```
 
-## Error Format
-
-Common structure for failures:
+**Response (maintenance active):**
 
 ```json
 {
-  "error": "Human readable message",
+  "success": true,
+  "active": true,
+  "scheduleId": "uuid"
+}
+```
+
+**Response (maintenance inactive):**
+
+```json
+{
+  "success": true,
+  "active": false
+}
+```
+
+---
+
+## Error Handling
+
+### Standard Error Format
+
+```json
+{
+  "error": "Human readable error message",
   "success": false
 }
 ```
 
-Authentication and rate-limit responses also include `remainingAttempts`, `retryAfter`, and `lockType` when applicable.
+### HTTP Status Codes
+
+| Code  | Meaning           | When Used                  |
+| ----- | ----------------- | -------------------------- |
+| `200` | Success           | Successful operation       |
+| `400` | Bad Request       | Validation failed          |
+| `401` | Unauthorized      | Missing/invalid token      |
+| `403` | Forbidden         | Insufficient permissions   |
+| `404` | Not Found         | Resource not found         |
+| `409` | Conflict          | Duplicate NISN, etc.       |
+| `423` | Locked            | Account temporarily locked |
+| `429` | Too Many Requests | Rate limit exceeded        |
+| `500` | Server Error      | Internal error             |
+
+### Authentication Error Response
+
+```json
+{
+  "error": "Invalid credentials",
+  "remainingAttempts": 3,
+  "retryAfter": 0,
+  "lockType": null
+}
+```
+
+### Rate Limit Error Response
+
+```json
+{
+  "error": "Too many login attempts. Try again in 15 minutes.",
+  "remainingAttempts": 0,
+  "retryAfter": 900,
+  "lockType": "ip"
+}
+```
 
 ---
 
-## Rate Limiting & Validation
+## Rate Limiting
 
-- **Login:** 5 failed attempts / 15 minutes per IP; 10 / 24 hours per username (database-backed, logged in `login_attempts`).
-- **PPDB register:** 5 submissions / hour / IP (in-memory limiter).
-- **PPDB upload (R2):** 20 uploads / hour / IP (in-memory limiter).
-- **Uploads:** Only JPG / PNG / PDF up to 5MB.
-- **Sessions:** JWT stored in `auth-token` cookie (HttpOnly, SameSite Strict in production) with IP binding.
-- **Transport:** All endpoints must be called over HTTPS in production.
+### Rate Limit Summary
+
+```mermaid
+graph TB
+    subgraph Login["🔐 Login Rate Limits"]
+        IP[IP Limit<br/>5 attempts / 15 min]
+        Account[Account Limit<br/>10 attempts / 24h]
+    end
+
+    subgraph PPDB["📝 PPDB Rate Limits"]
+        Register[Register<br/>5 submissions / hour / IP]
+        Upload[Upload<br/>20 uploads / hour / IP]
+    end
+
+    subgraph Storage["💾 Storage"]
+        DBBacked[Database-backed<br/>LoginAttempt table]
+        InMemory[In-memory<br/>Map-based limiter]
+    end
+
+    IP --> DBBacked
+    Account --> DBBacked
+    Register --> InMemory
+    Upload --> InMemory
+```
+
+### Login Rate Limiting
+
+| Scope       | Limit       | Window     | Storage    | Action          |
+| ----------- | ----------- | ---------- | ---------- | --------------- |
+| Per IP      | 5 attempts  | 15 minutes | PostgreSQL | Temporary block |
+| Per Account | 10 attempts | 24 hours   | PostgreSQL | Account lock    |
+
+### PPDB Rate Limiting
+
+| Endpoint          | Limit         | Window | Storage   |
+| ----------------- | ------------- | ------ | --------- |
+| `/ppdb/register`  | 5 submissions | 1 hour | In-memory |
+| `/ppdb/upload-r2` | 20 uploads    | 1 hour | In-memory |
+
+### File Upload Limits
+
+| Constraint    | Value                                |
+| ------------- | ------------------------------------ |
+| Max file size | 5MB                                  |
+| Allowed types | JPG, PNG, PDF                        |
+| Naming        | `{nisn}/{docType}_{timestamp}.{ext}` |
 
 ---
 
-### Changelog
+## Security Best Practices
 
-- **2026-02:** Updated to align with Next.js 15.5 codebase, PPDB retry rules, Cloudinary/R2 uploads, and cron endpoints.
+### 🔐 Authentication
+
+| Practice             | Implementation                       |
+| -------------------- | ------------------------------------ |
+| **Token Storage**    | HTTP-Only cookies (`auth-token`)     |
+| **Token Binding**    | IP address in JWT payload            |
+| **Cookie Settings**  | SameSite=Strict, Secure (production) |
+| **Session Duration** | 24 hours                             |
+
+### 🛡️ Request Validation
+
+| Layer            | Tool         | Purpose         |
+| ---------------- | ------------ | --------------- |
+| **Schema**       | Zod 4.x      | Type validation |
+| **Sanitization** | Built-in     | XSS prevention  |
+| **CAPTCHA**      | Math CAPTCHA | Bot prevention  |
+| **Honeypot**     | Hidden field | Bot detection   |
+
+### 🔒 Transport Security
+
+| Requirement | Value                   |
+| ----------- | ----------------------- |
+| Protocol    | HTTPS only (production) |
+| HSTS        | Enabled via headers     |
+| CSP         | Content Security Policy |
+
+### 📊 Audit Logging
+
+| Event             | Logged Data                               |
+| ----------------- | ----------------------------------------- |
+| Login attempt     | IP, username, user-agent, success/failure |
+| PPDB registration | IP, NISN, timestamp                       |
+| Cron jobs         | Execution time, records affected          |
+
+---
+
+## 📚 Related Documentation
+
+| Document                                  | Description                     |
+| ----------------------------------------- | ------------------------------- |
+| [ARCHITECTURE.md](./docs/ARCHITECTURE.md) | System architecture             |
+| [SECURITY.md](./docs/SECURITY.md)         | Security implementation details |
+| [TESTING.md](./docs/TESTING.md)           | API testing guide               |
+
+---
+
+### 📝 Changelog
+
+| Date              | Changes                                                                                      |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| **January 2026**  | Updated to align with Next.js 15.5.9, added visual diagrams, enhanced security documentation |
+| **December 2025** | Initial API documentation                                                                    |
+
+---
+
+_Last Updated: January 2026_

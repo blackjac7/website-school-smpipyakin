@@ -55,3 +55,13 @@ prisma/data/credentials-siswa.txt
 
 data-siswa-SMP-IP-YAKIN.xlsx
 docs/diagrams
+
+# PWA generated files
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
+
+# Sitemap generated files
+public/sitemap*.xml
+public/robots.txt

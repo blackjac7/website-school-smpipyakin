@@ -121,16 +121,13 @@ export default function QuickEditModal({
       return;
     }
 
-    if (!formData.email.trim()) {
-      toast.error("Email harus diisi");
-      return;
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error("Format email tidak valid");
-      return;
+    // Email validation - only validate format if provided
+    if (formData.email?.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        toast.error("Format email tidak valid");
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -151,8 +148,8 @@ export default function QuickEditModal({
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-gray-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
-          <h3 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-linear-to-r from-blue-50 to-purple-50">
+          <h3 className="text-xl font-semibold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Aksi Cepat
           </h3>
           <button
@@ -167,7 +164,7 @@ export default function QuickEditModal({
           {/* Profile Image Upload */}
           <div className="text-center">
             <div className="relative mx-auto w-24 h-24 mb-4">
-              <div className="w-24 h-24 rounded-full border-4 border-blue-200 overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 shadow-lg">
+              <div className="w-24 h-24 rounded-full border-4 border-blue-200 overflow-hidden bg-linear-to-br from-blue-50 to-purple-50 shadow-lg">
                 {formData.profileImage ? (
                   <Image
                     src={formData.profileImage}
@@ -184,7 +181,7 @@ export default function QuickEditModal({
               </div>
 
               {/* Upload Button */}
-              <label className="absolute bottom-0 right-0 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full p-2 cursor-pointer transition-all shadow-lg transform hover:scale-110">
+              <label className="absolute bottom-0 right-0 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full p-2 cursor-pointer transition-all shadow-lg transform hover:scale-110">
                 <input
                   type="file"
                   accept="image/jpeg,image/jpg,image/png,image/webp"
@@ -281,7 +278,7 @@ export default function QuickEditModal({
             <button
               type="submit"
               disabled={isSubmitting || isUploadingImage}
-              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+              className="flex-1 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>

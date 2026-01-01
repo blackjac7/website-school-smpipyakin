@@ -1,10 +1,15 @@
+"use client";
+
+import { useState } from "react";
 import {
   Search,
   Filter,
   Check,
   X,
   Eye,
-  User
+  User,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { ContentItem } from "./types";
 import { format } from "date-fns";
@@ -35,6 +40,9 @@ export default function ContentList({
   onReject,
   onPreview,
 }: ContentListProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   // Filter logic (Client side refinement if needed, but primary filter is server-side now)
   const filteredItems = contentItems.filter((item) => {
     const matchesSearch =
@@ -52,6 +60,30 @@ export default function ContentList({
     return matchesSearch && matchesCategory;
   });
 
+  // Pagination
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedItems = filteredItems.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  // Reset page when filters change
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setCategoryFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusChange = (value: string) => {
+    setStatusFilter(value);
+    setCurrentPage(1);
+  };
+
   return (
     <>
       {/* Filters */}
@@ -59,19 +91,27 @@ export default function ContentList({
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <label htmlFor="content-search" className="sr-only">
+              Cari konten
+            </label>
             <input
+              id="content-search"
               type="text"
               placeholder="Cari konten..."
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
             />
           </div>
           <div className="flex gap-2">
+            <label htmlFor="category-filter" className="sr-only">
+              Filter kategori
+            </label>
             <select
+              id="category-filter"
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              onChange={(e) => handleCategoryChange(e.target.value)}
             >
               <option>Semua Kategori</option>
               <option value="Akademik">Akademik</option>
@@ -80,10 +120,14 @@ export default function ContentList({
               <option value="Fotografi">Fotografi</option>
               <option value="Videografi">Videografi</option>
             </select>
+            <label htmlFor="status-filter" className="sr-only">
+              Filter status
+            </label>
             <select
+              id="status-filter"
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => handleStatusChange(e.target.value)}
             >
               <option>Semua Status</option>
               <option value="Pending">Pending</option>
@@ -102,10 +146,10 @@ export default function ContentList({
       <div className="space-y-4">
         {filteredItems.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-             <p className="text-gray-500">Tidak ada konten yang ditemukan</p>
+            <p className="text-gray-500">Tidak ada konten yang ditemukan</p>
           </div>
         ) : (
-          filteredItems.map((item) => (
+          paginatedItems.map((item) => (
             <div
               key={item.id}
               className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
@@ -127,20 +171,22 @@ export default function ContentList({
                       item.status === "PENDING"
                         ? "bg-orange-100 text-orange-700"
                         : item.status === "APPROVED"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
                     }`}
                   >
                     {item.status}
                   </span>
 
                   <span className="text-sm text-gray-500">
-                     {format(new Date(item.date), "dd MMM yyyy", { locale: idLocale })}
+                    {format(new Date(item.date), "dd MMM yyyy", {
+                      locale: idLocale,
+                    })}
                   </span>
                 </div>
 
                 {item.status === "PENDING" && (
-                   <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={() => onApprove(item)}
                       className="btn-success flex items-center gap-1"
@@ -166,20 +212,22 @@ export default function ContentList({
                 )}
 
                 {item.status !== "PENDING" && (
-                   <button
+                  <button
                     onClick={() => onPreview(item)}
                     className="btn-secondary flex items-center gap-1"
-                   >
-                     <Eye className="w-4 h-4" />
-                     Detail
-                   </button>
+                  >
+                    <Eye className="w-4 h-4" />
+                    Detail
+                  </button>
                 )}
               </div>
 
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 {item.title}
               </h3>
-              <p className="text-gray-600 mb-4 line-clamp-2">{item.description || "Tidak ada deskripsi"}</p>
+              <p className="text-gray-600 mb-4 line-clamp-2">
+                {item.description || "Tidak ada deskripsi"}
+              </p>
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 text-sm text-gray-500">
@@ -187,13 +235,17 @@ export default function ContentList({
                     <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                       <User className="w-3 h-3 text-gray-600" />
                     </div>
-                    <span>{item.authorName} ({item.authorClass})</span>
+                    <span>
+                      {item.authorName} ({item.authorClass})
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
-                   {item.category && (
-                      <span className="bg-gray-100 px-2 py-1 rounded text-xs">{item.category}</span>
-                   )}
+                  {item.category && (
+                    <span className="bg-gray-100 px-2 py-1 rounded text-xs">
+                      {item.category}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -201,7 +253,37 @@ export default function ContentList({
         )}
       </div>
 
-      {/* Pagination - Simplified/Hidden as requested for basic iteration */}
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4 mt-6">
+          <p className="text-sm text-gray-600">
+            Menampilkan {startIndex + 1}-
+            {Math.min(startIndex + itemsPerPage, filteredItems.length)} dari{" "}
+            {filteredItems.length} konten
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              aria-label="Halaman sebelumnya"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-sm font-medium text-gray-700 px-3">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              aria-label="Halaman selanjutnya"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

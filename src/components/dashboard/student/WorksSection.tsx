@@ -397,7 +397,7 @@ export default function WorksSection({
         </div>
 
         {/* Content Area */}
-        <div className="p-6 bg-gray-50 min-h-[400px]">
+        <div className="p-6 bg-gray-50 min-h-100">
           {filteredWorks.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
@@ -470,7 +470,7 @@ export default function WorksSection({
                               ) : (
                                 <div className="flex flex-col items-center">
                                   <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-2">
-                                    <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent ml-1"></div>
+                                    <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-white border-b-8 border-b-transparent ml-1"></div>
                                   </div>
                                   <span className="text-xs font-medium">
                                     Video Preview
@@ -612,7 +612,7 @@ export default function WorksSection({
 
       {/* Detail Modal */}
       {selectedWork && (
-        <div className="fixed inset-0 backdrop-blur-sm bg-black/40 flex items-center justify-center z-[60] p-4">
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/40 flex items-center justify-center z-60 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}

@@ -106,44 +106,50 @@ export default function ApplicantDetailModal({
       await onStatusUpdate(applicant.id, validationAction, feedback);
 
       // Notification Simulation
-      toast.success(`Notifikasi email dikirim ke ${applicant.parentEmail || 'pemohon'}`, {
-         icon: '📧',
-         duration: 4000
-      });
+      toast.success(
+        `Notifikasi email dikirim ke ${applicant.parentEmail || "pemohon"}`,
+        {
+          icon: "📧",
+          duration: 4000,
+        }
+      );
 
       // WhatsApp Prompt
       if (applicant.parentContact) {
-          let phone = applicant.parentContact.replace(/\D/g, '');
-          if (phone.startsWith('0')) phone = '62' + phone.substring(1);
+        let phone = applicant.parentContact.replace(/\D/g, "");
+        if (phone.startsWith("0")) phone = "62" + phone.substring(1);
 
-          const message = encodeURIComponent(
-             `Yth. Bpk/Ibu ${applicant.parentName || 'Wali'}, status pendaftaran Calon Siswa ${applicant.name} telah diperbarui menjadi ${validationAction === 'ACCEPTED' ? 'DITERIMA' : validationAction === 'REJECTED' ? 'DITOLAK' : 'PENDING'}. ${feedback ? 'Catatan: ' + feedback : ''} - Panitia PPDB SMP IP Yakin`
-          );
+        const message = encodeURIComponent(
+          `Yth. Bpk/Ibu ${applicant.parentName || "Wali"}, status pendaftaran Calon Siswa ${applicant.name} telah diperbarui menjadi ${validationAction === "ACCEPTED" ? "DITERIMA" : validationAction === "REJECTED" ? "DITOLAK" : "PENDING"}. ${feedback ? "Catatan: " + feedback : ""} - Panitia PPDB SMP IP Yakin`
+        );
 
-          const waLink = `https://wa.me/${phone}?text=${message}`;
+        const waLink = `https://wa.me/${phone}?text=${message}`;
 
-          toast((t) => (
+        toast(
+          (t) => (
             <div className="flex flex-col gap-2">
-                <span>Kirim notifikasi WhatsApp?</span>
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => {
-                            window.open(waLink, '_blank');
-                            toast.dismiss(t.id);
-                        }}
-                        className="bg-green-500 text-white px-2 py-1 rounded text-xs font-bold"
-                    >
-                        Kirim WA
-                    </button>
-                    <button
-                        onClick={() => toast.dismiss(t.id)}
-                        className="bg-gray-200 px-2 py-1 rounded text-xs"
-                    >
-                        Nanti
-                    </button>
-                </div>
+              <span>Kirim notifikasi WhatsApp?</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    window.open(waLink, "_blank");
+                    toast.dismiss(t.id);
+                  }}
+                  className="bg-green-500 text-white px-2 py-1 rounded text-xs font-bold"
+                >
+                  Kirim WA
+                </button>
+                <button
+                  onClick={() => toast.dismiss(t.id)}
+                  className="bg-gray-200 px-2 py-1 rounded text-xs"
+                >
+                  Nanti
+                </button>
+              </div>
             </div>
-          ), { duration: 6000 });
+          ),
+          { duration: 6000 }
+        );
       }
 
       onClose();
@@ -264,7 +270,7 @@ export default function ApplicantDetailModal({
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+          <div className="bg-linear-to-r from-blue-600 to-purple-600 text-white p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
@@ -311,7 +317,7 @@ export default function ApplicantDetailModal({
             {activeTab === "personal" && (
               <div className="space-y-6">
                 {/* Basic Info Card */}
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                <div className="bg-linear-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <User className="w-5 h-5 text-blue-600" />
                     Informasi Dasar
@@ -377,7 +383,7 @@ export default function ApplicantDetailModal({
                 </div>
 
                 {/* Address Card */}
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                <div className="bg-linear-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <MapPin className="w-5 h-5 text-green-600" />
                     Alamat
@@ -388,7 +394,7 @@ export default function ApplicantDetailModal({
                 </div>
 
                 {/* Parent Info Card */}
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+                <div className="bg-linear-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <Users className="w-5 h-5 text-purple-600" />
                     Data Orang Tua/Wali
@@ -422,7 +428,7 @@ export default function ApplicantDetailModal({
                 </div>
 
                 {/* School Info Card */}
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-200">
+                <div className="bg-linear-to-br from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-200">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <School className="w-5 h-5 text-amber-600" />
                     Asal Sekolah
@@ -433,7 +439,7 @@ export default function ApplicantDetailModal({
                 </div>
 
                 {/* Registration Info */}
-                <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-200">
+                <div className="bg-linear-to-br from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-gray-600" />
                     Informasi Pendaftaran
@@ -464,7 +470,7 @@ export default function ApplicantDetailModal({
             {activeTab === "documents" && (
               <div className="space-y-6">
                 {/* Document Summary */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                <div className="bg-linear-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                       <FileText className="w-5 h-5 text-blue-600" />
@@ -588,7 +594,7 @@ export default function ApplicantDetailModal({
             {activeTab === "validation" && (
               <div className="space-y-6">
                 {/* Current Status */}
-                <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-200">
+                <div className="bg-linear-to-r from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-gray-600" />
                     Status Saat Ini

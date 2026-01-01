@@ -50,7 +50,129 @@ const UserSchema = z.object({
 
 export type UserFormData = z.infer<typeof UserSchema>;
 
-export async function getUsers() {
+// Pagination params type
+export interface GetUsersParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  role?: string;
+}
+
+// Response type with pagination info
+export interface PaginatedUsersResponse {
+  success: boolean;
+  error?: string;
+  data?: {
+    users: Array<{
+      id: string;
+      username: string;
+      email: string | null;
+      role: string;
+      name: string;
+      class: string;
+      status: string;
+      lastLogin: string;
+      nisn?: string;
+      osisAccess: boolean;
+      nip?: string;
+      gender?: string;
+    }>;
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  };
+}
+
+export async function getUsers(
+  params?: GetUsersParams
+): Promise<PaginatedUsersResponse> {
+  // Verify admin authorization
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  const { page = 1, limit = 50, search = "", role = "" } = params || {};
+
+  try {
+    // Build where clause for filtering
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = {};
+
+    // Role filter
+    if (role && role !== "all") {
+      where.role = role;
+    }
+
+    // Search filter (search in username, email, and related tables)
+    if (search) {
+      where.OR = [
+        { username: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
+        { siswa: { name: { contains: search, mode: "insensitive" } } },
+        { siswa: { nisn: { contains: search } } },
+        { kesiswaan: { name: { contains: search, mode: "insensitive" } } },
+      ];
+    }
+
+    // Get total count for pagination
+    const total = await prisma.user.count({ where });
+
+    // Get paginated users
+    const users = await prisma.user.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: {
+        siswa: true,
+        kesiswaan: true,
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    // Transform data for the UI
+    return {
+      success: true,
+      data: {
+        users: users.map((user) => ({
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          // Determine display name based on role relation
+          name: user.siswa?.name || user.kesiswaan?.name || user.username,
+          // Specific fields
+          class: user.siswa?.class || "-",
+          status: "Active", // Assuming all users in DB are active for now
+          lastLogin: "Never", // You might want to fetch this from LoginAttempt if needed
+
+          // Detailed data for editing
+          nisn: user.siswa?.nisn,
+          osisAccess: user.siswa?.osisAccess || false,
+          nip: user.kesiswaan?.nip,
+          gender: user.siswa?.gender || user.kesiswaan?.gender,
+        })),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
+    };
+  } catch (error) {
+    console.error("Failed to fetch users:", error);
+    return { success: false, error: "Gagal mengambil data pengguna" };
+  }
+}
+
+/**
+ * Export users data to CSV format
+ */
+export async function exportUsersToCSV() {
   // Verify admin authorization
   const auth = await verifyAdminRole();
   if (!auth.authorized) {
@@ -66,31 +188,52 @@ export async function getUsers() {
       },
     });
 
-    // Transform data for the UI
+    // CSV header
+    const headers = [
+      "Username",
+      "Nama",
+      "Email",
+      "Role",
+      "NISN",
+      "Kelas",
+      "NIP",
+      "Jenis Kelamin",
+      "OSIS",
+      "Tanggal Dibuat",
+    ];
+
+    // CSV rows
+    const rows = users.map((user) => [
+      user.username,
+      user.siswa?.name || user.kesiswaan?.name || user.username,
+      user.email || "-",
+      user.role,
+      user.siswa?.nisn || "-",
+      user.siswa?.class || "-",
+      user.kesiswaan?.nip || "-",
+      user.siswa?.gender || user.kesiswaan?.gender || "-",
+      user.siswa?.osisAccess ? "Ya" : "Tidak",
+      user.createdAt.toISOString().split("T")[0],
+    ]);
+
+    // Convert to CSV string
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+      ),
+    ].join("\n");
+
     return {
       success: true,
-      data: users.map((user) => ({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        // Determine display name based on role relation
-        name: user.siswa?.name || user.kesiswaan?.name || user.username,
-        // Specific fields
-        class: user.siswa?.class || "-",
-        status: "Active", // Assuming all users in DB are active for now
-        lastLogin: "Never", // You might want to fetch this from LoginAttempt if needed
-
-        // Detailed data for editing
-        nisn: user.siswa?.nisn,
-        osisAccess: user.siswa?.osisAccess || false,
-        nip: user.kesiswaan?.nip,
-        gender: user.siswa?.gender || user.kesiswaan?.gender,
-      })),
+      data: {
+        csv: csvContent,
+        filename: `users_export_${new Date().toISOString().split("T")[0]}.csv`,
+      },
     };
   } catch (error) {
-    console.error("Failed to fetch users:", error);
-    return { success: false, error: "Gagal mengambil data pengguna" };
+    console.error("Failed to export users:", error);
+    return { success: false, error: "Gagal mengekspor data pengguna" };
   }
 }
 
@@ -310,6 +453,53 @@ export async function deleteUser(userId: string) {
     return { success: true, message: "Pengguna berhasil dihapus" };
   } catch (error) {
     console.error("Delete user error:", error);
+    return { success: false, error: "Gagal menghapus pengguna" };
+  }
+}
+
+/**
+ * Bulk delete multiple users
+ */
+export async function bulkDeleteUsers(userIds: string[]) {
+  // Verify admin authorization
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  if (!userIds || userIds.length === 0) {
+    return { success: false, error: "Tidak ada pengguna yang dipilih" };
+  }
+
+  try {
+    // Delete users in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // First delete related records (Siswa, Kesiswaan) - cascade should handle this
+      // but we explicitly delete to be safe
+      await tx.siswa.deleteMany({
+        where: { userId: { in: userIds } },
+      });
+
+      await tx.kesiswaan.deleteMany({
+        where: { userId: { in: userIds } },
+      });
+
+      // Then delete the users
+      const deleted = await tx.user.deleteMany({
+        where: { id: { in: userIds } },
+      });
+
+      return deleted;
+    });
+
+    revalidatePath("/dashboard-admin/users");
+    return {
+      success: true,
+      message: `${result.count} pengguna berhasil dihapus`,
+      deletedCount: result.count,
+    };
+  } catch (error) {
+    console.error("Bulk delete users error:", error);
     return { success: false, error: "Gagal menghapus pengguna" };
   }
 }

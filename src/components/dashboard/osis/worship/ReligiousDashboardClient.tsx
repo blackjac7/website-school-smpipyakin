@@ -22,7 +22,7 @@ interface PageProps {
 export default function ReligiousDashboardClient({
   menstruationRecords,
   adzanSchedules,
-  carpetSchedules
+  carpetSchedules,
 }: PageProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -31,9 +31,27 @@ export default function ReligiousDashboardClient({
   const activeTab = searchParams.get("tab") || "menstruation";
 
   const tabs = [
-    { id: "menstruation", label: "Absensi Haid", icon: Heart, color: "text-pink-600", bg: "bg-pink-100" },
-    { id: "adzan", label: "Jadwal Adzan", icon: Mic2, color: "text-blue-600", bg: "bg-blue-100" },
-    { id: "carpet", label: "Jadwal Karpet", icon: Layers, color: "text-amber-600", bg: "bg-amber-100" },
+    {
+      id: "menstruation",
+      label: "Absensi Haid",
+      icon: Heart,
+      color: "text-pink-600",
+      bg: "bg-pink-100",
+    },
+    {
+      id: "adzan",
+      label: "Jadwal Adzan",
+      icon: Mic2,
+      color: "text-blue-600",
+      bg: "bg-blue-100",
+    },
+    {
+      id: "carpet",
+      label: "Jadwal Karpet",
+      icon: Layers,
+      color: "text-amber-600",
+      bg: "bg-amber-100",
+    },
   ];
 
   const handleTabChange = (id: string) => {
@@ -45,17 +63,17 @@ export default function ReligiousDashboardClient({
   // Determine which data to export
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let exportData: any[] = [];
-  let exportType: 'MENSTRUATION' | 'ADZAN' | 'CARPET' = 'MENSTRUATION';
+  let exportType: "MENSTRUATION" | "ADZAN" | "CARPET" = "MENSTRUATION";
 
-  if (activeTab === 'menstruation') {
-      exportData = menstruationRecords;
-      exportType = 'MENSTRUATION';
-  } else if (activeTab === 'adzan') {
-      exportData = adzanSchedules;
-      exportType = 'ADZAN';
+  if (activeTab === "menstruation") {
+    exportData = menstruationRecords;
+    exportType = "MENSTRUATION";
+  } else if (activeTab === "adzan") {
+    exportData = adzanSchedules;
+    exportType = "ADZAN";
   } else {
-      exportData = carpetSchedules;
-      exportType = 'CARPET';
+    exportData = carpetSchedules;
+    exportType = "CARPET";
   }
 
   return (
@@ -80,7 +98,10 @@ export default function ReligiousDashboardClient({
                 />
               )}
               <span className={`relative z-10 flex items-center gap-2`}>
-                <tab.icon size={16} className={activeTab === tab.id ? tab.color : ""} />
+                <tab.icon
+                  size={16}
+                  className={activeTab === tab.id ? tab.color : ""}
+                />
                 {tab.label}
               </span>
             </button>
@@ -88,15 +109,17 @@ export default function ReligiousDashboardClient({
         </div>
 
         <ExportButton
-            data={exportData}
-            filename={`Laporan_${activeTab}`}
-            type={exportType}
+          data={exportData}
+          filename={`Laporan_${activeTab}`}
+          type={exportType}
         />
       </div>
 
       {/* Content */}
-      <div className="min-h-[500px]">
-        {activeTab === "menstruation" && <MenstruationTab records={menstruationRecords} />}
+      <div className="min-h-125">
+        {activeTab === "menstruation" && (
+          <MenstruationTab records={menstruationRecords} />
+        )}
         {activeTab === "adzan" && <AdzanTab schedules={adzanSchedules} />}
         {activeTab === "carpet" && <CarpetTab schedules={carpetSchedules} />}
       </div>

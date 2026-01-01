@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, Search, X, UploadCloud, Clock } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Search,
+  X,
+  UploadCloud,
+  Clock,
+} from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
@@ -13,13 +21,18 @@ import {
   deleteExtracurricular,
 } from "@/actions/admin/extracurricular";
 import { Extracurricular } from "@prisma/client";
-import { CldUploadWidget, CloudinaryUploadWidgetResults } from "next-cloudinary";
+import {
+  CldUploadWidget,
+  CloudinaryUploadWidgetResults,
+} from "next-cloudinary";
 
 interface ExtracurricularClientProps {
   initialData: Extracurricular[];
 }
 
-export default function ExtracurricularClient({ initialData }: ExtracurricularClientProps) {
+export default function ExtracurricularClient({
+  initialData,
+}: ExtracurricularClientProps) {
   const router = useRouter();
   const [data, setData] = useState<Extracurricular[]>(initialData);
   const [searchQuery, setSearchQuery] = useState("");
@@ -82,7 +95,9 @@ export default function ExtracurricularClient({ initialData }: ExtracurricularCl
 
       if (result.success) {
         toast.success(
-          editingItem ? "Ekstrakurikuler diperbarui" : "Ekstrakurikuler ditambahkan"
+          editingItem
+            ? "Ekstrakurikuler diperbarui"
+            : "Ekstrakurikuler ditambahkan"
         );
         setIsModalOpen(false);
         router.refresh();
@@ -120,8 +135,12 @@ export default function ExtracurricularClient({ initialData }: ExtracurricularCl
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Manajemen Ekstrakurikuler</h1>
-          <p className="text-gray-600">Kelola kegiatan ekstrakurikuler sekolah</p>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Manajemen Ekstrakurikuler
+          </h1>
+          <p className="text-gray-600">
+            Kelola kegiatan ekstrakurikuler sekolah
+          </p>
         </div>
         <button
           onClick={() => handleOpenModal()}
@@ -205,7 +224,9 @@ export default function ExtracurricularClient({ initialData }: ExtracurricularCl
           <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b">
               <h2 className="text-xl font-bold text-gray-800">
-                {editingItem ? "Edit Ekstrakurikuler" : "Tambah Ekstrakurikuler"}
+                {editingItem
+                  ? "Edit Ekstrakurikuler"
+                  : "Tambah Ekstrakurikuler"}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -278,10 +299,17 @@ export default function ExtracurricularClient({ initialData }: ExtracurricularCl
                     </div>
                   )}
                   <CldUploadWidget
-                    uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_PPDB || "ml_default"}
+                    uploadPreset={
+                      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ||
+                      "ml_default"
+                    }
                     onSuccess={(result: CloudinaryUploadWidgetResults) => {
                       const info = result?.info;
-                      if (info && typeof info === 'object' && 'secure_url' in info) {
+                      if (
+                        info &&
+                        typeof info === "object" &&
+                        "secure_url" in info
+                      ) {
                         setFormData({
                           ...formData,
                           image: (info as { secure_url: string }).secure_url,

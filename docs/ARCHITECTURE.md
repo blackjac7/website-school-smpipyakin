@@ -1,221 +1,575 @@
-# Technical Architecture
+# 🏗️ Technical Architecture
+
+## 📑 Table of Contents
+
+1. [Overview](#overview)
+2. [System Architecture Diagram](#system-architecture-diagram)
+3. [Core Architecture](#core-architecture)
+4. [Data Flow Architecture](#data-flow-architecture)
+5. [Database Architecture](#database-architecture)
+6. [Security Architecture](#security-architecture)
+7. [Key Modules](#key-modules)
+8. [External Services Integration](#external-services-integration)
+9. [Deployment Architecture](#deployment-architecture)
+
+---
 
 ## Overview
 
-This project is a modern school management system built with Next.js 15, utilizing the App Router architecture. It features a hybrid rendering model (Server Components + Client Components) and a role-based access control (RBAC) system.
+SMP IP Yakin adalah sistem manajemen sekolah modern yang dibangun dengan **Next.js 15 App Router**, menggunakan arsitektur hybrid rendering (Server Components + Client Components) dan sistem Role-Based Access Control (RBAC) untuk 5 role berbeda.
+
+### 🎯 Design Principles
+
+| Principle                  | Implementation                           |
+| -------------------------- | ---------------------------------------- |
+| **Server-First Rendering** | React Server Components sebagai default  |
+| **Type Safety**            | TypeScript strict mode + Zod validation  |
+| **Security by Design**     | JWT + IP binding, rate limiting, CAPTCHA |
+| **Single Source of Truth** | PostgreSQL dengan Prisma ORM             |
+| **Modular Architecture**   | Feature-based directory structure        |
+
+---
+
+## System Architecture Diagram
+
+### High-Level Architecture
+
+```mermaid
+graph TB
+    subgraph Client["🌐 Client Layer"]
+        Browser[Web Browser]
+        PWA[PWA Client]
+    end
+
+    subgraph Edge["⚡ Edge Layer - Vercel"]
+        CDN[CDN Cache]
+        Middleware[Next.js Middleware]
+    end
+
+    subgraph Application["🔧 Application Layer"]
+        subgraph NextJS["Next.js 15 App Router"]
+            RSC[React Server Components]
+            RCC[React Client Components]
+            ServerActions[Server Actions]
+            APIRoutes[API Routes]
+        end
+    end
+
+    subgraph Business["📊 Business Logic Layer"]
+        Auth[Authentication Module]
+        RBAC[RBAC Authorization]
+        RateLimiter[Rate Limiter]
+        Validation[Zod Validation]
+    end
+
+    subgraph Data["💾 Data Layer"]
+        Prisma[Prisma ORM]
+        PG[(PostgreSQL 15+)]
+    end
+
+    subgraph External["☁️ External Services"]
+        Cloudinary[Cloudinary CDN]
+        R2[Cloudflare R2]
+        EmailJS[EmailJS]
+        Flowise[Flowise AI]
+    end
+
+    Browser --> CDN
+    PWA --> CDN
+    CDN --> Middleware
+    Middleware --> RSC
+    Middleware --> RCC
+    RSC --> ServerActions
+    RCC --> APIRoutes
+    ServerActions --> Auth
+    APIRoutes --> Auth
+    Auth --> RBAC
+    Auth --> RateLimiter
+    RBAC --> Validation
+    Validation --> Prisma
+    Prisma --> PG
+    ServerActions --> Cloudinary
+    ServerActions --> R2
+    Browser --> EmailJS
+    Browser --> Flowise
+
+    style PG fill:#336791,color:#fff
+    style Cloudinary fill:#3448C5,color:#fff
+    style R2 fill:#F38020,color:#fff
+```
+
+### Component Interaction Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant M as Middleware
+    participant RSC as Server Component
+    participant SA as Server Action
+    participant P as Prisma
+    participant DB as PostgreSQL
+
+    U->>M: HTTP Request
+    M->>M: Check Auth Cookie
+    alt Authenticated
+        M->>RSC: Forward Request
+        RSC->>P: Fetch Data
+        P->>DB: SQL Query
+        DB-->>P: Result Set
+        P-->>RSC: Typed Data
+        RSC-->>U: Rendered HTML
+    else Not Authenticated
+        M-->>U: Redirect to /login
+    end
+
+    Note over U,SA: User Action (Form Submit)
+    U->>SA: Invoke Server Action
+    SA->>SA: Zod Validation
+    SA->>P: Prisma Mutation
+    P->>DB: INSERT/UPDATE
+    DB-->>P: Confirmation
+    P-->>SA: Result
+    SA->>SA: revalidatePath()
+    SA-->>U: Success Response
+```
+
+---
 
 ## Core Architecture
 
 ### 1. Framework & Routing
 
-- **Next.js 15 (App Router):** The application uses the directory-based routing system in `src/app`.
-  - `(public)`: Public pages (Homepage, News, Announcements, PPDB, Karya Siswa, Contact, Academic Calendar).
-  - `(dashboard)`: Protected routes requiring authentication by role.
-  - `api`: REST endpoints for authentication, PPDB (check/register/status/uploads), and cron/maintenance hooks.
+```mermaid
+graph LR
+    subgraph AppRouter["📁 src/app/"]
+        Public["(public)/<br/>10+ Public Pages"]
+        Dashboard["(dashboard)/<br/>5 Role Dashboards"]
+        API["api/<br/>REST Endpoints"]
+        Special["maintenance/<br/>not-found/<br/>unauthorized/"]
+    end
 
-### 2. Data Fetching & State
+    subgraph Routes["Route Types"]
+        Static[Static Routes]
+        Dynamic[Dynamic Routes]
+        Catch[Catch-all Routes]
+    end
 
-- **Server Actions:** Primary method for dashboard and public data mutations (admin/osis/student/ppdb/worship) in `src/actions/`, with `revalidatePath` for freshness.
-- **Server Components:** Used for initial data fetch on dashboards and public pages to keep payloads small.
-- **Hybrid Approach:** Client Components are used for interactive flows (forms, modals, charts) while data flows through Server Actions/props.
+    Public --> Static
+    Dashboard --> Dynamic
+    API --> Dynamic
+```
 
-### 3. Authentication & Security
+**Route Groups:**
 
-- **Custom Auth System:** Implemented via `/api/auth/login` using `jose` for JWT handling and `bcryptjs` for password hashing (12 rounds in seed data). Cookies are set via `JWT_CONFIG` (`auth-token`).
-- **RBAC:** 5 distinct roles:
-  - `ADMIN`: Full system access.
-  - `KESISWAAN`: Student affairs management.
-  - `SISWA`: Student portal access.
-  - `OSIS`: Student council management (including OSIS-access students).
-  - `PPDB_ADMIN`: Admission system management.
-- **Security Measures:**
-  - HttpOnly cookies with SameSite Strict in production + IP binding in JWT payloads.
-  - Zod validation on Server Actions and API routes.
-  - Honeypot fields & Math Captcha on forms.
-  - Database-backed login attempt logging with IP/account rate limiting; in-memory limiter for PPDB register/upload.
-  - Maintenance mode support with admin bypass and cron-driven schedule enforcement.
+| Group         | Path                        | Description                | Auth Required |
+| ------------- | --------------------------- | -------------------------- | ------------- |
+| `(public)`    | `/`, `/news`, `/ppdb`, etc. | Public pages               | ❌            |
+| `(dashboard)` | `/dashboard-*`              | Protected dashboard routes | ✅            |
+| `api`         | `/api/*`                    | REST endpoints             | Varies        |
 
-### 4. Database
+**Public Pages (10+):**
 
-- **Prisma ORM:** Type-safe database client.
-- **Database:** PostgreSQL for all environments (configured via `DATABASE_URL` / `DIRECT_URL`).
-- **Schema Highlights:** Users + role-specific profiles, PPDB applications (with retries & document URLs), news/announcements/hero slides/stats, facilities/extracurriculars/teachers, notifications, login attempts, site settings & maintenance schedules, worship modules (menstruation/adzan/carpet assignments), and student achievements/works.
+- Homepage, News (list + detail), Announcements
+- PPDB (registration, status check, info)
+- Karya Siswa, Facilities, Extracurricular
+- Academic Calendar, Contact, Profile
+- Login page
 
-## Key Modules
+**Protected Dashboards (5):**
 
-### Public Portal
+- `/dashboard-admin` - Full system administration
+- `/dashboard-kesiswaan` - Student affairs management
+- `/dashboard-siswa` - Student portal
+- `/dashboard-osis` - Student council management
+- `/dashboard-ppdb` - Admissions management
 
-- **CMS:** News, announcements, hero slides, stats, facilities, extracurriculars, and teacher profiles curated by Admin/OSIS.
-- **PPDB (Admissions):** Public registration flow with Cloudinary/R2 uploads, retries for rejected applicants, and status tracking by NISN.
-- **Karya Siswa & Calendar:** Public gallery and academic calendar data sourced from Server Actions.
+### 2. Data Fetching & State Architecture
 
-### Dashboards
+```mermaid
+flowchart TB
+    subgraph Client["Client Components"]
+        Form[Forms & Modals]
+        Interactive[Interactive UI]
+        Charts[Charts & Animations]
+    end
 
-- **Student:** Profile management, achievements, works submissions, and notification center.
-- **Admin:** User management, content modules, site settings/feature flags, maintenance schedules, and backups.
-- **Kesiswaan:** Validation of student submissions and student affairs data.
-- **OSIS:** Activity planning, news, and religious program management (menstruation/adzan/carpet schedules).
-- **PPDB Admin:** Applicant review, status updates, and dashboard analytics.
+    subgraph Server["Server Components"]
+        Page[Page Components]
+        Layout[Layouts]
+        DataFetch[Data Fetching]
+    end
 
-## Legacy/Interop Endpoints
+    subgraph Actions["Server Actions"]
+        Create[Create Actions]
+        Update[Update Actions]
+        Delete[Delete Actions]
+    end
 
-- **`src/app/api/auth`**: Central login/logout/verify endpoints used by the login page and middleware.
-- **`src/app/api/ppdb`**: Public PPDB operations (check, register, status, uploads to Cloudinary/R2).
-- **`src/app/api/cron`**: Cleanup of login logs and maintenance schedule enforcement (secured by `CRON_SECRET`).
+    subgraph Cache["Cache Layer"]
+        Revalidate[revalidatePath]
+        Tags[Cache Tags]
+    end
 
-## File Storage
+    Page --> DataFetch
+    DataFetch --> Prisma[(Prisma)]
+    Form --> Actions
+    Actions --> Prisma
+    Actions --> Revalidate
+    Interactive --> |Props| Server
+```
 
-- **Cloudinary:** General image hosting (news, profiles, hero) plus dedicated PPDB preset.
-- **Cloudflare R2:** Private/secure document storage for PPDB (via AWS SDK v3).
+| Pattern               | Use Case                           | Location                  |
+| --------------------- | ---------------------------------- | ------------------------- |
+| **Server Components** | Initial data fetch, static content | Page components, layouts  |
+| **Server Actions**    | Data mutations (CRUD)              | `src/actions/**/*.ts`     |
+| **Client Components** | Interactive UI, forms, charts      | `"use client"` components |
+| **revalidatePath**    | Cache invalidation after mutations | Inside Server Actions     |
+
+### 3. Authentication & Security Architecture
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant API as /api/auth/login
+    participant RL as Rate Limiter
+    participant DB as PostgreSQL
+    participant JWT as Jose JWT
+
+    C->>API: POST {username, password, role}
+    API->>RL: Check IP Rate Limit
+    alt Rate Limited
+        RL-->>C: 429 Too Many Requests
+    end
+    API->>RL: Check Account Rate Limit
+    alt Account Locked
+        RL-->>C: 423 Account Locked
+    end
+    API->>DB: Find User by username
+    API->>API: bcrypt.compare(password)
+    API->>DB: Log LoginAttempt
+    alt Success
+        API->>JWT: Sign Token (userId, role, IP, permissions)
+        API->>C: Set-Cookie: auth-token (HttpOnly)
+        API-->>C: {success: true, user: {...}}
+    else Failed
+        API-->>C: {error: "Invalid credentials"}
+    end
+```
+
+**RBAC (Role-Based Access Control):**
+
+```mermaid
+graph TB
+    subgraph Roles["5 User Roles"]
+        Admin[ADMIN<br/>Full Access]
+        Kesiswaan[KESISWAAN<br/>Student Affairs]
+        OSIS[OSIS<br/>Council]
+        Siswa[SISWA<br/>Student]
+        PPDB[PPDB_ADMIN<br/>Admissions]
+    end
+
+    subgraph Permissions["Permission Types"]
+        Read[read]
+        Write[write]
+        Delete[delete]
+        ManageUsers[manage_users]
+        ViewReports[view_reports]
+    end
+
+    Admin --> Read & Write & Delete & ManageUsers & ViewReports
+    Kesiswaan --> Read & Write & ViewReports
+    OSIS --> Read & Write
+    Siswa --> Read & Write
+    PPDB --> Read & Write & ViewReports
+```
+
+**Security Measures:**
+
+| Layer             | Implementation                    | Purpose                      |
+| ----------------- | --------------------------------- | ---------------------------- |
+| **Cookies**       | HttpOnly, SameSite=Strict, Secure | XSS & CSRF protection        |
+| **JWT Payload**   | IP binding                        | Session hijacking prevention |
+| **Rate Limiting** | 5/15min IP, 10/24h account        | Brute force protection       |
+| **Password**      | bcrypt 12 rounds                  | Password security            |
+| **Validation**    | Zod schemas                       | Input sanitization           |
+| **CAPTCHA**       | Math CAPTCHA + Honeypot           | Bot protection               |
+
+### 4. Database Architecture
+
+```mermaid
+erDiagram
+    User ||--o{ Siswa : "has profile"
+    User ||--o{ Kesiswaan : "has profile"
+    User ||--o{ News : "authors"
+    User ||--o{ Notification : "receives"
+    User ||--o{ SchoolActivity : "creates"
+    User ||--o{ OsisActivity : "authors"
+
+    Siswa ||--o{ StudentAchievement : "has"
+    Siswa ||--o{ StudentWork : "has"
+    Siswa ||--o{ WorshipMenstruationRecord : "logs"
+    Siswa ||--o{ WorshipAdzanSchedule : "assigned"
+    Siswa ||--o{ WorshipCarpetAssignment : "assigned"
+
+    WorshipCarpetSchedule ||--o{ WorshipCarpetAssignment : "has"
+
+    User {
+        String id PK
+        String username UK
+        String email UK
+        String password
+        UserRole role
+        DateTime createdAt
+        DateTime updatedAt
+    }
+
+    Siswa {
+        String id PK
+        String userId FK
+        String nisn UK
+        String name
+        Boolean osisAccess
+        GenderType gender
+    }
+
+    PPDBApplication {
+        String id PK
+        String nisn UK
+        String name
+        PPDBStatus status
+        Int retries
+        String ijazahUrl
+        String aktaKelahiranUrl
+    }
+
+    LoginAttempt {
+        String id PK
+        String ip
+        String username
+        Boolean success
+        DateTime createdAt
+    }
+```
+
+**25+ Database Models:**
+
+| Category           | Models                                                                                          |
+| ------------------ | ----------------------------------------------------------------------------------------------- |
+| **Auth & Users**   | User, Siswa, Kesiswaan                                                                          |
+| **PPDB**           | PPDBApplication                                                                                 |
+| **Content**        | News, Announcement, HeroSlide, SchoolStat                                                       |
+| **Activities**     | SchoolActivity, OsisActivity                                                                    |
+| **Student Output** | StudentAchievement, StudentWork                                                                 |
+| **Facilities**     | Facility, Extracurricular, Teacher                                                              |
+| **Notifications**  | Notification                                                                                    |
+| **Security**       | LoginAttempt                                                                                    |
+| **Religious**      | WorshipMenstruationRecord, WorshipAdzanSchedule, WorshipCarpetSchedule, WorshipCarpetAssignment |
+| **Settings**       | SiteSettings, MaintenanceSchedule                                                               |
+
+**14 Enums:**
+UserRole, GenderType, PPDBStatus, StatusApproval, PriorityLevel, WorkType, BeritaKategori, SemesterType, NotificationType, TeacherCategory, PrayerTime, TaskStatus, CarpetZone, SettingType
 
 ---
 
-### ERD (Entity-Relationship Diagram) ✅
+## Key Modules
 
-A compact ERD is included for use in your thesis proposal (clean, focused view of the main domain entities and relations). Editable source files are added to `docs/diagrams/` in three formats: **Mermaid** (`erd.mmd`), **PlantUML** (`erd.puml`), and **Graphviz DOT** (`erd.dot`). Use the instructions in `docs/diagrams/README.md` to export PNG/SVG for inclusion in documents. The simplified ERD omits some auxiliary tables (notifications, worship schedules, maintenance/site settings) that are present in the Prisma schema.
-
-You can embed the Mermaid directly below (renders where Mermaid is supported):
+### 📱 Public Portal
 
 ```mermaid
-%% ERD (embedded)
-%% For full source: docs/diagrams/erd.mmd
-
-erDiagram
-  USER {
-    String id PK
-    String username
-    String email
-    String role
-    DateTime createdAt
-  }
-
-  SISWA {
-    String id PK
-    String userId FK
-    String nisn
-    String name
-    String class
-  }
-
-  KESISWAAN {
-    String id PK
-    String userId FK
-    String nip
-    String name
-  }
-
-  NEWS {
-    String id PK
-    String title
-    DateTime date
-    String authorId FK
-  }
-
-  PPDBAPPLICATION {
-    String id PK
-    String name
-    String nisn
-    PPDBStatus status
-  }
-
-  STUDENT_ACHIEVEMENT {
-    String id PK
-    String siswaId FK
-    String title
-  }
-
-  STUDENT_WORK {
-    String id PK
-    String siswaId FK
-    String title
-  }
-
-  NOTIFICATION {
-    String id PK
-    String userId FK
-    NotificationType type
-    String title
-    Boolean read
-  }
-
-  LOGIN_ATTEMPT {
-    String id PK
-    String ip
-    String username
-    Boolean success
-  }
-
-  SITE_SETTINGS {
-    String id PK
-    String key
-    String value
-  }
-
-  MAINTENANCE_SCHEDULE {
-    String id PK
-    String title
-    DateTime startTime
-    DateTime endTime
-  }
-
-  SCHOOL_ACTIVITY {
-    String id PK
-    String title
-    DateTime date
-    String createdBy FK
-  }
-
-  OSIS_ACTIVITY {
-    String id PK
-    String title
-    DateTime date
-    String authorId FK
-  }
-
-  USER ||--o{ SISWA : "has profile"
-  USER ||--o{ KESISWAAN : "has staff profile"
-  USER ||--o{ NEWS : "authors"
-  USER ||--o{ SCHOOL_ACTIVITY : "creates"
-  USER ||--o{ OSIS_ACTIVITY : "authors"
-  SISWA ||--o{ STUDENT_ACHIEVEMENT : "has"
-  SISWA ||--o{ STUDENT_WORK : "has"
-  USER ||--o{ NOTIFICATION : "receives"
-  USER ||--o{ LOGIN_ATTEMPT : "has attempts"
-  PPDBAPPLICATION ||--o{ "(documents)" : "stores docs (Cloudinary)"
-```
-
-Below are two additional diagrams useful for the thesis proposal and developer documentation.
-
-### Runtime Flow (recommended for design & diagrams in the proposal) 🔁
-
-This diagram shows the typical runtime interactions between the user's browser, the Next.js app (Server / Client components, Server Actions), and external services (Postgres via Prisma, Cloudinary, Cloudflare R2). See `docs/diagrams/runtime_flow.mmd` (Mermaid), `runtime_flow.puml` (PlantUML), and `runtime_flow.dot` (Graphviz) for editable sources and export instructions.
-
-```mermaid
-%% Runtime flow embedded
 flowchart LR
-  Browser[Browser (User)] --> EdgeLayer[Vercel / CDN]
-  EdgeLayer --> App[Next.js App]
-  App -->|Prisma| Postgres[(Postgres DB)]
-  App --> Cloudinary[Cloudinary]
-  App --> R2[Cloudflare R2]
+    subgraph Public["Public Pages"]
+        Home[Homepage]
+        News[News & Detail]
+        PPDB[PPDB Registration]
+        Karya[Karya Siswa]
+        Calendar[Academic Calendar]
+        Contact[Contact Form]
+    end
+
+    subgraph Features["Features"]
+        Hero[Hero Slider]
+        Stats[School Stats]
+        Facilities[Facilities Gallery]
+        Ekstrakurikuler[Extracurricular]
+        Teachers[Teacher Profiles]
+    end
+
+    Home --> Hero & Stats
+    News --> |Server Action| DB[(Database)]
+    PPDB --> |API Route| Upload[Cloudinary/R2]
+    Contact --> EmailJS[EmailJS]
 ```
 
-### Deployment & Infrastructure (recommended for ops / security section) 🏗️
+| Module                 | Data Source                          | Features                                    |
+| ---------------------- | ------------------------------------ | ------------------------------------------- |
+| **Homepage**           | Hero slides, stats, featured content | Dynamic CMS content                         |
+| **News/Announcements** | Server Actions                       | Category filtering, pagination              |
+| **PPDB**               | API Routes + Server Actions          | Registration, status check, document upload |
+| **Karya Siswa**        | Server Actions                       | Approved student works gallery              |
+| **Contact**            | EmailJS (client-side)                | Math CAPTCHA, honeypot                      |
 
-This diagram highlights how the app is deployed (Vercel), where secrets live (Vercel environment variables), and the external services that must be configured and secured (DB, Cloudinary, R2). Use `docs/diagrams/infra.mmd`, `infra.puml`, or `infra.dot` for editable sources.
+### 👥 Dashboard Modules
 
 ```mermaid
-%% Infra embedded (compact)
-flowchart LR
-  GitHub[GitHub (push)] --> Vercel[Vercel Platform]
-  Vercel --> App[Next.js App]
-  App --> Postgres[(Postgres DB)]
-  App --> Cloudinary[Cloudinary]
-  App --> R2[Cloudflare R2]
+graph TB
+    subgraph Admin["Admin Dashboard"]
+        Users[User Management]
+        Content[Content CMS]
+        Settings[Site Settings]
+        Maintenance[Maintenance Mode]
+        Backup[Data Backup]
+    end
+
+    subgraph Kesiswaan["Kesiswaan Dashboard"]
+        StudentValidation[Student Work Validation]
+        AchievementReview[Achievement Review]
+        StudentAffairs[Student Affairs]
+        WorshipManage[Worship Management]
+    end
+
+    subgraph OSIS["OSIS Dashboard"]
+        Activities[Activity Planning]
+        OSISNews[News Management]
+        ReligiousProgram[Religious Programs]
+    end
+
+    subgraph Siswa["Student Dashboard"]
+        Profile[Profile Management]
+        Works[Submit Works]
+        Achievements[Submit Achievements]
+        Notifications[Notifications]
+    end
+
+    subgraph PPDB["PPDB Dashboard"]
+        Applications[Application Review]
+        StatusUpdate[Status Updates]
+        Analytics[Dashboard Analytics]
+    end
 ```
 
-For full editable sources and export instructions, see `docs/diagrams/README.md`.
+### 🔗 External Services Integration
 
-### Sequence Diagrams (Auth & PPDB) 🔁
+```mermaid
+graph LR
+    subgraph App["Next.js Application"]
+        Upload[Upload Handler]
+        Email[Contact Handler]
+        Chat[Chatbot Component]
+    end
 
-Sequence diagrams for the **Login/Auth** flow and the **PPDB** upload-and-register flow are included in `docs/diagrams/` in Mermaid/PlantUML/DOT formats. Use these in your proposal to show step-by-step interactions (recommended for the methodology/implementation chapters).
+    subgraph Storage["Storage Services"]
+        Cloudinary[Cloudinary<br/>Images]
+        R2[Cloudflare R2<br/>Documents]
+    end
+
+    subgraph Communication["Communication"]
+        EmailJS[EmailJS<br/>Contact Form]
+        Flowise[Flowise AI<br/>Chatbot]
+    end
+
+    Upload --> |next-cloudinary| Cloudinary
+    Upload --> |AWS SDK v3| R2
+    Email --> |Client SDK| EmailJS
+    Chat --> |Embed React| Flowise
+```
+
+| Service           | SDK/Integration                 | Use Cases                                              |
+| ----------------- | ------------------------------- | ------------------------------------------------------ |
+| **Cloudinary**    | `next-cloudinary`, `cloudinary` | News images, hero slides, profile photos, PPDB uploads |
+| **Cloudflare R2** | `@aws-sdk/client-s3`            | PPDB documents (ijazah, akta, KK, pas foto)            |
+| **EmailJS**       | `@emailjs/browser`              | Contact form email delivery                            |
+| **Flowise**       | `flowise-embed-react`           | AI chatbot assistant                                   |
+
+---
+
+## Deployment Architecture
+
+```mermaid
+flowchart LR
+    subgraph Dev["Development"]
+        Local[Local Machine]
+        DevDB[(Local PostgreSQL)]
+    end
+
+    subgraph CI["GitHub Actions"]
+        Lint[Lint & TypeCheck]
+        Test[Playwright Tests]
+        Build[Build Check]
+    end
+
+    subgraph Staging["Staging Environment"]
+        VercelPreview[Vercel Preview]
+        StagingDB[(Managed PostgreSQL<br/>Neon/Aiven)]
+    end
+
+    subgraph Production["Production Environment"]
+        VercelProd[Vercel Production]
+        ProdDB[(VPS PostgreSQL)]
+    end
+
+    Local --> |git push| CI
+    CI --> |develop branch| Staging
+    CI --> |main branch| Production
+    VercelPreview --> StagingDB
+    VercelProd --> ProdDB
+
+    style Production fill:#10b981,color:#fff
+    style Staging fill:#3b82f6,color:#fff
+```
+
+### Environment Configuration
+
+| Environment | Database                   | SSL Mode            | Branch     |
+| ----------- | -------------------------- | ------------------- | ---------- |
+| Development | Local PostgreSQL           | Optional (`prefer`) | feature/\* |
+| Staging     | Managed Cloud (Neon/Aiven) | `require`           | develop    |
+| Production  | VPS PostgreSQL             | `prefer`            | main       |
+
+---
+
+## 📊 Legacy/Interop Endpoints
+
+API Routes yang masih digunakan untuk kompatibilitas:
+
+| Endpoint                      | Method | Purpose                          |
+| ----------------------------- | ------ | -------------------------------- |
+| `/api/auth/login`             | POST   | Login authentication             |
+| `/api/auth/logout`            | POST   | Session termination              |
+| `/api/auth/verify`            | GET    | Session validation               |
+| `/api/ppdb/check-nisn`        | GET    | NISN availability check          |
+| `/api/ppdb/register`          | POST   | PPDB registration                |
+| `/api/ppdb/status`            | GET    | Application status               |
+| `/api/ppdb/upload`            | POST   | Cloudinary upload                |
+| `/api/ppdb/upload-r2`         | POST   | R2 document upload               |
+| `/api/cron/cleanup-logs`      | GET    | Login log cleanup (30 days)      |
+| `/api/cron/maintenance-check` | POST   | Maintenance schedule enforcement |
+
+---
+
+## 📈 Performance Best Practices
+
+| Practice                      | Implementation                          |
+| ----------------------------- | --------------------------------------- |
+| **Server Components Default** | Mengurangi bundle size client           |
+| **Streaming SSR**             | Progressive page loading                |
+| **Image Optimization**        | Cloudinary transformations + next/image |
+| **Code Splitting**            | Dynamic imports untuk heavy components  |
+| **Cache Strategy**            | revalidatePath untuk data freshness     |
+| **PWA**                       | next-pwa untuk offline capability       |
+
+---
+
+## 📚 Related Documentation
+
+| Document                                       | Description                     |
+| ---------------------------------------------- | ------------------------------- |
+| [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) | Detailed directory structure    |
+| [TECH_STACK.md](./TECH_STACK.md)               | Complete technology list        |
+| [SECURITY.md](./SECURITY.md)                   | Security implementation details |
+| [DEPLOYMENT.md](./DEPLOYMENT.md)               | CI/CD and deployment guide      |
+| [TESTING.md](./TESTING.md)                     | Testing strategy and setup      |
+| [diagrams/README.md](./diagrams/README.md)     | All system diagrams             |
+
+---
+
+_Last Updated: January 2026_

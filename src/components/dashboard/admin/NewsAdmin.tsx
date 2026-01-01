@@ -66,11 +66,13 @@ export default function NewsAdmin({ news }: NewsPageProps) {
         }
       } else {
         const result = await createNews(data);
+        console.log("createNews result:", result);
         if (result.success) {
           toast.success("News created");
           setIsModalOpen(false);
           setEditingItem(null);
         } else {
+          console.error("createNews failed client-side:", result);
           toast.error(result.error || "Failed to create news");
         }
       }
@@ -106,16 +108,22 @@ export default function NewsAdmin({ news }: NewsPageProps) {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">News Management</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Manajemen Berita</h1>
+          <p className="text-gray-600 text-sm">
+            Kelola berita dan artikel sekolah
+          </p>
+        </div>
         <button
           onClick={() => {
             setEditingItem(null);
             setIsModalOpen(true);
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
+          className="bg-blue-600 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors shadow-sm"
+          aria-label="Tambah berita baru"
         >
-          <Plus size={20} /> Add News
+          <Plus size={20} aria-hidden="true" /> Tambah Berita
         </button>
       </div>
 
@@ -199,11 +207,12 @@ export default function NewsAdmin({ news }: NewsPageProps) {
           >
             <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white">
               <h2 className="text-xl font-bold">
-                {editingItem ? "Edit News" : "Add News"}
+                {editingItem ? "Edit Berita" : "Tambah Berita"}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 text-2xl font-light w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+                aria-label="Tutup modal"
               >
                 &times;
               </button>
@@ -211,20 +220,27 @@ export default function NewsAdmin({ news }: NewsPageProps) {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Title</label>
+                <label htmlFor="title" className="text-sm font-medium">
+                  Judul <span className="text-red-500">*</span>
+                </label>
                 <input
+                  id="title"
                   name="title"
                   required
                   defaultValue={editingItem?.title}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Masukkan judul berita"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Date</label>
+                  <label htmlFor="date" className="text-sm font-medium">
+                    Tanggal <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="date"
+                    id="date"
                     name="date"
                     required
                     defaultValue={
@@ -232,15 +248,18 @@ export default function NewsAdmin({ news }: NewsPageProps) {
                         ? new Date(editingItem.date).toISOString().split("T")[0]
                         : ""
                     }
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Category</label>
+                  <label htmlFor="kategori" className="text-sm font-medium">
+                    Kategori
+                  </label>
                   <select
+                    id="kategori"
                     name="kategori"
                     defaultValue={editingItem?.kategori || "ACTIVITY"}
-                    className="w-full p-2 border rounded-lg bg-white"
+                    className="w-full p-2 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="ACTIVITY">Kegiatan</option>
                     <option value="ACHIEVEMENT">Prestasi</option>
@@ -249,26 +268,37 @@ export default function NewsAdmin({ news }: NewsPageProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Image URL</label>
+                <label htmlFor="image" className="text-sm font-medium">
+                  URL Gambar
+                </label>
                 <div className="flex items-center gap-2">
-                  <ImageIcon size={18} className="text-gray-400" />
+                  <ImageIcon
+                    size={18}
+                    className="text-gray-400"
+                    aria-hidden="true"
+                  />
                   <input
+                    id="image"
                     name="image"
                     defaultValue={editingItem?.image || ""}
-                    placeholder="https://..."
-                    className="w-full p-2 border rounded-lg"
+                    placeholder="https://contoh.com/gambar.jpg"
+                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Content</label>
+                <label htmlFor="content" className="text-sm font-medium">
+                  Konten <span className="text-red-500">*</span>
+                </label>
                 <textarea
+                  id="content"
                   name="content"
                   required
                   defaultValue={editingItem?.content}
                   rows={8}
-                  className="w-full p-2 border rounded-lg"
+                  placeholder="Tulis isi berita di sini..."
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -276,16 +306,16 @@ export default function NewsAdmin({ news }: NewsPageProps) {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                 >
-                  {isLoading ? "Saving..." : "Save News"}
+                  {isLoading ? "Menyimpan..." : "Simpan Berita"}
                 </button>
               </div>
             </form>
