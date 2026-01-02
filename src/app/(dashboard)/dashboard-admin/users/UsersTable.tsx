@@ -27,7 +27,7 @@ interface UsersTableProps {
   onDeleteUser: (id: string) => void;
   onBulkDelete?: (ids: string[]) => void;
   isBulkDeleting?: boolean;
-  onExportCSV?: () => void;
+  onExportExcel?: () => void;
   isExporting?: boolean;
   totalUsers?: number;
   // Server-side pagination
@@ -53,7 +53,7 @@ export default function UsersTable({
   onDeleteUser,
   onBulkDelete,
   isBulkDeleting = false,
-  onExportCSV,
+  onExportExcel,
   isExporting = false,
   totalUsers,
   pagination,
@@ -263,20 +263,20 @@ export default function UsersTable({
 
         {/* Action Buttons */}
         <div className="flex gap-2 w-full sm:w-auto">
-          {/* Export CSV Button */}
-          {onExportCSV && (
+          {/* Export Excel Button */}
+          {onExportExcel && (
             <button
-              onClick={onExportCSV}
+              onClick={onExportExcel}
               disabled={isExporting}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-gray-700 font-medium rounded-xl border border-gray-300 hover:bg-gray-50 focus:ring-2 focus:ring-gray-200 focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label="Ekspor data ke CSV"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-300 focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              aria-label="Ekspor data ke Excel"
             >
               {isExporting ? (
                 <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
               ) : (
                 <Download className="w-4 h-4" aria-hidden="true" />
               )}
-              <span className="hidden sm:inline">Ekspor CSV</span>
+              <span className="hidden sm:inline">Ekspor Excel</span>
             </button>
           )}
 

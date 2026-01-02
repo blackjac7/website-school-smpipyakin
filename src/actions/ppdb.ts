@@ -241,3 +241,42 @@ export async function getApplicants(params: GetApplicantsParams) {
     return { success: false, error: "Failed to fetch applicants" };
   }
 }
+
+/**
+ * Get all PPDB applications for export (no pagination)
+ */
+export async function getAllApplicantsForExport() {
+  const auth = await verifyPPDBAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  try {
+    const data = await prisma.pPDBApplication.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+
+    return {
+      success: true,
+      data: data.map((app) => ({
+        id: app.id,
+        name: app.name,
+        nisn: app.nisn,
+        gender: app.gender,
+        birthPlace: app.birthPlace,
+        birthDate: app.birthDate ? app.birthDate.toISOString() : null,
+        address: app.address,
+        asalSekolah: app.asalSekolah,
+        parentName: app.parentName,
+        parentContact: app.parentContact,
+        parentEmail: app.parentEmail,
+        status: app.status,
+        feedback: app.feedback,
+        createdAt: app.createdAt.toISOString(),
+      })),
+    };
+  } catch (error) {
+    console.error("Error fetching applicants for export:", error);
+    return { success: false, error: "Failed to fetch applicants" };
+  }
+}

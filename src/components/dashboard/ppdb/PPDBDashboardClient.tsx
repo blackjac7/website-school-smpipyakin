@@ -11,9 +11,14 @@ import { DashboardSidebar } from "@/components/dashboard/layout";
 import DashboardOverviewEnhanced from "@/components/dashboard/ppdb/DashboardOverviewEnhanced";
 import ValidationContentEnhanced from "@/components/dashboard/ppdb/ValidationContentEnhanced";
 import ReportsContentEnhanced from "@/components/dashboard/ppdb/ReportsContentEnhanced";
-import { updateApplicantStatus, PPDBStatus } from "@/actions/ppdb";
+import {
+  updateApplicantStatus,
+  PPDBStatus,
+  getAllApplicantsForExport,
+} from "@/actions/ppdb";
 import { NotificationAPIService } from "@/hooks/useNotifications";
 import { FormattedNotification } from "@/utils/notificationHelpers";
+import { exportPPDBToExcel, PPDBExportData } from "@/utils/excelExport";
 import toast from "react-hot-toast";
 import { useSidebar } from "@/hooks/useSidebar";
 
@@ -137,8 +142,24 @@ export default function PPDBDashboardClient({
     }
   };
 
-  const handleExportData = () => {
-    toast.success("Data berhasil diexport");
+  const handleExportData = async () => {
+    try {
+      toast.loading("Mengambil data untuk export...", { id: "export" });
+      const result = await getAllApplicantsForExport();
+
+      if (result.success && result.data) {
+        toast.dismiss("export");
+        exportPPDBToExcel(result.data as PPDBExportData[]);
+        toast.success("Data pendaftar berhasil diexport ke Excel");
+      } else {
+        toast.dismiss("export");
+        toast.error(result.error || "Gagal mengambil data untuk export");
+      }
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.dismiss("export");
+      toast.error("Terjadi kesalahan saat export data");
+    }
   };
 
   const handleToggleSidebar = () => {

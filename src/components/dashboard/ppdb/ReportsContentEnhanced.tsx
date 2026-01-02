@@ -13,6 +13,7 @@ import {
   LucideIcon,
 } from "lucide-react";
 import { getPPDBStats } from "@/actions/ppdb";
+import { exportPPDBStatsToExcel, PPDBStatsData } from "@/utils/excelExport";
 import toast from "react-hot-toast";
 
 interface PPDBStats {
@@ -62,51 +63,16 @@ export default function ReportsContentEnhanced() {
     }
   };
 
-  const exportToCSV = () => {
+  const exportToExcel = () => {
     if (!stats) return;
 
-    const csvData = [
-      ["Metrik", "Total", "Persentase"],
-      ["Total Pendaftar", stats.overview.total, "100%"],
-      [
-        "Menunggu Review",
-        stats.overview.pending,
-        stats.overview.total
-          ? `${Math.round((stats.overview.pending / stats.overview.total) * 100)}%`
-          : "0%",
-      ],
-      [
-        "Diterima",
-        stats.overview.accepted,
-        stats.overview.total
-          ? `${Math.round((stats.overview.accepted / stats.overview.total) * 100)}%`
-          : "0%",
-      ],
-      [
-        "Ditolak",
-        stats.overview.rejected,
-        stats.overview.total
-          ? `${Math.round((stats.overview.rejected / stats.overview.total) * 100)}%`
-          : "0%",
-      ],
-    ];
-
-    const csvContent = csvData.map((row) => row.join(",")).join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `laporan-ppdb-${new Date().toISOString().split("T")[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-    toast.success("Laporan berhasil diunduh");
-  };
-
-  const exportToPDF = () => {
-    toast.success("Sedang menyiapkan PDF...");
-    setTimeout(() => {
-      toast("Fitur PDF Export akan segera tersedia", { icon: "ℹ️" });
-    }, 1000);
+    try {
+      exportPPDBStatsToExcel(stats as PPDBStatsData);
+      toast.success("Laporan statistik berhasil diexport ke Excel");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Gagal mengexport laporan");
+    }
   };
 
   if (loading) {
@@ -180,18 +146,11 @@ export default function ReportsContentEnhanced() {
 
           <div className="flex gap-2 ml-auto">
             <button
-              onClick={exportToCSV}
+              onClick={exportToExcel}
               className="flex items-center gap-2 px-4 py-2 bg-white text-purple-700 rounded-xl hover:bg-gray-50 transition-colors font-medium shadow-sm"
             >
               <Download className="w-4 h-4" />
-              CSV
-            </button>
-            <button
-              onClick={exportToPDF}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-800/50 text-white rounded-xl hover:bg-purple-800/70 transition-colors border border-purple-400/30 backdrop-blur-sm"
-            >
-              <FileText className="w-4 h-4" />
-              PDF
+              Export Excel
             </button>
           </div>
         </div>
@@ -343,9 +302,13 @@ export default function ReportsContentEnhanced() {
                 (item._count / (stats.overview.total || 1)) * 100
               );
               const label =
-                item.gender === "LAKI_LAKI" ? "Laki-laki" : "Perempuan";
+                item.gender === "MALE"
+                  ? "Laki-laki"
+                  : item.gender === "FEMALE"
+                    ? "Perempuan"
+                    : "Tidak diketahui";
               const gradient =
-                item.gender === "LAKI_LAKI"
+                item.gender === "MALE"
                   ? "bg-gradient-to-r from-blue-400 to-blue-600"
                   : "bg-gradient-to-r from-pink-400 to-pink-600";
 
