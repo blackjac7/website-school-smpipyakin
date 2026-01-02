@@ -22,9 +22,16 @@ interface KaryaCardProps {
 export default function KaryaCard({ work, onClick }: KaryaCardProps) {
   const isVideo = work.workType === "video";
 
-  // Check if URL is from Google Drive
+  // Check if URL is from Google Drive by validating the hostname
   const isGoogleDriveUrl = (url: string) => {
-    return url.includes("drive.google.com") || url.includes("docs.google.com");
+    try {
+      const parsed = new URL(url);
+      const host = parsed.hostname;
+      return host === "drive.google.com" || host === "docs.google.com";
+    } catch {
+      // If the URL cannot be parsed, treat it as not a Google Drive URL
+      return false;
+    }
   };
 
   const getYouTubeThumbnail = (url: string) => {
