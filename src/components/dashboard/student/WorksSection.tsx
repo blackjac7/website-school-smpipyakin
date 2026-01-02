@@ -11,6 +11,7 @@ import {
   X,
   Filter,
   BookOpen,
+  HardDrive,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -144,6 +145,44 @@ export default function WorksSection({
   };
 
   // Helper functions for YouTube and Google Drive URLs (same as before)
+  const isGoogleDriveUrl = (url: string) => {
+    try {
+      const parsed = new URL(url);
+      const hostname = parsed.hostname.toLowerCase();
+      const allowedHosts = ["drive.google.com", "docs.google.com"];
+      return allowedHosts.includes(hostname);
+    } catch {
+      // If URL parsing fails, treat as not a Google Drive/Docs URL
+      return false;
+    }
+  };
+
+  // Extract Google Drive file ID from various URL formats
+  const getGoogleDriveFileId = (url: string) => {
+    try {
+      // Format: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+      if (url.includes("/file/d/")) {
+        return url.split("/file/d/")[1].split("/")[0];
+      }
+      // Format: https://drive.google.com/open?id=FILE_ID
+      if (url.includes("id=")) {
+        return url.split("id=")[1].split("&")[0];
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Get Google Drive embed URL
+  const getGoogleDriveEmbedUrl = (url: string) => {
+    const fileId = getGoogleDriveFileId(url);
+    if (fileId) {
+      return `https://drive.google.com/file/d/${fileId}/preview`;
+    }
+    return null;
+  };
+
   const getYouTubeEmbedUrl = (url: string) => {
     try {
       let videoId = "";
@@ -158,6 +197,14 @@ export default function WorksSection({
     }
   };
 
+  // Get video embed URL (YouTube or Google Drive)
+  const getVideoEmbedUrl = (url: string) => {
+    if (isGoogleDriveUrl(url)) {
+      return getGoogleDriveEmbedUrl(url);
+    }
+    return getYouTubeEmbedUrl(url);
+  };
+
   const isYouTubeUrl = (url: string) =>
     url.includes("youtube.com") || url.includes("youtu.be");
 
@@ -168,8 +215,10 @@ export default function WorksSection({
         videoId = url.split("youtu.be/")[1].split("?")[0];
       else if (url.includes("youtube.com/watch?v="))
         videoId = url.split("watch?v=")[1].split("&")[0];
+      // Use hqdefault.jpg instead of maxresdefault.jpg for more reliable thumbnail
+      // hqdefault.jpg (480x360) is available for all videos
       return videoId
-        ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+        ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
         : null;
     } catch {
       return null;
@@ -432,9 +481,12 @@ export default function WorksSection({
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
             >
               {currentWorks.map((work) => {
-                const thumb = isYouTubeUrl(work.videoLink)
-                  ? getYouTubeThumbnail(work.videoLink)
-                  : null;
+                const isGDrive =
+                  work.videoLink && isGoogleDriveUrl(work.videoLink);
+                const thumb =
+                  work.videoLink && isYouTubeUrl(work.videoLink)
+                    ? getYouTubeThumbnail(work.videoLink)
+                    : null;
                 return (
                   <motion.div
                     key={work.id}
@@ -457,9 +509,8 @@ export default function WorksSection({
                           />
                         ) : work.workType === "video" && work.videoLink ? (
                           <div className="w-full h-full relative">
-                            {/* Thumbnail Logic reuse */}
+                            {/* Thumbnail Logic - YouTube or Google Drive */}
                             <div className="w-full h-full bg-gray-900 flex items-center justify-center text-white">
-                              {/* Just a placeholder if no thumbnail fetch logic available in this view, simpler than before */}
                               {thumb ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
@@ -467,6 +518,13 @@ export default function WorksSection({
                                   alt=""
                                   className="w-full h-full object-cover opacity-80"
                                 />
+                              ) : isGDrive ? (
+                                <div className="flex flex-col items-center bg-gradient-to-br from-blue-50 to-green-50 w-full h-full justify-center">
+                                  <HardDrive className="w-12 h-12 text-green-600" />
+                                  <span className="text-xs font-medium text-gray-600 mt-2">
+                                    Google Drive Video
+                                  </span>
+                                </div>
                               ) : (
                                 <div className="flex flex-col items-center">
                                   <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-2">
@@ -645,11 +703,12 @@ export default function WorksSection({
                   ) : selectedWork.workType === "video" ? (
                     <iframe
                       src={
-                        getYouTubeEmbedUrl(selectedWork.videoLink) ||
+                        getVideoEmbedUrl(selectedWork.videoLink) ||
                         selectedWork.videoLink
                       }
                       className="w-full h-full"
                       allowFullScreen
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       title={`Video: ${selectedWork.title}`}
                     />
                   ) : (

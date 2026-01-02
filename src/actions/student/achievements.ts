@@ -39,6 +39,7 @@ export type AchievementData = {
   level: string;
   date: string;
   createdAt: string;
+  rejectionNote?: string | null;
 };
 
 export type AchievementInput = z.infer<typeof CreateAchievementSchema>;
@@ -105,6 +106,7 @@ export async function getStudentAchievements(): Promise<{
         level: achievement.level || "",
         date: formatAchievementDate(achievement.achievementDate),
         createdAt: achievement.createdAt.toISOString(),
+        rejectionNote: achievement.rejectionNote,
       })
     );
 

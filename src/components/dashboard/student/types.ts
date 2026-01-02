@@ -47,6 +47,7 @@ export interface Achievement {
   image?: string;
   category?: string;
   level?: string;
+  rejectionNote?: string | null;
 }
 
 export interface Work {

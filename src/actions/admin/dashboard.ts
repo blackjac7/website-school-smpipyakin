@@ -19,13 +19,14 @@ export type DashboardStats = {
     users: number;
     admins: number;
     teachers: number;
-    students: number; // Total Siswa records
+    students: number;
     news: number;
     announcements: number;
     facilities: number;
     extracurriculars: number;
   };
   recentActivities: DashboardActivity[];
+  lastUpdated: string;
 };
 
 export async function getAdminDashboardStats(): Promise<{
@@ -56,7 +57,7 @@ export async function getAdminDashboardStats(): Promise<{
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: UserRole.ADMIN } }),
-      prisma.teacher.count(), // Using Teacher model
+      prisma.teacher.count(),
       prisma.siswa.count(),
       prisma.news.count(),
       prisma.announcement.count(),
@@ -65,30 +66,29 @@ export async function getAdminDashboardStats(): Promise<{
     ]);
 
     // 2. Fetch Recent Items to build "Activity Feed"
-    const [recentUsers, recentNews, recentAnnouncements] =
-      await Promise.all([
-        prisma.user.findMany({
-          take: 5,
-          orderBy: { createdAt: "desc" },
-          select: { id: true, username: true, role: true, createdAt: true },
-        }),
-        prisma.news.findMany({
-          take: 5,
-          orderBy: { createdAt: "desc" },
-          select: {
-            id: true,
-            title: true,
-            statusPersetujuan: true,
-            createdAt: true,
-            author: { select: { username: true } },
-          },
-        }),
-        prisma.announcement.findMany({
-          take: 5,
-          orderBy: { createdAt: "desc" },
-          select: { id: true, title: true, priority: true, createdAt: true },
-        }),
-      ]);
+    const [recentUsers, recentNews, recentAnnouncements] = await Promise.all([
+      prisma.user.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        select: { id: true, username: true, role: true, createdAt: true },
+      }),
+      prisma.news.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          title: true,
+          statusPersetujuan: true,
+          createdAt: true,
+          author: { select: { username: true } },
+        },
+      }),
+      prisma.announcement.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        select: { id: true, title: true, priority: true, createdAt: true },
+      }),
+    ]);
 
     // 3. Normalize and Merge Activities
     const activities: DashboardActivity[] = [
@@ -118,10 +118,10 @@ export async function getAdminDashboardStats(): Promise<{
       })),
     ];
 
-    // Sort by date descending and take top 10
+    // Sort by date descending and take top 5
     const sortedActivities = activities
       .sort((a, b) => b.date.getTime() - a.date.getTime())
-      .slice(0, 10);
+      .slice(0, 5);
 
     return {
       success: true,
@@ -137,6 +137,7 @@ export async function getAdminDashboardStats(): Promise<{
           extracurriculars: extracurricularsCount,
         },
         recentActivities: sortedActivities,
+        lastUpdated: new Date().toISOString(),
       },
     };
   } catch (error) {

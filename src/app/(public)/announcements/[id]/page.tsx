@@ -1,4 +1,3 @@
-
 import { getAnnouncementById } from "@/actions/public/announcements";
 import {
   Calendar,
@@ -21,18 +20,22 @@ interface AnnouncementDetailProps {
 
 type PriorityLevel = "HIGH" | "MEDIUM" | "LOW";
 
-export async function generateMetadata({ params }: AnnouncementDetailProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: AnnouncementDetailProps): Promise<Metadata> {
   const { id } = await params;
   const announcement = await getAnnouncementById(id);
 
   if (!announcement) {
     return {
-      title: 'Pengumuman Tidak Ditemukan - SMP IP Yakin Jakarta',
+      title: "Pengumuman Tidak Ditemukan - SMP IP Yakin Jakarta",
     };
   }
 
   // Clean description
-  const cleanDescription = announcement.content.replace(/<[^>]*>/g, '').substring(0, 160);
+  const cleanDescription = announcement.content
+    .replace(/<[^>]*>/g, "")
+    .substring(0, 160);
 
   return {
     title: `${announcement.title} - Pengumuman SMP IP Yakin Jakarta`,
@@ -40,9 +43,9 @@ export async function generateMetadata({ params }: AnnouncementDetailProps): Pro
     openGraph: {
       title: announcement.title,
       description: cleanDescription,
-      type: 'article',
-      publishedTime: announcement.date
-    }
+      type: "article",
+      publishedTime: announcement.date,
+    },
   };
 }
 
@@ -93,6 +96,9 @@ export default async function AnnouncementDetail({
 
   const styles = getPriorityStyles(announcement.priority);
   const PriorityIcon = styles.Icon;
+  const attachmentUrl = announcement.linkFile || "";
+  const hasAttachment = Boolean(attachmentUrl);
+  const shareUrl = `https://smpipyakin.sch.id/announcements/${id}`;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-32 pb-20 transition-colors">
@@ -161,6 +167,27 @@ export default async function AnnouncementDetail({
                   {styles.label}
                 </div>
               </div>
+
+              {hasAttachment && (
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                  <div className={`p-2 ${styles.iconBg} rounded-lg`}>
+                    <Share2 className={`w-5 h-5 ${styles.text}`} />
+                  </div>
+                  <div className="flex flex-col">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase">
+                      Lampiran
+                    </p>
+                    <a
+                      href={attachmentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      Unduh berkas
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Content */}
@@ -170,11 +197,23 @@ export default async function AnnouncementDetail({
             />
 
             {/* Actions */}
-            <div className="mt-10 pt-6 border-t border-gray-100 dark:border-gray-700 flex justify-end">
+            <div className="mt-10 pt-6 border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              {hasAttachment && (
+                <a
+                  href={attachmentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors font-semibold text-sm"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Download Lampiran
+                </a>
+              )}
+
               <Link
-                href={`https://wa.me/?text=${encodeURIComponent(`${announcement.title} - Baca selengkapnya di: https://smpipyakin.sch.id/announcements/${id}`)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(`${announcement.title} - Baca selengkapnya di: ${shareUrl}`)}`}
                 target="_blank"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium text-sm"
+                className="inline-flex items-center gap-2 px-5 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium text-sm"
               >
                 <Share2 className="w-4 h-4" />
                 Bagikan

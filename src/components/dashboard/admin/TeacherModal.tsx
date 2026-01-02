@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { X, Upload, User, Loader2 } from "lucide-react";
-import Image from "next/image";
+import { useState, useEffect } from "react";
+import { X } from "lucide-react";
 import { TeacherData, TeacherInput } from "@/actions/admin/teachers";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import { uploadImageAction } from "@/actions/upload";
+import ImageUpload from "@/components/shared/ImageUpload";
 
 interface TeacherModalProps {
   show: boolean;
@@ -30,8 +29,6 @@ export default function TeacherModal({
   onSubmit,
 }: TeacherModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<TeacherInput>({
     name: "",
@@ -84,48 +81,6 @@ export default function TeacherModal({
       [name]:
         type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      toast.error("File harus berupa gambar");
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Ukuran file maksimal 5MB");
-      return;
-    }
-
-    setIsUploadingImage(true);
-
-    try {
-      const uploadFormData = new FormData();
-      uploadFormData.append("file", file);
-      uploadFormData.append("folder", "teachers");
-
-      const result = await uploadImageAction(uploadFormData);
-
-      if (result.success && result.data) {
-        setFormData((prev) => ({
-          ...prev,
-          photo: result.data.url,
-        }));
-        toast.success("Foto berhasil diunggah");
-      } else {
-        toast.error(result.error || "Gagal mengunggah foto");
-      }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("Terjadi kesalahan saat mengunggah foto");
-    } finally {
-      setIsUploadingImage(false);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -199,46 +154,29 @@ export default function TeacherModal({
               className="flex-1 overflow-y-auto p-6 space-y-6"
             >
               {/* Photo Upload */}
-              <div className="flex flex-col items-center">
-                <div className="relative">
-                  {formData.photo ? (
-                    <Image
-                      src={formData.photo}
-                      alt="Preview"
-                      width={120}
-                      height={120}
-                      className="w-28 h-28 rounded-full object-cover border-4 border-gray-200"
-                    />
-                  ) : (
-                    <div className="w-28 h-28 rounded-full bg-gray-100 flex items-center justify-center border-4 border-gray-200">
-                      <User className="w-12 h-12 text-gray-400" />
-                    </div>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploadingImage}
-                    className="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg disabled:opacity-50"
-                  >
-                    {isUploadingImage ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Upload className="w-4 h-4" />
-                    )}
-                  </button>
-
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Klik ikon upload untuk mengganti foto
-                </p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Foto Guru
+                </label>
+                <ImageUpload
+                  onUpload={(file) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      photo: file.url,
+                    }));
+                  }}
+                  onRemove={() => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      photo: "",
+                    }));
+                  }}
+                  currentImage={formData.photo}
+                  folder="teachers"
+                  label="Upload Foto Guru"
+                  acceptedFormats={["JPEG", "PNG", "WebP"]}
+                  maxSizeMB={4}
+                />
               </div>
 
               {/* Name & Position */}
@@ -367,14 +305,11 @@ export default function TeacherModal({
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={isSubmitting || isUploadingImage}
+                disabled={isSubmitting}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Menyimpan...
-                  </>
+                  <>Menyimpan...</>
                 ) : mode === "add" ? (
                   "Tambah Guru"
                 ) : (

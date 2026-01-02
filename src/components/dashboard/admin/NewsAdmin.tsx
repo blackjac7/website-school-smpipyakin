@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   Plus,
@@ -10,6 +11,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import ImageUpload from "@/components/shared/ImageUpload";
 import { createNews, updateNews, deleteNews } from "@/actions/news";
 import { News } from "@prisma/client";
 import toast from "react-hot-toast";
@@ -23,6 +25,7 @@ interface NewsPageProps {
 }
 
 export default function NewsAdmin({ news }: NewsPageProps) {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<News | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +34,8 @@ export default function NewsAdmin({ news }: NewsPageProps) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    const formData = new FormData(e.currentTarget);
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
 
     // Parse date safely
     const dateStr = formData.get("date") as string;
@@ -61,6 +65,7 @@ export default function NewsAdmin({ news }: NewsPageProps) {
           toast.success("News updated");
           setIsModalOpen(false);
           setEditingItem(null);
+          router.refresh();
         } else {
           toast.error(result.error || "Failed to update news");
         }
@@ -71,6 +76,7 @@ export default function NewsAdmin({ news }: NewsPageProps) {
           toast.success("News created");
           setIsModalOpen(false);
           setEditingItem(null);
+          router.refresh();
         } else {
           console.error("createNews failed client-side:", result);
           toast.error(result.error || "Failed to create news");
@@ -96,8 +102,13 @@ export default function NewsAdmin({ news }: NewsPageProps) {
       },
       async () => {
         try {
-          await deleteNews(id);
-          toast.success("News deleted");
+          const result = await deleteNews(id);
+          if (result.success) {
+            toast.success("News deleted");
+            router.refresh();
+          } else {
+            toast.error(result.error || "Failed to delete news");
+          }
         } catch (error) {
           console.error("Failed to delete news:", error);
           toast.error("Failed to delete news");
@@ -269,22 +280,32 @@ export default function NewsAdmin({ news }: NewsPageProps) {
 
               <div className="space-y-2">
                 <label htmlFor="image" className="text-sm font-medium">
-                  URL Gambar
+                  Foto Berita
                 </label>
-                <div className="flex items-center gap-2">
-                  <ImageIcon
-                    size={18}
-                    className="text-gray-400"
-                    aria-hidden="true"
-                  />
-                  <input
-                    id="image"
-                    name="image"
-                    defaultValue={editingItem?.image || ""}
-                    placeholder="https://contoh.com/gambar.jpg"
-                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
+                <ImageUpload
+                  onUpload={(file) => {
+                    const imageInput = document.querySelector<HTMLInputElement>(
+                      'input[name="image"]'
+                    );
+                    if (imageInput) imageInput.value = file.url;
+                  }}
+                  onRemove={() => {
+                    const imageInput = document.querySelector<HTMLInputElement>(
+                      'input[name="image"]'
+                    );
+                    if (imageInput) imageInput.value = "";
+                  }}
+                  currentImage={editingItem?.image || ""}
+                  folder="news/admin"
+                  label="Upload Foto Berita"
+                  acceptedFormats={["JPEG", "PNG", "WebP"]}
+                  maxSizeMB={4}
+                />
+                <input
+                  type="hidden"
+                  name="image"
+                  defaultValue={editingItem?.image || ""}
+                />
               </div>
 
               <div className="space-y-2">

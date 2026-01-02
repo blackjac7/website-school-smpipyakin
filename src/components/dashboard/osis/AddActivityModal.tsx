@@ -1,10 +1,10 @@
 "use client";
 
-import { X, Link } from "lucide-react";
+import { X } from "lucide-react";
 import { createActivity } from "@/actions/osis/activities";
-import { useActionState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
-import { useEffect } from "react";
+import FileInput from "@/components/shared/FileInput";
 
 interface AddActivityModalProps {
   isOpen: boolean;
@@ -13,33 +13,80 @@ interface AddActivityModalProps {
 }
 
 // Initial state for server action
-// This must align with the Action return type
 const initialState = {
   success: false,
   error: "",
-  message: "",
 };
 
 export default function AddActivityModal({
   isOpen,
   onClose,
 }: AddActivityModalProps) {
-  // Cast createActivity to match the expected signature if necessary,
-  // or rely on TypeScript inference if Action definition is standard.
-  // The error suggests createActivity returns specific union types which don't overlap perfectly
-  // with a single object type containing all fields optional.
-  // Let's coerce the action or state type.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [state, formAction, isPending] = useActionState(createActivity as any, initialState);
+  const [proposalFile, setProposalFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (state?.success) {
-      toast.success(state.message || "Kegiatan berhasil diajukan");
-      onClose();
-    } else if (state?.error) {
-      toast.error(state.error);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (uploading || submitting) return;
+
+    // Upload proposal file if exists
+    let proposalUrl = "";
+    if (proposalFile) {
+      setUploading(true);
+      try {
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", proposalFile);
+        uploadFormData.append("folder", "proposals");
+        uploadFormData.append("fileType", "proposal");
+
+        const response = await fetch("/api/upload-files", {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        const result = await response.json();
+
+        if (!result.success || !result.data) {
+          throw new Error(result.error || "Upload gagal");
+        }
+
+        proposalUrl = result.data.url;
+      } catch {
+        toast.error("Gagal upload proposal");
+        setUploading(false);
+        return;
+      } finally {
+        setUploading(false);
+      }
     }
-  }, [state, onClose]);
+
+    // Submit form data
+    setSubmitting(true);
+    try {
+      const form = e.target as HTMLFormElement;
+      const formData = new FormData(form);
+      if (proposalUrl) {
+        formData.set("proposalUrl", proposalUrl);
+      }
+
+      const result = await createActivity(initialState, formData);
+
+      if (result?.success) {
+        toast.success("Kegiatan berhasil diajukan!");
+        setProposalFile(null);
+        onClose();
+      } else {
+        toast.error(result?.error || "Gagal mengajukan kegiatan");
+      }
+    } catch (error) {
+      console.error("Submit error:", error);
+      toast.error("Terjadi kesalahan saat mengajukan kegiatan");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -56,7 +103,7 @@ export default function AddActivityModal({
           </button>
         </div>
 
-        <form action={formAction} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Judul Kegiatan
@@ -160,35 +207,35 @@ export default function AddActivityModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Link Proposal (Google Drive/PDF URL)
-            </label>
-             <div className="relative">
-                <Link className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                <input
-                    name="proposalUrl"
-                    type="url"
-                    className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
-                    placeholder="https://"
-                />
-            </div>
+            <FileInput
+              onFileSelect={setProposalFile}
+              currentFile={proposalFile}
+              label="Upload Proposal PDF (Opsional)"
+              acceptedFormats={["PDF"]}
+              maxSizeMB={10}
+              required={false}
+            />
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              disabled={isPending}
+              disabled={submitting || uploading}
               className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               Batal
             </button>
             <button
               type="submit"
-              disabled={isPending}
+              disabled={submitting || uploading}
               className="px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition-colors disabled:opacity-50 flex items-center gap-2"
             >
-              {isPending ? "Menyimpan..." : "Ajukan Kegiatan"}
+              {uploading
+                ? "Mengupload..."
+                : submitting
+                  ? "Menyimpan..."
+                  : "Ajukan Kegiatan"}
             </button>
           </div>
         </form>

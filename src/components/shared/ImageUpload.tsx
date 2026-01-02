@@ -31,7 +31,7 @@ export default function ImageUpload({
   onRemove,
   currentImage,
   folder = "uploads",
-  maxSizeMB = 5,
+  maxSizeMB = 4, // Vercel limit is 4.5MB, so we use 4MB for safety
   acceptedFormats = ["JPEG", "PNG", "WebP"],
   className = "",
   label = "Upload Image",

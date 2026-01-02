@@ -33,9 +33,9 @@ export default async function AdminDashboardPage() {
             announcements: 0,
             facilities: 0,
             extracurriculars: 0,
-            ppdbPending: 0,
           },
           recentActivities: [],
+          lastUpdated: new Date().toISOString(),
         };
 
   return <DashboardClient stats={stats} userName={user?.username || "Admin"} />;

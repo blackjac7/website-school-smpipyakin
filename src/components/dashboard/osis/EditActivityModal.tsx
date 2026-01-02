@@ -1,11 +1,12 @@
 "use client";
 
-import { X, Link } from "lucide-react";
+import { X } from "lucide-react";
 import { updateActivity } from "@/actions/osis/activities";
-import { useActionState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { OsisActivity } from "./types";
 import { format } from "date-fns";
+import FileInput from "@/components/shared/FileInput";
 
 interface EditActivityModalProps {
   isOpen: boolean;
@@ -16,7 +17,6 @@ interface EditActivityModalProps {
 const initialState = {
   success: false,
   error: "",
-  message: "",
 };
 
 export default function EditActivityModal({
@@ -24,26 +24,86 @@ export default function EditActivityModal({
   onClose,
   activity,
 }: EditActivityModalProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [state, formAction, isPending] = useActionState(updateActivity as any, initialState);
+  const [proposalFile, setProposalFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [keepExisting, setKeepExisting] = useState(false);
 
+  // Reset state when activity changes
   useEffect(() => {
-    if (state?.success) {
-      toast.success(state.message || "Kegiatan berhasil diperbarui");
-      onClose();
-    } else if (state?.error) {
-      toast.error(state.error);
+    setProposalFile(null);
+    setKeepExisting(!!activity?.proposalUrl);
+  }, [activity]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (uploading || submitting) return;
+
+    // Upload new proposal file if exists
+    let proposalUrl = keepExisting ? activity?.proposalUrl || "" : "";
+    if (proposalFile) {
+      setUploading(true);
+      try {
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", proposalFile);
+        uploadFormData.append("folder", "proposals");
+        uploadFormData.append("fileType", "proposal");
+
+        const response = await fetch("/api/upload-files", {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        const result = await response.json();
+
+        if (!result.success || !result.data) {
+          throw new Error(result.error || "Upload gagal");
+        }
+
+        proposalUrl = result.data.url;
+      } catch {
+        toast.error("Gagal upload proposal");
+        setUploading(false);
+        return;
+      } finally {
+        setUploading(false);
+      }
     }
-  }, [state, onClose]);
+
+    // Submit form data
+    setSubmitting(true);
+    try {
+      const form = e.target as HTMLFormElement;
+      const formData = new FormData(form);
+      if (proposalUrl) {
+        formData.set("proposalUrl", proposalUrl);
+      }
+
+      const result = await updateActivity(initialState, formData);
+
+      if (result.success) {
+        toast.success("Kegiatan berhasil diperbarui!");
+        setProposalFile(null);
+        onClose();
+      } else {
+        toast.error(result.error || "Gagal memperbarui kegiatan");
+      }
+    } catch {
+      toast.error("Terjadi kesalahan saat memperbarui kegiatan");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (!isOpen || !activity) return null;
 
   // Format date for input default value
   const dateStr = activity.date
-    ? typeof activity.date === 'string'
-        ? activity.date.split('T')[0]
-        : format(new Date(activity.date), 'yyyy-MM-dd')
-    : '';
+    ? typeof activity.date === "string"
+      ? activity.date.split("T")[0]
+      : format(new Date(activity.date), "yyyy-MM-dd")
+    : "";
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
@@ -58,7 +118,7 @@ export default function EditActivityModal({
           </button>
         </div>
 
-        <form action={formAction} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input type="hidden" name="id" value={activity.id} />
 
           <div>
@@ -172,36 +232,62 @@ export default function EditActivityModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Link Proposal (Google Drive/PDF URL)
-            </label>
-             <div className="relative">
-                <Link className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                <input
-                    name="proposalUrl"
-                    type="url"
-                    defaultValue={activity.proposalUrl || ''}
-                    className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
-                    placeholder="https://"
-                />
-            </div>
+            {activity.proposalUrl && !proposalFile && (
+              <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-700 mb-2">
+                  File saat ini:{" "}
+                  <a
+                    href={activity.proposalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    Lihat proposal
+                  </a>
+                </p>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={keepExisting}
+                    onChange={(e) => setKeepExisting(e.target.checked)}
+                    className="rounded"
+                  />
+                  <span>Pertahankan file yang ada</span>
+                </label>
+              </div>
+            )}
+            <FileInput
+              onFileSelect={(file) => {
+                setProposalFile(file);
+                if (file) setKeepExisting(false);
+              }}
+              currentFile={proposalFile}
+              label="Upload Proposal PDF Baru (Opsional)"
+              acceptedFormats={["PDF"]}
+              maxSizeMB={10}
+              required={false}
+            />
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              disabled={isPending}
+              disabled={submitting || uploading}
               className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               Batal
             </button>
             <button
               type="submit"
-              disabled={isPending}
+              disabled={submitting || uploading}
               className="px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition-colors disabled:opacity-50 flex items-center gap-2"
             >
-              {isPending ? "Menyimpan..." : "Simpan Perubahan"}
+              {uploading
+                ? "Mengupload..."
+                : submitting
+                  ? "Menyimpan..."
+                  : "Simpan Perubahan"}
             </button>
           </div>
         </form>

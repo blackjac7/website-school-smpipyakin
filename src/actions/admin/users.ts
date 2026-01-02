@@ -56,6 +56,7 @@ export interface GetUsersParams {
   limit?: number;
   search?: string;
   role?: string;
+  classFilter?: string;
 }
 
 // Response type with pagination info
@@ -95,7 +96,13 @@ export async function getUsers(
     return { success: false, error: auth.error };
   }
 
-  const { page = 1, limit = 50, search = "", role = "" } = params || {};
+  const {
+    page = 1,
+    limit = 50,
+    search = "",
+    role = "",
+    classFilter = "",
+  } = params || {};
 
   try {
     // Build where clause for filtering
@@ -105,6 +112,14 @@ export async function getUsers(
     // Role filter
     if (role && role !== "all") {
       where.role = role;
+    }
+
+    // Class filter - for students
+    if (classFilter && classFilter !== "all") {
+      where.siswa = {
+        ...where.siswa,
+        class: classFilter,
+      };
     }
 
     // Search filter (search in username, email, and related tables)
@@ -226,6 +241,52 @@ export async function getUsersForExport() {
     return {
       success: false,
       error: "Gagal mengambil data pengguna untuk export",
+    };
+  }
+}
+
+/**
+ * Get available classes for filter dropdown
+ */
+export async function getAvailableClasses(): Promise<{
+  success: boolean;
+  data?: string[];
+  error?: string;
+}> {
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  try {
+    const classes = await prisma.siswa.findMany({
+      where: {
+        class: {
+          not: null,
+        },
+      },
+      select: {
+        class: true,
+      },
+      distinct: ["class"],
+      orderBy: {
+        class: "asc",
+      },
+    });
+
+    const uniqueClasses = classes
+      .map((c) => c.class)
+      .filter((c): c is string => c !== null);
+
+    return {
+      success: true,
+      data: uniqueClasses,
+    };
+  } catch (error) {
+    console.error("Failed to get available classes:", error);
+    return {
+      success: false,
+      error: "Gagal mengambil data kelas",
     };
   }
 }

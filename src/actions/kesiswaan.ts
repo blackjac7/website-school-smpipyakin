@@ -26,7 +26,7 @@ async function verifyKesiswaanRole() {
 
 export interface ValidationItem {
   id: string;
-  type: "achievement" | "work";
+  type: "achievement" | "work" | "news";
   title: string;
   description: string | null;
   authorName: string;
@@ -39,33 +39,65 @@ export interface ValidationItem {
   rejectionNote?: string | null;
 }
 
+export interface ValidationQueueResult {
+  items: ValidationItem[];
+  totalCount: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export async function getValidationQueue(
-  statusFilter: StatusApproval | "ALL" = "PENDING"
-): Promise<ValidationItem[]> {
+  statusFilter: StatusApproval | "ALL" = "PENDING",
+  page: number = 1,
+  limit: number = 10
+): Promise<ValidationQueueResult> {
   try {
     const whereClause: Prisma.StudentAchievementWhereInput &
-      Prisma.StudentWorkWhereInput = {};
+      Prisma.StudentWorkWhereInput &
+      Prisma.NewsWhereInput = {};
     if (statusFilter !== "ALL") {
       whereClause.statusPersetujuan = statusFilter;
     }
 
-    // Fetch Achievements
-    const achievements = await prisma.studentAchievement.findMany({
-      where: whereClause,
-      include: {
-        siswa: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    // Fetch counts for pagination (include news from OSIS)
+    const [achievementsCount, worksCount, newsCount] = await Promise.all([
+      prisma.studentAchievement.count({ where: whereClause }),
+      prisma.studentWork.count({ where: whereClause }),
+      prisma.news.count({ where: whereClause }),
+    ]);
+    const totalCount = achievementsCount + worksCount + newsCount;
+    const totalPages = Math.ceil(totalCount / limit);
 
-    // Fetch Works
-    const works = await prisma.studentWork.findMany({
-      where: whereClause,
-      include: {
-        siswa: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    // Fetch Achievements, Works, and OSIS News with limit
+    // We fetch more than needed to ensure we get enough after combining and sorting
+    const fetchLimit = limit * 2;
+    const [achievements, works, osisNews] = await Promise.all([
+      prisma.studentAchievement.findMany({
+        where: whereClause,
+        include: {
+          siswa: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: fetchLimit,
+      }),
+      prisma.studentWork.findMany({
+        where: whereClause,
+        include: {
+          siswa: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: fetchLimit,
+      }),
+      prisma.news.findMany({
+        where: whereClause,
+        include: {
+          author: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: fetchLimit,
+      }),
+    ]);
 
     // Normalize and merge
     const normalizedAchievements: ValidationItem[] = achievements.map((a) => ({
@@ -79,6 +111,7 @@ export async function getValidationQueue(
       status: a.statusPersetujuan,
       category: a.category,
       image: a.image,
+      rejectionNote: a.rejectionNote,
     }));
 
     const normalizedWorks: ValidationItem[] = works.map((w) => ({
@@ -96,21 +129,55 @@ export async function getValidationQueue(
       rejectionNote: w.rejectionNote,
     }));
 
-    // Combine and sort by date descending
-    return [...normalizedAchievements, ...normalizedWorks].sort(
-      (a, b) => b.date.getTime() - a.date.getTime()
-    );
+    const normalizedNews: ValidationItem[] = osisNews.map((n) => ({
+      id: n.id,
+      type: "news",
+      title: n.title,
+      description: n.content,
+      authorName: n.author?.username || "OSIS",
+      authorClass: null,
+      date: n.createdAt,
+      status: n.statusPersetujuan,
+      category: n.kategori === "ACHIEVEMENT" ? "Prestasi" : "Kegiatan",
+      image: n.image,
+      rejectionNote: n.rejectionNote,
+    }));
+
+    // Combine, sort by date descending, and paginate
+    const allItems = [
+      ...normalizedAchievements,
+      ...normalizedWorks,
+      ...normalizedNews,
+    ].sort((a, b) => b.date.getTime() - a.date.getTime());
+
+    const skip = (page - 1) * limit;
+    const items = allItems.slice(skip, skip + limit);
+
+    return {
+      items,
+      totalCount,
+      page,
+      limit,
+      totalPages,
+    };
   } catch (error) {
     console.error("Error fetching validation queue:", error);
-    return [];
+    return {
+      items: [],
+      totalCount: 0,
+      page: 1,
+      limit,
+      totalPages: 0,
+    };
   }
 }
 
 export async function validateContent(
   id: string,
-  type: "achievement" | "work",
+  type: "achievement" | "work" | "news",
   action: "APPROVE" | "REJECT",
-  note?: string
+  note?: string,
+  updatedContent?: { title?: string; description?: string }
 ) {
   // Verify authorization
   const auth = await verifyKesiswaanRole();
@@ -121,6 +188,7 @@ export async function validateContent(
   try {
     const status =
       action === "APPROVE" ? StatusApproval.APPROVED : StatusApproval.REJECTED;
+    const rejectionNote = action === "REJECT" ? note : null;
     let userId: string | null = null;
     let contentTitle: string = "";
 
@@ -128,7 +196,9 @@ export async function validateContent(
       // Get the achievement with student info for notification
       const achievement = await prisma.studentAchievement.findUnique({
         where: { id },
-        include: { siswa: { select: { userId: true } } },
+        include: {
+          siswa: { select: { userId: true, name: true, class: true } },
+        },
       });
 
       if (!achievement) {
@@ -136,14 +206,35 @@ export async function validateContent(
       }
 
       userId = achievement.siswa.userId;
-      contentTitle = achievement.title;
+      contentTitle = updatedContent?.title || achievement.title;
+      const finalDescription =
+        updatedContent?.description || achievement.description;
 
+      // Update achievement with optional content changes
       await prisma.studentAchievement.update({
         where: { id },
         data: {
           statusPersetujuan: status,
+          title: contentTitle,
+          description: finalDescription,
+          rejectionNote,
         },
       });
+
+      // If approved, create a news entry for public display
+      if (action === "APPROVE" && auth.user) {
+        await prisma.news.create({
+          data: {
+            title: contentTitle,
+            content: `<p><strong>Prestasi Siswa:</strong> ${achievement.siswa.name} (${achievement.siswa.class || "Kelas -"})</p><p>${finalDescription || ""}</p><p><em>Kategori: ${achievement.category || "Prestasi"} | Level: ${achievement.level || "-"}</em></p>`,
+            image: achievement.image,
+            date: achievement.achievementDate || new Date(),
+            kategori: "ACHIEVEMENT",
+            statusPersetujuan: StatusApproval.APPROVED,
+            authorId: auth.user.userId,
+          },
+        });
+      }
 
       // Send notification to student
       if (action === "APPROVE") {
@@ -160,7 +251,7 @@ export async function validateContent(
           note
         );
       }
-    } else {
+    } else if (type === "work") {
       // Get the work with student info for notification
       const work = await prisma.studentWork.findUnique({
         where: { id },
@@ -172,12 +263,15 @@ export async function validateContent(
       }
 
       userId = work.siswa.userId;
-      contentTitle = work.title;
+      contentTitle = updatedContent?.title || work.title;
+      const finalDescription = updatedContent?.description || work.description;
 
       await prisma.studentWork.update({
         where: { id },
         data: {
           statusPersetujuan: status,
+          title: contentTitle,
+          description: finalDescription,
           rejectionNote: action === "REJECT" ? note : null,
         },
       });
@@ -197,10 +291,37 @@ export async function validateContent(
           note
         );
       }
+    } else if (type === "news") {
+      // Handle OSIS news validation
+      const news = await prisma.news.findUnique({
+        where: { id },
+        include: { author: { select: { id: true } } },
+      });
+
+      if (!news) {
+        return { success: false, error: "News not found" };
+      }
+
+      contentTitle = updatedContent?.title || news.title;
+      const finalContent = updatedContent?.description || news.content;
+
+      await prisma.news.update({
+        where: { id },
+        data: {
+          statusPersetujuan: status,
+          title: contentTitle,
+          content: finalContent,
+          rejectionNote,
+        },
+      });
+
+      // TODO: Send notification to OSIS user when news is approved/rejected
     }
 
     revalidatePath("/dashboard-kesiswaan");
     revalidatePath("/dashboard-siswa");
+    revalidatePath("/dashboard-osis");
+    revalidatePath("/news");
     return { success: true };
   } catch (error) {
     console.error("Error validating content:", error);

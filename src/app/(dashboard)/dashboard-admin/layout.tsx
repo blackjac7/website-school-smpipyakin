@@ -5,8 +5,11 @@ import { useSidebar } from "@/hooks/useSidebar";
 import Header from "@/components/dashboard/admin/Header";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { NotificationAPIService } from "@/hooks/useNotifications";
-import { FormattedNotification } from "@/utils/notificationHelpers";
+import {
+  getAdminNotifications,
+  markAdminNotificationAsRead,
+  AdminNotificationData,
+} from "@/actions/admin/notifications";
 
 export default function AdminDashboardLayout({
   children,
@@ -16,7 +19,7 @@ export default function AdminDashboardLayout({
   const { isOpen, setIsOpen } = useSidebar(true);
   const pathname = usePathname();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<FormattedNotification[]>(
+  const [notifications, setNotifications] = useState<AdminNotificationData[]>(
     []
   );
 
@@ -38,21 +41,26 @@ export default function AdminDashboardLayout({
   // Load notifications from API
   const loadNotifications = async () => {
     try {
-      // Use existing fetchAllNotifications which handles different roles
-      // For admin, we might need a specific role or endpoint,
-      // but for now we reuse the student/generic one as per current codebase structure
-      // or if there is no admin-specific logic yet, we might get student notifs or empty
-      // In a real app, we would have AdminNotificationService
-      const result = await NotificationAPIService.fetchAllNotifications({
-        page: 1,
-      });
+      const result = await getAdminNotifications({ limit: 3 });
 
       if (result.success) {
-        // Take only first 5 notifications for header
-        setNotifications(result.data.slice(0, 5));
+        setNotifications(result.data);
       }
     } catch (error) {
       console.error("Failed to load notifications:", error);
+    }
+  };
+
+  const handleMarkAsRead = async (notificationId: string) => {
+    try {
+      const result = await markAdminNotificationAsRead(notificationId);
+      if (result.success) {
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+        );
+      }
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
     }
   };
 
@@ -66,10 +74,7 @@ export default function AdminDashboardLayout({
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        isOpen={isOpen}
-        onClose={() => setIsOpen(!isOpen)}
-      />
+      <Sidebar isOpen={isOpen} onClose={() => setIsOpen(!isOpen)} />
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {showHeader && (
           <Header
@@ -78,14 +83,13 @@ export default function AdminDashboardLayout({
             setShowNotifications={setShowNotifications}
             notifications={notifications}
             onToggleSidebar={() => setIsOpen(!isOpen)}
+            onMarkAsRead={handleMarkAsRead}
           />
         )}
 
         {/* Content area */}
         <div className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="p-8 pb-20">
-            {children}
-          </div>
+          <div className="p-8 pb-20">{children}</div>
         </div>
       </div>
     </div>

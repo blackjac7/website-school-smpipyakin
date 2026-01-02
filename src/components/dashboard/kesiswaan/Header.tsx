@@ -20,6 +20,7 @@ interface HeaderProps {
   setShowNotifications: (show: boolean) => void;
   unreadCount: number;
   onToggleSidebar?: () => void;
+  onMarkAsRead?: (notificationId: string) => void;
 }
 
 export default function Header({
@@ -29,6 +30,7 @@ export default function Header({
   setShowNotifications,
   unreadCount,
   onToggleSidebar,
+  onMarkAsRead,
 }: HeaderProps) {
   const { user } = useAuth();
 
@@ -147,6 +149,11 @@ export default function Header({
                       notifications.map((notification) => (
                         <div
                           key={notification.id}
+                          onClick={() => {
+                            if (!notification.read && onMarkAsRead) {
+                              onMarkAsRead(notification.id);
+                            }
+                          }}
                           className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${!notification.read ? "bg-purple-50/50" : ""}`}
                         >
                           <div className="flex items-start gap-3">

@@ -80,7 +80,7 @@ export default function PPDBDashboardClient({
       });
 
       if (result.success) {
-        setNotifications(result.data.slice(0, 5));
+        setNotifications(result.data.slice(0, 3));
       }
     } catch (error) {
       console.error("Failed to load notifications:", error);

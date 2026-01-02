@@ -45,6 +45,13 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   // Set explicit outputFileTracingRoot to avoid Next.js workspace root inference warning
   outputFileTracingRoot: __dirname,
+  // Increase body size limit for Server Actions (for image uploads)
+  // Note: Vercel has a 4.5MB payload limit, so we set this to 4mb for safety
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "4mb",
+    },
+  },
   images: {
     remotePatterns: [
       {

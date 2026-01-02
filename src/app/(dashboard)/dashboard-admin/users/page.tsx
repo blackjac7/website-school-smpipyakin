@@ -10,6 +10,7 @@ import {
   deleteUser,
   bulkDeleteUsers,
   getUsersForExport,
+  getAvailableClasses,
   UserFormData,
 } from "@/actions/admin/users";
 import { User } from "./types";
@@ -37,6 +38,8 @@ export default function UsersPage() {
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [classFilter, setClassFilter] = useState("");
+  const [availableClasses, setAvailableClasses] = useState<string[]>([]);
 
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
@@ -45,6 +48,7 @@ export default function UsersPage() {
       limit: pagination.limit,
       search: searchQuery,
       role: roleFilter,
+      classFilter: classFilter,
     });
     if (result.success && result.data) {
       const data = result.data;
@@ -58,7 +62,18 @@ export default function UsersPage() {
       toast.error(result.error || "Gagal memuat data pengguna");
     }
     setIsLoading(false);
-  }, [pagination.page, pagination.limit, searchQuery, roleFilter]);
+  }, [pagination.page, pagination.limit, searchQuery, roleFilter, classFilter]);
+
+  // Fetch available classes on mount
+  useEffect(() => {
+    const fetchClasses = async () => {
+      const result = await getAvailableClasses();
+      if (result.success && result.data) {
+        setAvailableClasses(result.data);
+      }
+    };
+    fetchClasses();
+  }, []);
 
   useEffect(() => {
     fetchUsers();
@@ -83,6 +98,11 @@ export default function UsersPage() {
 
   const handleRoleFilter = useCallback((role: string) => {
     setRoleFilter(role === "all" ? "" : role);
+    setPagination((prev) => ({ ...prev, page: 1 })); // Reset to page 1 on filter
+  }, []);
+
+  const handleClassFilter = useCallback((classValue: string) => {
+    setClassFilter(classValue === "all" ? "" : classValue);
     setPagination((prev) => ({ ...prev, page: 1 })); // Reset to page 1 on filter
   }, []);
 
@@ -217,6 +237,8 @@ export default function UsersPage() {
         onPageChange={handlePageChange}
         onSearch={handleSearch}
         onRoleFilter={handleRoleFilter}
+        onClassFilter={handleClassFilter}
+        availableClasses={availableClasses}
       />
 
       <UserModal

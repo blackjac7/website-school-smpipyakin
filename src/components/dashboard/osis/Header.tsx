@@ -23,6 +23,7 @@ interface HeaderProps {
   unreadCount: number;
   onToggleSidebar?: () => void;
   activeTab?: string;
+  onMarkAsRead?: (notificationId: string) => void;
 }
 
 // Get dynamic header info based on active tab
@@ -70,6 +71,7 @@ export default function Header({
   unreadCount,
   onToggleSidebar,
   activeTab,
+  onMarkAsRead,
 }: HeaderProps) {
   const { user } = useAuth();
   const headerInfo = getHeaderInfo(activeTab);
@@ -173,6 +175,11 @@ export default function Header({
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.05 }}
                           key={notification.id}
+                          onClick={() => {
+                            if (!notification.read && onMarkAsRead) {
+                              onMarkAsRead(notification.id);
+                            }
+                          }}
                           className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${
                             !notification.read ? "bg-blue-50/50" : ""
                           }`}

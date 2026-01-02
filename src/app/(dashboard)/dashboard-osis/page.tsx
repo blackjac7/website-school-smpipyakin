@@ -17,8 +17,12 @@ import {
   EditActivityModal,
   MenuItem,
   OsisActivity,
-  Notification,
 } from "@/components/dashboard/osis";
+import {
+  getOsisNotifications,
+  markOsisNotificationAsRead,
+  OsisNotificationData,
+} from "@/actions/osis/notifications";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DashboardSidebar } from "@/components/dashboard/layout";
 import { getActivities, deleteActivity } from "@/actions/osis/activities";
@@ -38,10 +42,15 @@ import { motion } from "framer-motion";
 function OSISDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [showForm, setShowForm] = useState(false);
-  const [editingActivity, setEditingActivity] = useState<OsisActivity | null>(null);
+  const [editingActivity, setEditingActivity] = useState<OsisActivity | null>(
+    null
+  );
   const [activities, setActivities] = useState<OsisActivity[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<OsisNotificationData[]>(
+    []
+  );
   const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } =
     useSidebar(true);
   const confirmModal = useToastConfirm();
@@ -65,21 +74,34 @@ function OSISDashboard() {
     { id: "ibadah", label: "Ibadah", icon: Heart },
   ];
 
-  // Dummy notifications for now
-  const notifications: Notification[] = [
-    {
-      id: 1,
-      message: "Selamat datang di Dashboard OSIS",
-      detail: "Silakan lengkapi program kerja anda.",
-      time: "Baru saja",
-      type: "info",
-      read: false,
-    },
-  ];
-
   useEffect(() => {
     fetchActivities();
+    fetchNotifications();
   }, []);
+
+  async function fetchNotifications() {
+    try {
+      const result = await getOsisNotifications({ limit: 3 });
+      if (result.success) {
+        setNotifications(result.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    }
+  }
+
+  const handleMarkNotificationAsRead = async (notificationId: string) => {
+    try {
+      const result = await markOsisNotificationAsRead(notificationId);
+      if (result.success) {
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+        );
+      }
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
+  };
 
   useEffect(() => {
     if (activeMenu === "ibadah") {
@@ -210,6 +232,7 @@ function OSISDashboard() {
           unreadCount={unreadCount}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           activeTab={activeMenu}
+          onMarkAsRead={handleMarkNotificationAsRead}
         />
 
         {/* Content */}
@@ -233,19 +256,13 @@ function OSISDashboard() {
           )}
 
           {activeMenu === "news" && (
-             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <NewsManagement />
             </motion.div>
           )}
 
           {activeMenu === "schedule" && (
-             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <Calendar
                 currentMonth={currentMonth}
                 setCurrentMonth={setCurrentMonth}
@@ -259,10 +276,7 @@ function OSISDashboard() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
             ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <ReligiousDashboardClient
                   menstruationRecords={worshipData.menstruation}
                   adzanSchedules={worshipData.adzan}

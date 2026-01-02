@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { X, Save, Upload, User } from "lucide-react";
-import Image from "next/image";
+import { X, Save } from "lucide-react";
 import { ProfileData } from "./types";
 import toast from "react-hot-toast";
-import { uploadImageAction } from "@/actions/upload";
+import ImageUpload from "@/components/shared/ImageUpload";
 
 interface QuickEditModalProps {
   isOpen: boolean;
@@ -28,7 +27,6 @@ export default function QuickEditModal({
     profileImage: profileData.profileImage || "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   if (!isOpen) return null;
 
@@ -37,80 +35,6 @@ export default function QuickEditModal({
       ...prev,
       [field]: value,
     }));
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type - hanya JPG, PNG, WebP
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error("Format file harus JPG, PNG, atau WebP");
-      return;
-    }
-
-    // Validate file size (max 2MB untuk profil)
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Ukuran file maksimal 2MB");
-      return;
-    }
-
-    // Validate image dimensions (optional but recommended)
-    const img = new window.Image();
-    img.onload = async () => {
-      // Minimum 200x200, Maximum 2000x2000
-      if (img.width < 200 || img.height < 200) {
-        toast.error("Resolusi gambar minimal 200x200 pixel");
-        return;
-      }
-      if (img.width > 2000 || img.height > 2000) {
-        toast.error("Resolusi gambar maksimal 2000x2000 pixel");
-        return;
-      }
-
-      // Aspect ratio check (square recommended)
-      const aspectRatio = img.width / img.height;
-      if (aspectRatio < 0.8 || aspectRatio > 1.2) {
-        toast.error("Disarankan menggunakan gambar dengan rasio 1:1 (persegi)");
-      }
-
-      await uploadFile();
-    };
-
-    img.src = URL.createObjectURL(file);
-
-    const uploadFile = async () => {
-      setIsUploadingImage(true);
-
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("folder", "profiles");
-
-        const result = await uploadImageAction(formData);
-
-        if (result.success && result.data && result.data.url) {
-          const url = result.data.url;
-          if (!url) {
-            toast.error("Gagal mengunggah foto profil");
-          } else {
-            setFormData((prev) => ({
-              ...prev,
-              profileImage: url,
-            }));
-            toast.success("Foto profil berhasil diunggah!");
-          }
-        } else {
-          toast.error("Gagal mengunggah foto profil");
-        }
-      } catch (error) {
-        console.error("Error uploading image:", error);
-        toast.error("Terjadi kesalahan saat mengunggah foto");
-      } finally {
-        setIsUploadingImage(false);
-      }
-    };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -162,51 +86,29 @@ export default function QuickEditModal({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Profile Image Upload */}
-          <div className="text-center">
-            <div className="relative mx-auto w-24 h-24 mb-4">
-              <div className="w-24 h-24 rounded-full border-4 border-blue-200 overflow-hidden bg-linear-to-br from-blue-50 to-purple-50 shadow-lg">
-                {formData.profileImage ? (
-                  <Image
-                    src={formData.profileImage}
-                    alt="Profile"
-                    width={96}
-                    height={96}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <User className="w-12 h-12 text-blue-400" />
-                  </div>
-                )}
-              </div>
-
-              {/* Upload Button */}
-              <label className="absolute bottom-0 right-0 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full p-2 cursor-pointer transition-all shadow-lg transform hover:scale-110">
-                <input
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  disabled={isUploadingImage}
-                />
-                {isUploadingImage ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Upload className="w-4 h-4" />
-                )}
-              </label>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-gray-600">
-                {isUploadingImage
-                  ? "Mengunggah..."
-                  : "Klik tombol untuk mengganti foto profil"}
-              </p>
-              <div className="text-xs text-gray-500 space-y-0.5">
-                <p>Maksimal 2MB • JPG, PNG, WebP</p>
-                <p>Minimal 200x200px • Disarankan 1:1</p>
-              </div>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Foto Profil
+            </label>
+            <ImageUpload
+              onUpload={(file) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  profileImage: file.url,
+                }));
+              }}
+              onRemove={() => {
+                setFormData((prev) => ({
+                  ...prev,
+                  profileImage: "",
+                }));
+              }}
+              currentImage={formData.profileImage}
+              folder="profiles"
+              label="Upload Foto Profil"
+              acceptedFormats={["JPEG", "PNG", "WebP"]}
+              maxSizeMB={2}
+            />
           </div>
 
           {/* Quick Edit Fields */}
@@ -277,7 +179,7 @@ export default function QuickEditModal({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || isUploadingImage}
+              disabled={isSubmitting}
               className="flex-1 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
             >
               {isSubmitting ? (

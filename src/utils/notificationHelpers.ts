@@ -113,7 +113,7 @@ export function formatNotification(
     color: getNotificationColor(notification.type),
     time: notification.time,
     read: notification.read,
-    detail: '',
+    detail: "",
   };
 }
 
@@ -151,7 +151,7 @@ export function filterNotificationsByReadStatus(
  */
 export const NOTIFICATION_CONFIG = {
   DEFAULT_LIMIT: 10,
-  HEADER_DROPDOWN_LIMIT: 5,
+  HEADER_DROPDOWN_LIMIT: 3,
   ALL_NOTIFICATIONS_LIMIT: 20,
   PREVIEW_LIMIT: 2,
 } as const;

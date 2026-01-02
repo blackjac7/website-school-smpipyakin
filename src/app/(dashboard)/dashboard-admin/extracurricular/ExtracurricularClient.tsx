@@ -2,29 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  Search,
-  X,
-  UploadCloud,
-  Clock,
-} from "lucide-react";
+import { Plus, Pencil, Trash2, Search, X, Clock } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
 import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
+import ImageUpload from "@/components/shared/ImageUpload";
 import {
   createExtracurricular,
   updateExtracurricular,
   deleteExtracurricular,
 } from "@/actions/admin/extracurricular";
 import { Extracurricular } from "@prisma/client";
-import {
-  CldUploadWidget,
-  CloudinaryUploadWidgetResults,
-} from "next-cloudinary";
 
 interface ExtracurricularClientProps {
   initialData: Extracurricular[];
@@ -285,50 +274,21 @@ export default function ExtracurricularClient({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Foto
+                  Foto Ekstrakurikuler
                 </label>
-                <div className="mt-1 flex items-center gap-4">
-                  {formData.image && (
-                    <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
-                      <Image
-                        src={formData.image}
-                        alt="Preview"
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  )}
-                  <CldUploadWidget
-                    uploadPreset={
-                      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ||
-                      "ml_default"
-                    }
-                    onSuccess={(result: CloudinaryUploadWidgetResults) => {
-                      const info = result?.info;
-                      if (
-                        info &&
-                        typeof info === "object" &&
-                        "secure_url" in info
-                      ) {
-                        setFormData({
-                          ...formData,
-                          image: (info as { secure_url: string }).secure_url,
-                        });
-                      }
-                    }}
-                  >
-                    {({ open }) => (
-                      <button
-                        type="button"
-                        onClick={() => open()}
-                        className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                      >
-                        <UploadCloud className="w-4 h-4" />
-                        Upload Foto
-                      </button>
-                    )}
-                  </CldUploadWidget>
-                </div>
+                <ImageUpload
+                  onUpload={(file) => {
+                    setFormData({ ...formData, image: file.url });
+                  }}
+                  onRemove={() => {
+                    setFormData({ ...formData, image: "" });
+                  }}
+                  currentImage={formData.image}
+                  folder="extracurricular"
+                  label="Upload Foto Kegiatan"
+                  acceptedFormats={["JPEG", "PNG", "WebP"]}
+                  maxSizeMB={4}
+                />
               </div>
 
               <div className="pt-4 flex justify-end gap-3">

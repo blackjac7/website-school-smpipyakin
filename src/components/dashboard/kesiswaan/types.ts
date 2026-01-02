@@ -13,13 +13,13 @@ export interface MenuItem {
 export type ContentItem = ValidationItem;
 
 export interface Notification {
-  id: number;
-  type: "success" | "pending" | "info";
+  id: string;
+  type: string;
   title?: string;
   icon?: unknown;
   color?: string;
   message: string;
-  detail: string;
+  detail?: string;
   time: string;
   read: boolean;
 }
