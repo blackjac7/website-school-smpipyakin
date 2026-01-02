@@ -7,7 +7,6 @@ import {
   Users,
   Target,
   Award,
-  FileText,
   PieChart,
   Clock,
   LucideIcon,

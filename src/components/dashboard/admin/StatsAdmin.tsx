@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Pencil, Trash2, LayoutGrid } from "lucide-react";
-import { motion } from "framer-motion";
+import { useState, useMemo } from "react";
+import { Plus, Pencil, Trash2, LayoutGrid, Search, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   createSchoolStat,
   updateSchoolStat,
@@ -14,6 +14,68 @@ import * as LucideIcons from "lucide-react";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
 import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 
+// Popular icons for stats - organized by category
+const POPULAR_ICONS = [
+  // People & Education
+  { name: "Users", category: "People" },
+  { name: "User", category: "People" },
+  { name: "UserCheck", category: "People" },
+  { name: "UsersRound", category: "People" },
+  { name: "GraduationCap", category: "Education" },
+  { name: "BookOpen", category: "Education" },
+  { name: "School", category: "Education" },
+  { name: "Library", category: "Education" },
+  { name: "Backpack", category: "Education" },
+  { name: "PencilRuler", category: "Education" },
+  // Achievement & Awards
+  { name: "Award", category: "Achievement" },
+  { name: "Trophy", category: "Achievement" },
+  { name: "Medal", category: "Achievement" },
+  { name: "Star", category: "Achievement" },
+  { name: "Crown", category: "Achievement" },
+  { name: "Target", category: "Achievement" },
+  // Buildings & Places
+  { name: "Building", category: "Building" },
+  { name: "Building2", category: "Building" },
+  { name: "Home", category: "Building" },
+  { name: "Church", category: "Building" },
+  { name: "Landmark", category: "Building" },
+  // Activities & Sports
+  { name: "Activity", category: "Activity" },
+  { name: "Dumbbell", category: "Activity" },
+  { name: "Bike", category: "Activity" },
+  { name: "Volleyball", category: "Activity" },
+  // Charts & Data
+  { name: "TrendingUp", category: "Chart" },
+  { name: "BarChart3", category: "Chart" },
+  { name: "PieChart", category: "Chart" },
+  { name: "LineChart", category: "Chart" },
+  // Time & Calendar
+  { name: "Calendar", category: "Time" },
+  { name: "CalendarDays", category: "Time" },
+  { name: "Clock", category: "Time" },
+  { name: "Timer", category: "Time" },
+  // Documents & Files
+  { name: "FileText", category: "Document" },
+  { name: "Files", category: "Document" },
+  { name: "ClipboardList", category: "Document" },
+  { name: "Newspaper", category: "Document" },
+  // Communication
+  { name: "MessageSquare", category: "Communication" },
+  { name: "Bell", category: "Communication" },
+  { name: "Mail", category: "Communication" },
+  { name: "Megaphone", category: "Communication" },
+  // Misc
+  { name: "Heart", category: "Misc" },
+  { name: "Sparkles", category: "Misc" },
+  { name: "Zap", category: "Misc" },
+  { name: "Globe", category: "Misc" },
+  { name: "Flag", category: "Misc" },
+  { name: "Smile", category: "Misc" },
+  { name: "ThumbsUp", category: "Misc" },
+  { name: "CheckCircle", category: "Misc" },
+];
+
 interface StatsPageProps {
   stats: SchoolStat[];
 }
@@ -22,7 +84,21 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStat, setEditingStat] = useState<SchoolStat | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedIcon, setSelectedIcon] = useState<string>("");
+  const [iconSearch, setIconSearch] = useState("");
+  const [showIconPicker, setShowIconPicker] = useState(false);
   const confirmModal = useToastConfirm();
+
+  // Filter icons based on search
+  const filteredIcons = useMemo(() => {
+    if (!iconSearch.trim()) return POPULAR_ICONS;
+    const search = iconSearch.toLowerCase();
+    return POPULAR_ICONS.filter(
+      (icon) =>
+        icon.name.toLowerCase().includes(search) ||
+        icon.category.toLowerCase().includes(search)
+    );
+  }, [iconSearch]);
 
   // Helper to render dynamic icon
   const renderIcon = (iconName: string) => {
@@ -105,6 +181,9 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
         <button
           onClick={() => {
             setEditingStat(null);
+            setSelectedIcon("");
+            setIconSearch("");
+            setShowIconPicker(false);
             setIsModalOpen(true);
           }}
           aria-label="Tambah statistik baru"
@@ -126,6 +205,9 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
               <button
                 onClick={() => {
                   setEditingStat(stat);
+                  setSelectedIcon(stat.iconName);
+                  setIconSearch("");
+                  setShowIconPicker(false);
                   setIsModalOpen(true);
                 }}
                 aria-label={`Edit statistik ${stat.label}`}
@@ -216,23 +298,131 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
               </div>
 
               <div className="space-y-2">
-                <label
-                  htmlFor="stat-icon"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Nama Ikon (Lucide React)
+                <label className="text-sm font-medium text-gray-700">
+                  Pilih Ikon
                 </label>
                 <input
-                  id="stat-icon"
+                  type="hidden"
                   name="iconName"
+                  value={selectedIcon || editingStat?.iconName || ""}
                   required
-                  defaultValue={editingStat?.iconName}
-                  placeholder="Contoh: GraduationCap, Users, Award"
-                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                <p className="text-xs text-gray-500">
-                  Gunakan nama komponen yang tepat dari lucide-react
-                </p>
+
+                {/* Selected Icon Display */}
+                <div
+                  onClick={() => setShowIconPicker(!showIconPicker)}
+                  className="w-full p-3 border rounded-lg cursor-pointer hover:border-blue-400 transition-colors flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    {selectedIcon || editingStat?.iconName ? (
+                      <>
+                        <div className="p-2 bg-yellow-50 rounded-lg">
+                          {renderIcon(
+                            selectedIcon || editingStat?.iconName || ""
+                          )}
+                        </div>
+                        <span className="text-gray-700 font-medium">
+                          {selectedIcon || editingStat?.iconName}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-gray-400">
+                        Klik untuk memilih ikon...
+                      </span>
+                    )}
+                  </div>
+                  <LayoutGrid size={18} className="text-gray-400" />
+                </div>
+
+                {/* Icon Picker Dropdown */}
+                <AnimatePresence>
+                  {showIconPicker && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="border rounded-lg p-3 bg-gray-50 space-y-3"
+                    >
+                      {/* Search */}
+                      <div className="relative">
+                        <Search
+                          size={16}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Cari ikon... (contoh: user, award)"
+                          value={iconSearch}
+                          onChange={(e) => setIconSearch(e.target.value)}
+                          className="w-full pl-9 pr-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {/* Icon Grid */}
+                      <div className="max-h-48 overflow-y-auto">
+                        <div className="grid grid-cols-6 gap-2">
+                          {filteredIcons.map((icon) => {
+                            const Icon = (
+                              LucideIcons as unknown as Record<
+                                string,
+                                React.ComponentType<{
+                                  size?: number;
+                                  className?: string;
+                                }>
+                              >
+                            )[icon.name];
+                            const isSelected =
+                              (selectedIcon || editingStat?.iconName) ===
+                              icon.name;
+
+                            return Icon ? (
+                              <button
+                                key={icon.name}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedIcon(icon.name);
+                                  setShowIconPicker(false);
+                                }}
+                                title={icon.name}
+                                className={`p-2.5 rounded-lg border transition-all flex items-center justify-center ${
+                                  isSelected
+                                    ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
+                                    : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50"
+                                }`}
+                              >
+                                {isSelected && (
+                                  <Check
+                                    size={12}
+                                    className="absolute top-0.5 right-0.5 text-blue-600"
+                                  />
+                                )}
+                                <Icon
+                                  size={20}
+                                  className={
+                                    isSelected
+                                      ? "text-blue-600"
+                                      : "text-gray-600"
+                                  }
+                                />
+                              </button>
+                            ) : null;
+                          })}
+                        </div>
+                        {filteredIcons.length === 0 && (
+                          <p className="text-center text-gray-500 text-sm py-4">
+                            Tidak ada ikon yang cocok
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Quick Tips */}
+                      <p className="text-xs text-gray-500 text-center">
+                        {filteredIcons.length} ikon tersedia • Klik ikon untuk
+                        memilih
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               <div className="flex justify-end gap-3 pt-6">

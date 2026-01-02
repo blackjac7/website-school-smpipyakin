@@ -40,6 +40,8 @@ interface UsersTableProps {
   onPageChange?: (page: number) => void;
   onSearch?: (search: string) => void;
   onRoleFilter?: (role: string) => void;
+  onClassFilter?: (classValue: string) => void;
+  availableClasses?: string[];
 }
 
 // Only used for client-side pagination fallback
@@ -60,9 +62,12 @@ export default function UsersTable({
   onPageChange,
   onSearch,
   onRoleFilter,
+  onClassFilter,
+  availableClasses = [],
 }: UsersTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [classFilter, setClassFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -114,6 +119,15 @@ export default function UsersTable({
     setRoleFilter(value);
     if (useServerPagination && onRoleFilter) {
       onRoleFilter(value);
+    } else {
+      setCurrentPage(1);
+    }
+  };
+
+  const handleClassFilterChange = (value: string) => {
+    setClassFilter(value);
+    if (useServerPagination && onClassFilter) {
+      onClassFilter(value);
     } else {
       setCurrentPage(1);
     }
@@ -259,6 +273,32 @@ export default function UsersTable({
               <option value="ADMIN">Admin</option>
             </select>
           </div>
+
+          {/* Class Filter */}
+          {availableClasses.length > 0 && (
+            <div className="relative">
+              <label htmlFor="class-filter" className="sr-only">
+                Filter berdasarkan kelas
+              </label>
+              <Filter
+                className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+                aria-hidden="true"
+              />
+              <select
+                id="class-filter"
+                value={classFilter}
+                onChange={(e) => handleClassFilterChange(e.target.value)}
+                className="pl-9 pr-8 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white transition-all"
+              >
+                <option value="all">Semua Kelas</option>
+                {availableClasses.map((cls) => (
+                  <option key={cls} value={cls}>
+                    {cls}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
@@ -312,6 +352,7 @@ export default function UsersTable({
           )}
           {searchQuery && ` untuk "${searchQuery}"`}
           {roleFilter !== "all" && ` dengan role ${roleFilter}`}
+          {classFilter !== "all" && ` kelas ${classFilter}`}
         </div>
       )}
 

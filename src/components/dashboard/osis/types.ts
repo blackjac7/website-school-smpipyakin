@@ -36,13 +36,13 @@ export interface OsisNews {
 }
 
 export interface Notification {
-  id: number | string;
+  id: string;
   type: string;
   title?: string;
   icon?: unknown;
   color?: string;
   message: string;
-  detail: string;
+  detail?: string;
   time: string;
   read: boolean;
 }

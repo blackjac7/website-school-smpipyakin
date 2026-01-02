@@ -2,8 +2,8 @@ import {
   getValidationQueue,
   getStudents,
   getDashboardStats,
-  ValidationItem,
   DashboardStats,
+  ValidationQueueResult,
 } from "@/actions/kesiswaan";
 import DashboardClient from "./DashboardClient";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -11,7 +11,13 @@ import { Siswa } from "@prisma/client";
 
 export default async function KesiswaanDashboardPage() {
   // Fetch initial data on the server
-  let validationQueue: ValidationItem[] = [];
+  let validationQueueResult: ValidationQueueResult = {
+    items: [],
+    totalCount: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0,
+  };
   let students: Siswa[] = [];
   let stats: DashboardStats = {
     monthly: [],
@@ -27,11 +33,11 @@ export default async function KesiswaanDashboardPage() {
 
   try {
     const [queueData, studentsData, statsData] = await Promise.all([
-      getValidationQueue(),
+      getValidationQueue("PENDING", 1, 10),
       getStudents(),
       getDashboardStats(),
     ]);
-    validationQueue = queueData;
+    validationQueueResult = queueData;
     students = studentsData;
     stats = statsData;
   } catch (error) {
@@ -43,7 +49,7 @@ export default async function KesiswaanDashboardPage() {
   return (
     <ProtectedRoute requiredRoles={["kesiswaan"]}>
       <DashboardClient
-        initialQueue={validationQueue}
+        initialQueueResult={validationQueueResult}
         initialStudents={students}
         initialStats={stats}
       />

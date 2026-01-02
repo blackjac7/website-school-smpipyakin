@@ -16,6 +16,8 @@ const CreateAnnouncementSchema = z.object({
   date: z.coerce.date(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]),
   author: z.string().optional(),
+  location: z.string().optional(),
+  linkFile: z.string().optional(),
 });
 
 const IdSchema = z.string().uuid("Invalid announcement ID");
@@ -62,6 +64,8 @@ export async function createAnnouncement(data: {
   date: Date;
   priority: PriorityLevel;
   author?: string;
+  location?: string;
+  linkFile?: string;
 }) {
   const auth = await verifyAdminRole();
   if (!auth.authorized) {
@@ -75,7 +79,8 @@ export async function createAnnouncement(data: {
   }
 
   try {
-    const { title, content, date, priority } = validation.data;
+    const { title, content, date, priority, location, linkFile } =
+      validation.data;
 
     const announcement = await prisma.announcement.create({
       data: {
@@ -83,6 +88,8 @@ export async function createAnnouncement(data: {
         content,
         date,
         priority,
+        location: location || null,
+        linkFile: linkFile || null,
       },
     });
     revalidatePath("/announcements");

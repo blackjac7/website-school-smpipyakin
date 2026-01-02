@@ -12,19 +12,37 @@ import {
   School,
   FileText,
   UserCheck,
+  RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import type { DashboardStats, DashboardActivity } from "@/actions/admin/dashboard";
-import { formatDistanceToNow } from "date-fns";
+import type {
+  DashboardStats,
+  DashboardActivity,
+} from "@/actions/admin/dashboard";
+import { formatDistanceToNow, format } from "date-fns";
 import { id } from "date-fns/locale";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 
 interface DashboardClientProps {
   stats: DashboardStats;
   userName: string;
 }
 
-export default function DashboardClient({ stats, userName }: DashboardClientProps) {
+export default function DashboardClient({
+  stats,
+  userName,
+}: DashboardClientProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const handleRefresh = () => {
+    startTransition(() => {
+      router.refresh();
+    });
+  };
+
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -166,10 +184,31 @@ export default function DashboardClient({ stats, userName }: DashboardClientProp
 
       {/* Stats Grid */}
       <div>
-        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <TrendingUp className="text-blue-600" size={24} />
-          Statistik & Data
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <TrendingUp className="text-blue-600" size={24} />
+            Statistik & Data
+          </h2>
+          <div className="flex items-center gap-3">
+            {stats.lastUpdated && (
+              <span className="text-xs text-gray-500">
+                Update:{" "}
+                {format(new Date(stats.lastUpdated), "HH:mm", { locale: id })}
+              </span>
+            )}
+            <button
+              onClick={handleRefresh}
+              disabled={isPending}
+              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+              title="Refresh data"
+            >
+              <RefreshCw
+                size={18}
+                className={isPending ? "animate-spin" : ""}
+              />
+            </button>
+          </div>
+        </div>
         <motion.div
           variants={container}
           initial="hidden"
@@ -262,8 +301,8 @@ export default function DashboardClient({ stats, userName }: DashboardClientProp
                             activity.status === "PUBLISHED"
                               ? "bg-green-50 text-green-600 border-green-100"
                               : activity.status === "PENDING"
-                              ? "bg-yellow-50 text-yellow-600 border-yellow-100"
-                              : "bg-gray-50 text-gray-500 border-gray-100"
+                                ? "bg-yellow-50 text-yellow-600 border-yellow-100"
+                                : "bg-gray-50 text-gray-500 border-gray-100"
                           }`}
                         >
                           {activity.status}
@@ -301,8 +340,8 @@ export default function DashboardClient({ stats, userName }: DashboardClientProp
               <li className="flex gap-3 items-start">
                 <span className="text-yellow-500 mt-1">•</span>
                 <span>
-                  Pantau data <strong className="text-white">User</strong> secara
-                  berkala untuk memastikan keamanan sistem.
+                  Pantau data <strong className="text-white">User</strong>{" "}
+                  secara berkala untuk memastikan keamanan sistem.
                 </span>
               </li>
               <li className="flex gap-3 items-start">
@@ -321,8 +360,8 @@ export default function DashboardClient({ stats, userName }: DashboardClientProp
               Butuh Bantuan?
             </h3>
             <p className="text-xs text-gray-500 mb-4">
-              Jika mengalami kendala teknis atau pertanyaan fitur, silakan hubungi
-              tim developer.
+              Jika mengalami kendala teknis atau pertanyaan fitur, silakan
+              hubungi tim developer.
             </p>
             <button className="text-xs text-blue-600 font-semibold hover:underline">
               Lihat Dokumentasi Teknis &rarr;

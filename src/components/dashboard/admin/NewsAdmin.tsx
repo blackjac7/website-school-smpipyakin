@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   Plus,
@@ -23,6 +24,7 @@ interface NewsPageProps {
 }
 
 export default function NewsAdmin({ news }: NewsPageProps) {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<News | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +63,7 @@ export default function NewsAdmin({ news }: NewsPageProps) {
           toast.success("News updated");
           setIsModalOpen(false);
           setEditingItem(null);
+          router.refresh();
         } else {
           toast.error(result.error || "Failed to update news");
         }
@@ -71,6 +74,7 @@ export default function NewsAdmin({ news }: NewsPageProps) {
           toast.success("News created");
           setIsModalOpen(false);
           setEditingItem(null);
+          router.refresh();
         } else {
           console.error("createNews failed client-side:", result);
           toast.error(result.error || "Failed to create news");
@@ -96,8 +100,13 @@ export default function NewsAdmin({ news }: NewsPageProps) {
       },
       async () => {
         try {
-          await deleteNews(id);
-          toast.success("News deleted");
+          const result = await deleteNews(id);
+          if (result.success) {
+            toast.success("News deleted");
+            router.refresh();
+          } else {
+            toast.error(result.error || "Failed to delete news");
+          }
         } catch (error) {
           console.error("Failed to delete news:", error);
           toast.error("Failed to delete news");

@@ -9,6 +9,8 @@ import {
   Trash2,
   Plus,
   Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import {
@@ -20,6 +22,8 @@ import { PrayerTime, TaskStatus } from "@prisma/client";
 import StudentSelector from "./StudentSelector";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
 import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
+
+const DATES_PER_PAGE = 9; // 3x3 grid
 
 interface AdzanSchedule {
   id: string;
@@ -39,6 +43,7 @@ interface AdzanTabProps {
 
 export default function AdzanTab({ schedules }: AdzanTabProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
     siswaId: "",
     date: new Date().toISOString().split("T")[0],
@@ -56,6 +61,22 @@ export default function AdzanTab({ schedules }: AdzanTabProps) {
     },
     {} as Record<string, AdzanSchedule[]>
   );
+
+  const sortedDates = Object.keys(schedulesByDate).sort();
+
+  // Pagination logic for dates
+  const totalPages = Math.ceil(sortedDates.length / DATES_PER_PAGE);
+  const startIndex = (currentPage - 1) * DATES_PER_PAGE;
+  const paginatedDates = sortedDates.slice(
+    startIndex,
+    startIndex + DATES_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,12 +133,6 @@ export default function AdzanTab({ schedules }: AdzanTabProps) {
     );
   };
 
-  // Generate calendar days for current view could be complex,
-  // let's stick to a list view grouped by date for simplicity and robustness.
-  // Or a simple weekly view. Let's do a grouped list view sorted by date.
-
-  const sortedDates = Object.keys(schedulesByDate).sort();
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -125,7 +140,10 @@ export default function AdzanTab({ schedules }: AdzanTabProps) {
           <h3 className="text-lg font-semibold text-gray-700">
             Jadwal Muadzin
           </h3>
-          <p className="text-sm text-gray-500">Petugas Adzan Zuhur</p>
+          <p className="text-sm text-gray-500">
+            Petugas Adzan Zuhur{" "}
+            {sortedDates.length > 0 && `(${sortedDates.length} hari)`}
+          </p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -142,7 +160,7 @@ export default function AdzanTab({ schedules }: AdzanTabProps) {
             Belum ada jadwal adzan bulan ini
           </div>
         ) : (
-          sortedDates.map((dateKey) => {
+          paginatedDates.map((dateKey) => {
             const daySchedules = schedulesByDate[dateKey];
             const dateObj = new Date(dateKey);
             const isToday = dateKey === format(new Date(), "yyyy-MM-dd");
@@ -207,6 +225,38 @@ export default function AdzanTab({ schedules }: AdzanTabProps) {
           })
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4">
+          <p className="text-sm text-gray-600">
+            Menampilkan {startIndex + 1}-
+            {Math.min(startIndex + DATES_PER_PAGE, sortedDates.length)} dari{" "}
+            {sortedDates.length} hari
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              aria-label="Halaman sebelumnya"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-sm font-medium text-gray-700 px-3">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              aria-label="Halaman selanjutnya"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal Input */}
       {isModalOpen && (

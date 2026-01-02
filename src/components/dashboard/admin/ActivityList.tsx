@@ -1,5 +1,5 @@
 import { User } from "lucide-react";
-import { Activity } from './types';
+import { Activity } from "./types";
 
 interface ActivityListProps {
   activities: Activity[];
@@ -40,11 +40,6 @@ export default function ActivityList({ activities }: ActivityListProps) {
               ></div>
             </div>
           ))}
-        </div>
-        <div className="mt-6 text-center">
-          <button className="text-sm text-gray-500 hover:text-gray-700">
-            Lihat Semua Aktivitas
-          </button>
         </div>
       </div>
     </div>

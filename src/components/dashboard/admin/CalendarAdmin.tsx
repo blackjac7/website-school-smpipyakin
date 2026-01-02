@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   Plus,
   Pencil,
@@ -9,6 +10,8 @@ import {
   Filter,
   Download,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -24,11 +27,14 @@ import { useToastConfirm } from "@/hooks/useToastConfirm";
 import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 import { exportCalendarToExcel, CalendarExportData } from "@/utils/excelExport";
 
+const ITEMS_PER_PAGE = 10;
+
 interface CalendarPageProps {
   activities: SchoolActivity[];
 }
 
 export default function CalendarAdmin({ activities }: CalendarPageProps) {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<SchoolActivity | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,12 +42,54 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
   const [filterSemester, setFilterSemester] = useState<SemesterType | "ALL">(
     "ALL"
   );
+  const [filterTahunPelajaran, setFilterTahunPelajaran] =
+    useState<string>("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
   const confirmModal = useToastConfirm();
 
-  const filteredActivities =
-    filterSemester === "ALL"
-      ? activities
-      : activities.filter((a) => a.semester === filterSemester);
+  // Extract unique tahun pelajaran for filter
+  const tahunPelajaranOptions = useMemo(() => {
+    const uniqueYears = [...new Set(activities.map((a) => a.tahunPelajaran))]
+      .sort()
+      .reverse();
+    return uniqueYears;
+  }, [activities]);
+
+  const filteredActivities = useMemo(() => {
+    return activities.filter((a) => {
+      const matchesSemester =
+        filterSemester === "ALL" || a.semester === filterSemester;
+      const matchesTahun =
+        filterTahunPelajaran === "ALL" ||
+        a.tahunPelajaran === filterTahunPelajaran;
+      return matchesSemester && matchesTahun;
+    });
+  }, [activities, filterSemester, filterTahunPelajaran]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredActivities.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedActivities = filteredActivities.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  // Reset page when filters change
+  const handleSemesterChange = (value: SemesterType | "ALL") => {
+    setFilterSemester(value);
+    setCurrentPage(1);
+  };
+
+  const handleTahunChange = (value: string) => {
+    setFilterTahunPelajaran(value);
+    setCurrentPage(1);
+  };
 
   // Handle export to Excel
   const handleExportExcel = async () => {
@@ -98,20 +146,32 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
 
     try {
       if (editingItem) {
-        await updateCalendarEvent(editingItem.id, {
+        const result = await updateCalendarEvent(editingItem.id, {
           title: data.title,
           date: data.date,
           information: data.description,
           semester: data.semester,
           tahunPelajaran: data.tahunPelajaran,
         });
-        toast.success("Kegiatan berhasil diperbarui");
+        if (result.success) {
+          toast.success("Kegiatan berhasil diperbarui");
+          setIsModalOpen(false);
+          setEditingItem(null);
+          router.refresh();
+        } else {
+          toast.error(result.error || "Gagal memperbarui kegiatan");
+        }
       } else {
-        await createCalendarEvent(data);
-        toast.success("Kegiatan berhasil ditambahkan");
+        const result = await createCalendarEvent(data);
+        if (result.success) {
+          toast.success("Kegiatan berhasil ditambahkan");
+          setIsModalOpen(false);
+          setEditingItem(null);
+          router.refresh();
+        } else {
+          toast.error(result.error || "Gagal menambahkan kegiatan");
+        }
       }
-      setIsModalOpen(false);
-      setEditingItem(null);
     } catch (error) {
       console.error("Failed to save activity:", error);
       toast.error("Gagal menyimpan kegiatan");
@@ -132,8 +192,13 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
       },
       async () => {
         try {
-          await deleteCalendarEvent(id);
-          toast.success("Kegiatan berhasil dihapus");
+          const result = await deleteCalendarEvent(id);
+          if (result.success) {
+            toast.success("Kegiatan berhasil dihapus");
+            router.refresh();
+          } else {
+            toast.error(result.error || "Gagal menghapus kegiatan");
+          }
         } catch (error) {
           console.error("Failed to delete activity:", error);
           toast.error("Gagal menghapus kegiatan");
@@ -150,10 +215,32 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
             Kalender Akademik
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            Kelola jadwal kegiatan sekolah
+            Kelola jadwal kegiatan sekolah ({filteredActivities.length}{" "}
+            kegiatan)
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {/* Filter Tahun Pelajaran */}
+          <div className="relative">
+            <CalendarIcon
+              className="absolute left-2 top-2.5 text-gray-400"
+              size={16}
+            />
+            <select
+              value={filterTahunPelajaran}
+              onChange={(e) => handleTahunChange(e.target.value)}
+              aria-label="Filter tahun pelajaran"
+              className="pl-8 pr-4 py-2 border rounded-lg bg-white appearance-none cursor-pointer hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="ALL">Semua Tahun</option>
+              {tahunPelajaranOptions.map((tahun) => (
+                <option key={tahun} value={tahun}>
+                  {tahun}
+                </option>
+              ))}
+            </select>
+          </div>
+          {/* Filter Semester */}
           <div className="relative">
             <Filter
               className="absolute left-2 top-2.5 text-gray-400"
@@ -162,7 +249,7 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
             <select
               value={filterSemester}
               onChange={(e) =>
-                setFilterSemester(e.target.value as SemesterType | "ALL")
+                handleSemesterChange(e.target.value as SemesterType | "ALL")
               }
               aria-label="Filter semester"
               className="pl-8 pr-4 py-2 border rounded-lg bg-white appearance-none cursor-pointer hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -230,8 +317,8 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredActivities.length > 0 ? (
-                filteredActivities.map((item) => (
+              {paginatedActivities.length > 0 ? (
+                paginatedActivities.map((item) => (
                   <tr
                     key={item.id}
                     className="hover:bg-gray-50 transition-colors"
@@ -299,6 +386,38 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-gray-200 p-4">
+            <p className="text-sm text-gray-600">
+              Menampilkan {startIndex + 1}-
+              {Math.min(startIndex + ITEMS_PER_PAGE, filteredActivities.length)}{" "}
+              dari {filteredActivities.length} kegiatan
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label="Halaman sebelumnya"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-sm font-medium text-gray-700 px-3">
+                {currentPage} / {totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label="Halaman selanjutnya"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {isModalOpen && (

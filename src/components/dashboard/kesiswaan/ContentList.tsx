@@ -15,6 +15,13 @@ import { ContentItem } from "./types";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 
+interface ServerPaginationProps {
+  page: number;
+  totalPages: number;
+  totalCount: number;
+  onPageChange: (page: number) => void;
+}
+
 interface ContentListProps {
   contentItems: ContentItem[];
   searchTerm: string;
@@ -26,6 +33,7 @@ interface ContentListProps {
   onApprove: (content: ContentItem) => void;
   onReject: (content: ContentItem) => void;
   onPreview: (content: ContentItem) => void;
+  serverPagination?: ServerPaginationProps;
 }
 
 export default function ContentList({
@@ -39,19 +47,21 @@ export default function ContentList({
   onApprove,
   onReject,
   onPreview,
+  serverPagination,
 }: ContentListProps) {
-  const [currentPage, setCurrentPage] = useState(1);
+  // Client-side pagination (used when serverPagination is not provided)
+  const [clientPage, setClientPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Filter logic (Client side refinement if needed, but primary filter is server-side now)
+  // Use server pagination if provided
+  const useServerPagination = !!serverPagination;
+  const currentPage = useServerPagination ? serverPagination.page : clientPage;
+
+  // Filter logic (Client side refinement - search and category)
   const filteredItems = contentItems.filter((item) => {
     const matchesSearch =
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.authorName.toLowerCase().includes(searchTerm.toLowerCase());
-
-    // Status filter is handled by server, but we can keep this check for extra safety if mixed data provided
-    // However, if we filter explicitly on client, it might hide items if server returns something slightly different
-    // For now, assume server returns correct status bucket.
 
     const matchesCategory =
       categoryFilter === "Semua Kategori" ||
@@ -60,28 +70,46 @@ export default function ContentList({
     return matchesSearch && matchesCategory;
   });
 
-  // Pagination
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  // Pagination - server vs client
+  const totalItems = useServerPagination
+    ? serverPagination.totalCount
+    : filteredItems.length;
+  const totalPages = useServerPagination
+    ? serverPagination.totalPages
+    : Math.ceil(filteredItems.length / itemsPerPage);
+
+  // Items to display
+  const displayItems = useServerPagination
+    ? filteredItems // Already paginated from server
+    : filteredItems.slice(
+        (clientPage - 1) * itemsPerPage,
+        clientPage * itemsPerPage
+      );
+
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedItems = filteredItems.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
 
   // Reset page when filters change
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
-    setCurrentPage(1);
+    if (!useServerPagination) setClientPage(1);
   };
 
   const handleCategoryChange = (value: string) => {
     setCategoryFilter(value);
-    setCurrentPage(1);
+    if (!useServerPagination) setClientPage(1);
   };
 
   const handleStatusChange = (value: string) => {
     setStatusFilter(value);
-    setCurrentPage(1);
+    if (!useServerPagination) setClientPage(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (useServerPagination) {
+      serverPagination.onPageChange(newPage);
+    } else {
+      setClientPage(newPage);
+    }
   };
 
   return (
@@ -144,12 +172,12 @@ export default function ContentList({
 
       {/* Content List */}
       <div className="space-y-4">
-        {filteredItems.length === 0 ? (
+        {displayItems.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
             <p className="text-gray-500">Tidak ada konten yang ditemukan</p>
           </div>
         ) : (
-          paginatedItems.map((item) => (
+          displayItems.map((item) => (
             <div
               key={item.id}
               className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
@@ -258,12 +286,15 @@ export default function ContentList({
         <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4 mt-6">
           <p className="text-sm text-gray-600">
             Menampilkan {startIndex + 1}-
-            {Math.min(startIndex + itemsPerPage, filteredItems.length)} dari{" "}
-            {filteredItems.length} konten
+            {Math.min(
+              startIndex + itemsPerPage,
+              displayItems.length + startIndex
+            )}{" "}
+            dari {totalItems} konten
           </p>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
               className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               aria-label="Halaman sebelumnya"
@@ -274,7 +305,7 @@ export default function ContentList({
               {currentPage} / {totalPages}
             </span>
             <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
               className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               aria-label="Halaman selanjutnya"

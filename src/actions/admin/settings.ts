@@ -402,7 +402,13 @@ export async function seedSettingsAction() {
     for (const [key, config] of entries) {
       await prisma.siteSettings.upsert({
         where: { key },
-        update: {},
+        update: {
+          value: config.value,
+          type: config.type,
+          category: config.category,
+          description: config.description,
+          isPublic: config.isPublic,
+        },
         create: {
           key,
           value: config.value,
@@ -414,12 +420,14 @@ export async function seedSettingsAction() {
       });
     }
 
+    revalidatePath("/dashboard-admin/settings");
+
     return {
       success: true,
-      message: `${entries.length} pengaturan berhasil dibuat`,
+      message: `${entries.length} pengaturan berhasil direset ke default`,
     };
   } catch (error) {
     console.error("Error seeding settings:", error);
-    return { success: false, error: "Gagal membuat pengaturan default" };
+    return { success: false, error: "Gagal mereset pengaturan ke default" };
   }
 }

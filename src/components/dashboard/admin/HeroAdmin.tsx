@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   Plus,
@@ -25,6 +26,7 @@ interface HeroPageProps {
 }
 
 export default function HeroAdmin({ slides }: HeroPageProps) {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSlide, setEditingSlide] = useState<HeroSlide | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,15 +50,25 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
     };
 
     try {
+      let result;
       if (editingSlide) {
-        await updateHeroSlide(editingSlide.id, data);
-        toast.success("Slide berhasil diperbarui");
+        result = await updateHeroSlide(editingSlide.id, data);
       } else {
-        await createHeroSlide(data);
-        toast.success("Slide berhasil ditambahkan");
+        result = await createHeroSlide(data);
       }
-      setIsModalOpen(false);
-      setEditingSlide(null);
+
+      if (result.success) {
+        toast.success(
+          editingSlide
+            ? "Slide berhasil diperbarui"
+            : "Slide berhasil ditambahkan"
+        );
+        setIsModalOpen(false);
+        setEditingSlide(null);
+        router.refresh();
+      } else {
+        toast.error(result.error || "Gagal menyimpan slide");
+      }
     } catch (error) {
       console.error(error);
       toast.error("Gagal menyimpan slide");
@@ -77,8 +89,13 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
       },
       async () => {
         try {
-          await deleteHeroSlide(id);
-          toast.success("Slide berhasil dihapus");
+          const result = await deleteHeroSlide(id);
+          if (result.success) {
+            toast.success("Slide berhasil dihapus");
+            router.refresh();
+          } else {
+            toast.error(result.error || "Gagal menghapus slide");
+          }
         } catch (error) {
           console.error("Failed to delete slide:", error);
           toast.error("Gagal menghapus slide");

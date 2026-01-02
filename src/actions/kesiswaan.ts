@@ -39,9 +39,19 @@ export interface ValidationItem {
   rejectionNote?: string | null;
 }
 
+export interface ValidationQueueResult {
+  items: ValidationItem[];
+  totalCount: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export async function getValidationQueue(
-  statusFilter: StatusApproval | "ALL" = "PENDING"
-): Promise<ValidationItem[]> {
+  statusFilter: StatusApproval | "ALL" = "PENDING",
+  page: number = 1,
+  limit: number = 10
+): Promise<ValidationQueueResult> {
   try {
     const whereClause: Prisma.StudentAchievementWhereInput &
       Prisma.StudentWorkWhereInput = {};
@@ -49,23 +59,35 @@ export async function getValidationQueue(
       whereClause.statusPersetujuan = statusFilter;
     }
 
-    // Fetch Achievements
-    const achievements = await prisma.studentAchievement.findMany({
-      where: whereClause,
-      include: {
-        siswa: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    // Fetch counts for pagination
+    const [achievementsCount, worksCount] = await Promise.all([
+      prisma.studentAchievement.count({ where: whereClause }),
+      prisma.studentWork.count({ where: whereClause }),
+    ]);
+    const totalCount = achievementsCount + worksCount;
+    const totalPages = Math.ceil(totalCount / limit);
 
-    // Fetch Works
-    const works = await prisma.studentWork.findMany({
-      where: whereClause,
-      include: {
-        siswa: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    // Fetch Achievements and Works with limit
+    // We fetch more than needed to ensure we get enough after combining and sorting
+    const fetchLimit = limit * 2;
+    const [achievements, works] = await Promise.all([
+      prisma.studentAchievement.findMany({
+        where: whereClause,
+        include: {
+          siswa: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: fetchLimit,
+      }),
+      prisma.studentWork.findMany({
+        where: whereClause,
+        include: {
+          siswa: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: fetchLimit,
+      }),
+    ]);
 
     // Normalize and merge
     const normalizedAchievements: ValidationItem[] = achievements.map((a) => ({
@@ -96,13 +118,30 @@ export async function getValidationQueue(
       rejectionNote: w.rejectionNote,
     }));
 
-    // Combine and sort by date descending
-    return [...normalizedAchievements, ...normalizedWorks].sort(
+    // Combine, sort by date descending, and paginate
+    const allItems = [...normalizedAchievements, ...normalizedWorks].sort(
       (a, b) => b.date.getTime() - a.date.getTime()
     );
+
+    const skip = (page - 1) * limit;
+    const items = allItems.slice(skip, skip + limit);
+
+    return {
+      items,
+      totalCount,
+      page,
+      limit,
+      totalPages,
+    };
   } catch (error) {
     console.error("Error fetching validation queue:", error);
-    return [];
+    return {
+      items: [],
+      totalCount: 0,
+      page: 1,
+      limit,
+      totalPages: 0,
+    };
   }
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Plus,
   Pencil,
@@ -29,6 +30,7 @@ interface AnnouncementsPageProps {
 export default function AnnouncementsAdmin({
   announcements,
 }: AnnouncementsPageProps) {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Announcement | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,15 +55,25 @@ export default function AnnouncementsAdmin({
     };
 
     try {
+      let result;
       if (editingItem) {
-        await updateAnnouncement(editingItem.id, data);
-        toast.success("Pengumuman berhasil diperbarui");
+        result = await updateAnnouncement(editingItem.id, data);
       } else {
-        await createAnnouncement(data);
-        toast.success("Pengumuman berhasil dibuat");
+        result = await createAnnouncement(data);
       }
-      setIsModalOpen(false);
-      setEditingItem(null);
+
+      if (result.success) {
+        toast.success(
+          editingItem
+            ? "Pengumuman berhasil diperbarui"
+            : "Pengumuman berhasil dibuat"
+        );
+        setIsModalOpen(false);
+        setEditingItem(null);
+        router.refresh(); // Refresh the page to show updated data
+      } else {
+        toast.error(result.error || "Gagal menyimpan pengumuman");
+      }
     } catch (error) {
       console.error("Failed to save announcement:", error);
       toast.error("Gagal menyimpan pengumuman");
@@ -82,8 +94,13 @@ export default function AnnouncementsAdmin({
       },
       async () => {
         try {
-          await deleteAnnouncement(id);
-          toast.success("Pengumuman berhasil dihapus");
+          const result = await deleteAnnouncement(id);
+          if (result.success) {
+            toast.success("Pengumuman berhasil dihapus");
+            router.refresh(); // Refresh the page to show updated data
+          } else {
+            toast.error(result.error || "Gagal menghapus pengumuman");
+          }
         } catch (error) {
           console.error("Failed to delete announcement:", error);
           toast.error("Gagal menghapus pengumuman");
