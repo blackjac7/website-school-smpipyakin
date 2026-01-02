@@ -146,7 +146,15 @@ export default function WorksSection({
 
   // Helper functions for YouTube and Google Drive URLs (same as before)
   const isGoogleDriveUrl = (url: string) => {
-    return url.includes("drive.google.com") || url.includes("docs.google.com");
+    try {
+      const parsed = new URL(url);
+      const hostname = parsed.hostname.toLowerCase();
+      const allowedHosts = ["drive.google.com", "docs.google.com"];
+      return allowedHosts.includes(hostname);
+    } catch {
+      // If URL parsing fails, treat as not a Google Drive/Docs URL
+      return false;
+    }
   };
 
   // Extract Google Drive file ID from various URL formats
