@@ -18,7 +18,14 @@ export default function FeaturedWorks({
 
   // Check if URL is from Google Drive
   const isGoogleDriveUrl = (url: string) => {
-    return url.includes("drive.google.com") || url.includes("docs.google.com");
+    try {
+      const parsed = new URL(url);
+      const host = parsed.hostname.toLowerCase();
+      const allowedHosts = new Set(["drive.google.com", "docs.google.com"]);
+      return allowedHosts.has(host);
+    } catch {
+      return false;
+    }
   };
 
   const getYouTubeThumbnail = (url: string) => {
