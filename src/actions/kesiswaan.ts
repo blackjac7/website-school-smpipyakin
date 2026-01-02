@@ -302,7 +302,6 @@ export async function validateContent(
         return { success: false, error: "News not found" };
       }
 
-      userId = news.author?.id || null;
       contentTitle = updatedContent?.title || news.title;
       const finalContent = updatedContent?.description || news.content;
 
