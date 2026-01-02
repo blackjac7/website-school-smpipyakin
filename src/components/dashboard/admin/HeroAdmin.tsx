@@ -3,14 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  Link as LinkIcon,
-  Image as ImageIcon,
-} from "lucide-react";
+import { Plus, Pencil, Trash2, Link as LinkIcon } from "lucide-react";
 import { motion } from "framer-motion";
+import ImageUpload from "@/components/shared/ImageUpload";
 import {
   createHeroSlide,
   updateHeroSlide,
@@ -35,7 +30,8 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    const formData = new FormData(e.currentTarget);
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
     const data = {
       title: formData.get("title") as string,
       subtitle: formData.get("subtitle") as string,
@@ -252,19 +248,34 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
                   htmlFor="hero-image-small"
                   className="text-sm font-medium text-gray-700"
                 >
-                  URL Gambar (Kecil/Mobile)
+                  Gambar Hero (Kecil/Mobile)
                 </label>
-                <div className="flex items-center gap-2">
-                  <ImageIcon size={18} className="text-gray-400" />
-                  <input
-                    id="hero-image-small"
-                    name="imageSmall"
-                    required
-                    defaultValue={editingSlide?.imageSmall}
-                    placeholder="https://..."
-                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
+                <ImageUpload
+                  onUpload={(file) => {
+                    const imageInput = document.querySelector<HTMLInputElement>(
+                      'input[name="imageSmall"]'
+                    );
+                    if (imageInput) imageInput.value = file.url;
+                  }}
+                  onRemove={() => {
+                    const imageInput = document.querySelector<HTMLInputElement>(
+                      'input[name="imageSmall"]'
+                    );
+                    if (imageInput) imageInput.value = "";
+                  }}
+                  currentImage={editingSlide?.imageSmall || ""}
+                  folder="hero/small"
+                  label="Upload Gambar Mobile (640px)"
+                  acceptedFormats={["JPEG", "PNG", "WebP"]}
+                  maxSizeMB={2}
+                />
+                <input
+                  type="hidden"
+                  id="hero-image-small"
+                  name="imageSmall"
+                  defaultValue={editingSlide?.imageSmall}
+                  required
+                />
               </div>
 
               <div className="space-y-2">
@@ -272,19 +283,34 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
                   htmlFor="hero-image-medium"
                   className="text-sm font-medium text-gray-700"
                 >
-                  URL Gambar (Sedang/Desktop)
+                  Gambar Hero (Sedang/Desktop)
                 </label>
-                <div className="flex items-center gap-2">
-                  <ImageIcon size={18} className="text-gray-400" />
-                  <input
-                    id="hero-image-medium"
-                    name="imageMedium"
-                    required
-                    defaultValue={editingSlide?.imageMedium}
-                    placeholder="https://..."
-                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
+                <ImageUpload
+                  onUpload={(file) => {
+                    const imageInput = document.querySelector<HTMLInputElement>(
+                      'input[name="imageMedium"]'
+                    );
+                    if (imageInput) imageInput.value = file.url;
+                  }}
+                  onRemove={() => {
+                    const imageInput = document.querySelector<HTMLInputElement>(
+                      'input[name="imageMedium"]'
+                    );
+                    if (imageInput) imageInput.value = "";
+                  }}
+                  currentImage={editingSlide?.imageMedium || ""}
+                  folder="hero/medium"
+                  label="Upload Gambar Desktop (1024px)"
+                  acceptedFormats={["JPEG", "PNG", "WebP"]}
+                  maxSizeMB={3}
+                />
+                <input
+                  type="hidden"
+                  id="hero-image-medium"
+                  name="imageMedium"
+                  defaultValue={editingSlide?.imageMedium}
+                  required
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-100">

@@ -33,6 +33,7 @@ export interface OsisNews {
   image: string | null;
   statusPersetujuan: ApprovalStatus;
   date: Date | string;
+  rejectionNote?: string | null;
 }
 
 export interface Notification {

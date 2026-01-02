@@ -29,6 +29,37 @@ export default function KaryaModal({ work, onClose }: KaryaModalProps) {
 
   const isVideo = work.workType === "video";
 
+  // Check if URL is from Google Drive
+  const isGoogleDriveUrl = (url: string) => {
+    return url.includes("drive.google.com") || url.includes("docs.google.com");
+  };
+
+  // Extract Google Drive file ID from various URL formats
+  const getGoogleDriveFileId = (url: string) => {
+    try {
+      // Format: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+      if (url.includes("/file/d/")) {
+        return url.split("/file/d/")[1].split("/")[0];
+      }
+      // Format: https://drive.google.com/open?id=FILE_ID
+      if (url.includes("id=")) {
+        return url.split("id=")[1].split("&")[0];
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Get Google Drive embed URL
+  const getGoogleDriveEmbedUrl = (url: string) => {
+    const fileId = getGoogleDriveFileId(url);
+    if (fileId) {
+      return `https://drive.google.com/file/d/${fileId}/preview`;
+    }
+    return null;
+  };
+
   const getYouTubeEmbedUrl = (url: string) => {
     try {
       let videoId = "";
@@ -43,6 +74,14 @@ export default function KaryaModal({ work, onClose }: KaryaModalProps) {
     } catch {
       return null;
     }
+  };
+
+  // Get video embed URL (YouTube or Google Drive)
+  const getVideoEmbedUrl = (url: string) => {
+    if (isGoogleDriveUrl(url)) {
+      return getGoogleDriveEmbedUrl(url);
+    }
+    return getYouTubeEmbedUrl(url);
   };
 
   return (
@@ -75,7 +114,7 @@ export default function KaryaModal({ work, onClose }: KaryaModalProps) {
             <div className="w-full md:w-2/3 bg-black flex items-center justify-center relative min-h-[300px] md:h-auto">
               {isVideo ? (
                 <iframe
-                  src={getYouTubeEmbedUrl(work.videoLink) || ""}
+                  src={getVideoEmbedUrl(work.videoLink) || ""}
                   className="w-full h-full absolute inset-0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen

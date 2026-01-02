@@ -18,9 +18,22 @@ interface NewsCardProps {
   news: News;
 }
 
+const getExcerpt = (html: string, maxLength = 180) => {
+  const plain = html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (plain.length <= maxLength) return plain;
+  return `${plain.slice(0, maxLength).trim()}…`;
+};
+
 export default function NewsCard({ news }: NewsCardProps) {
   const Icon = news.category === "achievement" ? Award : Users;
   const isAchievement = news.category === "achievement";
+  const categoryLabel = isAchievement ? "Prestasi" : "Kegiatan";
+  const excerpt = getExcerpt(news.content);
 
   return (
     <div className="group h-full bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl dark:hover:shadow-gray-900/50 transition-all duration-300 border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden">
@@ -51,7 +64,7 @@ export default function NewsCard({ news }: NewsCardProps) {
             )}
           >
             <Icon className="w-3 h-3" />
-            <span className="capitalize">{news.category}</span>
+            <span className="capitalize">{categoryLabel}</span>
           </span>
         </div>
       </div>
@@ -76,7 +89,7 @@ export default function NewsCard({ news }: NewsCardProps) {
 
         {/* Excerpt */}
         <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3 mb-6 flex-grow">
-          {news.content}
+          {excerpt || news.title}
         </p>
 
         {/* Footer / Link */}

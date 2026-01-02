@@ -69,12 +69,15 @@ export async function createActivity(prevState: unknown, formData: FormData) {
     budget: formData.get("budget"),
     participants: formData.get("participants"),
     organizer: formData.get("organizer"),
-    proposalUrl: formData.get("proposalUrl"),
+    proposalUrl: formData.get("proposalUrl") || undefined,
   };
+
+  console.log("Raw form data:", rawData);
 
   const validation = ActivitySchema.safeParse(rawData);
 
   if (!validation.success) {
+    console.error("Validation error:", validation.error);
     return {
       success: false,
       error: validation.error.issues[0].message,
@@ -84,7 +87,7 @@ export async function createActivity(prevState: unknown, formData: FormData) {
   const { date, ...rest } = validation.data;
 
   try {
-    await prisma.osisActivity.create({
+    const activity = await prisma.osisActivity.create({
       data: {
         ...rest,
         date: new Date(date), // Convert string YYYY-MM-DD to Date
@@ -93,6 +96,7 @@ export async function createActivity(prevState: unknown, formData: FormData) {
       },
     });
 
+    console.log("Activity created successfully:", activity.id);
     revalidatePath("/dashboard-osis");
     return { success: true, message: "Kegiatan berhasil diajukan" };
   } catch (error) {

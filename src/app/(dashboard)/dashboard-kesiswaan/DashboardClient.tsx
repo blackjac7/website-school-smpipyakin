@@ -12,9 +12,8 @@ import {
   ValidationModal,
   MenuItem,
   ContentItem,
-  StudentItem,
+  StudentManagement,
 } from "@/components/dashboard/kesiswaan";
-import StudentList from "@/components/dashboard/kesiswaan/StudentList";
 import { DashboardSidebar } from "@/components/dashboard/layout";
 import LoadingEffect from "@/components/shared/LoadingEffect";
 import {
@@ -34,13 +33,11 @@ import { useSidebar } from "@/hooks/useSidebar";
 
 interface DashboardClientProps {
   initialQueueResult: ValidationQueueResult;
-  initialStudents: StudentItem[];
   initialStats: DashboardStats;
 }
 
 export default function DashboardClient({
   initialQueueResult,
-  initialStudents,
   initialStats,
 }: DashboardClientProps) {
   const [activeMenu, setActiveMenu] = useState("validation");
@@ -87,7 +84,7 @@ export default function DashboardClient({
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const result = await getKesiswaanNotifications({ limit: 10 });
+        const result = await getKesiswaanNotifications({ limit: 3 });
         if (result.success) {
           setNotifications(result.data);
         }
@@ -186,14 +183,28 @@ export default function DashboardClient({
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const handleApprove = (content: ContentItem) => {
+  // State for updated content from preview modal editing
+  const [pendingUpdatedContent, setPendingUpdatedContent] = useState<
+    | {
+        title: string;
+        description: string;
+      }
+    | undefined
+  >(undefined);
+
+  const handleApprove = (
+    content: ContentItem,
+    updatedContent?: { title: string; description: string }
+  ) => {
     setSelectedContent(content);
+    setPendingUpdatedContent(updatedContent);
     setValidationAction("approve");
     setShowValidationModal(true);
   };
 
   const handleReject = (content: ContentItem) => {
     setSelectedContent(content);
+    setPendingUpdatedContent(undefined);
     setValidationAction("reject");
     setShowValidationModal(true);
   };
@@ -211,7 +222,8 @@ export default function DashboardClient({
         selectedContent.id,
         selectedContent.type,
         validationAction === "approve" ? "APPROVE" : "REJECT",
-        note
+        note,
+        pendingUpdatedContent
       );
 
       if (result.success) {
@@ -222,22 +234,23 @@ export default function DashboardClient({
         );
         setShowValidationModal(false);
         setShowPreviewModal(false);
+        setPendingUpdatedContent(undefined);
         // Refresh the list immediately with current page
         const status =
           statusFilter === "Semua Status"
             ? "ALL"
             : (statusFilter.toUpperCase() as import("@prisma/client").StatusApproval);
-        const result = await getValidationQueue(
+        const refreshResult = await getValidationQueue(
           status,
           pagination.page,
           pagination.limit
         );
-        setValidationQueue(result.items);
+        setValidationQueue(refreshResult.items);
         setPagination({
-          page: result.page,
-          totalPages: result.totalPages,
-          totalCount: result.totalCount,
-          limit: result.limit,
+          page: refreshResult.page,
+          totalPages: refreshResult.totalPages,
+          totalCount: refreshResult.totalCount,
+          limit: refreshResult.limit,
         });
       } else {
         toast.error("Gagal memproses validasi");
@@ -310,12 +323,7 @@ export default function DashboardClient({
               )}
             </div>
           )}
-          {activeMenu === "students" && (
-            <div className="space-y-6">
-              <h2 className="text-xl font-bold text-gray-900">Data Siswa</h2>
-              <StudentList students={initialStudents} />
-            </div>
-          )}
+          {activeMenu === "students" && <StudentManagement />}
           {activeMenu === "reports" && (
             <ReportsContent reportStats={initialStats} />
           )}

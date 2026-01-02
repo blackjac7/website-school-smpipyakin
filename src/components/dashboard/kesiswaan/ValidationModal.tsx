@@ -63,7 +63,7 @@ export default function ValidationModal({
               placeholder={`Berikan catatan untuk ${validationAction === "approve" ? "persetujuan" : "penolakan"} konten...`}
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              required
+              required={validationAction === "reject"}
             />
           </div>
 
@@ -85,7 +85,11 @@ export default function ValidationModal({
                   : "bg-red-600 hover:bg-red-700"
               } disabled:opacity-50`}
             >
-              {isSubmitting ? "Memproses..." : (validationAction === "approve" ? "Setujui" : "Tolak")}
+              {isSubmitting
+                ? "Memproses..."
+                : validationAction === "approve"
+                  ? "Setujui"
+                  : "Tolak"}
             </button>
           </div>
         </form>

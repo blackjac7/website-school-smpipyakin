@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Play, Eye } from "lucide-react";
+import { Play, Eye, HardDrive } from "lucide-react";
 
 interface KaryaCardProps {
   work: {
@@ -22,6 +22,11 @@ interface KaryaCardProps {
 export default function KaryaCard({ work, onClick }: KaryaCardProps) {
   const isVideo = work.workType === "video";
 
+  // Check if URL is from Google Drive
+  const isGoogleDriveUrl = (url: string) => {
+    return url.includes("drive.google.com") || url.includes("docs.google.com");
+  };
+
   const getYouTubeThumbnail = (url: string) => {
     try {
       let videoId = "";
@@ -29,17 +34,27 @@ export default function KaryaCard({ work, onClick }: KaryaCardProps) {
         videoId = url.split("youtu.be/")[1].split("?")[0];
       else if (url.includes("youtube.com/watch?v="))
         videoId = url.split("watch?v=")[1].split("&")[0];
+      // Use hqdefault.jpg instead of maxresdefault.jpg for more reliable thumbnail
+      // hqdefault.jpg (480x360) is available for all videos
       return videoId
-        ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+        ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
         : null;
     } catch {
       return null;
     }
   };
 
-  const thumbnail = isVideo
-    ? getYouTubeThumbnail(work.videoLink)
-    : work.mediaUrl;
+  // Get thumbnail - YouTube has API, Google Drive doesn't have public thumbnail
+  const getVideoThumbnail = (url: string) => {
+    if (isGoogleDriveUrl(url)) {
+      return null; // No public thumbnail API for Google Drive
+    }
+    return getYouTubeThumbnail(url);
+  };
+
+  const isGDrive =
+    isVideo && work.videoLink && isGoogleDriveUrl(work.videoLink);
+  const thumbnail = isVideo ? getVideoThumbnail(work.videoLink) : work.mediaUrl;
 
   return (
     <motion.div
@@ -60,6 +75,13 @@ export default function KaryaCard({ work, onClick }: KaryaCardProps) {
             className="object-cover transition-transform duration-700 group-hover:scale-110"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
+        ) : isGDrive ? (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-900/30 dark:to-green-900/30">
+            <HardDrive className="w-12 h-12 text-green-600 dark:text-green-400" />
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-400 mt-2">
+              Google Drive Video
+            </span>
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
             <Eye className="w-8 h-8" />

@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import ImageUpload from "@/components/shared/ImageUpload";
 import { createNews, updateNews, deleteNews } from "@/actions/news";
 import { News } from "@prisma/client";
 import toast from "react-hot-toast";
@@ -33,7 +34,8 @@ export default function NewsAdmin({ news }: NewsPageProps) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    const formData = new FormData(e.currentTarget);
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
 
     // Parse date safely
     const dateStr = formData.get("date") as string;
@@ -278,22 +280,32 @@ export default function NewsAdmin({ news }: NewsPageProps) {
 
               <div className="space-y-2">
                 <label htmlFor="image" className="text-sm font-medium">
-                  URL Gambar
+                  Foto Berita
                 </label>
-                <div className="flex items-center gap-2">
-                  <ImageIcon
-                    size={18}
-                    className="text-gray-400"
-                    aria-hidden="true"
-                  />
-                  <input
-                    id="image"
-                    name="image"
-                    defaultValue={editingItem?.image || ""}
-                    placeholder="https://contoh.com/gambar.jpg"
-                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
+                <ImageUpload
+                  onUpload={(file) => {
+                    const imageInput = document.querySelector<HTMLInputElement>(
+                      'input[name="image"]'
+                    );
+                    if (imageInput) imageInput.value = file.url;
+                  }}
+                  onRemove={() => {
+                    const imageInput = document.querySelector<HTMLInputElement>(
+                      'input[name="image"]'
+                    );
+                    if (imageInput) imageInput.value = "";
+                  }}
+                  currentImage={editingItem?.image || ""}
+                  folder="news/admin"
+                  label="Upload Foto Berita"
+                  acceptedFormats={["JPEG", "PNG", "WebP"]}
+                  maxSizeMB={4}
+                />
+                <input
+                  type="hidden"
+                  name="image"
+                  defaultValue={editingItem?.image || ""}
+                />
               </div>
 
               <div className="space-y-2">

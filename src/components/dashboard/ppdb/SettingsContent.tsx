@@ -10,11 +10,17 @@ import {
   Clock,
   Mail,
   Database,
+  BookOpen,
 } from "lucide-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
+import FileInput from "@/components/shared/FileInput";
 
 export default function SettingsContent() {
   const [activeTab, setActiveTab] = useState("general");
+  const [guideFile, setGuideFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [currentGuideUrl, setCurrentGuideUrl] = useState("");
   const [settings, setSettings] = useState({
     registrationPeriod: {
       startDate: "2025-01-01",
@@ -42,13 +48,45 @@ export default function SettingsContent() {
     { id: "general", label: "Umum", icon: Settings },
     { id: "registration", label: "Pendaftaran", icon: Calendar },
     { id: "requirements", label: "Persyaratan", icon: FileText },
+    { id: "guide", label: "Panduan PPDB", icon: BookOpen },
     { id: "notifications", label: "Notifikasi", icon: Bell },
     { id: "system", label: "Sistem", icon: Database },
   ];
 
-  const handleSave = () => {
-    // Handle save settings
-    console.log("Settings saved:", settings);
+  const handleSave = async () => {
+    // Upload guide file if exists
+    if (guideFile && activeTab === "guide") {
+      setUploading(true);
+      try {
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", guideFile);
+        uploadFormData.append("folder", "guides");
+        uploadFormData.append("fileType", "guide");
+
+        const response = await fetch("/api/upload-files", {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        const result = await response.json();
+
+        if (!result.success || !result.data) {
+          throw new Error(result.error || "Upload gagal");
+        }
+
+        setCurrentGuideUrl(result.data.url);
+        setGuideFile(null);
+        toast.success("Panduan berhasil diupload");
+      } catch {
+        toast.error("Gagal upload panduan");
+      } finally {
+        setUploading(false);
+      }
+    } else {
+      // Handle save other settings
+      console.log("Settings saved:", settings);
+      toast.success("Pengaturan berhasil disimpan");
+    }
   };
 
   return (
@@ -335,6 +373,67 @@ export default function SettingsContent() {
               </div>
             )}
 
+            {activeTab === "guide" && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                    <BookOpen className="w-4 h-4 text-white" />
+                  </div>
+                  <h4 className="text-xl font-bold text-gray-900">
+                    Panduan PPDB
+                  </h4>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                  <p className="text-sm text-blue-700">
+                    Upload file panduan pendaftaran PPDB dalam format PDF. File
+                    ini akan tersedia untuk diunduh oleh calon pendaftar.
+                  </p>
+                </div>
+
+                {currentGuideUrl && (
+                  <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-700">
+                      File saat ini:{" "}
+                      <a
+                        href={currentGuideUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                      >
+                        Lihat panduan
+                      </a>
+                    </p>
+                  </div>
+                )}
+                <FileInput
+                  onFileSelect={setGuideFile}
+                  currentFile={guideFile}
+                  label="Upload Panduan PPDB (PDF)"
+                  acceptedFormats={["PDF"]}
+                  maxSizeMB={10}
+                  required={false}
+                />
+
+                {(currentGuideUrl || guideFile) && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                      <Shield className="w-5 h-5 text-green-600" />
+                      <div>
+                        <h5 className="font-semibold text-green-900">
+                          Panduan Tersimpan
+                        </h5>
+                        <p className="text-sm text-green-700">
+                          File panduan berhasil diupload dan dapat diakses oleh
+                          calon pendaftar
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === "notifications" && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3 mb-6">
@@ -501,10 +600,11 @@ export default function SettingsContent() {
             <div className="flex justify-end pt-6 border-t border-gray-200 mt-8">
               <button
                 onClick={handleSave}
-                className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-lg hover:from-amber-600 hover:to-orange-700 transition-all duration-200 flex items-center gap-2 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                disabled={uploading}
+                className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-lg hover:from-amber-600 hover:to-orange-700 transition-all duration-200 flex items-center gap-2 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="w-5 h-5" />
-                Simpan Pengaturan
+                {uploading ? "Mengupload..." : "Simpan Pengaturan"}
               </button>
             </div>
           </div>

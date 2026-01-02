@@ -22,6 +22,7 @@ import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
 import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
+import FileInput from "@/components/shared/FileInput";
 
 interface AnnouncementsPageProps {
   announcements: Announcement[];
@@ -34,12 +35,51 @@ export default function AnnouncementsAdmin({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Announcement | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [keepExisting, setKeepExisting] = useState(false);
   const confirmModal = useToastConfirm();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (uploading || isLoading) return;
+
+    // Upload attachment file if exists
+    let attachmentUrl =
+      keepExisting && editingItem?.linkFile ? editingItem.linkFile : undefined;
+    if (attachmentFile) {
+      setUploading(true);
+      try {
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", attachmentFile);
+        uploadFormData.append("folder", "announcements");
+        uploadFormData.append("fileType", "attachment");
+
+        const response = await fetch("/api/upload-files", {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        const result = await response.json();
+
+        if (!result.success || !result.data) {
+          throw new Error(result.error || "Upload gagal");
+        }
+
+        attachmentUrl = result.data.url;
+      } catch {
+        toast.error("Gagal upload lampiran");
+        setUploading(false);
+        return;
+      } finally {
+        setUploading(false);
+      }
+    }
+
     setIsLoading(true);
-    const formData = new FormData(e.currentTarget);
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
 
     // Parse date safely
     const dateStr = formData.get("date") as string;
@@ -51,7 +91,7 @@ export default function AnnouncementsAdmin({
       location: formData.get("location") as string,
       content: formData.get("content") as string,
       priority: formData.get("priority") as PriorityLevel,
-      linkFile: formData.get("linkFile") as string,
+      linkFile: attachmentUrl,
     };
 
     try {
@@ -70,6 +110,8 @@ export default function AnnouncementsAdmin({
         );
         setIsModalOpen(false);
         setEditingItem(null);
+        setAttachmentFile(null);
+        setKeepExisting(false);
         router.refresh(); // Refresh the page to show updated data
       } else {
         toast.error(result.error || "Gagal menyimpan pengumuman");
@@ -121,6 +163,8 @@ export default function AnnouncementsAdmin({
         <button
           onClick={() => {
             setEditingItem(null);
+            setAttachmentFile(null);
+            setKeepExisting(false);
             setIsModalOpen(true);
           }}
           className="bg-blue-600 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors shadow-sm"
@@ -190,6 +234,8 @@ export default function AnnouncementsAdmin({
                 <button
                   onClick={() => {
                     setEditingItem(item);
+                    setAttachmentFile(null);
+                    setKeepExisting(!!item.linkFile);
                     setIsModalOpen(true);
                   }}
                   className="p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100"
@@ -308,15 +354,40 @@ export default function AnnouncementsAdmin({
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="linkFile" className="text-sm font-medium">
-                  Link Lampiran (Opsional)
-                </label>
-                <input
-                  id="linkFile"
-                  name="linkFile"
-                  defaultValue={editingItem?.linkFile || ""}
-                  placeholder="https://contoh.com/file.pdf"
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                {editingItem?.linkFile && !attachmentFile && (
+                  <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-700 mb-2">
+                      File saat ini:{" "}
+                      <a
+                        href={editingItem.linkFile}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                      >
+                        Lihat lampiran
+                      </a>
+                    </p>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={keepExisting}
+                        onChange={(e) => setKeepExisting(e.target.checked)}
+                        className="rounded"
+                      />
+                      <span>Pertahankan file yang ada</span>
+                    </label>
+                  </div>
+                )}
+                <FileInput
+                  onFileSelect={(file) => {
+                    setAttachmentFile(file);
+                    if (file) setKeepExisting(false);
+                  }}
+                  currentFile={attachmentFile}
+                  label="Lampiran Dokumen Baru (Opsional)"
+                  acceptedFormats={["PDF", "DOC", "DOCX"]}
+                  maxSizeMB={10}
+                  required={false}
                 />
               </div>
 
@@ -330,10 +401,14 @@ export default function AnnouncementsAdmin({
                 </button>
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || uploading}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                 >
-                  {isLoading ? "Menyimpan..." : "Simpan Pengumuman"}
+                  {uploading
+                    ? "Mengupload..."
+                    : isLoading
+                      ? "Menyimpan..."
+                      : "Simpan Pengumuman"}
                 </button>
               </div>
             </form>

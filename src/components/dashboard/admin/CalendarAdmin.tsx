@@ -126,7 +126,8 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    const formData = new FormData(e.currentTarget);
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
 
     // Parse date safely
     const dateStr = formData.get("date") as string;

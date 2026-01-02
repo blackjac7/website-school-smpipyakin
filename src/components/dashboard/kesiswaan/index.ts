@@ -9,6 +9,7 @@ export { default as SettingsContent } from "./SettingsContent";
 export { default as PreviewModal } from "./PreviewModal";
 export { default as ValidationModal } from "./ValidationModal";
 export { default as StudentList } from "./StudentList";
+export { default as StudentManagement } from "./StudentManagement";
 
 // Export types
 export type {

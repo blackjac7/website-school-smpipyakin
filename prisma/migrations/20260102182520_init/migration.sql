@@ -126,6 +126,7 @@ CREATE TABLE "news" (
     "image" TEXT,
     "kategori" "berita_kategori" NOT NULL,
     "status_persetujuan" "status_approval" NOT NULL,
+    "rejection_note" TEXT,
     "author_id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -228,6 +229,7 @@ CREATE TABLE "student_achievements" (
     "category" TEXT,
     "level" TEXT,
     "achievement_date" TIMESTAMP(3),
+    "rejection_note" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

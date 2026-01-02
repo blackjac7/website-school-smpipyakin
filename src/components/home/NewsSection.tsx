@@ -11,6 +11,16 @@ interface NewsSectionProps {
   news: SerializableNews[];
 }
 
+const getExcerpt = (html: string, maxLength = 160) => {
+  const plain = html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (plain.length <= maxLength) return plain;
+  return `${plain.slice(0, maxLength).trim()}…`;
+};
+
 export default function NewsSection({ news }: NewsSectionProps) {
   // Use passed data or empty array
   const newsList = news || [];
@@ -67,7 +77,7 @@ export default function NewsSection({ news }: NewsSectionProps) {
                     {item.title}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 line-clamp-3 mb-4 text-sm">
-                    {item.content}
+                    {getExcerpt(item.content) || item.title}
                   </p>
                   <div className="mt-auto pt-4">
                     <Link

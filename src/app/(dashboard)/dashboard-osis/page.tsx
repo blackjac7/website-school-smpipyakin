@@ -81,7 +81,7 @@ function OSISDashboard() {
 
   async function fetchNotifications() {
     try {
-      const result = await getOsisNotifications({ limit: 10 });
+      const result = await getOsisNotifications({ limit: 3 });
       if (result.success) {
         setNotifications(result.data);
       }

@@ -9,6 +9,7 @@ export interface PublicAnnouncement {
   date: string;
   location: string | null;
   priority: "HIGH" | "MEDIUM" | "LOW";
+  linkFile: string | null;
 }
 
 /**
@@ -29,6 +30,7 @@ export async function getPublicAnnouncements(): Promise<PublicAnnouncement[]> {
       date: item.date.toISOString(),
       location: item.location,
       priority: item.priority as "HIGH" | "MEDIUM" | "LOW",
+      linkFile: item.linkFile,
     }));
   } catch (error) {
     console.error("Error fetching public announcements:", error);
@@ -58,6 +60,7 @@ export async function getAnnouncementById(
       date: announcement.date.toISOString(),
       location: announcement.location,
       priority: announcement.priority as "HIGH" | "MEDIUM" | "LOW",
+      linkFile: announcement.linkFile,
     };
   } catch (error) {
     console.error("Error fetching announcement by ID:", error);

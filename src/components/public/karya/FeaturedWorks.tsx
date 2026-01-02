@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Play, Sparkles, ArrowRight } from "lucide-react";
+import { Play, Sparkles, ArrowRight, HardDrive } from "lucide-react";
 import { PublicWork } from "@/actions/public/karya";
 
 interface FeaturedWorksProps {
@@ -16,6 +16,11 @@ export default function FeaturedWorks({
 }: FeaturedWorksProps) {
   if (!works || works.length === 0) return null;
 
+  // Check if URL is from Google Drive
+  const isGoogleDriveUrl = (url: string) => {
+    return url.includes("drive.google.com") || url.includes("docs.google.com");
+  };
+
   const getYouTubeThumbnail = (url: string) => {
     try {
       let videoId = "";
@@ -23,8 +28,10 @@ export default function FeaturedWorks({
         videoId = url.split("youtu.be/")[1].split("?")[0];
       else if (url.includes("youtube.com/watch?v="))
         videoId = url.split("watch?v=")[1].split("&")[0];
+      // Use hqdefault.jpg instead of maxresdefault.jpg for more reliable thumbnail
+      // hqdefault.jpg (480x360) is available for all videos
       return videoId
-        ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+        ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
         : null;
     } catch {
       return null;
@@ -34,10 +41,21 @@ export default function FeaturedWorks({
   const mainWork = works[0];
   const sideWorks = works.slice(1, 3);
 
-  const getThumbnail = (work: PublicWork) =>
-    work.workType === "video"
-      ? getYouTubeThumbnail(work.videoLink)
-      : work.mediaUrl;
+  // Check if work is a Google Drive video
+  const isGDriveVideo = (work: PublicWork) =>
+    work.workType === "video" &&
+    work.videoLink &&
+    isGoogleDriveUrl(work.videoLink);
+
+  const getThumbnail = (work: PublicWork) => {
+    if (work.workType === "video") {
+      if (isGoogleDriveUrl(work.videoLink)) {
+        return null; // No public thumbnail for Google Drive
+      }
+      return getYouTubeThumbnail(work.videoLink);
+    }
+    return work.mediaUrl;
+  };
 
   return (
     <div className="mb-12">
@@ -72,6 +90,13 @@ export default function FeaturedWorks({
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
                 priority
               />
+            ) : isGDriveVideo(mainWork) ? (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-900/30 dark:to-green-900/30">
+                <HardDrive className="w-16 h-16 text-green-600 dark:text-green-400" />
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 mt-2">
+                  Google Drive Video
+                </span>
+              </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200">
                 <Sparkles className="w-16 h-16 text-blue-400" />
@@ -138,6 +163,10 @@ export default function FeaturedWorks({
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-110"
                     />
+                  ) : isGDriveVideo(work) ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-900/30 dark:to-green-900/30">
+                      <HardDrive className="w-8 h-8 text-green-600 dark:text-green-400" />
+                    </div>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600">
                       <Sparkles className="w-6 h-6 text-gray-400 dark:text-gray-500" />

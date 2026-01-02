@@ -118,7 +118,8 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    const formData = new FormData(e.currentTarget);
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
     const data = {
       label: formData.get("label") as string,
       value: formData.get("value") as string,

@@ -147,6 +147,8 @@ export default function ContentList({
               <option value="Seni">Seni</option>
               <option value="Fotografi">Fotografi</option>
               <option value="Videografi">Videografi</option>
+              <option value="Kegiatan">Kegiatan OSIS</option>
+              <option value="Prestasi">Prestasi</option>
             </select>
             <label htmlFor="status-filter" className="sr-only">
               Filter status
@@ -187,11 +189,17 @@ export default function ContentList({
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${
                       item.type === "achievement"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-yellow-100 text-yellow-800"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : item.type === "news"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-green-100 text-green-700"
                     }`}
                   >
-                    {item.type === "achievement" ? "Prestasi" : "Karya"}
+                    {item.type === "achievement"
+                      ? "Prestasi Siswa"
+                      : item.type === "news"
+                        ? "Berita OSIS"
+                        : "Karya Siswa"}
                   </span>
 
                   <span

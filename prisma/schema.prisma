@@ -140,6 +140,7 @@ model News {
   image              String?
   kategori           BeritaKategori
   statusPersetujuan  StatusApproval @map("status_persetujuan")
+  rejectionNote      String?        @map("rejection_note")
   authorId           String         @map("author_id")
 
   // Timestamps
@@ -255,6 +256,7 @@ model StudentAchievement {
   category           String?         // akademik, olahraga, seni, dll
   level              String?         // sekolah, kecamatan, provinsi, dll
   achievementDate    DateTime?      @map("achievement_date")
+  rejectionNote      String?        @map("rejection_note")
 
   // Timestamps
   createdAt          DateTime       @default(now())

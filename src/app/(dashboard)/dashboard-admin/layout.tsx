@@ -41,7 +41,7 @@ export default function AdminDashboardLayout({
   // Load notifications from API
   const loadNotifications = async () => {
     try {
-      const result = await getAdminNotifications({ limit: 5 });
+      const result = await getAdminNotifications({ limit: 3 });
 
       if (result.success) {
         setNotifications(result.data);

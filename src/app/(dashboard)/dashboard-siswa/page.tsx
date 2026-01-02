@@ -174,6 +174,7 @@ function SiswaDashboardContent() {
             category: string;
             level: string;
             image: string;
+            rejectionNote?: string | null;
           }) => ({
             id: achievement.id,
             title: achievement.title,
@@ -183,6 +184,7 @@ function SiswaDashboardContent() {
             image: achievement.image,
             category: achievement.category,
             level: achievement.level,
+            rejectionNote: achievement.rejectionNote,
             icon:
               achievement.category === "akademik"
                 ? Trophy
@@ -236,14 +238,11 @@ function SiswaDashboardContent() {
   // Load notifications from API using modular system
   const loadNotifications = async () => {
     try {
-      // Only load 5 notifications for header dropdown
-      const result = await NotificationAPIService.fetchAllNotifications({
-        page: 1,
-      });
+      const result = await NotificationAPIService.fetchHeaderNotifications();
 
       if (result.success) {
-        // Take only first 5 notifications for header
-        setNotifications(result.data.slice(0, 5));
+        // Top-3 only for a concise header dropdown
+        setNotifications(result.data.slice(0, 3));
       }
     } catch (error) {
       console.error("Failed to load notifications:", error);
@@ -292,7 +291,6 @@ function SiswaDashboardContent() {
 
   const handleSubmitForm = async (data: AchievementFormData) => {
     try {
-
       const achievementData: AchievementInput = {
         title: data.title,
         description: data.description,

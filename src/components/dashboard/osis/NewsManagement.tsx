@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import ImageUpload from "@/components/shared/ImageUpload";
 import {
   createOsisNews,
   deleteOsisNews,
@@ -148,6 +149,16 @@ export default function NewsManagement() {
                   <p className="text-sm text-gray-600 line-clamp-3 mb-4 flex-1">
                     {item.content}
                   </p>
+
+                  {item.statusPersetujuan === "REJECTED" &&
+                    item.rejectionNote && (
+                      <div className="mb-4 bg-red-50 border border-red-100 text-red-700 text-xs rounded-lg px-3 py-2">
+                        <p className="font-semibold mb-1">Catatan penolakan</p>
+                        <p className="leading-relaxed line-clamp-3">
+                          {item.rejectionNote}
+                        </p>
+                      </div>
+                    )}
 
                   {item.statusPersetujuan === "PENDING" && (
                     <div className="pt-4 border-t border-gray-100 flex justify-end">
@@ -314,13 +325,27 @@ function AddNewsModal({
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700">
-              Link Gambar (Optional)
+              Foto Kegiatan (Optional)
             </label>
-            <input
-              name="image"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all"
-              placeholder="https://example.com/image.jpg"
+            <ImageUpload
+              onUpload={(file) => {
+                const imageInput = document.querySelector<HTMLInputElement>(
+                  'input[name="image"]'
+                );
+                if (imageInput) imageInput.value = file.url;
+              }}
+              onRemove={() => {
+                const imageInput = document.querySelector<HTMLInputElement>(
+                  'input[name="image"]'
+                );
+                if (imageInput) imageInput.value = "";
+              }}
+              folder="news/osis"
+              label="Upload Foto Kegiatan"
+              acceptedFormats={["JPEG", "PNG", "WebP"]}
+              maxSizeMB={4}
             />
+            <input type="hidden" name="image" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700">
