@@ -2,6 +2,7 @@
 
 import { Download } from "lucide-react";
 import { ReportStats } from "./types";
+import { exportKesiswaanReportToExcel } from "@/utils/excelExport";
 import toast from "react-hot-toast";
 
 interface ReportsContentProps {
@@ -11,55 +12,14 @@ interface ReportsContentProps {
 export default function ReportsContent({ reportStats }: ReportsContentProps) {
   const totalItems = reportStats.summary.total;
 
-  // CSV Export function
-  const exportToCSV = () => {
+  // Excel Export function
+  const exportToExcel = () => {
     try {
-      // Build CSV content
-      let csvContent = "Laporan Validasi Konten Kesiswaan\n\n";
-
-      // Summary section
-      csvContent += "RINGKASAN\n";
-      csvContent += "Status,Jumlah,Persentase\n";
-      csvContent += `Disetujui,${reportStats.summary.approved},${totalItems > 0 ? ((reportStats.summary.approved / totalItems) * 100).toFixed(1) : 0}%\n`;
-      csvContent += `Pending,${reportStats.summary.pending},${totalItems > 0 ? ((reportStats.summary.pending / totalItems) * 100).toFixed(1) : 0}%\n`;
-      csvContent += `Ditolak,${reportStats.summary.rejected},${totalItems > 0 ? ((reportStats.summary.rejected / totalItems) * 100).toFixed(1) : 0}%\n`;
-      csvContent += `Total,${totalItems},100%\n\n`;
-
-      // Monthly data
-      csvContent += "VALIDASI BULANAN\n";
-      csvContent += "Bulan,Disetujui,Pending,Ditolak,Total\n";
-      reportStats.monthly.forEach((month) => {
-        const monthTotal = month.validated + month.pending + month.rejected;
-        csvContent += `${month.month},${month.validated},${month.pending},${month.rejected},${monthTotal}\n`;
-      });
-      csvContent += "\n";
-
-      // Category distribution
-      csvContent += "DISTRIBUSI KATEGORI\n";
-      csvContent += "Kategori,Jumlah,Persentase\n";
-      reportStats.byCategory.forEach((cat) => {
-        csvContent += `${cat.category},${cat.count},${cat.percentage.toFixed(1)}%\n`;
-      });
-
-      // Create and download file
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute(
-        "download",
-        `Laporan_Kesiswaan_${new Date().toISOString().split("T")[0]}.csv`
-      );
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      toast.success("Laporan CSV berhasil diunduh");
+      exportKesiswaanReportToExcel(reportStats);
+      toast.success("Laporan berhasil diexport ke Excel");
     } catch (error) {
       console.error("Export error:", error);
-      toast.error("Gagal mengunduh laporan");
+      toast.error("Gagal mengexport laporan");
     }
   };
 
@@ -194,16 +154,16 @@ export default function ReportsContent({ reportStats }: ReportsContentProps) {
         </h3>
         <div className="flex flex-wrap gap-3">
           <button
-            onClick={exportToCSV}
-            className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2 text-sm font-medium"
+            onClick={exportToExcel}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 text-sm font-medium"
           >
             <Download className="w-4 h-4" />
-            Export CSV
+            Export Excel
           </button>
         </div>
         <p className="text-sm text-gray-500 mt-3">
-          File CSV dapat dibuka dengan Microsoft Excel, Google Sheets, atau
-          aplikasi spreadsheet lainnya.
+          File Excel (.xlsx) dapat dibuka dengan Microsoft Excel, Google Sheets,
+          atau aplikasi spreadsheet lainnya.
         </p>
       </div>
     </div>

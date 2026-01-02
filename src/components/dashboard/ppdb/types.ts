@@ -14,7 +14,7 @@ export interface Stat {
 }
 
 export interface Applicant {
-  id: number;
+  id: string;
   name: string;
   nisn: string;
   status: string;
@@ -25,6 +25,7 @@ export interface Applicant {
   address: string;
   birthDate: string;
   birthPlace: string;
+  gender: string;
   parentName: string;
   parentPhone: string;
   previousSchool: string;

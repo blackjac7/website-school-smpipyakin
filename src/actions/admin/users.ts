@@ -174,9 +174,9 @@ export async function getUsers(
 }
 
 /**
- * Export users data to CSV format
+ * Get all users data for Excel export
  */
-export async function exportUsersToCSV() {
+export async function getUsersForExport() {
   // Verify admin authorization
   const auth = await verifyAdminRole();
   if (!auth.authorized) {
@@ -192,52 +192,41 @@ export async function exportUsersToCSV() {
       },
     });
 
-    // CSV header
-    const headers = [
-      "Username",
-      "Nama",
-      "Email",
-      "Role",
-      "NISN",
-      "Kelas",
-      "NIP",
-      "Jenis Kelamin",
-      "OSIS",
-      "Tanggal Dibuat",
-    ];
-
-    // CSV rows
-    const rows = users.map((user) => [
-      user.username,
-      user.siswa?.name || user.kesiswaan?.name || user.username,
-      user.email || "-",
-      user.role,
-      user.siswa?.nisn || "-",
-      user.siswa?.class || "-",
-      user.kesiswaan?.nip || "-",
-      user.siswa?.gender || user.kesiswaan?.gender || "-",
-      user.siswa?.osisAccess ? "Ya" : "Tidak",
-      user.createdAt.toISOString().split("T")[0],
-    ]);
-
-    // Convert to CSV string
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((row) =>
-        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
-      ),
-    ].join("\n");
+    // Transform for export
+    const exportData = users.map((user) => ({
+      username: user.username,
+      name: user.siswa?.name || user.kesiswaan?.name || user.username,
+      email: user.email,
+      role: user.role,
+      siswa: user.siswa
+        ? {
+            name: user.siswa.name,
+            nisn: user.siswa.nisn,
+            class: user.siswa.class,
+            gender: user.siswa.gender,
+            osisAccess: user.siswa.osisAccess,
+          }
+        : undefined,
+      kesiswaan: user.kesiswaan
+        ? {
+            name: user.kesiswaan.name,
+            nip: user.kesiswaan.nip,
+            gender: user.kesiswaan.gender,
+          }
+        : undefined,
+      createdAt: user.createdAt.toISOString(),
+    }));
 
     return {
       success: true,
-      data: {
-        csv: csvContent,
-        filename: `users_export_${new Date().toISOString().split("T")[0]}.csv`,
-      },
+      data: exportData,
     };
   } catch (error) {
-    console.error("Failed to export users:", error);
-    return { success: false, error: "Gagal mengekspor data pengguna" };
+    console.error("Failed to get users for export:", error);
+    return {
+      success: false,
+      error: "Gagal mengambil data pengguna untuk export",
+    };
   }
 }
 

@@ -35,18 +35,27 @@ export default function PreviewModal({
 
         <div className="space-y-6">
           <div className="flex items-center gap-3 mb-4">
+            {/* Type Badge */}
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (content.status as any) === "Prestasi"
+                content.type === "achievement"
                   ? "bg-blue-100 text-blue-700"
                   : "bg-green-100 text-green-700"
               }`}
             >
-              {content.status}
+              {content.type === "achievement" ? "Prestasi" : "Karya"}
             </span>
-            <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
-              {content.type}
+            {/* Status Badge */}
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-medium ${
+                content.status === "PENDING"
+                  ? "bg-orange-100 text-orange-700"
+                  : content.status === "APPROVED"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+              }`}
+            >
+              {content.status}
             </span>
           </div>
 
@@ -55,8 +64,9 @@ export default function PreviewModal({
               {content.title}
             </h4>
             <div className="prose max-w-none">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              <p className="text-gray-700 leading-relaxed">{(content as any).content || content.description}</p>
+              <p className="text-gray-700 leading-relaxed">
+                {content.description || "Tidak ada deskripsi"}
+              </p>
             </div>
           </div>
 
@@ -64,26 +74,42 @@ export default function PreviewModal({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-gray-600">Penulis:</span>
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                <p className="font-medium">{(content as any).author || (content as any).studentName}</p>
+                <p className="font-medium">{content.authorName}</p>
               </div>
               <div>
-                <span className="text-gray-600">Tanggal:</span>
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                <p className="font-medium">{(content as any).date || (content as any).submittedDate}</p>
+                <span className="text-gray-600">Kelas:</span>
+                <p className="font-medium">{content.authorClass || "-"}</p>
               </div>
               <div>
-                <span className="text-gray-600">Lampiran:</span>
+                <span className="text-gray-600">Kategori:</span>
+                <p className="font-medium">{content.category || "-"}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">Media:</span>
                 <div className="space-y-1">
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  {((content as any).attachments || []).map((file: any, index: any) => (
-                    <p
-                      key={index}
-                      className="text-blue-600 hover:underline cursor-pointer"
+                  {content.image && (
+                    <a
+                      href={content.image}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline block"
                     >
-                      {file}
-                    </p>
-                  ))}
+                      Lihat Gambar
+                    </a>
+                  )}
+                  {content.videoLink && (
+                    <a
+                      href={content.videoLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline block"
+                    >
+                      Lihat Video
+                    </a>
+                  )}
+                  {!content.image && !content.videoLink && (
+                    <span className="text-gray-400">-</span>
+                  )}
                 </div>
               </div>
             </div>

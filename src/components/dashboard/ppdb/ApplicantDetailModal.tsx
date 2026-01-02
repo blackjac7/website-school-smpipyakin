@@ -345,9 +345,9 @@ export default function ApplicantDetailModal({
                           Jenis Kelamin
                         </label>
                         <p className="text-gray-900 font-medium">
-                          {applicant.gender === "L"
+                          {applicant.gender === "MALE"
                             ? "Laki-laki"
-                            : applicant.gender === "P"
+                            : applicant.gender === "FEMALE"
                               ? "Perempuan"
                               : "Tidak diisi"}
                         </p>

@@ -99,7 +99,7 @@ export default function ValidationContent({
 
   // Convert PPDBApplication to Applicant format for compatibility
   const convertToApplicant = (app: PPDBApplication): Applicant => ({
-    id: parseInt(app.id) || 0,
+    id: app.id,
     name: app.name,
     nisn: app.nisn,
     status: getStatusLabel(app.status),
@@ -110,6 +110,7 @@ export default function ValidationContent({
     address: app.address || "",
     birthDate: app.birthDate || "",
     birthPlace: app.birthPlace || "",
+    gender: app.gender || "",
     parentName: app.parentName || "",
     parentPhone: app.parentContact || "", // Nomor telepon orang tua tersedia
     previousSchool: app.asalSekolah || "",

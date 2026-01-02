@@ -7,6 +7,8 @@ import {
   Trash2,
   Calendar as CalendarIcon,
   Filter,
+  Download,
+  Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -20,6 +22,7 @@ import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
 import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
+import { exportCalendarToExcel, CalendarExportData } from "@/utils/excelExport";
 
 interface CalendarPageProps {
   activities: SchoolActivity[];
@@ -29,6 +32,7 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<SchoolActivity | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [filterSemester, setFilterSemester] = useState<SemesterType | "ALL">(
     "ALL"
   );
@@ -38,6 +42,38 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
     filterSemester === "ALL"
       ? activities
       : activities.filter((a) => a.semester === filterSemester);
+
+  // Handle export to Excel
+  const handleExportExcel = async () => {
+    if (filteredActivities.length === 0) {
+      toast.error("Tidak ada data kegiatan untuk diekspor");
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+
+      // Convert SchoolActivity to CalendarExportData format
+      const exportData: CalendarExportData[] = filteredActivities.map(
+        (activity) => ({
+          id: activity.id,
+          title: activity.title,
+          date: activity.date,
+          information: activity.information,
+          semester: activity.semester,
+          tahunPelajaran: activity.tahunPelajaran,
+        })
+      );
+
+      exportCalendarToExcel(exportData);
+      toast.success("Data kalender berhasil diekspor ke Excel");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Gagal mengekspor data kalender");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -136,6 +172,19 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
               <option value="GENAP">Genap</option>
             </select>
           </div>
+          <button
+            onClick={handleExportExcel}
+            disabled={isExporting}
+            aria-label="Ekspor ke Excel"
+            className="bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-emerald-700 transition focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isExporting ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (
+              <Download size={20} />
+            )}{" "}
+            Ekspor Excel
+          </button>
           <button
             onClick={() => {
               setEditingItem(null);

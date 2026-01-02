@@ -11,6 +11,8 @@ import {
   GripVertical,
   User,
   ChevronDown,
+  Download,
+  Loader2,
 } from "lucide-react";
 import Image from "next/image";
 import { TeacherData } from "@/actions/admin/teachers";
@@ -24,6 +26,8 @@ interface TeachersTableProps {
   onDeleteTeacher: (id: string) => void;
   onToggleStatus: (id: string) => void;
   onReorder?: (reorderedIds: string[]) => void;
+  onExportExcel?: () => void;
+  isExporting?: boolean;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -46,6 +50,8 @@ export default function TeachersTable({
   onDeleteTeacher,
   onToggleStatus,
   onReorder,
+  onExportExcel,
+  isExporting = false,
 }: TeachersTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -152,14 +158,33 @@ export default function TeachersTable({
             </div>
           </div>
 
-          {/* Add Button */}
-          <button
-            onClick={onAddTeacher}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-          >
-            <Plus className="w-4 h-4" />
-            Tambah Guru
-          </button>
+          {/* Action Buttons */}
+          <div className="flex gap-2 w-full sm:w-auto">
+            {/* Export Excel Button */}
+            {onExportExcel && (
+              <button
+                onClick={onExportExcel}
+                disabled={isExporting}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isExporting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                Ekspor Excel
+              </button>
+            )}
+
+            {/* Add Button */}
+            <button
+              onClick={onAddTeacher}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+            >
+              <Plus className="w-4 h-4" />
+              Tambah Guru
+            </button>
+          </div>
         </div>
 
         {/* Stats */}

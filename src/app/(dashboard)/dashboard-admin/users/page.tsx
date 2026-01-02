@@ -9,10 +9,11 @@ import {
   updateUser,
   deleteUser,
   bulkDeleteUsers,
-  exportUsersToCSV,
+  getUsersForExport,
   UserFormData,
 } from "@/actions/admin/users";
 import { User } from "./types";
+import { exportUsersToExcel, UserExportData } from "@/utils/excelExport";
 import toast from "react-hot-toast";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
 import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
@@ -151,29 +152,23 @@ export default function UsersPage() {
     );
   };
 
-  const handleExportCSV = async () => {
+  const handleExportExcel = async () => {
     setIsExporting(true);
     try {
-      const result = await exportUsersToCSV();
+      toast.loading("Mengambil data untuk export...", { id: "export" });
+      const result = await getUsersForExport();
+
       if (result.success && result.data) {
-        // Create and download the CSV file
-        const blob = new Blob([result.data.csv], {
-          type: "text/csv;charset=utf-8;",
-        });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = result.data.filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        toast.success("Data berhasil diekspor");
+        toast.dismiss("export");
+        exportUsersToExcel(result.data as UserExportData[]);
+        toast.success("Data pengguna berhasil diexport ke Excel");
       } else {
-        toast.error(result.error || "Gagal mengekspor data");
+        toast.dismiss("export");
+        toast.error(result.error || "Gagal mengexport data");
       }
     } catch {
-      toast.error("Gagal mengekspor data");
+      toast.dismiss("export");
+      toast.error("Gagal mengexport data");
     } finally {
       setIsExporting(false);
     }
@@ -214,7 +209,7 @@ export default function UsersPage() {
         onDeleteUser={handleDeleteUser}
         onBulkDelete={handleBulkDelete}
         isBulkDeleting={isBulkDeleting}
-        onExportCSV={handleExportCSV}
+        onExportExcel={handleExportExcel}
         isExporting={isExporting}
         totalUsers={pagination.total}
         // Server-side pagination props

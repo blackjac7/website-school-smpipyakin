@@ -7,7 +7,9 @@ export interface MenuItem {
 }
 
 export interface ProfileData {
+  id: string;
   name: string;
+  username: string;
   class: string;
   year: string;
   nisn: string;
@@ -16,6 +18,7 @@ export interface ProfileData {
   address: string;
   birthDate: string;
   birthPlace: string;
+  gender: string | null;
   parentName: string;
   parentPhone: string;
   profileImage?: string;
