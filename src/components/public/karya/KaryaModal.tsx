@@ -29,9 +29,17 @@ export default function KaryaModal({ work, onClose }: KaryaModalProps) {
 
   const isVideo = work.workType === "video";
 
-  // Check if URL is from Google Drive
+  // Check if URL is from Google Drive by inspecting its hostname
   const isGoogleDriveUrl = (url: string) => {
-    return url.includes("drive.google.com") || url.includes("docs.google.com");
+    try {
+      const parsedUrl = new URL(url);
+      const hostname = parsedUrl.hostname.toLowerCase();
+      const allowedHosts = ["drive.google.com", "docs.google.com"];
+      return allowedHosts.includes(hostname);
+    } catch {
+      // If the URL is invalid or cannot be parsed, treat it as non-Google Drive
+      return false;
+    }
   };
 
   // Extract Google Drive file ID from various URL formats
