@@ -1,4 +1,4 @@
-# 🏫 SMP IP Yakin - School Management System
+# 🏫 SMP IP Yakin - School Management System [![CI/CD Pipeline](https://github.com/blackjac7/website-school-smpipyakin/actions/workflows/ci.yml/badge.svg)](https://github.com/blackjac7/website-school-smpipyakin/actions/workflows/ci.yml)
 
 <div align="center">
 
