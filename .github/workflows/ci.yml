@@ -149,11 +149,44 @@ jobs:
           echo "📊 Static Pages:"
           find .next/server/app -name "*.html" 2>/dev/null | head -20 || echo "No static pages found"
 
-  # 4. Deploy to Staging (Develop Branch)
+  # 4. Database Migration (Staging)
+  migrate-staging:
+    name: Migrate Staging DB
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 10
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+    concurrency:
+      group: migrate-staging
+      cancel-in-progress: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Prisma Migration
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+      - name: Migration Summary
+        run: echo "✅ Staging database migration complete!"
+
+  # 5. Deploy to Staging (Develop Branch)
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: build
+    needs: migrate-staging
     timeout-minutes: 10
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     environment:
@@ -179,11 +212,44 @@ jobs:
           echo "🚀 Staging deployment complete!"
           echo "Preview URL: ${{ steps.deploy-staging.outputs.preview-url }}"
 
-  # 5. Deploy to Production (Main Branch)
+  # 6. Database Migration (Production)
+  migrate-production:
+    name: Migrate Production DB
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 10
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+    concurrency:
+      group: migrate-production
+      cancel-in-progress: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Prisma Migration
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+
+      - name: Migration Summary
+        run: echo "✅ Production database migration complete!"
+
+  # 7. Deploy to Production (Main Branch)
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: build
+    needs: migrate-production
     timeout-minutes: 10
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
