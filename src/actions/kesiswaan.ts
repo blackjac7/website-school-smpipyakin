@@ -111,7 +111,8 @@ export async function getValidationQueue(
       status: a.statusPersetujuan,
       category: a.category,
       image: a.image,
-      rejectionNote: a.rejectionNote,
+      // Optional in older prisma clients; guard to satisfy type safety on Vercel build
+      rejectionNote: "rejectionNote" in a ? (a as { rejectionNote?: string | null }).rejectionNote ?? null : null,
     }));
 
     const normalizedWorks: ValidationItem[] = works.map((w) => ({
@@ -126,7 +127,7 @@ export async function getValidationQueue(
       category: w.workType === "PHOTO" ? "Fotografi" : "Videografi",
       image: w.mediaUrl,
       videoLink: w.videoLink,
-      rejectionNote: w.rejectionNote,
+      rejectionNote: "rejectionNote" in w ? (w as { rejectionNote?: string | null }).rejectionNote ?? null : null,
     }));
 
     const normalizedNews: ValidationItem[] = osisNews.map((n) => ({
@@ -140,7 +141,7 @@ export async function getValidationQueue(
       status: n.statusPersetujuan,
       category: n.kategori === "ACHIEVEMENT" ? "Prestasi" : "Kegiatan",
       image: n.image,
-      rejectionNote: n.rejectionNote,
+      rejectionNote: "rejectionNote" in n ? (n as { rejectionNote?: string | null }).rejectionNote ?? null : null,
     }));
 
     // Combine, sort by date descending, and paginate

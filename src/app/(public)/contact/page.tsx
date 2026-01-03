@@ -66,6 +66,12 @@ export default function ContactPage() {
     },
   ];
 
+  // Read Google Maps API key from NEXT_PUBLIC env (available on client)
+  const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const iframeSrc = googleMapsApiKey
+    ? `https://www.google.com/maps/embed/v1/place?q=smp+ip+yakin&key=${googleMapsApiKey}`
+    : `https://www.google.com/maps?q=smp+ip+yakin&output=embed`;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
       <PageHeader
@@ -204,7 +210,7 @@ export default function ContactPage() {
             >
               <div className="rounded-xl overflow-hidden w-full h-full relative grow bg-gray-100 dark:bg-gray-700 group">
                 <iframe
-                  src="https://www.google.com/maps/embed/v1/place?q=smp+ip+yakin&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
+                  src={iframeSrc}
                   width="100%"
                   height="100%"
                   style={{ border: 0, minHeight: "300px" }}
@@ -214,6 +220,21 @@ export default function ContactPage() {
                   title="Peta Lokasi SMP IP Yakin Jakarta"
                   className="w-full h-full grayscale-50 group-hover:grayscale-0 transition-all duration-700 ease-in-out"
                 ></iframe>
+
+                {!googleMapsApiKey && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/90 text-sm text-gray-600 p-4">
+                    <p className="text-center px-4">
+                      <strong>GOOGLE_MAPS_API_KEY</strong> belum diset. Silakan
+                      tambahkan{" "}
+                      <code className="mx-1">
+                        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+                      </code>
+                      di <code>.env.local</code> atau pada Environment Variables
+                      di Vercel.
+                    </p>
+                  </div>
+                )}
+
                 <div className="absolute top-3 left-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm text-xs font-semibold text-gray-700 dark:text-gray-200 pointer-events-none border border-white/50 dark:border-gray-600/50">
                   📍 Lokasi Sekolah
                 </div>
