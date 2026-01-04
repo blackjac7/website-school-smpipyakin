@@ -29,8 +29,6 @@ export async function POST(request: NextRequest) {
   try {
     const body: PPDBFormData = await request.json();
 
-    console.log("Received form data:", body);
-
     const {
       namaLengkap,
       nisn,
@@ -44,21 +42,6 @@ export async function POST(request: NextRequest) {
       emailOrtu,
       documents,
     } = body;
-
-    console.log("Extracted data:", {
-      namaLengkap,
-      nisn,
-      jenisKelamin,
-      tempatLahir,
-      tanggalLahir,
-      alamatLengkap,
-      asalSekolah,
-      kontakOrtu,
-      namaOrtu,
-      emailOrtu,
-      documentsCount: documents?.length || 0,
-      documents: documents, // Log the full documents array
-    });
 
     // Server-side: ensure PPDB is open before accepting registrations
     const ppdbStatus = await isPPDBOpen();
@@ -210,11 +193,8 @@ export async function POST(request: NextRequest) {
       // Prepare document URLs from uploaded documents
       const documentUrls: Record<string, string> = {};
 
-      console.log("Processing documents:", documents);
-
       if (documents && documents.length > 0) {
         documents.forEach((doc) => {
-          console.log("Processing document:", doc.documentType, "->", doc.url);
           switch (doc.documentType) {
             case "ijazah":
               documentUrls.ijazahUrl = doc.url;
@@ -231,8 +211,6 @@ export async function POST(request: NextRequest) {
           }
         });
       }
-
-      console.log("Final document URLs:", documentUrls);
 
       // Buat aplikasi PPDB
       const application = await tx.pPDBApplication.create({
@@ -254,15 +232,6 @@ export async function POST(request: NextRequest) {
           kartuKeluargaUrl: documentUrls.kartuKeluargaUrl || null,
           pasFotoUrl: documentUrls.pasFotoUrl || null,
         },
-      });
-
-      console.log("Created application with document URLs:", {
-        id: application.id,
-        name: application.name,
-        ijazahUrl: application.ijazahUrl,
-        aktaKelahiranUrl: application.aktaKelahiranUrl,
-        kartuKeluargaUrl: application.kartuKeluargaUrl,
-        pasFotoUrl: application.pasFotoUrl,
       });
 
       return application;

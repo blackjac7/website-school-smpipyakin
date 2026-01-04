@@ -30,8 +30,6 @@ export async function GET(request: Request) {
       },
     });
 
-    console.log(`[CRON] Cleanup complete. Deleted ${deleted.count} old login logs.`);
-
     return NextResponse.json({
       success: true,
       deletedCount: deleted.count,
