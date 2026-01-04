@@ -364,5 +364,4 @@ export async function seedDefaultSettings() {
     });
   }
 
-  console.log(`✅ Seeded ${entries.length} default settings`);
 }

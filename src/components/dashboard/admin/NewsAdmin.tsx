@@ -71,7 +71,6 @@ export default function NewsAdmin({ news }: NewsPageProps) {
         }
       } else {
         const result = await createNews(data);
-        console.log("createNews result:", result);
         if (result.success) {
           toast.success("News created");
           setIsModalOpen(false);

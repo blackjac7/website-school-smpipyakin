@@ -10,8 +10,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "NISN harus diisi" }, { status: 400 });
     }
 
-    console.log("Checking NISN:", nisn);
-
     // Cek apakah NISN sudah terdaftar
     const existingApplication = await prisma.pPDBApplication.findUnique({
       where: { nisn },

@@ -91,9 +91,6 @@ export async function createNews(data: {
     const authorId = auth.user!.userId;
     const validData = validation.data;
 
-    // Log input for debugging in CI if create fails
-    console.log("createNews called", { input: validData, authorId });
-
     const news = await prisma.news.create({
       data: {
         title: validData.title,

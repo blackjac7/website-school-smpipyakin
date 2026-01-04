@@ -174,7 +174,7 @@ async function logLoginAttempt(
 // Reset failed attempts for successful login
 async function resetFailedAttempts(
   username: string,
-  ip: string
+  _ip: string
 ): Promise<void> {
   try {
     // Mark previous failed attempts as resolved for this username
@@ -189,7 +189,7 @@ async function resetFailedAttempts(
       },
     });
 
-    console.log(`Reset failed attempts for user: ${username} from IP: ${ip}`);
+    void _ip;
   } catch (error) {
     console.error("Failed to reset login attempts:", error);
   }
@@ -197,29 +197,22 @@ async function resetFailedAttempts(
 
 // Log security events
 async function logSecurityEvent(
-  eventType:
+  _eventType:
     | "LOGIN_SUCCESS"
     | "LOGIN_FAILED"
     | "RATE_LIMITED"
     | "ACCOUNT_LOCKED",
-  details: {
+  _details: {
     username?: string;
     ip: string;
     userAgent?: string;
     reason?: string;
   }
 ) {
-  try {
-    console.log(`[SECURITY] ${eventType}:`, {
-      timestamp: new Date().toISOString(),
-      ...details,
-    });
-
-    // In production, send to security monitoring service
-    // await sendToSecurityService({ eventType, ...details });
-  } catch (error) {
-    console.error("Failed to log security event:", error);
-  }
+  // In production, send to security monitoring service
+  // await sendToSecurityService({ eventType: _eventType, ..._details });
+  void _eventType;
+  void _details;
 }
 
 export async function POST(request: NextRequest) {
