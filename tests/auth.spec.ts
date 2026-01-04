@@ -125,6 +125,9 @@ test.describe("Session Management", () => {
     const loginPage = new LoginPage(page);
     await loginPage.loginAs("siswa");
 
+    // Ensure we are definitely on the dashboard before checking URL
+    await expect(page).toHaveURL(/dashboard-siswa/);
+
     const initialUrl = page.url();
 
     // Reload page
