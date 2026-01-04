@@ -1,8 +1,15 @@
 import { Bell } from "lucide-react";
 import { getPublicAnnouncements } from "@/actions/public/announcements";
 import AnnouncementsList from "@/components/announcements/AnnouncementsList";
+import { getSettingTyped } from "@/lib/siteSettings";
+import { notFound } from "next/navigation";
 
 export default async function AnnouncementsPage() {
+  // Respect feature flag
+  const announcementsEnabled =
+    (await getSettingTyped<boolean>("feature.announcements")) ?? true;
+  if (!announcementsEnabled) return notFound();
+
   // Fetch announcements data from database on the server
   const announcementsData = await getPublicAnnouncements();
 

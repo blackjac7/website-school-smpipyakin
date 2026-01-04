@@ -20,6 +20,7 @@ import {
 } from "@/lib/data/homepage";
 import { getHeroSlides } from "@/actions/hero";
 import { getSchoolStats } from "@/actions/stats";
+import { getSettingTyped } from "@/lib/siteSettings";
 import { HeroSlide } from "@/components/home/HeroCarousel";
 
 export const metadata = {
@@ -108,6 +109,10 @@ export default async function HomePage() {
   const schoolStats =
     results[4].status === "fulfilled" ? results[4].value : defaultStats;
 
+  // Check if announcements feature is enabled
+  const announcementsEnabled =
+    (await getSettingTyped<boolean>("feature.announcements")) ?? true;
+
   // Transform heroSlides to match component props if needed
   // The DB model uses camelCase for properties but component expects object structure for images
   const transformedSlides: HeroSlide[] =
@@ -153,9 +158,11 @@ export default async function HomePage() {
       <QuickStats stats={schoolStats} />
 
       {/* Announcements Section */}
-      <Suspense fallback={<AnnouncementsSkeleton />}>
-        <Announcements announcements={upcomingAnnouncements} />
-      </Suspense>
+      {announcementsEnabled && (
+        <Suspense fallback={<AnnouncementsSkeleton />}>
+          <Announcements announcements={upcomingAnnouncements} />
+        </Suspense>
+      )}
 
       {/* News Section */}
       <Suspense fallback={<NewsSectionSkeleton />}>
