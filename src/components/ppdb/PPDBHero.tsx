@@ -27,15 +27,7 @@ export default function PPDBHero() {
     },
   ];
 
-  const scrollToForm = () => {
-    const formSection = document.getElementById("ppdb-form");
-    if (formSection) {
-      formSection.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
-  };
+  // NOTE: Daftar sekarang navigates to a dedicated registration page instead of scrolling
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 pt-20">
@@ -63,12 +55,12 @@ export default function PPDBHero() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in-up animation-delay-200">
-            <button
-              onClick={scrollToForm}
+            <Link
+              href="/ppdb/register"
               className="bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               Daftar Sekarang
-            </button>
+            </Link>
             <Link
               href="/ppdb/status"
               className="border-2 border-white text-white hover:bg-white hover:text-blue-700 font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 flex items-center justify-center gap-2"

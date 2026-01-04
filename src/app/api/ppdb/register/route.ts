@@ -276,7 +276,7 @@ export async function POST(request: NextRequest) {
         nisn: result.nisn,
         name: result.name,
         status: result.status,
-        createdAt: result.createdAt,
+        createdAt: result.createdAt.toISOString(),
       },
     });
   } catch (error) {
