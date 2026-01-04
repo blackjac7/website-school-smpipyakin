@@ -82,8 +82,25 @@ export async function updateSettingAction(key: string, value: string) {
 
   try {
     await updateSetting(key, value);
+
+    // Always revalidate admin settings and homepage
     revalidatePath("/dashboard-admin/settings");
     revalidatePath("/");
+
+    // Revalidate additional public pages that depend on feature flags
+    if (key === "feature.studentWorks") {
+      revalidatePath("/karya-siswa");
+    }
+
+    if (key === "feature.announcements") {
+      revalidatePath("/announcements");
+    }
+
+    if (key === "feature.chatbot") {
+      // Chatbot is injected in layout (homepage), homepage revalidate above is sufficient
+      revalidatePath("/");
+    }
+
     return { success: true, message: "Pengaturan berhasil diperbarui" };
   } catch (error) {
     console.error("Error updating setting:", error);
@@ -99,8 +116,24 @@ export async function updateSettingsAction(settings: Record<string, string>) {
 
   try {
     await updateSettings(settings);
+
+    // Always revalidate admin settings and homepage
     revalidatePath("/dashboard-admin/settings");
     revalidatePath("/");
+
+    // Revalidate additional pages if corresponding flags were updated
+    if (
+      Object.prototype.hasOwnProperty.call(settings, "feature.studentWorks")
+    ) {
+      revalidatePath("/karya-siswa");
+    }
+
+    if (
+      Object.prototype.hasOwnProperty.call(settings, "feature.announcements")
+    ) {
+      revalidatePath("/announcements");
+    }
+
     return { success: true, message: "Pengaturan berhasil diperbarui" };
   } catch (error) {
     console.error("Error updating settings:", error);
@@ -352,6 +385,16 @@ export async function toggleFeature(
   try {
     await updateSetting(`feature.${feature}`, String(enabled));
     revalidatePath("/");
+
+    // Revalidate specific pages when certain features change
+    if (feature === "studentWorks") {
+      revalidatePath("/karya-siswa");
+    }
+
+    if (feature === "announcements") {
+      revalidatePath("/announcements");
+    }
+
     return {
       success: true,
       message: enabled

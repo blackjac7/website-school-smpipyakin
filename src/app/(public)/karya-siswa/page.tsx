@@ -1,6 +1,8 @@
 import PageHeader from "@/components/layout/PageHeader";
 import KaryaGallery from "@/components/public/karya/KaryaGallery";
 import { Metadata } from "next";
+import { getSettingTyped } from "@/lib/siteSettings";
+import { notFound } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Galeri Karya Siswa | Modern School",
@@ -8,7 +10,11 @@ export const metadata: Metadata = {
     "Koleksi karya kreatif, inovasi, dan prestasi siswa Modern School dalam berbagai bidang.",
 };
 
-export default function KaryaSiswaPage() {
+export default async function KaryaSiswaPage() {
+  const studentWorksEnabled =
+    (await getSettingTyped<boolean>("feature.studentWorks")) ?? true;
+  if (!studentWorksEnabled) return notFound();
+
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
       <PageHeader

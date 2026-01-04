@@ -2,17 +2,37 @@
 
 import { useState } from "react";
 import PPDBStatus from "@/components/ppdb/PPDBStatus";
+import PPDBStatusDetail from "@/components/ppdb/PPDBStatusDetail";
 import PageHeader from "@/components/layout/PageHeader";
 import toast from "react-hot-toast";
 
+interface StatusData {
+  nisn: string;
+  name: string;
+  status: "PENDING" | "ACCEPTED" | "REJECTED";
+  statusMessage: string;
+  feedback?: string;
+  submittedAt: string;
+  documentsCount: number;
+  documents: Array<{
+    type: string;
+    url: string;
+  }>;
+}
+
 export default function PPDBStatusPage() {
   const [statusNISN, setStatusNISN] = useState("");
+  const [statusData, setStatusData] = useState<StatusData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleStatusCheck = async () => {
     if (!statusNISN.trim()) {
       toast.error("Silakan masukkan NISN terlebih dahulu");
       return;
     }
+
+    setIsLoading(true);
+    setStatusData(null);
 
     try {
       const response = await fetch(
@@ -25,11 +45,8 @@ export default function PPDBStatusPage() {
       }
 
       if (result.success) {
-        const { data } = result;
-        toast.success(
-          `Status NISN ${statusNISN}: ${data.statusMessage}${data.feedback ? `\n\nCatatan: ${data.feedback}` : ""}`,
-          { duration: 8000 }
-        );
+        setStatusData(result.data);
+        toast.success("Status pendaftaran ditemukan!");
       }
     } catch (error) {
       console.error("Status check error:", error);
@@ -38,6 +55,8 @@ export default function PPDBStatusPage() {
           ? error.message
           : "Terjadi kesalahan saat mengecek status"
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -55,11 +74,38 @@ export default function PPDBStatusPage() {
 
       {/* Adjusting the margin to overlap the header slightly like other pages */}
       <div className="-mt-10 relative z-10">
-        <PPDBStatus
-          statusNISN={statusNISN}
-          onNISNChange={setStatusNISN}
-          onStatusCheck={handleStatusCheck}
-        />
+        {!statusData ? (
+          <PPDBStatus
+            statusNISN={statusNISN}
+            onNISNChange={setStatusNISN}
+            onStatusCheck={handleStatusCheck}
+            isLoading={isLoading}
+          />
+        ) : (
+          <div>
+            <PPDBStatusDetail
+              status={statusData.status}
+              name={statusData.name}
+              nisn={statusData.nisn}
+              submittedAt={statusData.submittedAt}
+              documentsCount={statusData.documentsCount}
+              feedback={statusData.feedback}
+              documents={statusData.documents}
+            />
+            {/* Button to check another NISN */}
+            <div className="max-w-5xl mx-auto px-4 pb-8">
+              <button
+                onClick={() => {
+                  setStatusData(null);
+                  setStatusNISN("");
+                }}
+                className="w-full bg-white hover:bg-gray-50 text-gray-700 font-semibold py-4 px-6 rounded-xl border-2 border-gray-200 transition-all duration-300 transform hover:scale-[1.02] shadow-lg"
+              >
+                Cek NISN Lain
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

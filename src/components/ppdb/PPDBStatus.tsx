@@ -5,12 +5,14 @@ interface PPDBStatusProps {
   statusNISN: string;
   onNISNChange: (value: string) => void;
   onStatusCheck: () => void;
+  isLoading?: boolean;
 }
 
 export default function PPDBStatus({
   statusNISN,
   onNISNChange,
   onStatusCheck,
+  isLoading = false,
 }: PPDBStatusProps) {
   return (
     <section className="max-w-4xl mx-auto px-4 py-16">
@@ -85,11 +87,20 @@ export default function PPDBStatus({
 
               <button
                 onClick={onStatusCheck}
-                disabled={!statusNISN.trim()}
+                disabled={!statusNISN.trim() || isLoading}
                 className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-300 transform hover:scale-[1.02] disabled:scale-100 shadow-xl hover:shadow-2xl disabled:shadow-md flex items-center justify-center gap-3"
               >
-                <Search className="w-5 h-5" />
-                Cek Status Sekarang
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Mengecek...
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-5 h-5" />
+                    Cek Status Sekarang
+                  </>
+                )}
               </button>
             </div>
 
