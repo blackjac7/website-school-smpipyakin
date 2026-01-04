@@ -140,6 +140,38 @@ test.describe("Admin Critical Flow", () => {
 });
 
 // ============================================================================
+// STUDENT CRITICAL FLOW
+// ============================================================================
+test.describe("Student Critical Flow", () => {
+  test("Student can login and access their dashboard", async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.loginAs("siswa");
+
+    await expect(page).toHaveURL(/\/dashboard-siswa/);
+
+    // Verify key dashboard elements
+    await expect(page.getByText("SISWA AREA")).toBeVisible();
+  });
+});
+
+// ============================================================================
+// PPDB CRITICAL FLOW
+// ============================================================================
+test.describe("PPDB Critical Flow", () => {
+  test("PPDB Landing page loads correctly", async ({ page }) => {
+    await page.goto("/ppdb", { timeout: 60000 });
+
+    // Check for common elements regardless of Open/Closed status
+    await expect(page).toHaveTitle(/PPDB/);
+
+    // Verify it didn't crash
+    const content = await page.textContent("body");
+    expect(content).not.toContain("Internal Server Error");
+    expect(content).not.toContain("Application error");
+  });
+});
+
+// ============================================================================
 // SECURITY & RBAC TESTS
 // ============================================================================
 test.describe("Security & RBAC", () => {
