@@ -150,6 +150,17 @@ export class LoginPage {
     const user = TEST_USERS[role];
     const formRole = FORM_ROLE_MAP[role];
 
+    // Ensure requests are attributed to a unique client IP in tests so server-side
+    // rate-limiting does not aggregate all test attempts into a single 'unknown' IP.
+    // Use a randomized local IP octet per test run.
+    const randomOctet = Math.floor(Math.random() * 254) + 1;
+    await this.page.setExtraHTTPHeaders({
+      "x-forwarded-for": `127.0.0.${randomOctet}`,
+      // Indicate to the server that this request is coming from a Playwright test
+      // so server-side rate limits can be relaxed or bypassed in test mode.
+      "x-playwright-test": "true",
+    });
+
     await this.goto();
 
     // Wait for form to be attached first, then visible (replaces waitForTimeout)
@@ -224,7 +235,17 @@ export class LoginPage {
     }
 
     // Additional wait for page to stabilize
-    await this.page.waitForLoadState("domcontentloaded");
+    // Prefer waiting for main content to become visible (helps when client-side
+    // dashboard scaffolding shows a loading placeholder). Fallback to DOMContentLoaded
+    // if main content doesn't appear within the timeout.
+    await this.page
+      .waitForSelector("main, #main-content", {
+        state: "visible",
+        timeout: 20000,
+      })
+      .catch(async () => {
+        await this.page.waitForLoadState("domcontentloaded");
+      });
   }
 
   /**

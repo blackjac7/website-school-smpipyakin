@@ -28,7 +28,7 @@ Dokumentasi lengkap untuk automated testing menggunakan **Playwright**.
 ```mermaid
 graph TB
     subgraph Pyramid["🔺 Testing Pyramid"]
-        E2E["E2E Tests (11 tests)<br/>Critical user flows"]
+        E2E["E2E Tests (13 tests)<br/>Critical user flows"]
         Smoke["Smoke Tests<br/>Dashboard accessibility"]
         Unit["Unit Tests<br/>(Future: Component tests)"]
     end
@@ -92,7 +92,7 @@ graph TB
 ```mermaid
 flowchart TB
     subgraph TestFiles["📁 Test Files"]
-        CP[critical-path.spec.ts<br/>6 tests]
+        CP[critical-path.spec.ts<br/>8 tests]
         DS[dashboards.spec.ts<br/>5 tests]
     end
 
@@ -176,7 +176,7 @@ sequenceDiagram
 
 ```
 tests/
-├── critical-path.spec.ts      # 🎯 Critical user flows (6 tests)
+├── critical-path.spec.ts      # 🎯 Critical user flows (8 tests)
 ├── dashboards.spec.ts         # 🚀 Dashboard smoke tests (5 tests)
 ├── _global-hooks.ts           # 🔧 Network stubs for external requests
 ├── fixtures/
@@ -190,11 +190,22 @@ tests/
 
 ### Test Count Summary
 
-| File                    | Tests  | Description                        |
-| ----------------------- | ------ | ---------------------------------- |
-| `critical-path.spec.ts` | 6      | Core flows + DB integration        |
-| `dashboards.spec.ts`    | 5      | Smoke test for all role dashboards |
-| **Total**               | **11** | Focused, fast, reliable            |
+| File                    | Tests  | Description                                                   |
+| ----------------------- | ------ | ------------------------------------------------------------- |
+| `critical-path.spec.ts` | 8      | Core flows + DB integration (now includes 2 additional flows) |
+| `dashboards.spec.ts`    | 5      | Smoke test for all role dashboards (run serially)             |
+| **Total**               | **13** | Focused, fast, reliable                                       |
+
+---
+
+## Recent Test Changes
+
+- **Critical Path**: increased from **6 → 8 tests** to cover additional important flows (now verifies student flows and additional admin scenarios).
+- **Dashboards**: retained **5 smoke tests**, now executed **serially** to improve stability under local/CI parallel runs.
+- **Test headers**: tests set `x-playwright-test: true` and a randomized `x-forwarded-for`, and the server will bypass strict rate-limits when the test header is present. This prevents false positives from parallel test attempts.
+- **Total tests** updated to **13**.
+
+These changes were made to reduce flaky failures and improve reliability while keeping execution time low (~3 minutes for full suite). If you prefer running everything in parallel, we can revert serial execution and make further server-side adjustments.
 
 ---
 
@@ -449,7 +460,22 @@ await page.locator("h1").first().toBeVisible();
 # Tests still pass ✅
 ```
 
-#### 4. Login animation timeout
+#### 4. Test environment: serialized suites & test headers
+
+Some tests (Critical Path and Dashboard smoke tests) are **run serially** to
+avoid intermittent flakiness caused by local resource contention and server-side
+rate-limiting when running the full suite locally or in CI.
+
+Additionally, tests set a special header `x-playwright-test: true` and a
+random `x-forwarded-for` IP per test. The server recognizes this header and
+will bypass strict rate-limit checks during test runs to avoid false
+positives. This makes parallel test runs safer; however, we still prefer
+running critical suites serially for maximum stability.
+
+If you want to run tests in parallel despite this, remove the `.serial()`
+wrappers in the relevant test files and ensure your DB is correctly seeded.
+
+#### 5. Login animation timeout
 
 ```bash
 # Solution: Increase test timeout for login flows

@@ -17,10 +17,6 @@
     "db:generate": "npx prisma generate",
     "test": "playwright test",
     "test:critical": "playwright test tests/critical-path.spec.ts",
-    "test:api": "playwright test tests/api.spec.ts",
-    "test:auth": "playwright test tests/auth.spec.ts",
-    "test:forms": "playwright test tests/forms.spec.ts",
-    "test:nav": "playwright test tests/navigation.spec.ts",
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report"
   },
