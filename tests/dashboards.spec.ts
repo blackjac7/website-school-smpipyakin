@@ -20,7 +20,9 @@ const DASHBOARD_URLS: Record<Role, string> = {
   ppdb: "/dashboard-ppdb",
 };
 
-test.describe("Dashboard Smoke Tests", () => {
+// Run dashboard smoke tests serially to avoid flakiness caused by parallel
+// resource contention and server-side rate-limiting during CI/local runs.
+test.describe.serial("Dashboard Smoke Tests", () => {
   test.setTimeout(120000);
 
   for (const role of ROLES) {
