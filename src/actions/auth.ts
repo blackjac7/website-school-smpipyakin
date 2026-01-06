@@ -61,22 +61,17 @@ async function getClientIP(): Promise<string> {
 
 // Security logging
 async function logSecurityEvent(
-  eventType: string,
-  details: {
+  _eventType: string,
+  _details: {
     username?: string;
     ip: string;
     userAgent?: string;
     reason?: string;
   }
 ) {
-  try {
-    console.log(`[SECURITY] ${eventType}:`, {
-      timestamp: new Date().toISOString(),
-      ...details,
-    });
-  } catch (error) {
-    console.error("Failed to log security event:", error);
-  }
+  // Placeholder for future security monitoring integration
+  void _eventType;
+  void _details;
 }
 
 // Main Login Action
@@ -152,9 +147,6 @@ export async function loginAction(prevState: unknown, formData: FormData) {
     } else {
       // For test runs, we intentionally skip rate-limit enforcement.
       // Optionally log for observability.
-      console.log(
-        "[TEST MODE] Skipping rate limit enforcement for login attempts"
-      );
     }
 
     // 3. Database Lookup

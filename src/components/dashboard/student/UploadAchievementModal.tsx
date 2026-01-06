@@ -81,7 +81,6 @@ export default function UploadAchievementModal({
       image: uploadedFile.url,
     };
 
-    console.log("Submitting achievement data:", submissionData);
     onSubmit(submissionData);
 
     // Reset form after successful submission

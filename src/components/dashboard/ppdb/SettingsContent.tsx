@@ -83,8 +83,6 @@ export default function SettingsContent() {
         setUploading(false);
       }
     } else {
-      // Handle save other settings
-      console.log("Settings saved:", settings);
       toast.success("Pengaturan berhasil disimpan");
     }
   };

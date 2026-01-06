@@ -199,7 +199,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
               data.error || "Terjadi kesalahan yang tidak diketahui";
         }
 
-        console.log("Login failed:", data.error); // Debug log
         showToast({
           type: "error",
           message: errorMessage,
