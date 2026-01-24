@@ -149,7 +149,8 @@ flowchart LR
 | **Maintenance Bypass**        | Cookie-driven dengan admin exemption                        | Controlled Access   |
 | **Input Sanitization & CSP**  | Zod validation + React auto-escaping                        | XSS                 |
 | **CAPTCHA & Honeypot**        | Math CAPTCHA + hidden honeypot fields                       | Bot Attacks         |
-| **Role-Based Access Control** | 5 roles dengan permission granular                          | Unauthorized Access |
+| **Role-Based Access Control** | 5 roles dengan permission granular + OSIS access flag       | Unauthorized Access |
+| **Server Action Auth**        | Defense-in-depth dengan per-action role verification        | Function-level Auth |
 
 ### 🚀 Performance Features
 

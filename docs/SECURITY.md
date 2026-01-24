@@ -88,19 +88,20 @@ graph TB
 
 ### Security Score Summary
 
-| Category                    | Status              | Implementation          |
-| --------------------------- | ------------------- | ----------------------- |
-| ✅ Brute Force Protection   | **Implemented**     | DB-backed rate limiting |
-| ✅ SQL Injection Prevention | **Implemented**     | Prisma ORM              |
-| ✅ XSS Prevention           | **Implemented**     | React + sanitization    |
-| ✅ CSRF Protection          | **Implemented**     | SameSite cookies        |
-| ✅ Session Security         | **Implemented**     | JWT + IP binding        |
-| ✅ Password Security        | **Implemented**     | bcrypt 12 rounds        |
-| ✅ Rate Limiting            | **Implemented**     | Multi-layer limiting    |
-| ✅ Input Validation         | **Implemented**     | Zod schemas             |
-| ❌ MFA (Multi-Factor Auth)  | **Not Implemented** | Recommended for admin   |
+| Category                    | Status              | Implementation              |
+| --------------------------- | ------------------- | --------------------------- |
+| ✅ Brute Force Protection   | **Implemented**     | DB-backed rate limiting     |
+| ✅ SQL Injection Prevention | **Implemented**     | Prisma ORM                  |
+| ✅ XSS Prevention           | **Implemented**     | React + sanitization        |
+| ✅ CSRF Protection          | **Implemented**     | SameSite cookies            |
+| ✅ Session Security         | **Implemented**     | JWT + IP binding            |
+| ✅ Password Security        | **Implemented**     | bcrypt 12 rounds            |
+| ✅ Rate Limiting            | **Implemented**     | Multi-layer limiting        |
+| ✅ Input Validation         | **Implemented**     | Zod schemas                 |
+| ✅ Server Action Auth       | **Implemented**     | Defense-in-depth per action |
+| ❌ MFA (Multi-Factor Auth)  | **Not Implemented** | Recommended for admin       |
 
-**Overall Security Score: 9.2/10**
+**Overall Security Score: 9.5/10**
 
 ---
 
@@ -190,6 +191,120 @@ graph TB
     Siswa -.->|has| Read & Write
     PPDB -.->|has| Read & Write & ViewReports
 ```
+
+### OSIS Access Control
+
+OSIS dashboard dan fitur-fiturnya dapat diakses oleh:
+1. User dengan role **OSIS**
+2. User dengan role **SISWA** yang memiliki flag `osisAccess=true` di database
+3. User dengan role **ADMIN** (full access)
+
+```mermaid
+flowchart TB
+    subgraph Check["🔍 OSIS Access Check"]
+        Start[User Request]
+        CheckRole{Check Role}
+        IsAdmin{Is Admin?}
+        IsOsis{Is OSIS Role?}
+        IsSiswa{Is SISWA Role?}
+        CheckDB[Query DB: osisAccess]
+        HasAccess{osisAccess=true?}
+        Allow[✅ Allow Access]
+        Deny[❌ Deny Access]
+    end
+
+    Start --> CheckRole
+    CheckRole --> IsAdmin
+    IsAdmin -->|Yes| Allow
+    IsAdmin -->|No| IsOsis
+    IsOsis -->|Yes| Allow
+    IsOsis -->|No| IsSiswa
+    IsSiswa -->|Yes| CheckDB
+    IsSiswa -->|No| Deny
+    CheckDB --> HasAccess
+    HasAccess -->|Yes| Allow
+    HasAccess -->|No| Deny
+
+    style Allow fill:#10b981,color:#fff
+    style Deny fill:#ef4444,color:#fff
+```
+
+#### Implementation
+
+```typescript
+// src/lib/roles.ts
+export async function hasOsisAccess(
+  userId: string,
+  role?: RoleLike
+): Promise<boolean> {
+  // Admin always has access
+  if (isAdminRole(role)) return true;
+
+  // OSIS role has direct access
+  if (isOsisRole(role)) return true;
+
+  // Siswa can have osisAccess flag
+  if (isSiswaRole(role)) {
+    const siswa = await prisma.siswa.findUnique({
+      where: { userId },
+      select: { osisAccess: true },
+    });
+    return siswa?.osisAccess === true;
+  }
+
+  return false;
+}
+```
+
+### Server Action Authorization (Defense-in-Depth)
+
+Semua server actions menerapkan authorization check sebagai lapisan keamanan tambahan di atas middleware protection:
+
+```mermaid
+graph TB
+    subgraph Layers["🛡️ Defense-in-Depth"]
+        L1[Layer 1: Middleware<br/>Route Protection]
+        L2[Layer 2: Server Action<br/>Role Verification]
+        L3[Layer 3: Data<br/>Ownership Check]
+    end
+
+    Request[User Request] --> L1
+    L1 -->|Pass| L2
+    L2 -->|Pass| L3
+    L3 -->|Pass| Data[(Database)]
+
+    L1 -->|Fail| R1[Redirect to Login]
+    L2 -->|Fail| R2[Return Error Response]
+    L3 -->|Fail| R3[Forbidden Response]
+```
+
+#### Pattern Implementasi
+
+```typescript
+// Pattern untuk setiap server action
+export async function someProtectedAction(...) {
+  // 1. Verify authentication
+  const user = await getAuthenticatedUser();
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  // 2. Verify role/permission
+  const hasAccess = await hasOsisAccess(user.userId, user.role);
+  if (!hasAccess) {
+    return { success: false, error: "Access denied" };
+  }
+
+  // 3. Proceed with action
+  // ...
+}
+```
+
+| Layer      | Protection       | Location                    | Handles              |
+| ---------- | ---------------- | --------------------------- | -------------------- |
+| Middleware | Route Protection | `src/middleware.ts`         | URL-based access     |
+| Action     | Role Verification| `src/actions/**/*.ts`       | Function-level auth  |
+| Data       | Ownership Check  | Within action logic         | Resource ownership   |
 
 ---
 
