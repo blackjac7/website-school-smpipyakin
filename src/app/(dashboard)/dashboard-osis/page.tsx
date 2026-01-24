@@ -68,8 +68,8 @@ function OSISDashboard() {
 
   const menuItems: MenuItem[] = [
     { id: "dashboard", label: "Dashboard", icon: Home },
-    { id: "activities", label: "Program Kerja", icon: FileText },
-    { id: "news", label: "Berita & Kegiatan", icon: Newspaper },
+    { id: "activities", label: "Program Kerja (Proker)", icon: FileText },
+    { id: "news", label: "Berita Kegiatan", icon: Newspaper },
     { id: "schedule", label: "Jadwal Kegiatan", icon: CalendarIcon },
     { id: "ibadah", label: "Ibadah", icon: Heart },
   ];

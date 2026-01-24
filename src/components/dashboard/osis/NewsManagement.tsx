@@ -90,7 +90,7 @@ export default function NewsManagement() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">Berita & Kegiatan</h3>
+          <h3 className="text-lg font-bold text-gray-900">Berita Kegiatan Sekolah</h3>
           {news.length > 0 && (
             <p className="text-sm text-gray-500">Total: {news.length} berita</p>
           )}

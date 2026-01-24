@@ -83,14 +83,14 @@ export default function EditActivityModal({
       const result = await updateActivity(initialState, formData);
 
       if (result.success) {
-        toast.success("Kegiatan berhasil diperbarui!");
+        toast.success("Program kerja berhasil diperbarui!");
         setProposalFile(null);
         onClose();
       } else {
-        toast.error(result.error || "Gagal memperbarui kegiatan");
+        toast.error(result.error || "Gagal memperbarui program kerja");
       }
     } catch {
-      toast.error("Terjadi kesalahan saat memperbarui kegiatan");
+      toast.error("Terjadi kesalahan saat memperbarui program kerja");
     } finally {
       setSubmitting(false);
     }
@@ -109,7 +109,7 @@ export default function EditActivityModal({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Edit Kegiatan</h3>
+          <h3 className="text-lg font-semibold">Edit Program Kerja</h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
@@ -123,14 +123,14 @@ export default function EditActivityModal({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Judul Kegiatan
+              Judul Program Kerja
             </label>
             <input
               name="title"
               type="text"
               defaultValue={activity.title}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
-              placeholder="Masukkan judul kegiatan"
+              placeholder="Masukkan judul program kerja"
               required
               minLength={3}
             />
@@ -144,7 +144,7 @@ export default function EditActivityModal({
               defaultValue={activity.description}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
               rows={4}
-              placeholder="Jelaskan detail kegiatan"
+              placeholder="Jelaskan detail program kerja"
               required
               minLength={10}
             />
@@ -185,7 +185,7 @@ export default function EditActivityModal({
                 type="text"
                 defaultValue={activity.location}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
-                placeholder="Lokasi kegiatan"
+                placeholder="Lokasi program kerja"
                 required
               />
             </div>
