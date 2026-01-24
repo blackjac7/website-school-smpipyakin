@@ -129,11 +129,6 @@ export async function middleware(request: NextRequest) {
     const token = request.cookies.get("auth-token")?.value;
 
     if (!token) {
-      // Log suspicious activity
-      console.log(
-        `[SECURITY] Unauthorized access attempt to ${pathname} from IP: ${clientIP}`
-      );
-
       // Redirect to login if no token
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
@@ -159,10 +154,6 @@ export async function middleware(request: NextRequest) {
           isLocalhostIP(clientIP);
 
         if (!isLocalDev) {
-          console.log(
-            `[SECURITY] Session hijacking attempt detected! Token IP: ${decoded.ip}, Request IP: ${clientIP}, Path: ${pathname}`
-          );
-
           const loginUrl = new URL("/login", request.url);
           loginUrl.searchParams.set("error", "session_invalid");
 
@@ -176,10 +167,6 @@ export async function middleware(request: NextRequest) {
       const tokenAge = Date.now() / 1000 - (decoded.iat as number);
       if (tokenAge > 24 * 60 * 60) {
         // 24 hours
-        console.log(
-          `[SECURITY] Expired token access attempt from IP: ${clientIP}`
-        );
-
         const loginUrl = new URL("/login", request.url);
         loginUrl.searchParams.set("error", "token_expired");
 
@@ -192,10 +179,6 @@ export async function middleware(request: NextRequest) {
       const allowedRoles =
         PROTECTED_ROUTES[protectedRoute as keyof typeof PROTECTED_ROUTES];
       if (!isRoleMatch(decoded.role as string, allowedRoles)) {
-        console.log(
-          `[SECURITY] Unauthorized role access: ${decoded.role} tried to access ${pathname} from IP: ${clientIP}`
-        );
-
         // Redirect to unauthorized page
         const unauthorizedUrl = new URL("/unauthorized", request.url);
         const response = NextResponse.redirect(unauthorizedUrl);
