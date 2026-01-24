@@ -268,6 +268,10 @@ graph TB
         PPDB[PPDB_ADMIN<br/>Admissions]
     end
 
+    subgraph Special["🔑 Special Access"]
+        OsisAccess[SISWA + osisAccess=true<br/>Can access OSIS features]
+    end
+
     subgraph Permissions["Permission Types"]
         Read[read]
         Write[write]
@@ -281,18 +285,24 @@ graph TB
     OSIS --> Read & Write
     Siswa --> Read & Write
     PPDB --> Read & Write & ViewReports
+    OsisAccess -.->|Same as OSIS| Read & Write
+
+    style OsisAccess fill:#8b5cf6,color:#fff
 ```
+
+> **Note:** Siswa dengan `osisAccess=true` di database dapat mengakses dashboard dan fitur OSIS melalui login dengan role OSIS. Ini memungkinkan anggota OSIS yang merupakan siswa aktif untuk mengelola program kerja dan berita OSIS.
 
 **Security Measures:**
 
-| Layer             | Implementation                    | Purpose                      |
-| ----------------- | --------------------------------- | ---------------------------- |
-| **Cookies**       | HttpOnly, SameSite=Strict, Secure | XSS & CSRF protection        |
-| **JWT Payload**   | IP binding                        | Session hijacking prevention |
-| **Rate Limiting** | 5/15min IP, 10/24h account        | Brute force protection       |
-| **Password**      | bcrypt 12 rounds                  | Password security            |
-| **Validation**    | Zod schemas                       | Input sanitization           |
-| **CAPTCHA**       | Math CAPTCHA + Honeypot           | Bot protection               |
+| Layer               | Implementation                    | Purpose                      |
+| ------------------- | --------------------------------- | ---------------------------- |
+| **Cookies**         | HttpOnly, SameSite=Strict, Secure | XSS & CSRF protection        |
+| **JWT Payload**     | IP binding                        | Session hijacking prevention |
+| **Rate Limiting**   | 5/15min IP, 10/24h account        | Brute force protection       |
+| **Password**        | bcrypt 12 rounds                  | Password security            |
+| **Validation**      | Zod schemas                       | Input sanitization           |
+| **CAPTCHA**         | Math CAPTCHA + Honeypot           | Bot protection               |
+| **Server Actions**  | Per-action role verification      | Defense-in-depth             |
 
 ### 4. Database Architecture
 

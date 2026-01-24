@@ -1,4 +1,5 @@
 import { UserRole } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 // Map legacy token role strings to Prisma UserRole values
 export const TOKEN_TO_USERROLE_MAP: Record<string, UserRole> = {
@@ -88,3 +89,42 @@ export function isOsisRole(role?: RoleLike): boolean {
 export function isPpdbAdminRole(role?: RoleLike): boolean {
   return tokenRoleToUserRole(role) === UserRole.PPDB_ADMIN;
 }
+
+/**
+ * Check if user has OSIS access:
+ * - User has role OSIS, OR
+ * - User has role SISWA AND has osisAccess=true in siswa table
+ * 
+ * Also allows admin role for full access.
+ */
+export async function hasOsisAccess(
+  userId: string,
+  role?: RoleLike
+): Promise<boolean> {
+  // Admin always has access
+  if (isAdminRole(role)) {
+    return true;
+  }
+
+  // Check if user has OSIS role directly
+  if (isOsisRole(role)) {
+    return true;
+  }
+
+  // If user is SISWA, check if they have osisAccess flag
+  if (isSiswaRole(role)) {
+    try {
+      const siswa = await prisma.siswa.findUnique({
+        where: { userId },
+        select: { osisAccess: true },
+      });
+      return siswa?.osisAccess === true;
+    } catch (error) {
+      console.error("Error checking OSIS access:", error);
+      return false;
+    }
+  }
+
+  return false;
+}
+

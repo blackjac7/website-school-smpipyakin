@@ -52,6 +52,18 @@ export async function getValidationQueue(
   page: number = 1,
   limit: number = 10
 ): Promise<ValidationQueueResult> {
+  // Verify authorization
+  const auth = await verifyKesiswaanRole();
+  if (!auth.authorized) {
+    return {
+      items: [],
+      totalCount: 0,
+      page: 1,
+      limit,
+      totalPages: 0,
+    };
+  }
+
   try {
     const whereClause: Prisma.StudentAchievementWhereInput &
       Prisma.StudentWorkWhereInput &
@@ -391,6 +403,17 @@ export interface DashboardStats {
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
+  // Verify authorization
+  const auth = await verifyKesiswaanRole();
+  if (!auth.authorized) {
+    return {
+      monthly: [],
+      byCategory: [],
+      byStatus: [],
+      summary: { pending: 0, approved: 0, rejected: 0, total: 0 },
+    };
+  }
+
   // Parallel fetch for basic stats
   const [achievements, works] = await Promise.all([
     prisma.studentAchievement.findMany(),
@@ -504,6 +527,12 @@ const CreateAchievementSchema = z.object({
 });
 
 export async function createAchievementByStaff(formData: FormData) {
+  // Verify authorization
+  const auth = await verifyKesiswaanRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
   try {
     const rawData = {
       title: formData.get("title"),
@@ -514,7 +543,11 @@ export async function createAchievementByStaff(formData: FormData) {
       level: formData.get("level"),
     };
 
-    const validated = CreateAchievementSchema.parse(rawData);
+    const validation = CreateAchievementSchema.safeParse(rawData);
+    if (!validation.success) {
+      return { success: false, error: validation.error.issues[0].message };
+    }
+    const validated = validation.data;
 
     await prisma.studentAchievement.create({
       data: {

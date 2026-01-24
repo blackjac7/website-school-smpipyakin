@@ -66,11 +66,11 @@ export default function ActivitiesList({
 
   return (
     <div className="lg:col-span-2 space-y-6">
-      {/* Add Activity Button */}
+      {/* Add Program Kerja Button */}
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
           <ClipboardList className="w-5 h-5 text-blue-600" />
-          Daftar Kegiatan
+          Program Kerja OSIS
         </h3>
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -79,7 +79,7 @@ export default function ActivitiesList({
           className="px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition-colors flex items-center gap-2 shadow-md shadow-blue-200"
         >
           <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Tambah Kegiatan</span>
+          <span className="hidden sm:inline">Tambah Proker</span>
           <span className="sm:hidden">Baru</span>
         </motion.button>
       </div>
@@ -93,7 +93,7 @@ export default function ActivitiesList({
             className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300 text-gray-500"
           >
             <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p>Belum ada kegiatan yang diajukan.</p>
+            <p>Belum ada program kerja yang diajukan.</p>
           </motion.div>
         ) : (
           paginatedActivities.map((activity, index) => (
@@ -173,7 +173,7 @@ export default function ActivitiesList({
           <p className="text-sm text-gray-600">
             Menampilkan {startIndex + 1}-
             {Math.min(startIndex + itemsPerPage, activities.length)} dari{" "}
-            {activities.length} kegiatan
+            {activities.length} proker
           </p>
           <div className="flex items-center gap-2">
             <button

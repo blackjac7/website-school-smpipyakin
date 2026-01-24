@@ -4,6 +4,23 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { hasOsisAccess } from "@/lib/roles";
+
+// --- Helper to verify OSIS access ---
+async function verifyOsisAccess() {
+  const user = await getAuthenticatedUser();
+  if (!user) {
+    return { authorized: false, error: "Unauthorized" };
+  }
+
+  // Check if user has OSIS access (role=OSIS OR siswa with osisAccess=true)
+  const hasAccess = await hasOsisAccess(user.userId, user.role);
+  if (!hasAccess) {
+    return { authorized: false, error: "Akses OSIS diperlukan" };
+  }
+
+  return { authorized: true, user };
+}
 
 // --- Schema ---
 const NewsSchema = z.object({
@@ -14,8 +31,12 @@ const NewsSchema = z.object({
 });
 
 export async function getOsisNews() {
-  const user = await getAuthenticatedUser();
-  if (!user) throw new Error("Unauthorized");
+  const auth = await verifyOsisAccess();
+  if (!auth.authorized) {
+    return { success: false, data: [], error: auth.error };
+  }
+
+  const user = auth.user!;
 
   // Fetch news created by this user (or all OSIS news?)
   // Requirement: "osis bisa upload berita... tapi harus approve"
@@ -32,8 +53,10 @@ export async function getOsisNews() {
 }
 
 export async function createOsisNews(prevState: unknown, formData: FormData) {
-  const user = await getAuthenticatedUser();
-  if (!user) return { success: false, error: "Unauthorized" };
+  const auth = await verifyOsisAccess();
+  if (!auth.authorized) return { success: false, error: auth.error };
+
+  const user = auth.user!;
 
   const rawData = {
     title: formData.get("title"),
@@ -71,8 +94,10 @@ export async function createOsisNews(prevState: unknown, formData: FormData) {
 }
 
 export async function deleteOsisNews(id: string) {
-    const user = await getAuthenticatedUser();
-    if (!user) return { success: false, error: "Unauthorized" };
+    const auth = await verifyOsisAccess();
+    if (!auth.authorized) return { success: false, error: auth.error };
+
+    const user = auth.user!;
 
     const existing = await prisma.news.findUnique({ where: { id } });
     if (!existing) return { success: false, error: "Not found" };
