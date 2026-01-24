@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getJWTCookieOptions, JWT_CONFIG } from "@/lib/jwt";
 
 export async function POST() {
   try {
@@ -7,13 +8,10 @@ export async function POST() {
       message: "Logout successful",
     });
 
-    // Clear the auth token cookie
-    response.cookies.set("auth-token", "", {
-      httpOnly: true,
-      secure: false, // false for development
-      sameSite: "lax", // lax for development
+    // Clear the auth token cookie using centralized config
+    response.cookies.set(JWT_CONFIG.COOKIE_NAME, "", {
+      ...getJWTCookieOptions(),
       maxAge: 0, // immediately expire
-      path: "/",
     });
 
     return response;

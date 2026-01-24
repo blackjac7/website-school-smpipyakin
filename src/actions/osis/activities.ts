@@ -4,7 +4,23 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { isAdminRole } from "@/lib/roles";
+import { isAdminRole, hasOsisAccess } from "@/lib/roles";
+
+// --- Helper to verify OSIS access ---
+async function verifyOsisAccess() {
+  const user = await getAuthenticatedUser();
+  if (!user) {
+    return { authorized: false, error: "Unauthorized" };
+  }
+
+  // Check if user has OSIS access (role=OSIS OR siswa with osisAccess=true)
+  const hasAccess = await hasOsisAccess(user.userId, user.role);
+  if (!hasAccess) {
+    return { authorized: false, error: "Akses OSIS diperlukan" };
+  }
+
+  return { authorized: true, user };
+}
 
 // --- Schema Validation ---
 const ActivitySchema = z.object({
@@ -24,9 +40,9 @@ const ActivitySchema = z.object({
 // --- Actions ---
 
 export async function getActivities() {
-  const user = await getAuthenticatedUser();
-  if (!user) {
-    return { success: false, error: "Unauthorized", data: [] };
+  const auth = await verifyOsisAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error, data: [] };
   }
 
   try {
@@ -47,18 +63,13 @@ export async function getActivities() {
 }
 
 export async function createActivity(prevState: unknown, formData: FormData) {
-  const user = await getAuthenticatedUser();
-  if (!user) {
-    return { success: false, error: "Unauthorized" };
+  const auth = await verifyOsisAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
   }
 
-  // Strict role check: Must be OSIS or SISWA with osisAccess (logic handled in login, but here we check role claim)
-  // The token role might be "osis" if they logged in as OSIS.
-  // If they logged in as "siswa" but have access, we need to be careful.
-  // Ideally, the token role reflects the *current session context*.
-  // Let's assume if they are here, they have rights, but strictly:
+  const user = auth.user!;
 
-  // if (user.role !== 'osis' && user.role !== 'admin') ...
 
   const rawData = {
     title: formData.get("title"),
@@ -103,8 +114,10 @@ export async function createActivity(prevState: unknown, formData: FormData) {
 }
 
 export async function updateActivity(prevState: unknown, formData: FormData) {
-  const user = await getAuthenticatedUser();
-  if (!user) return { success: false, error: "Unauthorized" };
+  const auth = await verifyOsisAccess();
+  if (!auth.authorized) return { success: false, error: auth.error };
+
+  const user = auth.user!;
 
   const id = formData.get("id") as string;
   if (!id) return { success: false, error: "ID not provided" };
@@ -160,8 +173,10 @@ export async function updateActivity(prevState: unknown, formData: FormData) {
 }
 
 export async function deleteActivity(id: string) {
-  const user = await getAuthenticatedUser();
-  if (!user) return { success: false, error: "Unauthorized" };
+  const auth = await verifyOsisAccess();
+  if (!auth.authorized) return { success: false, error: auth.error };
+
+  const user = auth.user!;
 
   const existing = await prisma.osisActivity.findUnique({ where: { id } });
   if (!existing) return { success: false, error: "Not found" };
