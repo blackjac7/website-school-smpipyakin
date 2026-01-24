@@ -68,8 +68,8 @@ function OSISDashboard() {
 
   const menuItems: MenuItem[] = [
     { id: "dashboard", label: "Dashboard", icon: Home },
-    { id: "activities", label: "Program Kerja", icon: FileText },
-    { id: "news", label: "Berita & Kegiatan", icon: Newspaper },
+    { id: "activities", label: "Program Kerja OSIS", icon: FileText },
+    { id: "news", label: "Berita Sekolah", icon: Newspaper },
     { id: "schedule", label: "Jadwal Kegiatan", icon: CalendarIcon },
     { id: "ibadah", label: "Ibadah", icon: Heart },
   ];
@@ -154,8 +154,8 @@ function OSISDashboard() {
   const handleDeleteActivity = async (id: string) => {
     confirmModal.showConfirm(
       {
-        title: "Hapus Kegiatan",
-        message: "Apakah Anda yakin ingin menghapus kegiatan ini?",
+        title: "Hapus Program Kerja",
+        message: "Apakah Anda yakin ingin menghapus program kerja ini?",
         description: "Tindakan ini tidak dapat dibatalkan.",
         type: "danger",
         confirmText: "Hapus",
@@ -164,7 +164,7 @@ function OSISDashboard() {
       async () => {
         const res = await deleteActivity(id);
         if (res.success) {
-          toast.success("Kegiatan berhasil dihapus");
+          toast.success("Program kerja berhasil dihapus");
           fetchActivities();
         } else {
           toast.error(res.error || "Gagal menghapus");
@@ -281,13 +281,23 @@ function OSISDashboard() {
                   menstruationRecords={worshipData.menstruation}
                   adzanSchedules={worshipData.adzan}
                   carpetSchedules={worshipData.carpet}
+                  onDataChanged={fetchWorshipData}
                 />
               </motion.div>
             ))}
         </main>
       </div>
 
-      <AddActivityModal isOpen={showForm} onClose={handleModalClose} />
+      <AddActivityModal
+        isOpen={showForm}
+        onClose={handleModalClose}
+        onCreated={(activity) =>
+          setActivities((prev) => [
+            activity as unknown as OsisActivity,
+            ...prev,
+          ])
+        }
+      />
 
       <EditActivityModal
         isOpen={!!editingActivity}
