@@ -74,15 +74,15 @@ export default function AddActivityModal({
       const result = await createActivity(initialState, formData);
 
       if (result?.success) {
-        toast.success("Kegiatan berhasil diajukan!");
+        toast.success("Program kerja berhasil diajukan!");
         setProposalFile(null);
         onClose();
       } else {
-        toast.error(result?.error || "Gagal mengajukan kegiatan");
+        toast.error(result?.error || "Gagal mengajukan program kerja");
       }
     } catch (error) {
       console.error("Submit error:", error);
-      toast.error("Terjadi kesalahan saat mengajukan kegiatan");
+      toast.error("Terjadi kesalahan saat mengajukan program kerja");
     } finally {
       setSubmitting(false);
     }

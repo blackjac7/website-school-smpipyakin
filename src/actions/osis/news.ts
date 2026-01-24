@@ -15,7 +15,9 @@ const NewsSchema = z.object({
 
 export async function getOsisNews() {
   const user = await getAuthenticatedUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) {
+    return { success: false, data: [], error: "Unauthorized" };
+  }
 
   // Fetch news created by this user (or all OSIS news?)
   // Requirement: "osis bisa upload berita... tapi harus approve"

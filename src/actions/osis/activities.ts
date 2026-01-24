@@ -95,10 +95,10 @@ export async function createActivity(prevState: unknown, formData: FormData) {
     });
 
     revalidatePath("/dashboard-osis");
-    return { success: true, message: "Kegiatan berhasil diajukan" };
+    return { success: true, message: "Program kerja berhasil diajukan" };
   } catch (error) {
     console.error("Create activity error:", error);
-    return { success: false, error: "Gagal membuat kegiatan" };
+    return { success: false, error: "Gagal membuat program kerja" };
   }
 }
 
@@ -119,7 +119,7 @@ export async function updateActivity(prevState: unknown, formData: FormData) {
   if (existing.status !== "PENDING" && !isAdminRole(user.role)) {
     return {
       success: false,
-      error: "Hanya kegiatan status PENDING yang dapat diubah",
+      error: "Hanya program kerja status PENDING yang dapat diubah",
     };
   }
 
@@ -152,10 +152,10 @@ export async function updateActivity(prevState: unknown, formData: FormData) {
     });
 
     revalidatePath("/dashboard-osis");
-    return { success: true, message: "Kegiatan berhasil diperbarui" };
+    return { success: true, message: "Program kerja berhasil diperbarui" };
   } catch (error) {
     console.error("Update activity error:", error);
-    return { success: false, error: "Gagal memperbarui kegiatan" };
+    return { success: false, error: "Gagal memperbarui program kerja" };
   }
 }
 
@@ -173,7 +173,7 @@ export async function deleteActivity(id: string) {
   try {
     await prisma.osisActivity.delete({ where: { id } });
     revalidatePath("/dashboard-osis");
-    return { success: true, message: "Kegiatan dihapus" };
+    return { success: true, message: "Program kerja dihapus" };
   } catch (error) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _ = error;

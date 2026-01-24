@@ -5,29 +5,36 @@ import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { getJWTSecret, JWT_CONFIG } from "@/lib/jwt";
 
-// Verify admin permission helper
-async function verifyAdmin() {
+// Verify admin permission helper - returns result object instead of throwing
+async function verifyAdmin(): Promise<{ authorized: boolean; error?: string; payload?: unknown }> {
   const cookieStore = await cookies();
   const token = cookieStore.get(JWT_CONFIG.COOKIE_NAME)?.value;
 
-  if (!token) throw new Error("Unauthorized");
+  if (!token) {
+    return { authorized: false, error: "Unauthorized" };
+  }
 
   try {
     const { payload } = await jwtVerify(token, getJWTSecret());
     // Accept both lowercase (from token) and uppercase (normalized)
-    if (payload.role !== "admin" && payload.role !== "ADMIN")
-      throw new Error("Unauthorized access");
-    return payload;
+    if (payload.role !== "admin" && payload.role !== "ADMIN") {
+      return { authorized: false, error: "Unauthorized access" };
+    }
+    return { authorized: true, payload };
   } catch (error) {
     console.error("Token verification error:", error);
-    throw new Error("Invalid token");
+    return { authorized: false, error: "Invalid token" };
   }
 }
 
 export async function exportDataAction(dataType: "users" | "students") {
+  // 1. Security Check
+  const auth = await verifyAdmin();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error || "Unauthorized" };
+  }
+
   try {
-    // 1. Security Check
-    await verifyAdmin();
 
     let data;
     let filename;

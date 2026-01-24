@@ -154,8 +154,8 @@ function OSISDashboard() {
   const handleDeleteActivity = async (id: string) => {
     confirmModal.showConfirm(
       {
-        title: "Hapus Kegiatan",
-        message: "Apakah Anda yakin ingin menghapus kegiatan ini?",
+        title: "Hapus Program Kerja",
+        message: "Apakah Anda yakin ingin menghapus program kerja ini?",
         description: "Tindakan ini tidak dapat dibatalkan.",
         type: "danger",
         confirmText: "Hapus",
@@ -164,7 +164,7 @@ function OSISDashboard() {
       async () => {
         const res = await deleteActivity(id);
         if (res.success) {
-          toast.success("Kegiatan berhasil dihapus");
+          toast.success("Program kerja berhasil dihapus");
           fetchActivities();
         } else {
           toast.error(res.error || "Gagal menghapus");

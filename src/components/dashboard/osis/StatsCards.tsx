@@ -39,14 +39,14 @@ export default function StatsCards() {
       bg: "bg-yellow-50",
     },
     {
-      label: "Kegiatan Disetujui",
+      label: "Proker Disetujui",
       value: statsData.approvedCount.toString(),
       icon: Check,
       color: "text-green-600",
       bg: "bg-green-50",
     },
     {
-      label: "Kegiatan Mendatang",
+      label: "Proker Mendatang",
       value: statsData.upcomingCount.toString(),
       icon: CalendarIcon,
       color: "text-purple-600",

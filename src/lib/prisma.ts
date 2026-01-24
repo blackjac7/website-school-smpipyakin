@@ -95,83 +95,8 @@ export type SiswaWithUser = {
   }[];
 };
 
-export type NewsWithAuthor = {
-  id: string;
-  judul: string;
-  slug: string;
-  konten: string;
-  excerpt?: string | null;
-  gambar?: string | null;
-  kategori: string;
-  status: string;
-  publishedAt?: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  author: {
-    id: string;
-    username: string;
-    email?: string | null;
-    role: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-  };
-};
-
-export type SchoolActivityWithCreator = {
-  id: string;
-  judul: string;
-  deskripsi?: string | null;
-  tanggal: Date;
-  waktu?: string | null;
-  lokasi?: string | null;
-  gambar?: string | null;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
-  creator: {
-    id: string;
-    username: string;
-    email?: string | null;
-    role: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-  };
-};
-
-export type StudentAchievementWithSiswa = {
-  id: string;
-  judul: string;
-  deskripsi?: string | null;
-  tingkat: string;
-  tanggal: Date;
-  pemberi: string;
-  createdAt: Date;
-  updatedAt: Date;
-  siswa: {
-    id: string;
-    nis: string;
-    nama: string;
-    kelas: string;
-    jurusan: string;
-    tahunMasuk: number;
-    gender: string;
-    tempatLahir: string;
-    tanggalLahir: Date;
-    alamat: string;
-    telepon?: string | null;
-    email?: string | null;
-    namaWali: string;
-    pekerjaanWali: string;
-    teleponWali: string;
-    createdAt: Date;
-    updatedAt: Date;
-    user: {
-      id: string;
-      username: string;
-      email?: string | null;
-      role: string | null;
-      createdAt: Date;
-      updatedAt: Date;
-    };
-  };
-};
+// NOTE: The following types have been removed as they were outdated and not synced with the actual schema:
+// - NewsWithAuthor (used 'judul', 'konten', 'slug' but schema uses 'title', 'content', no slug)
+// - SchoolActivityWithCreator (used 'judul', 'deskripsi' but schema uses 'title', 'information')
+// - StudentAchievementWithSiswa (used 'judul', 'deskripsi', 'tingkat', 'pemberi' but schema uses 'title', 'description', 'level', no 'pemberi')
+// Use Prisma generated types with include statements instead for type safety.

@@ -514,7 +514,11 @@ export async function createAchievementByStaff(formData: FormData) {
       level: formData.get("level"),
     };
 
-    const validated = CreateAchievementSchema.parse(rawData);
+    const validation = CreateAchievementSchema.safeParse(rawData);
+    if (!validation.success) {
+      return { success: false, error: validation.error.issues[0].message };
+    }
+    const validated = validation.data;
 
     await prisma.studentAchievement.create({
       data: {
