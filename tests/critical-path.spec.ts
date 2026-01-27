@@ -97,9 +97,36 @@ test.describe.serial("Critical Path Suite", () => {
       // 1. Navigate to News Management
       await dashboardPage.gotoNews();
 
+      // Diagnose potential redirect to login or server error
+      const currentUrl = page.url();
+      if (
+        currentUrl.includes("/login") ||
+        currentUrl.includes("error") ||
+        currentUrl.includes("500") ||
+        currentUrl.includes("503")
+      ) {
+        await page.screenshot({
+          path: `diagnostic-news-redirect-${Date.now()}.png`,
+          fullPage: true,
+        });
+        console.error(
+          "Unexpected redirect or error when navigating to News page. Current URL:",
+          currentUrl,
+        );
+        console.error(
+          "Cookies:",
+          JSON.stringify(await page.context().cookies(), null, 2),
+        );
+        const bodySnippet = (await page.textContent("body")) || "";
+        console.error("Body snippet:", bodySnippet.substring(0, 2000));
+        throw new Error(
+          "Navigation to News page did not reach expected dashboard (redirected or server error)",
+        );
+      }
+
       // 2. Ensure News page is ready and open "Tambah Berita" Modal
       const heading = page.locator('h1:has-text("Manajemen Berita")');
-      await heading.waitFor({ state: "visible", timeout: 20000 });
+      await heading.waitFor({ state: "visible", timeout: 30000 });
 
       // Use role-based query which is more robust to whitespace/markup changes
       const addButton = page

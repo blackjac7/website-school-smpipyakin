@@ -45,11 +45,11 @@ export class LoginPage {
     this.submitButton = page.locator('button[type="submit"]');
     // Password visibility toggle
     this.passwordToggle = page.locator(
-      '[aria-label*="password"], button:has([data-lucide="eye"])'
+      '[aria-label*="password"], button:has([data-lucide="eye"])',
     );
     // Error message
     this.errorMessage = page.locator(
-      '[role="alert"], .error, [class*="error"]'
+      '[role="alert"], .error, [class*="error"]',
     );
     // Page heading
     this.heading = page.locator("h1, h2").first();
@@ -83,7 +83,7 @@ export class LoginPage {
   async fillForm(
     username: string,
     password: string,
-    formRole?: string
+    formRole?: string,
   ): Promise<void> {
     await this.usernameInput.fill(username);
     await this.passwordInput.fill(password);
@@ -180,7 +180,7 @@ export class LoginPage {
           (resp) =>
             resp.url().includes("/api/auth/login") &&
             resp.request().method() === "POST",
-          { timeout: 10000 }
+          { timeout: 10000 },
         )
         .catch(() => null),
       this.submit(),
@@ -231,6 +231,20 @@ export class LoginPage {
             console.log(`Login failed with error: ${errorText}`);
           }
         }
+
+        // If we are still on the login page, surface a clear failure with diagnostics
+        console.error(
+          "Login did not redirect away from /login. Current URL:",
+          currentUrl,
+        );
+        console.error(
+          "Auth response headers might help; checking any recent responses is recommended.",
+        );
+        console.error(
+          "Cookies:",
+          JSON.stringify(await this.page.context().cookies(), null, 2),
+        );
+        throw new Error("Login failed or did not complete (still on /login)");
       }
     }
 
