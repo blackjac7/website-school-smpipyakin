@@ -8,7 +8,6 @@ import {
   Square,
   Trash2,
   Plus,
-  Users,
   Layers,
   ChevronLeft,
   ChevronRight,
@@ -20,7 +19,6 @@ import {
   updateCarpetStatus,
 } from "@/actions/worship";
 import { CarpetZone, TaskStatus } from "@prisma/client";
-import StudentSelector from "./StudentSelector";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
 import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 import ClassSelector from "./ClassSelector";

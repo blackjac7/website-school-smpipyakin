@@ -6,12 +6,10 @@ import Image from "next/image";
 import {
   Camera,
   CheckCircle2,
-  XCircle,
   Clock,
   User,
   FileText,
   Loader2,
-  RefreshCw,
   Keyboard,
   Video,
   VideoOff,
@@ -31,7 +29,13 @@ interface StudentInfo {
   image?: string | null;
 }
 
-type ScanState = "input" | "camera" | "verifying" | "found" | "error" | "success";
+type ScanState =
+  | "input"
+  | "camera"
+  | "verifying"
+  | "found"
+  | "error"
+  | "success";
 
 export default function LatnessScannerContent() {
   const [scanState, setScanState] = useState<ScanState>("input");
@@ -44,7 +48,7 @@ export default function LatnessScannerContent() {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scannerReady, setScannerReady] = useState(false);
-  const [flash, setFlash] = useState(false);
+  const [, setFlash] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const html5QrCodeRef = useRef<any>(null);
@@ -68,8 +72,6 @@ export default function LatnessScannerContent() {
     }
   }, [scanState]);
 
-
-
   const isProcessingRef = useRef(false);
 
   // Initialize camera scanner
@@ -79,23 +81,25 @@ export default function LatnessScannerContent() {
       setIsScanning(false);
       isProcessingRef.current = false; // Reset lock
       // ... rest of init logic
-      
+
       // Wait for DOM element to be ready with retry
       let retryCount = 0;
       const maxRetries = 10;
-      
+
       const tryInit = () => {
         const element = document.getElementById("qr-reader");
         if (element) {
-          console.log('[QR Scanner] Element found, initializing...');
+          console.log("[QR Scanner] Element found, initializing...");
           initCameraScanner();
         } else if (retryCount < maxRetries) {
           retryCount++;
           // console.log(`[QR Scanner] Element not found, retrying (${retryCount}/${maxRetries})...`);
           setTimeout(tryInit, 200);
         } else {
-          console.error('[QR Scanner] Element not found after max retries');
-          setCameraError("Tidak dapat memuat scanner. Silakan refresh halaman.");
+          console.error("[QR Scanner] Element not found after max retries");
+          setCameraError(
+            "Tidak dapat memuat scanner. Silakan refresh halaman.",
+          );
         }
       };
 
@@ -111,107 +115,117 @@ export default function LatnessScannerContent() {
     return () => {
       stopCameraScanner();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scanState]);
 
   const initCameraScanner = async () => {
     try {
-      console.log('[QR Scanner] Initializing camera...');
+      console.log("[QR Scanner] Initializing camera...");
       const { Html5Qrcode } = await import("html5-qrcode");
-      
+
       if (html5QrCodeRef.current) {
         try {
           await html5QrCodeRef.current.stop();
-        } catch (e) {
+        } catch {
           // ignore error
         }
       }
 
-      // Optimization: 
+      // Optimization:
       // 1. Restrict to QR_CODE only (0 is the enum value for QR_CODE)
       // 2. Use native BarcodeDetector (Chrome/Android/iOS) if available <- HUGE SPEEDUP
       // 3. Disable verbose logging
-      const html5QrCode = new Html5Qrcode("qr-reader", { 
-        formatsToSupport: [ 0 ], // 0 = QR_CODE
+      const html5QrCode = new Html5Qrcode("qr-reader", {
+        formatsToSupport: [0], // 0 = QR_CODE
         verbose: false,
         experimentalFeatures: {
-          useBarCodeDetectorIfSupported: true
-        }
+          useBarCodeDetectorIfSupported: true,
+        },
       });
       html5QrCodeRef.current = html5QrCode;
 
       // ... existing camera selection code ... (omitted for brevity, assume unchanged logic for selecting camera)
       // Actually need to include it to keep the file valid if we are replacing this whole block
       // console.log('[QR Scanner] Getting available cameras...');
-      
+
       // Try to get cameras list first
       let cameraId;
       try {
         const devices = await Html5Qrcode.getCameras();
         if (devices && devices.length > 0) {
-          const backCamera = devices.find(d => 
-            d.label.toLowerCase().includes('back') || 
-            d.label.toLowerCase().includes('rear') ||
-            d.label.toLowerCase().includes('environment')
+          const backCamera = devices.find(
+            (d) =>
+              d.label.toLowerCase().includes("back") ||
+              d.label.toLowerCase().includes("rear") ||
+              d.label.toLowerCase().includes("environment"),
           );
           cameraId = backCamera ? backCamera.id : devices[0].id;
         }
-      } catch (e) {
-        // console.log('[QR Scanner] Could not enumerate cameras:', e);
+      } catch {
+        // console.log('[QR Scanner] Could not enumerate cameras');
       }
 
       // console.log('[QR Scanner] Starting scanner...');
-      
+
       // Optimization: Limit resolution to prevent processing huge frames (4k etc) in JS fallback
       const videoConstraints = {
         facingMode: "environment",
         width: { min: 640, ideal: 720, max: 1280 },
         height: { min: 480, ideal: 720, max: 1280 },
-        ...(cameraId ? { deviceId: cameraId } : {}) 
+        ...(cameraId ? { deviceId: cameraId } : {}),
       };
 
       await html5QrCode.start(
-
-        cameraId ? { deviceId: cameraId } : videoConstraints, 
+        cameraId ? { deviceId: cameraId } : videoConstraints,
         {
-          fps: 30, 
+          fps: 30,
           // Dynamic qrbox based on view width, but keep it simple for now
-          qrbox: { width: 250, height: 250 }, 
+          qrbox: { width: 250, height: 250 },
           aspectRatio: 1.0,
           // Optimization: lower latency
-          videoConstraints: videoConstraints
+          videoConstraints: videoConstraints,
         },
         async (decodedText) => {
           // Optimization: Check lock immediately
           if (isProcessingRef.current) return;
-          
-          console.log('[QR Scanner] QR Code detected:', decodedText);
+
+          console.log("[QR Scanner] QR Code detected:", decodedText);
           isProcessingRef.current = true; // Lock
-          
+
           handleQRScanned(decodedText);
         },
         () => {
           // Ignore scanning errors
-        }
+        },
       );
-      
+
       setScannerReady(true);
       setIsScanning(true);
-      console.log('[QR Scanner] Camera started successfully!');
+      console.log("[QR Scanner] Camera started successfully!");
     } catch (err) {
-      console.error('[QR Scanner] Camera initialization error:', err);
+      console.error("[QR Scanner] Camera initialization error:", err);
       let errorMsg = "Tidak dapat mengakses kamera.";
       if (err instanceof Error) {
-        if (err.message.includes('Permission') || err.message.includes('NotAllowedError')) {
-          errorMsg = "Izin kamera ditolak. Refresh halaman dan klik 'Allow' saat browser meminta izin.";
-        } else if (err.message.includes('NotFoundError') || err.message.includes('DevicesNotFoundError')) {
-          errorMsg = "Kamera tidak ditemukan. Pastikan perangkat memiliki kamera.";
-        } else if (err.message.includes('NotReadableError')) {
-          errorMsg = "Kamera sedang digunakan aplikasi lain. Tutup aplikasi lain yang menggunakan kamera.";
-        } else if (err.message.includes('OverconstrainedError')) {
+        if (
+          err.message.includes("Permission") ||
+          err.message.includes("NotAllowedError")
+        ) {
+          errorMsg =
+            "Izin kamera ditolak. Refresh halaman dan klik 'Allow' saat browser meminta izin.";
+        } else if (
+          err.message.includes("NotFoundError") ||
+          err.message.includes("DevicesNotFoundError")
+        ) {
+          errorMsg =
+            "Kamera tidak ditemukan. Pastikan perangkat memiliki kamera.";
+        } else if (err.message.includes("NotReadableError")) {
+          errorMsg =
+            "Kamera sedang digunakan aplikasi lain. Tutup aplikasi lain yang menggunakan kamera.";
+        } else if (err.message.includes("OverconstrainedError")) {
           errorMsg = "Kamera tidak mendukung konfigurasi yang diminta.";
-        } else if (err.message.includes('SecurityError')) {
-          errorMsg = "Akses kamera diblokir karena alasan keamanan. Pastikan menggunakan HTTPS atau localhost.";
+        } else if (err.message.includes("SecurityError")) {
+          errorMsg =
+            "Akses kamera diblokir karena alasan keamanan. Pastikan menggunakan HTTPS atau localhost.";
         } else {
           errorMsg = `Error: ${err.message}`;
         }
@@ -237,16 +251,16 @@ export default function LatnessScannerContent() {
   // Update handleQRScanned to play beep
   const handleQRScanned = async (qrData: string) => {
     // 1. Play beep (fire and forget to not block UI)
-    playScanSound('beep').catch(console.error);
-    
+    playScanSound("beep").catch(console.error);
+
     // 2. Visual feedback
     triggerFlash();
     toast.dismiss();
     toast.loading("Memproses...", { id: "scan-loading", duration: 2000 });
-    
+
     // 3. Process
     await verifyQR(qrData);
-    
+
     // Note: unlock is done via useEffect when state changes to input/camera
     // But if we stay in camera (e.g. error), verifyQR sets error state which unmounts camera
     // So lock reset happens in init hook
@@ -266,7 +280,9 @@ export default function LatnessScannerContent() {
 
     // Basic length check - QR data should be reasonably long (Base64 encoded)
     if (!qrData || qrData.length < 10) {
-      setErrorMessage("QR Code tidak valid. Pastikan menggunakan QR Code siswa SMP IP Yakin.");
+      setErrorMessage(
+        "QR Code tidak valid. Pastikan menggunakan QR Code siswa SMP IP Yakin.",
+      );
       setScanState("error");
       toast.error("QR Code tidak valid!");
       return;
@@ -284,18 +300,20 @@ export default function LatnessScannerContent() {
           image: result.student.image || null,
         });
         setScanState("found");
-        await playScanSound('success');
+        await playScanSound("success");
         toast.success(`Siswa ditemukan: ${result.student.name}`);
       } else {
-        setErrorMessage(result.error || "QR Code tidak valid atau sudah kedaluwarsa.");
+        setErrorMessage(
+          result.error || "QR Code tidak valid atau sudah kedaluwarsa.",
+        );
         setScanState("error");
-        await playScanSound('error');
+        await playScanSound("error");
         toast.error(result.error || "QR Code tidak valid!");
       }
     } catch {
       setErrorMessage("Terjadi kesalahan saat verifikasi. Silakan coba lagi.");
       setScanState("error");
-      await playScanSound('error');
+      await playScanSound("error");
       toast.error("Gagal memverifikasi QR Code");
     }
   };
@@ -310,7 +328,11 @@ export default function LatnessScannerContent() {
         minute: "2-digit",
       });
 
-      const result = await recordLateness(studentInfo.id, arrivalTime, reason || undefined);
+      const result = await recordLateness(
+        studentInfo.id,
+        arrivalTime,
+        reason || undefined,
+      );
 
       if (result.success) {
         setScanState("success");
@@ -374,14 +396,18 @@ export default function LatnessScannerContent() {
           <Camera className="w-7 h-7 text-blue-600" />
           Scan Keterlambatan Siswa
         </h1>
-        <p className="text-gray-500">Scan QR Code siswa dengan kamera atau input manual</p>
+        <p className="text-gray-500">
+          Scan QR Code siswa dengan kamera atau input manual
+        </p>
       </div>
 
       {/* Current Time */}
       <div className="text-center">
         <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl shadow-lg">
           <Clock className="w-5 h-5" />
-          <span className="font-mono text-2xl font-bold">{formatTime(currentTime)}</span>
+          <span className="font-mono text-2xl font-bold">
+            {formatTime(currentTime)}
+          </span>
         </div>
       </div>
 
@@ -414,7 +440,7 @@ export default function LatnessScannerContent() {
           </div>
 
           <button
-            onClick={() => playScanSound('success')}
+            onClick={() => playScanSound("success")}
             className="text-xs text-gray-500 hover:text-blue-600 flex items-center gap-1 transition-colors px-3 py-1 rounded hover:bg-gray-50"
             title="Klik untuk tes suara"
           >
@@ -441,7 +467,8 @@ export default function LatnessScannerContent() {
                   <Keyboard className="w-10 h-10 text-blue-600" />
                 </div>
                 <p className="text-gray-600 text-sm">
-                  Gunakan barcode scanner USB atau masukkan data QR secara manual
+                  Gunakan barcode scanner USB atau masukkan data QR secara
+                  manual
                 </p>
               </div>
 
@@ -498,11 +525,8 @@ export default function LatnessScannerContent() {
               ) : (
                 <div className="relative">
                   {/* Camera Container */}
-                  <div
-                    id="qr-reader"
-                    className="w-full aspect-square"
-                  />
-                  
+                  <div id="qr-reader" className="w-full aspect-square" />
+
                   {/* Scanning Overlay */}
                   {!scannerReady && (
                     <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
@@ -510,17 +534,19 @@ export default function LatnessScannerContent() {
                       <p className="text-white font-medium">Memuat kamera...</p>
                     </div>
                   )}
-                  
+
                   {/* Active Scanning Indicator */}
                   {scannerReady && isScanning && (
                     <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
                       <div className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-full shadow-lg animate-pulse">
                         <Scan className="w-4 h-4" />
-                        <span className="text-sm font-medium">Scanning aktif...</span>
+                        <span className="text-sm font-medium">
+                          Scanning aktif...
+                        </span>
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Scan Frame Corners */}
                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                     <div className="w-56 h-56 relative">
@@ -529,10 +555,10 @@ export default function LatnessScannerContent() {
                       <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-blue-500 rounded-tr-lg" />
                       <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-blue-500 rounded-bl-lg" />
                       <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-blue-500 rounded-br-lg" />
-                      
+
                       {/* Scanning Line Animation */}
                       {scannerReady && (
-                        <motion.div 
+                        <motion.div
                           className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent"
                           animate={{
                             top: ["0%", "100%", "0%"],
@@ -540,7 +566,7 @@ export default function LatnessScannerContent() {
                           transition={{
                             duration: 2,
                             repeat: Infinity,
-                            ease: "linear"
+                            ease: "linear",
                           }}
                         />
                       )}
@@ -548,7 +574,7 @@ export default function LatnessScannerContent() {
                   </div>
                 </div>
               )}
-              
+
               {/* Instructions */}
               {!cameraError && (
                 <div className="p-4 bg-gray-50 border-t">
@@ -574,14 +600,18 @@ export default function LatnessScannerContent() {
                 <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center">
                   <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
                 </div>
-                <motion.div 
+                <motion.div
                   className="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent"
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 />
               </div>
-              <p className="text-gray-600 mt-4 font-medium">Memverifikasi QR Code...</p>
-              <p className="text-gray-400 text-sm mt-1">Mohon tunggu sebentar</p>
+              <p className="text-gray-600 mt-4 font-medium">
+                Memverifikasi QR Code...
+              </p>
+              <p className="text-gray-400 text-sm mt-1">
+                Mohon tunggu sebentar
+              </p>
             </motion.div>
           )}
 
@@ -603,7 +633,9 @@ export default function LatnessScannerContent() {
                   <AlertCircle className="w-10 h-10 text-red-500" />
                 </div>
               </motion.div>
-              <h3 className="text-lg font-bold text-red-700 mb-2">QR Code Tidak Valid</h3>
+              <h3 className="text-lg font-bold text-red-700 mb-2">
+                QR Code Tidak Valid
+              </h3>
               <p className="text-red-600 mb-4">{errorMessage}</p>
               <div className="flex gap-2 justify-center">
                 <button
@@ -634,7 +666,7 @@ export default function LatnessScannerContent() {
               className="bg-white rounded-2xl shadow-xl p-6 space-y-4"
             >
               {/* Success Badge */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="flex justify-center"
@@ -675,11 +707,15 @@ export default function LatnessScannerContent() {
 
               {/* Arrival Time */}
               <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 text-center border border-red-100">
-                <p className="text-sm text-red-600 mb-1 font-medium">⏰ Waktu Kedatangan</p>
+                <p className="text-sm text-red-600 mb-1 font-medium">
+                  ⏰ Waktu Kedatangan
+                </p>
                 <p className="text-3xl font-mono font-bold text-red-700">
                   {formatTime(currentTime)}
                 </p>
-                <p className="text-xs text-red-500 mt-1">Terlambat masuk sekolah</p>
+                <p className="text-xs text-red-500 mt-1">
+                  Terlambat masuk sekolah
+                </p>
               </div>
 
               {/* Reason Input */}
@@ -739,7 +775,9 @@ export default function LatnessScannerContent() {
                   <CheckCircle2 className="w-10 h-10 text-green-600" />
                 </div>
               </motion.div>
-              <h3 className="text-xl font-bold text-green-700 mb-2">Berhasil!</h3>
+              <h3 className="text-xl font-bold text-green-700 mb-2">
+                Berhasil!
+              </h3>
               <p className="text-green-600 mb-4">
                 Keterlambatan siswa telah dicatat ke sistem.
               </p>
