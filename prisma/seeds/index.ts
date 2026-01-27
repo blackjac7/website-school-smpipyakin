@@ -94,11 +94,11 @@ export async function runAllSeeds(
   console.log("✅ Database seeded successfully!");
   console.log("");
   console.log("👤 Default accounts:");
-  console.log("   Admin: admin / admin123");
-  console.log("   Kesiswaan: kesiswaan / admin123");
-  console.log("   Siswa: siswa001 / admin123");
-  console.log("   OSIS: osis001 / admin123");
-  console.log("   PPDB: ppdb001 / admin123");
+  console.log("   Admin: admin / smpipyakinIDJKT705");
+  console.log("   Kesiswaan: kesiswaan / smpipyakinIDJKT705");
+  console.log("   Siswa: siswa001 / smpipyakinIDJKT705");
+  console.log("   OSIS: osis001 / smpipyakinIDJKT705");
+  console.log("   PPDB: ppdb001 / smpipyakinIDJKT705");
 }
 
 // Re-export individual seeders for selective use

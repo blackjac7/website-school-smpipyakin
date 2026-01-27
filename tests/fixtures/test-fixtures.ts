@@ -14,31 +14,31 @@ import { test as base, expect, Page, BrowserContext } from "@playwright/test";
 export const TEST_USERS = {
   siswa: {
     username: "siswa001",
-    password: "admin123",
+    password: "smpipyakinIDJKT705",
     role: "SISWA",
     dashboardUrl: "/dashboard-siswa",
   },
   ppdb: {
     username: "ppdb001",
-    password: "admin123",
+    password: "smpipyakinIDJKT705",
     role: "PPDB_ADMIN",
     dashboardUrl: "/dashboard-ppdb",
   },
   admin: {
     username: "admin",
-    password: "admin123",
+    password: "smpipyakinIDJKT705",
     role: "ADMIN",
     dashboardUrl: "/dashboard-admin",
   },
   kesiswaan: {
     username: "kesiswaan",
-    password: "admin123",
+    password: "smpipyakinIDJKT705",
     role: "KESISWAAN",
     dashboardUrl: "/dashboard-kesiswaan",
   },
   osis: {
     username: "osis001",
-    password: "admin123",
+    password: "smpipyakinIDJKT705",
     role: "OSIS",
     dashboardUrl: "/dashboard-osis",
   },
@@ -68,7 +68,7 @@ export const test = base.extend<TestFixtures>({
 
       // Fill login form
       const usernameInput = page.locator(
-        'input[name="username"], input[type="text"]'
+        'input[name="username"], input[type="text"]',
       );
       const passwordInput = page.locator('input[type="password"]');
 
@@ -125,7 +125,7 @@ export async function waitForPageReady(page: Page): Promise<void> {
   await page.waitForLoadState("domcontentloaded");
   // Wait for any loading spinners to disappear
   const loadingIndicators = page.locator(
-    '[class*="loading"], [class*="spinner"], [aria-busy="true"]'
+    '[class*="loading"], [class*="spinner"], [aria-busy="true"]',
   );
   if ((await loadingIndicators.count()) > 0) {
     await loadingIndicators
@@ -140,7 +140,7 @@ export async function waitForPageReady(page: Page): Promise<void> {
  */
 export async function isVisible(
   page: Page,
-  selector: string
+  selector: string,
 ): Promise<boolean> {
   const element = page.locator(selector);
   return (await element.count()) > 0 && (await element.first().isVisible());
@@ -161,7 +161,7 @@ export async function safeClick(page: Page, selector: string): Promise<void> {
 export async function safeFill(
   page: Page,
   selector: string,
-  value: string
+  value: string,
 ): Promise<void> {
   const element = page.locator(selector).first();
   await element.waitFor({ state: "visible", timeout: 5000 });
@@ -209,7 +209,7 @@ export async function hasServerError(page: Page): Promise<boolean> {
  */
 export async function assertUrlContains(
   page: Page,
-  pattern: string
+  pattern: string,
 ): Promise<void> {
   await expect(page).toHaveURL(new RegExp(pattern));
 }
@@ -219,7 +219,7 @@ export async function assertUrlContains(
  */
 export async function assertToastAppears(
   page: Page,
-  type: "success" | "error" | "info" = "success"
+  type: "success" | "error" | "info" = "success",
 ): Promise<void> {
   const toastSelectors = {
     success:
