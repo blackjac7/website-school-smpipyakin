@@ -26,6 +26,9 @@ import {
 } from "@/actions/kesiswaan/students";
 import { exportStudentsToExcel } from "@/utils/studentExport";
 import toast from "react-hot-toast";
+import AddStudentModal from "./AddStudentModal";
+import ImportStudentModal from "./ImportStudentModal";
+import { Plus, Upload } from "lucide-react";
 
 export default function StudentManagement() {
   // State
@@ -60,6 +63,8 @@ export default function StudentManagement() {
     null
   );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Fetch students
   const fetchStudents = useCallback(async () => {
@@ -272,19 +277,37 @@ export default function StudentManagement() {
               <option value="FEMALE">Perempuan</option>
             </select>
 
-            {/* Export Button */}
-            <button
-              onClick={handleExport}
-              disabled={isExporting}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 text-sm font-medium"
-            >
-              {isExporting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              Export Excel
-            </button>
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+                <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                >
+                <Upload className="w-4 h-4" />
+                Import
+                </button>
+                
+                <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                >
+                <Plus className="w-4 h-4" />
+                Tambah Siswa
+                </button>
+
+                <button
+                onClick={handleExport}
+                disabled={isExporting}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 text-sm font-medium"
+                >
+                {isExporting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                    <Download className="w-4 h-4" />
+                )}
+                Export
+                </button>
+            </div>
           </div>
         </div>
       </div>
@@ -587,6 +610,27 @@ export default function StudentManagement() {
           </div>
         </div>
       )}
+      
+      {/* Add Student Modal */}
+      <AddStudentModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={() => {
+            fetchStudents();
+            setIsAddModalOpen(false);
+        }}
+        availableClasses={availableClasses}
+      />
+
+      {/* Import Student Modal */}
+      <ImportStudentModal 
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => {
+            fetchStudents();
+            setIsImportModalOpen(false);
+        }}
+      />
     </div>
   );
 }

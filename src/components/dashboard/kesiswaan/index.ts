@@ -18,4 +18,8 @@ export type {
   Notification,
   ReportStats,
   StudentItem,
+// ... types
 } from "./types";
+
+export { default as LatenessReportsContent } from "./LatenessReportsContent";
+export { default as ReportsWrapper } from "./ReportsWrapper";

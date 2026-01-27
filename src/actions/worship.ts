@@ -14,6 +14,9 @@ import {
 
 export async function getStudentsForSelector() {
   const students = await prisma.siswa.findMany({
+    where: {
+      gender: "FEMALE"
+    },
     select: {
       id: true,
       name: true,
@@ -26,8 +29,23 @@ export async function getStudentsForSelector() {
 
   return students.map(s => ({
     value: s.id,
-    label: `${s.name} (${s.class || 'No Class'})`
+    label: s.name || "Unnamed",
+    class: s.class || "Lainnya"
   }));
+}
+
+export async function getClassesForSelector() {
+    const classes = await prisma.siswa.findMany({
+        select: { class: true },
+        where: { class: { not: null } },
+        distinct: ['class'],
+        orderBy: { class: 'asc' }
+    });
+
+    return classes
+        .map(c => c.class)
+        .filter((c): c is string => c !== null)
+        .map(c => ({ value: c, label: c }));
 }
 
 // ==========================================
@@ -212,14 +230,17 @@ export async function getCarpetSchedules(month: Date) {
         lte: endOfMonth
       }
     },
-    include: {
-      assignments: {
-        include: {
-            siswa: {
-                select: { name: true, class: true }
+    select: {
+        id: true,
+        date: true,
+        zone: true,
+        status: true,
+        className: true,
+        assignments: {
+            include: {
+                siswa: { select: { name: true, class: true } }
             }
         }
-      }
     },
     orderBy: { date: 'asc' }
   });
@@ -229,46 +250,39 @@ export async function getCarpetSchedules(month: Date) {
 
 export async function createCarpetSchedule(data: {
     date: Date;
-    zone: CarpetZone;
-    studentIds: string[];
+    className: string;
 }) {
-    // Check if schedule exists for this date and zone
-    const existing = await prisma.worshipCarpetSchedule.findFirst({
-        where: {
-            date: data.date,
-            zone: data.zone
-        }
-    });
+    // Create for both zones automatically
+    const zones: CarpetZone[] = [CarpetZone.FLOOR_1, CarpetZone.FLOOR_2];
 
-    if (existing) {
-        // Update assignments
-        // Delete old assignments
-        await prisma.worshipCarpetAssignment.deleteMany({
-            where: { scheduleId: existing.id }
-        });
-
-        // Add new assignments
-        await prisma.worshipCarpetAssignment.createMany({
-            data: data.studentIds.map(sid => ({
-                scheduleId: existing.id,
-                siswaId: sid
-            }))
-        });
-    } else {
-        await prisma.worshipCarpetSchedule.create({
-            data: {
+    for (const zone of zones) {
+        // Check if schedule exists for this date and zone
+        const existing = await prisma.worshipCarpetSchedule.findFirst({
+            where: {
                 date: data.date,
-                zone: data.zone,
-                assignments: {
-                    create: data.studentIds.map(sid => ({
-                        siswaId: sid
-                    }))
-                }
+                zone: zone
             }
         });
+
+        if (existing) {
+            // Update className
+            await prisma.worshipCarpetSchedule.update({
+                where: { id: existing.id },
+                data: { className: data.className }
+            });
+        } else {
+            await prisma.worshipCarpetSchedule.create({
+                data: {
+                    date: data.date,
+                    zone: zone,
+                    className: data.className
+                }
+            });
+        }
     }
 
-    revalidatePath('/dashboard-osis/religious');
+    revalidatePath('/dashboard-osis/ibadah'); // Correct path
+    revalidatePath('/dashboard-osis');
 }
 
 export async function updateCarpetStatus(id: string, status: TaskStatus) {

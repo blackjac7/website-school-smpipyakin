@@ -29,7 +29,7 @@ export default function ExportButton({ data, filename, sheetName = "Sheet1", typ
             'Durasi (Hari)': item.endDate
                 ? Math.floor((new Date(item.endDate).getTime() - new Date(item.startDate).getTime()) / 86400000) + 1
                 : '-',
-            'Catatan': item.notes || '-',
+            'Keterangan': item.notes || '-',
             'Status': item.warning ? 'PERLU CEK' : 'Normal',
             'Peringatan': item.warning || '-'
         }));
@@ -48,8 +48,7 @@ export default function ExportButton({ data, filename, sheetName = "Sheet1", typ
             'Tanggal': format(new Date(item.date), 'dd/MM/yyyy'),
             'Lokasi': item.zone === 'FLOOR_1' ? 'Lantai 1' : 'Lantai 2',
             'Status': item.status === 'COMPLETED' ? 'Selesai' : 'Belum',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            'Petugas': item.assignments.map((a: any) => a.siswa?.name).join(', ')
+            'Petugas': item.className || '-'
         }));
     }
 

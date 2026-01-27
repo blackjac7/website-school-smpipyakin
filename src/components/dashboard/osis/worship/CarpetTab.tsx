@@ -23,6 +23,7 @@ import { CarpetZone, TaskStatus } from "@prisma/client";
 import StudentSelector from "./StudentSelector";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
 import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
+import ClassSelector from "./ClassSelector";
 
 const DATES_PER_PAGE = 9; // 3x3 grid
 
@@ -31,6 +32,7 @@ interface CarpetSchedule {
   date: Date;
   zone: CarpetZone;
   status: TaskStatus;
+  className?: string | null;
   assignments: {
     siswa: {
       name: string | null;
@@ -43,13 +45,12 @@ interface CarpetTabProps {
   schedules: CarpetSchedule[];
 }
 
-export default function CarpetTab({ schedules }: CarpetTabProps) {
+export default function CarpetTab({ schedules, onRefresh }: CarpetTabProps & { onRefresh?: () => void }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
-    zone: "FLOOR_1" as CarpetZone,
-    studentIds: [] as string[],
+    className: "",
   });
   const confirmModal = useToastConfirm();
 
@@ -80,38 +81,22 @@ export default function CarpetTab({ schedules }: CarpetTabProps) {
     }
   };
 
-  const handleAddStudent = (id: string) => {
-    if (!formData.studentIds.includes(id)) {
-      setFormData((prev) => ({
-        ...prev,
-        studentIds: [...prev.studentIds, id],
-      }));
-    }
-  };
-
-  const removeStudent = (id: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      studentIds: prev.studentIds.filter((sid) => sid !== id),
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.studentIds.length === 0) {
-      toast.error("Pilih minimal satu petugas");
+    if (!formData.className) {
+      toast.error("Pilih kelas petugas");
       return;
     }
 
     try {
       await createCarpetSchedule({
         date: new Date(formData.date),
-        zone: formData.zone,
-        studentIds: formData.studentIds,
+        className: formData.className,
       });
       toast.success("Jadwal karpet dibuat");
       setIsModalOpen(false);
-      setFormData((prev) => ({ ...prev, studentIds: [] })); // Reset students
+      setFormData((prev) => ({ ...prev, className: "" })); // Reset class
+      if (onRefresh) onRefresh();
     } catch (error) {
       console.error(error);
       toast.error("Gagal menyimpan jadwal");
@@ -123,6 +108,7 @@ export default function CarpetTab({ schedules }: CarpetTabProps) {
     try {
       await updateCarpetStatus(id, newStatus);
       toast.success("Status diperbarui");
+      if (onRefresh) onRefresh();
     } catch (error) {
       console.error(error);
       toast.error("Gagal update status");
@@ -143,6 +129,7 @@ export default function CarpetTab({ schedules }: CarpetTabProps) {
         try {
           await deleteCarpetSchedule(id);
           toast.success("Jadwal dihapus");
+          if (onRefresh) onRefresh();
         } catch (error) {
           console.error(error);
           toast.error("Gagal menghapus");
@@ -223,22 +210,26 @@ export default function CarpetTab({ schedules }: CarpetTabProps) {
                       </div>
 
                       <div className="flex-1">
-                        <div className="flex flex-wrap gap-2">
-                          {sch.assignments.map((assign, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm border border-blue-100"
-                            >
-                              <Users size={14} />
-                              <span className="font-medium">
-                                {assign.siswa.name}
-                              </span>
-                              <span className="text-xs text-blue-400">
-                                ({assign.siswa.class})
-                              </span>
-                            </div>
-                          ))}
-                        </div>
+                         <div className="flex items-center gap-2">
+                            <span className="font-semibold text-gray-700">Petugas:</span>
+                            {sch.className ? (
+                                <span className="bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded font-medium">
+                                    Kelas {sch.className}
+                                </span>
+                            ) : (
+                                <span className="text-gray-400 italic">Tidak ada assignment</span>
+                            )}
+                         </div>
+                         {/* Fallback for legacy assignments if needed, though we moved to class based */}
+                         {sch.assignments && sch.assignments.length > 0 && (
+                             <div className="flex flex-wrap gap-2 mt-2">
+                                {sch.assignments.map((assign, idx) => (
+                                    <span key={idx} className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                                        {assign.siswa.name}
+                                    </span>
+                                ))}
+                             </div>
+                         )}
                       </div>
 
                       <button
@@ -295,87 +286,31 @@ export default function CarpetTab({ schedules }: CarpetTabProps) {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold mb-4">Buat Jadwal Karpet</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tanggal
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    value={formData.date}
-                    onChange={(e) =>
-                      setFormData({ ...formData, date: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Lokasi
-                  </label>
-                  <select
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    value={formData.zone}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        zone: e.target.value as CarpetZone,
-                      })
-                    }
-                  >
-                    <option value="FLOOR_1">Lantai 1 (Utama)</option>
-                    <option value="FLOOR_2">Lantai 2</option>
-                  </select>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tanggal
+                </label>
+                <input
+                  type="date"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  value={formData.date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, date: e.target.value })
+                  }
+                  required
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Pilih Petugas (Kelompok)
+                  Pilih Kelas Petugas (Lantai 1 & 2)
                 </label>
-                <div className="mb-2">
-                  <StudentSelector
-                    onSelect={handleAddStudent}
-                    placeholder="Cari dan klik siswa untuk menambahkan..."
-                  />
-                </div>
-
-                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 min-h-25">
-                  {formData.studentIds.length === 0 ? (
-                    <p className="text-sm text-gray-400 text-center py-4">
-                      Belum ada siswa dipilih
-                    </p>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {formData.studentIds.map((sid) => (
-                        <div
-                          key={sid}
-                          className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm flex items-center gap-2"
-                        >
-                          <span className="text-sm font-medium">
-                            ID: {sid.substring(0, 6)}...
-                          </span>
-                          {/* Ideally we show name, but we only have ID in state.
-                                        For UX, we might need a map of ID->Name, but for MVP ID is okay or we fetch details.
-                                        Wait, StudentSelector only returns ID.
-                                        Let's assume the user knows who they picked or we need to improve state.
-                                        Improvement: StudentSelector could return full object or we fetch list.
-                                    */}
-                          <button
-                            type="button"
-                            onClick={() => removeStudent(sid)}
-                            className="text-red-400 hover:text-red-600"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <ClassSelector 
+                    selectedClass={formData.className}
+                    onSelect={(val) => setFormData({...formData, className: val})}
+                />
                 <p className="text-xs text-gray-500 mt-1">
-                  * Siswa yang dipilih akan masuk dalam satu kelompok tugas.
+                  * Jadwal untuk Lantai 1 dan Lantai 2 akan dibuat secara otomatis untuk kelas ini.
                 </p>
               </div>
 

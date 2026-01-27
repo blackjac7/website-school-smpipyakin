@@ -7,6 +7,7 @@ import {
   Newspaper,
   FileText,
   Heart,
+  Clock,
 } from "lucide-react";
 import {
   Header,
@@ -38,6 +39,7 @@ import { useSidebar } from "@/hooks/useSidebar";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
 import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 import { motion } from "framer-motion";
+import LatnessScannerContent from "@/components/dashboard/osis/LatnessScannerContent";
 
 function OSISDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
@@ -71,6 +73,7 @@ function OSISDashboard() {
     { id: "activities", label: "Program Kerja (Proker)", icon: FileText },
     { id: "news", label: "Berita Kegiatan", icon: Newspaper },
     { id: "schedule", label: "Jadwal Kegiatan", icon: CalendarIcon },
+    { id: "keterlambatan", label: "Scan Keterlambatan", icon: Clock },
     { id: "ibadah", label: "Ibadah", icon: Heart },
   ];
 
@@ -270,6 +273,12 @@ function OSISDashboard() {
             </motion.div>
           )}
 
+          {activeMenu === "keterlambatan" && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <LatnessScannerContent />
+            </motion.div>
+          )}
+
           {activeMenu === "ibadah" &&
             (loadingWorship ? (
               <div className="flex justify-center items-center h-64">
@@ -281,6 +290,7 @@ function OSISDashboard() {
                   menstruationRecords={worshipData.menstruation}
                   adzanSchedules={worshipData.adzan}
                   carpetSchedules={worshipData.carpet}
+                  onRefresh={fetchWorshipData}
                 />
               </motion.div>
             ))}

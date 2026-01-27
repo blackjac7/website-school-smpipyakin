@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { Trophy, Medal, Award, LucideIcon, Home, BookOpen } from "lucide-react";
+import { Trophy, Medal, Award, LucideIcon, Home, BookOpen, QrCode } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   AchievementsSection,
@@ -41,6 +41,7 @@ import {
   AchievementInput,
 } from "@/actions/student/achievements";
 import { LoadingEffect } from "@/components/shared";
+import StudentQRCode from "@/components/dashboard/siswa/StudentQRCode";
 
 interface AchievementFormData {
   title: string;
@@ -68,7 +69,7 @@ interface Work {
 function SiswaDashboardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const validTabs = ["dashboard", "achievements", "works"];
+  const validTabs = ["dashboard", "achievements", "works", "qrcode"];
   const tabParam = searchParams.get("tab");
   const currentTab = validTabs.includes(tabParam || "")
     ? tabParam || "dashboard"
@@ -102,6 +103,7 @@ function SiswaDashboardContent() {
     { id: "dashboard", label: "Dashboard", icon: Home },
     { id: "achievements", label: "Prestasi", icon: Trophy },
     { id: "works", label: "Karya", icon: BookOpen },
+    { id: "qrcode", label: "QR Code Saya", icon: QrCode },
   ];
   const [profileData, setProfileData] = useState<ProfileData>({
     id: "",
@@ -433,6 +435,15 @@ function SiswaDashboardContent() {
             onEditClick={handleEditWork}
             onDeleteClick={handleDeleteWork}
           />
+        );
+      case "qrcode":
+        return (
+          <div className="flex flex-col items-center">
+            <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl p-8 shadow-xl">
+              <h2 className="text-xl font-bold text-white text-center mb-6">QR Code Absensi</h2>
+              <StudentQRCode siswaId={profileData.id} />
+            </div>
+          </div>
         );
       default:
         return null;

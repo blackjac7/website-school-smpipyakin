@@ -1,18 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle, FileText, Settings, Users } from "lucide-react";
+import { CheckCircle, Settings, Users, QrCode, FileText } from "lucide-react";
 import {
   Header,
   AlertCard,
   ContentList,
-  ReportsContent,
+  // ReportsContent, // Removed, used in wrapper
   SettingsContent,
   PreviewModal,
   ValidationModal,
   MenuItem,
   ContentItem,
   StudentManagement,
+  ReportsWrapper, // Added
 } from "@/components/dashboard/kesiswaan";
 import { DashboardSidebar } from "@/components/dashboard/layout";
 import LoadingEffect from "@/components/shared/LoadingEffect";
@@ -30,6 +31,8 @@ import {
 } from "@/actions/kesiswaan/notifications";
 import toast from "react-hot-toast";
 import { useSidebar } from "@/hooks/useSidebar";
+import QRCodePrintContent from "@/components/dashboard/kesiswaan/QRCodePrintContent";
+// import LatenessReportsContent from "@/components/dashboard/kesiswaan/LatenessReportsContent"; // Removed, used in wrapper
 
 interface DashboardClientProps {
   initialQueueResult: ValidationQueueResult;
@@ -177,7 +180,8 @@ export default function DashboardClient({
         undefined,
     },
     { id: "students", label: "Data Siswa", icon: Users },
-    { id: "reports", label: "Laporan", icon: FileText },
+    { id: "qr-siswa", label: "Cetak QR Siswa", icon: QrCode },
+    { id: "reports", label: "Laporan", icon: FileText }, // Consolidated menu
     { id: "settings", label: "Pengaturan", icon: Settings },
   ];
 
@@ -324,8 +328,9 @@ export default function DashboardClient({
             </div>
           )}
           {activeMenu === "students" && <StudentManagement />}
+          {activeMenu === "qr-siswa" && <QRCodePrintContent />}
           {activeMenu === "reports" && (
-            <ReportsContent reportStats={initialStats} />
+             <ReportsWrapper reportStats={initialStats} />
           )}
           {activeMenu === "settings" && <SettingsContent />}
         </main>

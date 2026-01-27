@@ -16,6 +16,7 @@ interface PageProps {
   adzanSchedules: any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   carpetSchedules: any[];
+  onRefresh?: () => void;
 }
 
 // Separate client component to handle tabs and interactivity
@@ -23,6 +24,7 @@ export default function ReligiousDashboardClient({
   menstruationRecords,
   adzanSchedules,
   carpetSchedules,
+  onRefresh
 }: PageProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -33,7 +35,7 @@ export default function ReligiousDashboardClient({
   const tabs = [
     {
       id: "menstruation",
-      label: "Absensi Haid",
+      label: "Absensi Sholat Putri",
       icon: Heart,
       color: "text-pink-600",
       bg: "bg-pink-100",
@@ -110,7 +112,7 @@ export default function ReligiousDashboardClient({
 
         <ExportButton
           data={exportData}
-          filename={`Laporan_${activeTab}`}
+          filename={`Laporan_${activeTab === 'menstruation' ? 'Absensi_Sholat_Putri' : activeTab}`}
           type={exportType}
         />
       </div>
@@ -118,10 +120,10 @@ export default function ReligiousDashboardClient({
       {/* Content */}
       <div className="min-h-125">
         {activeTab === "menstruation" && (
-          <MenstruationTab records={menstruationRecords} />
+          <MenstruationTab records={menstruationRecords} onRefresh={onRefresh} />
         )}
-        {activeTab === "adzan" && <AdzanTab schedules={adzanSchedules} />}
-        {activeTab === "carpet" && <CarpetTab schedules={carpetSchedules} />}
+        {activeTab === "adzan" && <AdzanTab schedules={adzanSchedules} onRefresh={onRefresh} />}
+        {activeTab === "carpet" && <CarpetTab schedules={carpetSchedules} onRefresh={onRefresh} />}
       </div>
     </div>
   );
