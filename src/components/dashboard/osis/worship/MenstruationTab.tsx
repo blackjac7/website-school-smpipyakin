@@ -37,9 +37,10 @@ interface MenstruationRecord {
 
 interface MenstruationTabProps {
   records: MenstruationRecord[];
+  onRefresh?: () => void;
 }
 
-export default function MenstruationTab({ records }: MenstruationTabProps) {
+export default function MenstruationTab({ records, onRefresh }: MenstruationTabProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
@@ -85,6 +86,7 @@ export default function MenstruationTab({ records }: MenstruationTabProps) {
         startDate: new Date().toISOString().split("T")[0],
         notes: "",
       });
+      if (onRefresh) onRefresh();
     } catch (error) {
       console.error(error);
       toast.error("Gagal menyimpan data");
@@ -113,6 +115,7 @@ export default function MenstruationTab({ records }: MenstruationTabProps) {
             notes: record.notes || undefined, // Fix: Convert null to undefined
           });
           toast.success("Status diperbarui");
+          if (onRefresh) onRefresh();
         } catch (error) {
           console.error(error);
           toast.error("Gagal update status");
@@ -135,6 +138,7 @@ export default function MenstruationTab({ records }: MenstruationTabProps) {
         try {
           await deleteMenstruationRecord(id);
           toast.success("Data dihapus");
+          if (onRefresh) onRefresh();
         } catch (error) {
           console.error(error);
           toast.error("Gagal menghapus");
@@ -147,7 +151,7 @@ export default function MenstruationTab({ records }: MenstruationTabProps) {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-gray-700">
-          Pencatatan Haid Siswi
+          Absensi Sholat Putri
         </h3>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -175,6 +179,9 @@ export default function MenstruationTab({ records }: MenstruationTabProps) {
               </th>
               <th className="px-6 py-3 text-left text-sm font-semibold">
                 Status/Peringatan
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">
+                Keterangan
               </th>
               <th className="px-6 py-3 text-right text-sm font-semibold">
                 Aksi
@@ -333,7 +340,7 @@ export default function MenstruationTab({ records }: MenstruationTabProps) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Catatan (Opsional)
+                  Keterangan (Opsional)
                 </label>
                 <textarea
                   className="w-full p-2 border border-gray-300 rounded-md"

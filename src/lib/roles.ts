@@ -8,6 +8,7 @@ export const TOKEN_TO_USERROLE_MAP: Record<string, UserRole> = {
   osis: UserRole.OSIS,
   kesiswaan: UserRole.KESISWAAN,
   ppdb_admin: UserRole.PPDB_ADMIN,
+  pembina_osis: UserRole.PEMBINA_OSIS,
 };
 
 export type RoleLike = string | UserRole | undefined | null;
@@ -88,6 +89,13 @@ export function isOsisRole(role?: RoleLike): boolean {
  */
 export function isPpdbAdminRole(role?: RoleLike): boolean {
   return tokenRoleToUserRole(role) === UserRole.PPDB_ADMIN;
+}
+
+/**
+ * Convenience check for pembina osis role
+ */
+export function isPembinaOsisRole(role?: RoleLike): boolean {
+  return tokenRoleToUserRole(role) === UserRole.PEMBINA_OSIS;
 }
 
 /**

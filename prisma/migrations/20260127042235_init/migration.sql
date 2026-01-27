@@ -2,7 +2,7 @@
 CREATE TYPE "teacher_category" AS ENUM ('pimpinan', 'guru_mapel', 'staff');
 
 -- CreateEnum
-CREATE TYPE "user_role" AS ENUM ('admin', 'siswa', 'osis', 'kesiswaan', 'ppdb_admin');
+CREATE TYPE "user_role" AS ENUM ('admin', 'siswa', 'osis', 'kesiswaan', 'ppdb_admin', 'pembina_osis');
 
 -- CreateEnum
 CREATE TYPE "gender_type" AS ENUM ('male', 'female');
@@ -71,6 +71,7 @@ CREATE TABLE "siswa" (
     "parent_name" TEXT,
     "parent_phone" TEXT,
     "class" TEXT,
+    "qr_token" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -313,6 +314,19 @@ CREATE TABLE "login_attempts" (
 );
 
 -- CreateTable
+CREATE TABLE "lateness_records" (
+    "id" TEXT NOT NULL,
+    "siswa_id" TEXT NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "arrival_time" TEXT NOT NULL,
+    "reason" TEXT,
+    "recorded_by" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "lateness_records_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "notifications" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -359,6 +373,7 @@ CREATE TABLE "worship_carpet_schedules" (
     "date" TIMESTAMP(3) NOT NULL,
     "zone" "carpet_zone" NOT NULL,
     "status" "task_status" NOT NULL DEFAULT 'pending',
+    "class_name" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -419,6 +434,9 @@ CREATE UNIQUE INDEX "siswa_userId_key" ON "siswa"("userId");
 CREATE UNIQUE INDEX "siswa_nisn_key" ON "siswa"("nisn");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "siswa_qr_token_key" ON "siswa"("qr_token");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "kesiswaan_userId_key" ON "kesiswaan"("userId");
 
 -- CreateIndex
@@ -438,6 +456,15 @@ CREATE INDEX "login_attempts_success_createdAt_idx" ON "login_attempts"("success
 
 -- CreateIndex
 CREATE INDEX "login_attempts_resolved_createdAt_idx" ON "login_attempts"("resolved", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "lateness_records_siswa_id_date_idx" ON "lateness_records"("siswa_id", "date");
+
+-- CreateIndex
+CREATE INDEX "lateness_records_date_idx" ON "lateness_records"("date");
+
+-- CreateIndex
+CREATE INDEX "lateness_records_recorded_by_idx" ON "lateness_records"("recorded_by");
 
 -- CreateIndex
 CREATE INDEX "notifications_userId_read_createdAt_idx" ON "notifications"("userId", "read", "createdAt");
@@ -465,6 +492,12 @@ ALTER TABLE "student_achievements" ADD CONSTRAINT "student_achievements_siswa_id
 
 -- AddForeignKey
 ALTER TABLE "student_works" ADD CONSTRAINT "student_works_siswa_id_fkey" FOREIGN KEY ("siswa_id") REFERENCES "siswa"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "lateness_records" ADD CONSTRAINT "lateness_records_siswa_id_fkey" FOREIGN KEY ("siswa_id") REFERENCES "siswa"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "lateness_records" ADD CONSTRAINT "lateness_records_recorded_by_fkey" FOREIGN KEY ("recorded_by") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

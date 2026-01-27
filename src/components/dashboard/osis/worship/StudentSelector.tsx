@@ -6,6 +6,7 @@ import { Search, X, User, Loader2 } from "lucide-react";
 interface StudentOption {
   value: string;
   label: string;
+  class: string;
 }
 
 interface StudentSelectorProps {
@@ -69,9 +70,11 @@ export default function StudentSelector({
       }
 
       const lowerQuery = query.toLowerCase();
+      // Filter then sort by class to keep grouping intact
       const filtered = allStudents
         .filter((student) => student.label.toLowerCase().includes(lowerQuery))
-        .slice(0, 10); // Limit to 10 results for performance
+        .sort((a, b) => a.class.localeCompare(b.class))
+        .slice(0, 50); // Increased limit slightly to show more results in groups
 
       setFilteredStudents(filtered);
       setHighlightedIndex(-1);
@@ -199,11 +202,16 @@ export default function StudentSelector({
 
       {/* Selected indicator */}
       {selectedStudent && (
-        <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-          <User className="h-4 w-4 text-blue-600" />
-          <span className="text-sm text-blue-800 font-medium">
-            {selectedStudent.label}
-          </span>
+        <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-pink-50 border border-pink-200 rounded-lg">
+          <User className="h-4 w-4 text-pink-600" />
+          <div className="flex flex-col">
+            <span className="text-sm text-pink-900 font-medium">
+              {selectedStudent.label}
+            </span>
+            <span className="text-xs text-pink-600">
+                {selectedStudent.class}
+            </span>
+          </div>
         </div>
       )}
 
@@ -221,21 +229,31 @@ export default function StudentSelector({
             </div>
           ) : (
             <ul className="py-1">
-              {filteredStudents.map((student, index) => (
-                <li
-                  key={student.value}
-                  onClick={() => handleSelect(student)}
-                  className={`px-4 py-2.5 cursor-pointer flex items-center gap-3 transition-colors
-                    ${index === highlightedIndex ? "bg-blue-50 text-blue-700" : "hover:bg-gray-50"}
-                    ${selectedStudent?.value === student.value ? "bg-blue-100" : ""}
-                  `}
-                >
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 text-gray-500" />
-                  </div>
-                  <span className="text-sm">{student.label}</span>
-                </li>
-              ))}
+              {filteredStudents.map((student, index) => {
+                const showHeader = index === 0 || student.class !== filteredStudents[index - 1].class;
+                
+                return (
+                  <li key={student.value}>
+                    {showHeader && (
+                      <div className="px-4 py-1 bg-gray-100 text-xs font-semibold text-gray-500 sticky top-0 z-10">
+                        {student.class}
+                      </div>
+                    )}
+                    <div
+                      onClick={() => handleSelect(student)}
+                      className={`px-4 py-2.5 cursor-pointer flex items-center gap-3 transition-colors
+                        ${index === highlightedIndex ? "bg-blue-50 text-blue-700" : "hover:bg-gray-50"}
+                        ${selectedStudent?.value === student.value ? "bg-blue-100" : ""}
+                      `}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <User className="w-4 h-4 text-gray-500" />
+                      </div>
+                      <span className="text-sm">{student.label}</span>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
           {filteredStudents.length > 0 && (

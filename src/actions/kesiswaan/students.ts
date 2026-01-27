@@ -312,3 +312,222 @@ export async function getStudentStats(): Promise<{
     return { totalStudents: 0, maleCount: 0, femaleCount: 0, byClass: [] };
   }
 }
+
+// Input validation schemas
+const CreateStudentSchema = z.object({
+  name: z.string().min(1, "Nama wajib diisi"),
+  nisn: z.string().min(10, "NISN minimal 10 digit"),
+  gender: z.enum(["MALE", "FEMALE"]),
+  class: z.string().min(1, "Kelas wajib diisi"),
+  birthDate: z.string().min(1, "Tanggal lahir wajib diisi"), // YYYY-MM-DD
+  email: z.string().email("Email tidak valid").optional().or(z.literal("")),
+  phone: z.string().optional(),
+  parentName: z.string().optional(),
+  parentPhone: z.string().optional(),
+  address: z.string().optional(),
+  birthPlace: z.string().optional(),
+});
+
+type CreateStudentInput = z.infer<typeof CreateStudentSchema>;
+
+/**
+ * Create a single student
+ * Creates both User (role: SISWA) and Siswa profile
+ */
+export async function createStudent(data: CreateStudentInput) {
+  try {
+    const auth = await verifyKesiswaanRole();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
+    const validation = CreateStudentSchema.safeParse(data);
+    if (!validation.success) {
+      return {
+        success: false,
+        error: validation.error.issues[0].message,
+      };
+    }
+
+    const {
+      name,
+      nisn,
+      gender,
+      class: className,
+      birthDate,
+      email,
+      phone,
+      parentName,
+      parentPhone,
+      address,
+      birthPlace,
+    } = validation.data;
+
+    // Check if NISN already exists
+    const existingStudent = await prisma.siswa.findFirst({
+      where: { nisn },
+    });
+
+    if (existingStudent) {
+      return { success: false, error: "NISN sudah terdaftar" };
+    }
+
+    // Check if Username already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { username: nisn },
+    });
+
+    if (existingUser) {
+      return { success: false, error: "Username (NISN) sudah digunakan" };
+    }
+
+    // Generate Password: NISN@YearOfBirth (e.g., 0056972403@2010)
+    const birthYear = new Date(birthDate).getFullYear();
+    const rawPassword = `${nisn}@${birthYear}`;
+    const hashedPassword = await import("bcryptjs").then((bcrypt) =>
+      bcrypt.hash(rawPassword, 10)
+    );
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Create User
+      const newUser = await tx.user.create({
+        data: {
+          username: nisn,
+          email: email || null,
+          password: hashedPassword,
+          role: "SISWA",
+        },
+      });
+
+      // 2. Create Siswa Profile
+      await tx.siswa.create({
+        data: {
+          userId: newUser.id,
+          name,
+          nisn,
+          class: className,
+          gender: gender as GenderType,
+          birthDate: new Date(birthDate),
+          birthPlace,
+          phone,
+          address,
+          parentName,
+          parentPhone,
+          email, // redundant but in schema
+          year: new Date().getFullYear(), // Entry year
+          osisAccess: false,
+        },
+      });
+    });
+
+    return { success: true, message: "Siswa berhasil ditambahkan" };
+  } catch (error) {
+    console.error("createStudent error:", error);
+    return { success: false, error: "Gagal menambahkan siswa" };
+  }
+}
+
+/**
+ * Bulk create students from Excel data
+ */
+export async function bulkCreateStudents(students: CreateStudentInput[]) {
+  try {
+    const auth = await verifyKesiswaanRole();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
+    if (!students.length) {
+      return { success: false, error: "Data kosong" };
+    }
+
+    // Validate all rows first
+    const errors: string[] = [];
+    const validStudents: CreateStudentInput[] = [];
+
+    students.forEach((student, index) => {
+      const validation = CreateStudentSchema.safeParse(student);
+      if (!validation.success) {
+        errors.push(
+          `Baris ${index + 1}: ${validation.error.issues[0].message}`
+        );
+      } else {
+        validStudents.push(validation.data);
+      }
+    });
+
+    if (errors.length > 0) {
+      return {
+        success: false,
+        error: "Validasi gagal",
+        details: errors,
+      };
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+    const processErrors: string[] = [];
+    const bcrypt = await import("bcryptjs");
+
+    for (const student of validStudents) {
+      try {
+        const existing = await prisma.siswa.findFirst({
+            where: { nisn: student.nisn }
+        });
+        
+        if (existing) {
+            failCount++;
+            processErrors.push(`NISN ${student.nisn} sudah terdaftar`);
+            continue;
+        }
+
+        const birthYear = new Date(student.birthDate).getFullYear();
+        const rawPassword = `${student.nisn}@${birthYear}`;
+        const hashedPassword = await bcrypt.hash(rawPassword, 10);
+
+        await prisma.$transaction(async (tx) => {
+            const newUser = await tx.user.create({
+                data: {
+                    username: student.nisn,
+                    email: student.email || null,
+                    password: hashedPassword,
+                    role: "SISWA",
+                }
+            });
+
+            await tx.siswa.create({
+                data: {
+                    userId: newUser.id,
+                    name: student.name,
+                    nisn: student.nisn,
+                    class: student.class,
+                    gender: student.gender as GenderType,
+                    birthDate: new Date(student.birthDate),
+                    birthPlace: student.birthPlace,
+                    phone: student.phone,
+                    address: student.address,
+                    parentName: student.parentName,
+                    parentPhone: student.parentPhone,
+                    email: student.email,
+                    year: new Date().getFullYear(),
+                }
+            });
+        });
+        successCount++;
+      } catch (err) {
+        failCount++;
+        processErrors.push(`Gagal memproses ${student.name} (${student.nisn}): ${(err as Error).message}`);
+      }
+    }
+
+    return {
+      success: true,
+      message: `Proses selesai. Berhasil: ${successCount}, Gagal: ${failCount}`,
+      details: processErrors,
+    };
+
+  } catch (error) {
+    console.error("bulkCreateStudents error:", error);
+    return { success: false, error: "Terjadi kesalahan server saat proses import" };
+  }
+}

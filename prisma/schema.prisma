@@ -32,6 +32,7 @@ model User {
   schoolActivities    SchoolActivity[]     @relation("ActivityCreator")
   osisActivities      OsisActivity[]       @relation("OsisActivityCreator")
   notifications       Notification[]
+  latenessRecords     LatenessRecord[]     @relation("LatenessRecorder")
 
   @@map("users")
 }
@@ -59,6 +60,9 @@ model Siswa {
   parentName  String?     @map("parent_name")
   parentPhone String?     @map("parent_phone")
   class       String?
+  
+  // QR Code for lateness tracking
+  qrToken     String?     @unique @map("qr_token")
 
   // Timestamps
   createdAt   DateTime    @default(now())
@@ -68,6 +72,7 @@ model Siswa {
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   achievements    StudentAchievement[]
   works           StudentWork[]
+  latenessRecords LatenessRecord[]
 
   // Religious Activities
   menstruationRecords WorshipMenstruationRecord[]
@@ -359,6 +364,7 @@ enum UserRole {
   OSIS           @map("osis")
   KESISWAAN      @map("kesiswaan")
   PPDB_ADMIN     @map("ppdb_admin")
+  PEMBINA_OSIS   @map("pembina_osis")
 
   @@map("user_role")
 }
@@ -450,6 +456,30 @@ model LoginAttempt {
 }
 
 // =============================================
+// LATENESS TRACKING SYSTEM
+// =============================================
+
+model LatenessRecord {
+  id          String    @id @default(uuid())
+  siswaId     String    @map("siswa_id")
+  date        DateTime  @default(now())
+  arrivalTime String    @map("arrival_time") // Format: "HH:mm" (e.g., "07:35")
+  reason      String?   // Alasan terlambat (optional)
+  recordedBy  String    @map("recorded_by") // User ID who scanned
+
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  siswa       Siswa     @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+  recorder    User      @relation("LatenessRecorder", fields: [recordedBy], references: [id])
+
+  @@index([siswaId, date])
+  @@index([date])
+  @@index([recordedBy])
+  @@map("lateness_records")
+}
+
+// =============================================
 // NOTIFICATION SYSTEM
 // =============================================
 
@@ -514,6 +544,7 @@ model WorshipCarpetSchedule {
   date        DateTime
   zone        CarpetZone
   status      TaskStatus  @default(PENDING)
+  className   String?     @map("class_name") // Class assigned to this task (e.g. "IX A")
 
   // Relations
   assignments WorshipCarpetAssignment[]

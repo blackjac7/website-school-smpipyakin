@@ -7,6 +7,8 @@ import {
 import DashboardClient from "./DashboardClient";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
+export const dynamic = 'force-dynamic';
+
 export default async function KesiswaanDashboardPage() {
   // Fetch initial data on the server
   let validationQueueResult: ValidationQueueResult = {

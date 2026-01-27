@@ -39,9 +39,10 @@ interface AdzanSchedule {
 
 interface AdzanTabProps {
   schedules: AdzanSchedule[];
+  onRefresh?: () => void;
 }
 
-export default function AdzanTab({ schedules }: AdzanTabProps) {
+export default function AdzanTab({ schedules, onRefresh }: AdzanTabProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
@@ -94,6 +95,7 @@ export default function AdzanTab({ schedules }: AdzanTabProps) {
       });
       toast.success("Jadwal ditambahkan");
       setIsModalOpen(false);
+      if (onRefresh) onRefresh();
     } catch (error) {
       console.error(error);
       toast.error("Gagal menambahkan jadwal");
@@ -105,6 +107,7 @@ export default function AdzanTab({ schedules }: AdzanTabProps) {
     try {
       await updateAdzanStatus(id, newStatus);
       toast.success("Status diperbarui");
+      if (onRefresh) onRefresh();
     } catch (error) {
       console.error(error);
       toast.error("Gagal update status");
@@ -125,6 +128,7 @@ export default function AdzanTab({ schedules }: AdzanTabProps) {
         try {
           await deleteAdzanSchedule(id);
           toast.success("Jadwal dihapus");
+          if (onRefresh) onRefresh();
         } catch (error) {
           console.error(error);
           toast.error("Gagal menghapus");

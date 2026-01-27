@@ -12,6 +12,7 @@ const PROTECTED_ROUTES = {
   "/dashboard-siswa": ["siswa"],
   "/dashboard-osis": ["osis"],
   "/dashboard-ppdb": ["ppdb_admin"],
+  "/dashboard-pembina-osis": ["pembina_osis", "admin"],
 };
 
 // Routes that should be excluded from maintenance mode
@@ -147,13 +148,11 @@ export async function middleware(request: NextRequest) {
       // IP Binding Check - Prevent session hijacking
       // Token contains the IP from login, verify it matches current request IP
       if (decoded.ip && decoded.ip !== clientIP) {
-        // Allow localhost variations in development
-        const isLocalDev =
-          process.env.NODE_ENV === "development" &&
-          isLocalhostIP(decoded.ip as string) &&
-          isLocalhostIP(clientIP);
+        // Allow localhost variations (both in development and production for local testing)
+        const isLocalhost =
+          isLocalhostIP(decoded.ip as string) && isLocalhostIP(clientIP);
 
-        if (!isLocalDev) {
+        if (!isLocalhost) {
           const loginUrl = new URL("/login", request.url);
           loginUrl.searchParams.set("error", "session_invalid");
 
@@ -252,6 +251,7 @@ export const config = {
     "/dashboard-siswa/:path*",
     "/dashboard-osis/:path*",
     "/dashboard-ppdb/:path*",
+    "/dashboard-pembina-osis/:path*",
     "/login",
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
