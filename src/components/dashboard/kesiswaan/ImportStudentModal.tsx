@@ -67,7 +67,7 @@ export default function ImportStudentModal({
       );
 
       // Simple validation of columns
-      const requiredColumns = ["Nama", "NISN", "Kelas", "Tanggal Lahir"];
+      const requiredColumns = ["Nama", "NISN", "Kelas", "Tanggal Lahir"]; // Angkatan is optional but recommended
       const missingColumns: string[] = [];
 
       if (data.length > 0) {
@@ -110,6 +110,8 @@ export default function ImportStudentModal({
           | "MALE",
         // Handle Excel Date serial or String
         birthDate: parseExcelDate(row["Tanggal Lahir"]),
+        // Map 'Angkatan' from Excel to 'year' (Entry Year) in DB
+        year: row["Angkatan"] ? parseInt(String(row["Angkatan"])) : undefined,
         email: String(row["Email"] || ""),
         phone: String(row["No. HP"] || ""),
       }));

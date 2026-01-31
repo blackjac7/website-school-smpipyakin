@@ -113,7 +113,7 @@ export async function getStudentsForKesiswaan(
     }
 
     if (angkatanFilter) {
-      conditions.push({ angkatan: angkatanFilter });
+      conditions.push({ year: angkatanFilter });
     }
 
     if (conditions.length > 0) {
@@ -211,7 +211,7 @@ export async function getAllStudentsForExport(params?: {
     }
 
     if (params?.angkatanFilter) {
-      conditions.push({ angkatan: params.angkatanFilter });
+      conditions.push({ year: params.angkatanFilter });
     }
 
     if (conditions.length > 0) {
@@ -293,15 +293,16 @@ export async function getAvailableAngkatan(): Promise<number[]> {
       return [];
     }
 
+    // Mapping 'angkatan' concept to 'year' field in data
     const angkatanList = await prisma.siswa.findMany({
-      where: { angkatan: { not: null } },
-      select: { angkatan: true },
-      distinct: ["angkatan"],
-      orderBy: { angkatan: "desc" },
+      where: { year: { not: null } },
+      select: { year: true },
+      distinct: ["year"],
+      orderBy: { year: "desc" },
     });
 
     return angkatanList
-      .map((a) => a.angkatan)
+      .map((a) => a.year)
       .filter((a): a is number => a !== null);
   } catch (error) {
     console.error("getAvailableAngkatan error:", error);
@@ -363,6 +364,7 @@ const CreateStudentSchema = z.object({
   parentPhone: z.string().optional(),
   address: z.string().optional(),
   birthPlace: z.string().optional(),
+  year: z.number().optional(), // Represents Angkatan / Entry Year
 });
 
 type CreateStudentInput = z.infer<typeof CreateStudentSchema>;
@@ -398,6 +400,7 @@ export async function createStudent(data: CreateStudentInput) {
       parentPhone,
       address,
       birthPlace,
+      year,
     } = validation.data;
 
     // Check if NISN already exists
@@ -451,7 +454,7 @@ export async function createStudent(data: CreateStudentInput) {
           parentName,
           parentPhone,
           email, // redundant but in schema
-          year: new Date().getFullYear(), // Entry year
+          year: year || new Date().getFullYear(), // Use provided year (angkatan) or current year
           osisAccess: false,
         },
       });
@@ -546,7 +549,7 @@ export async function bulkCreateStudents(students: CreateStudentInput[]) {
                     parentName: student.parentName,
                     parentPhone: student.parentPhone,
                     email: student.email,
-                    year: new Date().getFullYear(),
+                    year: student.year || new Date().getFullYear(), // Use provided year (angkatan) or current
                 }
             });
         });
