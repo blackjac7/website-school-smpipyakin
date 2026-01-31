@@ -25,6 +25,7 @@ interface UserData {
   osisAccess?: boolean;
   nip?: string;
   gender?: "MALE" | "FEMALE";
+  angkatan?: number;
 }
 
 interface UserModalProps {
@@ -78,6 +79,7 @@ export default function UserModal({
     osisAccess: false,
     nip: "",
     gender: "" as "" | "MALE" | "FEMALE",
+    angkatan: "" as string | number,
   });
 
   // Reset form when modal opens/closes or user changes
@@ -101,6 +103,7 @@ export default function UserModal({
         osisAccess: selectedUser.osisAccess || false,
         nip: selectedUser.nip || "",
         gender: selectedUser.gender || "",
+        angkatan: selectedUser.angkatan || "",
       });
     } else if (show && mode === "add") {
       setFormData({
@@ -114,6 +117,7 @@ export default function UserModal({
         osisAccess: false,
         nip: "",
         gender: "",
+        angkatan: "",
       });
     }
     setErrors({});
@@ -200,6 +204,7 @@ export default function UserModal({
           class: formData.class,
           osisAccess: formData.osisAccess,
           gender: formData.gender as "MALE" | "FEMALE" | undefined,
+          angkatan: formData.angkatan ? Number(formData.angkatan) : undefined,
         }),
         ...(formData.role === "KESISWAAN" && {
           nip: formData.nip,
@@ -519,6 +524,24 @@ export default function UserModal({
                           onChange={handleChange}
                           className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                           placeholder="Contoh: 9A, 8B, 7C"
+                        />
+                      </div>
+                      {/* Angkatan */}
+                      <div>
+                        <label
+                          htmlFor="angkatan"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                          Angkatan (Tahun Masuk)
+                        </label>
+                        <input
+                          type="number"
+                          id="angkatan"
+                          name="angkatan"
+                          value={formData.angkatan}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          placeholder="Contoh: 2024"
                         />
                       </div>
                     </div>

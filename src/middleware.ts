@@ -1,30 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { getJWTSecret } from "@/lib/jwt";
-import { isAdminRole, isRoleMatch } from "@/lib/roles";
+import { isRoleMatch } from "@/lib/roles";
+import { PROTECTED_ROUTES } from "@/lib/constants";
 
 const JWT_SECRET = getJWTSecret();
-
-// Define protected routes and their required permissions
-const PROTECTED_ROUTES = {
-  "/dashboard-admin": ["admin"],
-  "/dashboard-kesiswaan": ["kesiswaan"],
-  "/dashboard-siswa": ["siswa"],
-  "/dashboard-osis": ["osis"],
-  "/dashboard-ppdb": ["ppdb_admin"],
-  "/dashboard-pembina-osis": ["pembina_osis", "admin"],
-};
-
-// Routes that should be excluded from maintenance mode
-const MAINTENANCE_EXCLUDED_ROUTES = [
-  "/maintenance",
-  "/api",
-  "/login",
-  "/dashboard-admin",
-  "/_next",
-  "/icons",
-  "/favicon",
-];
 
 // Security headers
 function addSecurityHeaders(response: NextResponse): NextResponse {
@@ -91,34 +71,8 @@ function isLocalhostIP(ip: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const clientIP = getClientIP(request);
-
-  // Check for maintenance mode (using cookie-based flag for edge runtime compatibility)
-  const maintenanceEnabled =
-    request.cookies.get("maintenance-mode")?.value === "true";
-  const isExcludedFromMaintenance = MAINTENANCE_EXCLUDED_ROUTES.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  if (maintenanceEnabled && !isExcludedFromMaintenance) {
-    // Check if admin is logged in (they can bypass maintenance)
-    const token = request.cookies.get("auth-token")?.value;
-    let isAdmin = false;
-
-    if (token) {
-      try {
-        const { payload: decoded } = await jwtVerify(token, JWT_SECRET);
-        isAdmin = isAdminRole(decoded.role as string);
-      } catch {
-        // Token invalid, not admin
-      }
-    }
-
-    if (!isAdmin) {
-      const maintenanceUrl = new URL("/maintenance", request.url);
-      const response = NextResponse.redirect(maintenanceUrl);
-      return addSecurityHeaders(response);
-    }
-  }
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-current-path", pathname);
 
   // Check if the route is protected
   const protectedRoute = Object.keys(PROTECTED_ROUTES).find((route) =>
@@ -185,7 +139,11 @@ export async function middleware(request: NextRequest) {
       }
 
       // Add user info to headers for use in components
-      const response = NextResponse.next();
+      const response = NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      });
       response.headers.set("x-user-id", decoded.userId as string);
       response.headers.set("x-user-role", decoded.role as string);
       response.headers.set(
@@ -233,14 +191,22 @@ export async function middleware(request: NextRequest) {
         // Token is invalid, let them access login page
         console.error("Token verification error:", error);
 
-        const response = NextResponse.next();
+        const response = NextResponse.next({
+          request: {
+            headers: requestHeaders,
+          },
+        });
         response.cookies.delete("auth-token");
         return addSecurityHeaders(response);
       }
     }
   }
 
-  const response = NextResponse.next();
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
   return addSecurityHeaders(response);
 }
 

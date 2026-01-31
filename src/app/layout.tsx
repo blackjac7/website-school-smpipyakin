@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import MaintenanceGuard from "@/components/shared/MaintenanceGuard";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -103,6 +104,7 @@ export default function RootLayout({
         <StructuredData />
       </head>
       <body className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+        <MaintenanceGuard />
         <NextTopLoader
           color="#3B82F6"
           initialPosition={0.08}

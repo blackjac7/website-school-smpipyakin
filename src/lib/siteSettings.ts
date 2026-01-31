@@ -229,13 +229,28 @@ export async function updateSetting(key: string, value: string) {
 }
 
 /**
- * Update multiple settings at once
+ * Update multiple settings at once (atomic transaction)
  */
 export async function updateSettings(settings: Record<string, string>) {
-  const updates = Object.entries(settings).map(([key, value]) =>
-    updateSetting(key, value)
+  const entries = Object.entries(settings);
+
+  // Use transaction to ensure atomic updates
+  return prisma.$transaction(
+    entries.map(([key, value]) =>
+      prisma.siteSettings.upsert({
+        where: { key },
+        update: { value, updatedAt: new Date() },
+        create: {
+          key,
+          value,
+          type: DEFAULT_SETTINGS[key as SettingKey]?.type ?? "STRING",
+          category: DEFAULT_SETTINGS[key as SettingKey]?.category ?? "general",
+          description: DEFAULT_SETTINGS[key as SettingKey]?.description,
+          isPublic: DEFAULT_SETTINGS[key as SettingKey]?.isPublic ?? false,
+        },
+      })
+    )
   );
-  return Promise.all(updates);
 }
 
 /**

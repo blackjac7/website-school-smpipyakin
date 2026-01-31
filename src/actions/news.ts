@@ -41,11 +41,62 @@ export async function getAllNews() {
   try {
     const news = await prisma.news.findMany({
       orderBy: { date: "desc" },
+      include: { author: { select: { username: true, role: true } } },
     });
     return news;
   } catch (error) {
     console.error("Error fetching news:", error);
     return [];
+  }
+}
+
+export async function getAdminNewsQueue() {
+   const auth = await verifyAdminRole();
+   if (!auth.authorized) return [];
+
+   try {
+     const news = await prisma.news.findMany({
+       where: { statusPersetujuan: "PENDING" },
+       orderBy: { createdAt: "asc" },
+       include: { author: { select: { username: true, role: true } } },
+     });
+     return news;
+   } catch (error) {
+     console.error("Error fetching news queue:", error);
+     return [];
+   }
+}
+
+export async function validateNews(
+  id: string,
+  action: "APPROVE" | "REJECT",
+  note?: string
+) {
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  try {
+    const status = action === "APPROVE" ? "APPROVED" : "REJECTED";
+    
+    await prisma.news.update({
+      where: { id },
+      data: {
+        statusPersetujuan: status,
+        rejectionNote: action === "REJECT" ? note : null,
+      },
+    });
+
+    revalidatePath("/news");
+    revalidatePath("/");
+    revalidatePath("/dashboard-admin/news");
+    revalidatePath("/dashboard-osis"); 
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error validating news:", error);
+    return { success: false, error: "Failed to update news status" };
   }
 }
 
@@ -55,6 +106,7 @@ export async function getPublishedNews(limit?: number) {
       where: { statusPersetujuan: "APPROVED" },
       orderBy: { date: "desc" },
       take: limit,
+      include: { author: { select: { username: true } } },
     });
     return news;
   } catch (error) {

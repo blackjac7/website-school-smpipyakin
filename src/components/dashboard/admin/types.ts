@@ -1,11 +1,12 @@
 import { LucideIcon } from 'lucide-react';
 
 export interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: string;
   class: string;
+  angkatan?: number;
   status: 'Active' | 'Inactive';
   lastLogin: string;
   joinDate: string;

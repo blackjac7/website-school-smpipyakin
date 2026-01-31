@@ -81,10 +81,10 @@ export async function getValidationQueue(
     const totalCount = achievementsCount + worksCount + newsCount;
     const totalPages = Math.ceil(totalCount / limit);
 
-    // Fetch Achievements, Works, and OSIS News with limit
+    // Fetch Achievements and Works with limit
     // We fetch more than needed to ensure we get enough after combining and sorting
     const fetchLimit = limit * 2;
-    const [achievements, works, osisNews] = await Promise.all([
+    const [achievements, works] = await Promise.all([
       prisma.studentAchievement.findMany({
         where: whereClause,
         include: {
@@ -97,14 +97,6 @@ export async function getValidationQueue(
         where: whereClause,
         include: {
           siswa: true,
-        },
-        orderBy: { createdAt: "desc" },
-        take: fetchLimit,
-      }),
-      prisma.news.findMany({
-        where: whereClause,
-        include: {
-          author: true,
         },
         orderBy: { createdAt: "desc" },
         take: fetchLimit,
@@ -142,25 +134,10 @@ export async function getValidationQueue(
       rejectionNote: "rejectionNote" in w ? (w as { rejectionNote?: string | null }).rejectionNote ?? null : null,
     }));
 
-    const normalizedNews: ValidationItem[] = osisNews.map((n) => ({
-      id: n.id,
-      type: "news",
-      title: n.title,
-      description: n.content,
-      authorName: n.author?.username || "OSIS",
-      authorClass: null,
-      date: n.createdAt,
-      status: n.statusPersetujuan,
-      category: n.kategori === "ACHIEVEMENT" ? "Prestasi" : "Kegiatan",
-      image: n.image,
-      rejectionNote: "rejectionNote" in n ? (n as { rejectionNote?: string | null }).rejectionNote ?? null : null,
-    }));
-
     // Combine, sort by date descending, and paginate
     const allItems = [
       ...normalizedAchievements,
       ...normalizedWorks,
-      ...normalizedNews,
     ].sort((a, b) => b.date.getTime() - a.date.getTime());
 
     const skip = (page - 1) * limit;
@@ -304,31 +281,6 @@ export async function validateContent(
           note
         );
       }
-    } else if (type === "news") {
-      // Handle OSIS news validation
-      const news = await prisma.news.findUnique({
-        where: { id },
-        include: { author: { select: { id: true } } },
-      });
-
-      if (!news) {
-        return { success: false, error: "News not found" };
-      }
-
-      contentTitle = updatedContent?.title || news.title;
-      const finalContent = updatedContent?.description || news.content;
-
-      await prisma.news.update({
-        where: { id },
-        data: {
-          statusPersetujuan: status,
-          title: contentTitle,
-          content: finalContent,
-          rejectionNote,
-        },
-      });
-
-      // TODO: Send notification to OSIS user when news is approved/rejected
     }
 
     revalidatePath("/dashboard-kesiswaan");

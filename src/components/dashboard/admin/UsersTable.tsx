@@ -1,11 +1,17 @@
 import { Search, Download, UserPlus, User, Edit, Trash2 } from "lucide-react";
 import { User as UserType } from "./types";
+import { useState, useEffect } from "react";
+import {
+  getAvailableClasses,
+  getAvailableAngkatan,
+} from "@/actions/admin/users";
 
 interface UsersTableProps {
   users: UserType[];
   onAddUser: () => void;
   onEditUser: (user: UserType) => void;
-  onDeleteUser: (id: number) => void;
+  onDeleteUser: (id: string) => void;
+  currentUserId: string | null;
 }
 
 export default function UsersTable({
@@ -13,7 +19,49 @@ export default function UsersTable({
   onAddUser,
   onEditUser,
   onDeleteUser,
+  currentUserId,
 }: UsersTableProps) {
+  const [selectedRole, setSelectedRole] = useState("all");
+  const [selectedClass, setSelectedClass] = useState("all");
+  const [selectedAngkatan, setSelectedAngkatan] = useState<number | "all">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch] = useState("");
+  const [availableClasses, setAvailableClasses] = useState<string[]>([]);
+  const [availableAngkatan, setAvailableAngkatan] = useState<number[]>([]);
+  const [loadingFilters, setLoadingFilters] = useState(true);
+
+  useEffect(() => {
+    const fetchFilters = async () => {
+      setLoadingFilters(true);
+      const [classesRes, angkatanRes] = await Promise.all([
+        getAvailableClasses(),
+        getAvailableAngkatan(),
+      ]);
+
+      if (classesRes.success && classesRes.data) {
+        setAvailableClasses(classesRes.data);
+      }
+      if (angkatanRes.success && angkatanRes.data) {
+        setAvailableAngkatan(angkatanRes.data);
+      }
+      setLoadingFilters(false);
+    };
+    fetchFilters();
+  }, []);
+
+  // This useEffect would typically trigger a data fetch based on filters
+  // For this component, we assume `users` prop is already filtered by parent
+  // but the filters are managed here for UI purposes.
+  useEffect(() => {
+    // Example of how you might use these filters to fetch data
+    // getUsers({
+    //   search: debouncedSearch,
+    //   role: selectedRole,
+    //   classFilter: selectedClass,
+    //   angkatanFilter: selectedAngkatan === "all" ? undefined : selectedAngkatan,
+    // });
+  }, [debouncedSearch, selectedRole, selectedClass, selectedAngkatan]);
+
   return (
     <>
       {/* Header Actions */}
@@ -25,14 +73,46 @@ export default function UsersTable({
               type="text"
               placeholder="Cari pengguna..."
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent">
-            <option>Semua Role</option>
-            <option>Siswa</option>
-            <option>Guru</option>
-            <option>Kesiswaan</option>
-            <option>OSIS</option>
+          <select
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+            value={selectedRole}
+            onChange={(e) => setSelectedRole(e.target.value)}
+          >
+            <option value="all">Semua Role</option>
+            <option value="Siswa">Siswa</option>
+            <option value="Guru">Guru</option>
+            <option value="Kesiswaan">Kesiswaan</option>
+            <option value="OSIS">OSIS</option>
+          </select>
+          <select
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+            value={selectedClass}
+            onChange={(e) => setSelectedClass(e.target.value)}
+            disabled={loadingFilters}
+          >
+            <option value="all">Semua Kelas</option>
+            {availableClasses.map((cls) => (
+              <option key={cls} value={cls}>
+                {cls}
+              </option>
+            ))}
+          </select>
+          <select
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+            value={selectedAngkatan}
+            onChange={(e) => setSelectedAngkatan(parseInt(e.target.value) || "all")}
+            disabled={loadingFilters}
+          >
+            <option value="all">Semua Angkatan</option>
+            {availableAngkatan.map((angkatan) => (
+              <option key={angkatan} value={angkatan}>
+                {angkatan}
+              </option>
+            ))}
           </select>
         </div>
         <div className="flex gap-2">
@@ -99,6 +179,7 @@ export default function UsersTable({
                       {user.class !== "-" && (
                         <div className="text-xs text-gray-500 mt-1">
                           {user.class}
+                          {user.angkatan && ` • ${user.angkatan}`}
                         </div>
                       )}
                     </td>
@@ -127,8 +208,11 @@ export default function UsersTable({
                         </button>
                         <button
                           onClick={() => onDeleteUser(user.id)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Hapus"
+                          className={`text-red-600 hover:text-red-900 ${
+                            user.id === currentUserId ? "opacity-30 cursor-not-allowed" : ""
+                          }`}
+                          title={user.id === currentUserId ? "Anda tidak dapat menghapus akun sendiri" : "Hapus"}
+                          disabled={user.id === currentUserId}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

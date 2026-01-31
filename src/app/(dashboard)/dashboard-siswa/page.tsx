@@ -440,7 +440,7 @@ function SiswaDashboardContent() {
         return (
           <div className="flex flex-col items-center">
             <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl p-8 shadow-xl">
-              <h2 className="text-xl font-bold text-white text-center mb-6">QR Code Absensi</h2>
+              <h2 className="text-xl font-bold text-white text-center mb-6">QR Code Siswa</h2>
               <StudentQRCode siswaId={profileData.id} />
             </div>
           </div>

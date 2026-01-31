@@ -12,4 +12,5 @@ export interface User {
   osisAccess?: boolean;
   nip?: string;
   gender?: "MALE" | "FEMALE";
+  angkatan?: number;
 }

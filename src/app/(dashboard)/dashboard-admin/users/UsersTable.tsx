@@ -42,6 +42,7 @@ interface UsersTableProps {
   onRoleFilter?: (role: string) => void;
   onClassFilter?: (classValue: string) => void;
   availableClasses?: string[];
+  currentUserId?: string | null;
 }
 
 // Only used for client-side pagination fallback
@@ -64,6 +65,7 @@ export default function UsersTable({
   onRoleFilter,
   onClassFilter,
   availableClasses = [],
+  currentUserId,
 }: UsersTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
@@ -486,9 +488,12 @@ export default function UsersTable({
                       <td className="px-4 py-4 w-12">
                         <button
                           onClick={() => handleSelectUser(user.id)}
-                          className="p-1 rounded hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className={`p-1 rounded hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${user.id === currentUserId ? "opacity-30 cursor-not-allowed" : ""}`}
+                          disabled={user.id === currentUserId}
                           aria-label={
-                            selectedIds.has(user.id)
+                            user.id === currentUserId
+                              ? "Anda tidak dapat memilih akun sendiri"
+                              : selectedIds.has(user.id)
                               ? `Batal pilih ${user.name}`
                               : `Pilih ${user.name}`
                           }
@@ -579,9 +584,10 @@ export default function UsersTable({
                         </button>
                         <button
                           onClick={() => onDeleteUser(user.id)}
-                          className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors focus:ring-2 focus:ring-red-300 focus:outline-none"
-                          aria-label={`Hapus pengguna ${user.name}`}
-                          title="Hapus"
+                          className={`p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors focus:ring-2 focus:ring-red-300 focus:outline-none ${user.id === currentUserId ? "opacity-30 cursor-not-allowed" : ""}`}
+                          aria-label={user.id === currentUserId ? "Anda tidak dapat menghapus akun sendiri" : `Hapus pengguna ${user.name}`}
+                          title={user.id === currentUserId ? "Anda tidak dapat menghapus akun sendiri" : "Hapus"}
+                          disabled={user.id === currentUserId}
                         >
                           <Trash2 className="w-4 h-4" aria-hidden="true" />
                         </button>

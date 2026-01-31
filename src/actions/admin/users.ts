@@ -30,6 +30,16 @@ async function verifyAdminRole() {
   }
 
   return { authorized: true, user };
+  return { authorized: true, user };
+}
+
+/**
+ * Get current authenticated user ID
+ * Useful for client components to know who is logged in
+ */
+export async function getCurrentUserId() {
+  const user = await getAuthenticatedUser();
+  return user?.userId || null;
 }
 
 // Schema for creating/updating a user
@@ -43,6 +53,7 @@ const UserSchema = z.object({
   // Specific fields
   nisn: z.string().optional(), // For Siswa
   class: z.string().optional(), // For Siswa
+  angkatan: z.coerce.number().optional(), // For Siswa
   osisAccess: z.boolean().optional(), // For Siswa
   nip: z.string().optional(), // For Kesiswaan
   gender: z.enum(["MALE", "FEMALE"]).optional(),
@@ -57,6 +68,7 @@ export interface GetUsersParams {
   search?: string;
   role?: string;
   classFilter?: string;
+  angkatanFilter?: number;
 }
 
 // Response type with pagination info
@@ -77,6 +89,7 @@ export interface PaginatedUsersResponse {
       osisAccess: boolean;
       nip?: string;
       gender?: string;
+      angkatan?: number;
     }>;
     pagination: {
       page: number;
@@ -102,6 +115,7 @@ export async function getUsers(
     search = "",
     role = "",
     classFilter = "",
+    angkatanFilter,
   } = params || {};
 
   try {
@@ -119,6 +133,14 @@ export async function getUsers(
       where.siswa = {
         ...where.siswa,
         class: classFilter,
+      };
+    }
+
+    // Angkatan filter - for students
+    if (angkatanFilter) {
+      where.siswa = {
+        ...where.siswa,
+        year: angkatanFilter,
       };
     }
 
@@ -173,6 +195,7 @@ export async function getUsers(
           osisAccess: user.siswa?.osisAccess || false,
           nip: user.kesiswaan?.nip,
           gender: user.siswa?.gender || user.kesiswaan?.gender,
+          angkatan: user.siswa?.year || undefined,
         })),
         pagination: {
           page,
@@ -220,6 +243,7 @@ export async function getUsersForExport() {
             class: user.siswa.class,
             gender: user.siswa.gender,
             osisAccess: user.siswa.osisAccess,
+            angkatan: user.siswa.year,
           }
         : undefined,
       kesiswaan: user.kesiswaan
@@ -291,6 +315,52 @@ export async function getAvailableClasses(): Promise<{
   }
 }
 
+/**
+ * Get available angkatan for filter dropdown
+ */
+export async function getAvailableAngkatan(): Promise<{
+  success: boolean;
+  data?: number[];
+  error?: string;
+}> {
+  const auth = await verifyAdminRole();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  try {
+    const angkatanList = await prisma.siswa.findMany({
+      where: {
+        year: {
+          not: null,
+        },
+      },
+      select: {
+        year: true,
+      },
+      distinct: ["year"],
+      orderBy: {
+        year: "desc",
+      },
+    });
+
+    const uniqueAngkatan = angkatanList
+      .map((a) => a.year)
+      .filter((a): a is number => a !== null);
+
+    return {
+      success: true,
+      data: uniqueAngkatan,
+    };
+  } catch (error) {
+    console.error("Failed to get available angkatan:", error);
+    return {
+      success: false,
+      error: "Gagal mengambil data angkatan",
+    };
+  }
+}
+
 export async function createUser(data: UserFormData) {
   // Verify admin authorization
   const auth = await verifyAdminRole();
@@ -352,6 +422,7 @@ export async function createUser(data: UserFormData) {
             name,
             nisn: result.data.nisn,
             class: result.data.class,
+            year: result.data.angkatan,
             gender: (gender as GenderType) || "MALE",
             osisAccess: result.data.osisAccess || false,
           },
@@ -437,6 +508,7 @@ export async function updateUser(userId: string, data: UserFormData) {
               name: data.name,
               nisn: data.nisn,
               class: data.class,
+              year: data.angkatan,
               osisAccess: data.osisAccess,
               gender: data.gender as GenderType,
             },
@@ -452,6 +524,7 @@ export async function updateUser(userId: string, data: UserFormData) {
               name: data.name,
               nisn: data.nisn,
               class: data.class,
+              year: data.angkatan,
               osisAccess: data.osisAccess || false,
               gender: (data.gender as GenderType) || "MALE",
             },
@@ -500,6 +573,10 @@ export async function deleteUser(userId: string) {
   }
 
   try {
+    if (auth.user?.userId === userId) {
+        return { success: false, error: "Anda tidak dapat menghapus akun Anda sendiri" };
+    }
+
     await prisma.user.delete({
       where: { id: userId },
     });
@@ -526,21 +603,28 @@ export async function bulkDeleteUsers(userIds: string[]) {
   }
 
   try {
+    // Filter out self if included
+    const idsToDelete = userIds.filter(id => id !== auth.user?.userId);
+    
+    if (idsToDelete.length === 0) {
+        return { success: false, error: "Tidak ada pengguna yang dapat dihapus (Anda tidak dapat menghapus diri sendiri)" };
+    }
+
     // Delete users in a transaction
     const result = await prisma.$transaction(async (tx) => {
       // First delete related records (Siswa, Kesiswaan) - cascade should handle this
       // but we explicitly delete to be safe
       await tx.siswa.deleteMany({
-        where: { userId: { in: userIds } },
+        where: { userId: { in: idsToDelete } },
       });
 
       await tx.kesiswaan.deleteMany({
-        where: { userId: { in: userIds } },
+        where: { userId: { in: idsToDelete } },
       });
 
       // Then delete the users
       const deleted = await tx.user.deleteMany({
-        where: { id: { in: userIds } },
+        where: { id: { in: idsToDelete } },
       });
 
       return deleted;

@@ -13,6 +13,7 @@ const GetStudentsSchema = z.object({
   search: z.string().optional(),
   classFilter: z.string().optional(),
   genderFilter: z.enum(["all", "MALE", "FEMALE"]).optional(),
+  angkatanFilter: z.coerce.number().optional(),
 });
 
 export type StudentData = {
@@ -85,7 +86,8 @@ export async function getStudentsForKesiswaan(
       };
     }
 
-    const { page, limit, search, classFilter, genderFilter } = validation.data;
+    const { page, limit, search, classFilter, genderFilter, angkatanFilter } =
+      validation.data;
     const skip = (page - 1) * limit;
 
     // Build where clause
@@ -108,6 +110,10 @@ export async function getStudentsForKesiswaan(
 
     if (genderFilter && genderFilter !== "all") {
       conditions.push({ gender: genderFilter as GenderType });
+    }
+
+    if (angkatanFilter) {
+      conditions.push({ year: angkatanFilter });
     }
 
     if (conditions.length > 0) {
@@ -181,6 +187,7 @@ export async function getStudentsForKesiswaan(
 export async function getAllStudentsForExport(params?: {
   classFilter?: string;
   genderFilter?: string;
+  angkatanFilter?: number;
 }): Promise<{
   success: boolean;
   data: StudentData[];
@@ -201,6 +208,10 @@ export async function getAllStudentsForExport(params?: {
 
     if (params?.genderFilter && params.genderFilter !== "all") {
       conditions.push({ gender: params.genderFilter as GenderType });
+    }
+
+    if (params?.angkatanFilter) {
+      conditions.push({ year: params.angkatanFilter });
     }
 
     if (conditions.length > 0) {
@@ -273,6 +284,33 @@ export async function getAvailableClasses(): Promise<string[]> {
 }
 
 /**
+ * Get available angkatan for filter dropdown
+ */
+export async function getAvailableAngkatan(): Promise<number[]> {
+  try {
+    const auth = await verifyKesiswaanRole();
+    if (!auth.authorized) {
+      return [];
+    }
+
+    // Mapping 'angkatan' concept to 'year' field in data
+    const angkatanList = await prisma.siswa.findMany({
+      where: { year: { not: null } },
+      select: { year: true },
+      distinct: ["year"],
+      orderBy: { year: "desc" },
+    });
+
+    return angkatanList
+      .map((a) => a.year)
+      .filter((a): a is number => a !== null);
+  } catch (error) {
+    console.error("getAvailableAngkatan error:", error);
+    return [];
+  }
+}
+
+/**
  * Get student statistics for kesiswaan
  */
 export async function getStudentStats(): Promise<{
@@ -326,6 +364,7 @@ const CreateStudentSchema = z.object({
   parentPhone: z.string().optional(),
   address: z.string().optional(),
   birthPlace: z.string().optional(),
+  year: z.number().optional(), // Represents Angkatan / Entry Year
 });
 
 type CreateStudentInput = z.infer<typeof CreateStudentSchema>;
@@ -361,6 +400,7 @@ export async function createStudent(data: CreateStudentInput) {
       parentPhone,
       address,
       birthPlace,
+      year,
     } = validation.data;
 
     // Check if NISN already exists
@@ -414,7 +454,7 @@ export async function createStudent(data: CreateStudentInput) {
           parentName,
           parentPhone,
           email, // redundant but in schema
-          year: new Date().getFullYear(), // Entry year
+          year: year || new Date().getFullYear(), // Use provided year (angkatan) or current year
           osisAccess: false,
         },
       });
@@ -509,7 +549,7 @@ export async function bulkCreateStudents(students: CreateStudentInput[]) {
                     parentName: student.parentName,
                     parentPhone: student.parentPhone,
                     email: student.email,
-                    year: new Date().getFullYear(),
+                    year: student.year || new Date().getFullYear(), // Use provided year (angkatan) or current
                 }
             });
         });
