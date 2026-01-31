@@ -140,7 +140,7 @@ export async function getUsers(
     if (angkatanFilter) {
       where.siswa = {
         ...where.siswa,
-        angkatan: angkatanFilter,
+        year: angkatanFilter,
       };
     }
 
@@ -195,7 +195,7 @@ export async function getUsers(
           osisAccess: user.siswa?.osisAccess || false,
           nip: user.kesiswaan?.nip,
           gender: user.siswa?.gender || user.kesiswaan?.gender,
-          angkatan: user.siswa?.angkatan || undefined,
+          angkatan: user.siswa?.year || undefined,
         })),
         pagination: {
           page,
@@ -243,7 +243,7 @@ export async function getUsersForExport() {
             class: user.siswa.class,
             gender: user.siswa.gender,
             osisAccess: user.siswa.osisAccess,
-            angkatan: user.siswa.angkatan,
+            angkatan: user.siswa.year,
           }
         : undefined,
       kesiswaan: user.kesiswaan
@@ -331,21 +331,21 @@ export async function getAvailableAngkatan(): Promise<{
   try {
     const angkatanList = await prisma.siswa.findMany({
       where: {
-        angkatan: {
+        year: {
           not: null,
         },
       },
       select: {
-        angkatan: true,
+        year: true,
       },
-      distinct: ["angkatan"],
+      distinct: ["year"],
       orderBy: {
-        angkatan: "desc",
+        year: "desc",
       },
     });
 
     const uniqueAngkatan = angkatanList
-      .map((a) => a.angkatan)
+      .map((a) => a.year)
       .filter((a): a is number => a !== null);
 
     return {
@@ -422,7 +422,7 @@ export async function createUser(data: UserFormData) {
             name,
             nisn: result.data.nisn,
             class: result.data.class,
-            angkatan: result.data.angkatan,
+            year: result.data.angkatan,
             gender: (gender as GenderType) || "MALE",
             osisAccess: result.data.osisAccess || false,
           },
@@ -508,7 +508,7 @@ export async function updateUser(userId: string, data: UserFormData) {
               name: data.name,
               nisn: data.nisn,
               class: data.class,
-              angkatan: data.angkatan,
+              year: data.angkatan,
               osisAccess: data.osisAccess,
               gender: data.gender as GenderType,
             },
@@ -524,7 +524,7 @@ export async function updateUser(userId: string, data: UserFormData) {
               name: data.name,
               nisn: data.nisn,
               class: data.class,
-              angkatan: data.angkatan,
+              year: data.angkatan,
               osisAccess: data.osisAccess || false,
               gender: (data.gender as GenderType) || "MALE",
             },
