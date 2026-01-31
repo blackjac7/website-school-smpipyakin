@@ -139,16 +139,23 @@ export default function SettingsPage() {
 
       if (ppdbRes.success && ppdbRes.data) {
         setPPDBStatus(ppdbRes.data);
+        // Safe date parsing helper
+        const safeDateToString = (dateValue: Date | string | null | undefined): string => {
+          if (!dateValue) return "";
+          try {
+            const date = new Date(dateValue);
+            if (isNaN(date.getTime())) return "";
+            return date.toISOString().split("T")[0];
+          } catch {
+            return "";
+          }
+        };
         setPPDBForm({
           enabled: ppdbRes.data.isOpen,
-          startDate: ppdbRes.data.startDate
-            ? new Date(ppdbRes.data.startDate).toISOString().split("T")[0]
-            : "",
-          endDate: ppdbRes.data.endDate
-            ? new Date(ppdbRes.data.endDate).toISOString().split("T")[0]
-            : "",
+          startDate: safeDateToString(ppdbRes.data.startDate),
+          endDate: safeDateToString(ppdbRes.data.endDate),
           academicYear: ppdbRes.data.academicYear,
-          quota: ppdbRes.data.quota,
+          quota: ppdbRes.data.quota || 100,
           closedMessage: ppdbRes.data.message,
         });
       }
@@ -441,9 +448,11 @@ export default function SettingsPage() {
                 <div className="flex justify-between text-xs text-gray-500 mb-1">
                   <span>Terisi</span>
                   <span>
-                    {Math.round(
-                      (ppdbStatus.registeredCount / ppdbStatus.quota) * 100
-                    )}
+                    {ppdbStatus.quota > 0
+                      ? Math.round(
+                          (ppdbStatus.registeredCount / ppdbStatus.quota) * 100
+                        )
+                      : 0}
                     %
                   </span>
                 </div>
@@ -457,7 +466,7 @@ export default function SettingsPage() {
                           : "bg-blue-600"
                     }`}
                     style={{
-                      width: `${Math.min(100, (ppdbStatus.registeredCount / ppdbStatus.quota) * 100)}%`,
+                      width: `${ppdbStatus.quota > 0 ? Math.min(100, (ppdbStatus.registeredCount / ppdbStatus.quota) * 100) : 0}%`,
                     }}
                   ></div>
                 </div>

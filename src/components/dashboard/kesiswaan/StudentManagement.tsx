@@ -16,11 +16,13 @@ import {
   MapPin,
   Award,
   Palette,
+  Calendar,
 } from "lucide-react";
 import {
   getStudentsForKesiswaan,
   getAllStudentsForExport,
   getAvailableClasses,
+  getAvailableAngkatan,
   getStudentStats,
   StudentData,
 } from "@/actions/kesiswaan/students";
@@ -39,7 +41,9 @@ export default function StudentManagement() {
   const [genderFilter, setGenderFilter] = useState<"all" | "MALE" | "FEMALE">(
     "all"
   );
+  const [angkatanFilter, setAngkatanFilter] = useState<number | "all">("all");
   const [availableClasses, setAvailableClasses] = useState<string[]>([]);
+  const [availableAngkatan, setAvailableAngkatan] = useState<number[]>([]);
   const [isExporting, setIsExporting] = useState(false);
 
   // Pagination
@@ -76,6 +80,7 @@ export default function StudentManagement() {
         search: searchQuery || undefined,
         classFilter: classFilter !== "all" ? classFilter : undefined,
         genderFilter: genderFilter !== "all" ? genderFilter : undefined,
+        angkatanFilter: angkatanFilter !== "all" ? angkatanFilter : undefined,
       });
 
       if (result.success) {
@@ -96,16 +101,19 @@ export default function StudentManagement() {
     searchQuery,
     classFilter,
     genderFilter,
+    angkatanFilter,
   ]);
 
   // Initial load
   useEffect(() => {
     const loadInitialData = async () => {
-      const [classesResult, statsResult] = await Promise.all([
+      const [classesResult, angkatanResult, statsResult] = await Promise.all([
         getAvailableClasses(),
+        getAvailableAngkatan(),
         getStudentStats(),
       ]);
       setAvailableClasses(classesResult);
+      setAvailableAngkatan(angkatanResult);
       setStats(statsResult);
     };
     loadInitialData();
@@ -133,6 +141,11 @@ export default function StudentManagement() {
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
+  const handleAngkatanFilterChange = (value: string) => {
+    setAngkatanFilter(value === "all" ? "all" : parseInt(value));
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
+
   // Handle page change
   const handlePageChange = (page: number) => {
     setPagination((prev) => ({ ...prev, page }));
@@ -145,12 +158,14 @@ export default function StudentManagement() {
       const result = await getAllStudentsForExport({
         classFilter: classFilter !== "all" ? classFilter : undefined,
         genderFilter: genderFilter !== "all" ? genderFilter : undefined,
+        angkatanFilter: angkatanFilter !== "all" ? angkatanFilter : undefined,
       });
 
       if (result.success && result.data.length > 0) {
         exportStudentsToExcel(result.data, {
           classFilter: classFilter !== "all" ? classFilter : undefined,
           genderFilter: genderFilter !== "all" ? genderFilter : undefined,
+          angkatanFilter: angkatanFilter !== "all" ? angkatanFilter : undefined,
         });
         toast.success(`Berhasil export ${result.data.length} data siswa`);
       } else if (result.data.length === 0) {
@@ -276,6 +291,22 @@ export default function StudentManagement() {
               <option value="MALE">Laki-laki</option>
               <option value="FEMALE">Perempuan</option>
             </select>
+
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-gray-400" />
+              <select
+                value={angkatanFilter}
+                onChange={(e) => handleAngkatanFilterChange(e.target.value)}
+                className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+              >
+                <option value="all">Semua Angkatan</option>
+                {availableAngkatan.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2">

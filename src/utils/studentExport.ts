@@ -8,6 +8,7 @@ import { StudentData } from "@/actions/kesiswaan/students";
 interface ExportOptions {
   classFilter?: string;
   genderFilter?: string;
+  angkatanFilter?: number;
 }
 
 /**
@@ -27,6 +28,9 @@ export function exportStudentsToExcel(
     filters.push(
       `Gender: ${options.genderFilter === "MALE" ? "Laki-laki" : "Perempuan"}`
     );
+  }
+  if (options?.angkatanFilter) {
+    filters.push(`Angkatan: ${options.angkatanFilter}`);
   }
   const subtitle = filters.length > 0 ? filters.join(" | ") : "Semua Data";
 

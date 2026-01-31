@@ -60,6 +60,7 @@ model Siswa {
   parentName  String?     @map("parent_name")
   parentPhone String?     @map("parent_phone")
   class       String?
+  angkatan    Int?        @map("angkatan")
   
   // QR Code for lateness tracking
   qrToken     String?     @unique @map("qr_token")

@@ -9,8 +9,9 @@ import {
   updateUser,
   deleteUser,
   bulkDeleteUsers,
-  getUsersForExport,
   getAvailableClasses,
+  getCurrentUserId,
+  getUsersForExport,
   UserFormData,
 } from "@/actions/admin/users";
 import { User } from "./types";
@@ -40,6 +41,7 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState("");
   const [classFilter, setClassFilter] = useState("");
   const [availableClasses, setAvailableClasses] = useState<string[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
@@ -73,6 +75,13 @@ export default function UsersPage() {
       }
     };
     fetchClasses();
+
+    // Fetch current user ID
+    const fetchCurrentUser = async () => {
+      const userId = await getCurrentUserId();
+      setCurrentUserId(userId);
+    };
+    fetchCurrentUser();
   }, []);
 
   useEffect(() => {
@@ -239,6 +248,7 @@ export default function UsersPage() {
         onRoleFilter={handleRoleFilter}
         onClassFilter={handleClassFilter}
         availableClasses={availableClasses}
+        currentUserId={currentUserId}
       />
 
       <UserModal

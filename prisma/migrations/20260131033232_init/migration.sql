@@ -71,6 +71,7 @@ CREATE TABLE "siswa" (
     "parent_name" TEXT,
     "parent_phone" TEXT,
     "class" TEXT,
+    "angkatan" INTEGER,
     "qr_token" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,

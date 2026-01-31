@@ -13,6 +13,7 @@ const GetStudentsSchema = z.object({
   search: z.string().optional(),
   classFilter: z.string().optional(),
   genderFilter: z.enum(["all", "MALE", "FEMALE"]).optional(),
+  angkatanFilter: z.coerce.number().optional(),
 });
 
 export type StudentData = {
@@ -85,7 +86,8 @@ export async function getStudentsForKesiswaan(
       };
     }
 
-    const { page, limit, search, classFilter, genderFilter } = validation.data;
+    const { page, limit, search, classFilter, genderFilter, angkatanFilter } =
+      validation.data;
     const skip = (page - 1) * limit;
 
     // Build where clause
@@ -108,6 +110,10 @@ export async function getStudentsForKesiswaan(
 
     if (genderFilter && genderFilter !== "all") {
       conditions.push({ gender: genderFilter as GenderType });
+    }
+
+    if (angkatanFilter) {
+      conditions.push({ angkatan: angkatanFilter });
     }
 
     if (conditions.length > 0) {
@@ -181,6 +187,7 @@ export async function getStudentsForKesiswaan(
 export async function getAllStudentsForExport(params?: {
   classFilter?: string;
   genderFilter?: string;
+  angkatanFilter?: number;
 }): Promise<{
   success: boolean;
   data: StudentData[];
@@ -201,6 +208,10 @@ export async function getAllStudentsForExport(params?: {
 
     if (params?.genderFilter && params.genderFilter !== "all") {
       conditions.push({ gender: params.genderFilter as GenderType });
+    }
+
+    if (params?.angkatanFilter) {
+      conditions.push({ angkatan: params.angkatanFilter });
     }
 
     if (conditions.length > 0) {
@@ -268,6 +279,32 @@ export async function getAvailableClasses(): Promise<string[]> {
     return classes.map((c) => c.class).filter((c): c is string => c !== null);
   } catch (error) {
     console.error("getAvailableClasses error:", error);
+    return [];
+  }
+}
+
+/**
+ * Get available angkatan for filter dropdown
+ */
+export async function getAvailableAngkatan(): Promise<number[]> {
+  try {
+    const auth = await verifyKesiswaanRole();
+    if (!auth.authorized) {
+      return [];
+    }
+
+    const angkatanList = await prisma.siswa.findMany({
+      where: { angkatan: { not: null } },
+      select: { angkatan: true },
+      distinct: ["angkatan"],
+      orderBy: { angkatan: "desc" },
+    });
+
+    return angkatanList
+      .map((a) => a.angkatan)
+      .filter((a): a is number => a !== null);
+  } catch (error) {
+    console.error("getAvailableAngkatan error:", error);
     return [];
   }
 }

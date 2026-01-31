@@ -2,7 +2,6 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import {
   getSetting,
   getSettingTyped,
@@ -164,19 +163,6 @@ export async function toggleMaintenanceMode(
     }
 
     await updateSettings(updates);
-
-    // Set cookie for middleware to check (edge runtime compatible)
-    const cookieStore = await cookies();
-    if (enabled) {
-      cookieStore.set("maintenance-mode", "true", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-      });
-    } else {
-      cookieStore.delete("maintenance-mode");
-    }
 
     revalidatePath("/");
     return {
