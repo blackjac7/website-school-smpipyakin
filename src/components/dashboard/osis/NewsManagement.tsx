@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import Image from "next/image";
 import {
   Plus,
   Trash2,
@@ -71,7 +72,7 @@ export default function NewsManagement() {
         } else {
           toast.error(res.error || "Gagal menghapus");
         }
-      }
+      },
     );
   };
 
@@ -90,7 +91,9 @@ export default function NewsManagement() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">Berita Kegiatan Sekolah</h3>
+          <h3 className="text-lg font-bold text-gray-900">
+            Berita Kegiatan Sekolah
+          </h3>
           {news.length > 0 && (
             <p className="text-sm text-gray-500">Total: {news.length} berita</p>
           )}
@@ -122,11 +125,14 @@ export default function NewsManagement() {
               >
                 <div className="h-48 bg-gray-100 relative group">
                   {item.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={item.image}
                       alt={item.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                      quality={75}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -269,9 +275,9 @@ function AddNewsModal({
   const [state, formAction, isPending] = useActionState(
     createOsisNews as unknown as (
       prev: FormState,
-      formData: FormData
+      formData: FormData,
     ) => Promise<FormState>,
-    initialState
+    initialState,
   );
 
   useEffect(() => {
@@ -330,13 +336,13 @@ function AddNewsModal({
             <ImageUpload
               onUpload={(file) => {
                 const imageInput = document.querySelector<HTMLInputElement>(
-                  'input[name="image"]'
+                  'input[name="image"]',
                 );
                 if (imageInput) imageInput.value = file.url;
               }}
               onRemove={() => {
                 const imageInput = document.querySelector<HTMLInputElement>(
-                  'input[name="image"]'
+                  'input[name="image"]',
                 );
                 if (imageInput) imageInput.value = "";
               }}

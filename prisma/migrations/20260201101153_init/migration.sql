@@ -443,7 +443,49 @@ CREATE UNIQUE INDEX "kesiswaan_userId_key" ON "kesiswaan"("userId");
 CREATE UNIQUE INDEX "kesiswaan_nip_key" ON "kesiswaan"("nip");
 
 -- CreateIndex
+CREATE INDEX "kesiswaan_status_active_idx" ON "kesiswaan"("status_active");
+
+-- CreateIndex
+CREATE INDEX "kesiswaan_nip_idx" ON "kesiswaan"("nip");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "ppdb_applications_nisn_key" ON "ppdb_applications"("nisn");
+
+-- CreateIndex
+CREATE INDEX "ppdb_applications_status_createdAt_idx" ON "ppdb_applications"("status", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "ppdb_applications_createdAt_idx" ON "ppdb_applications"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "announcements_createdAt_idx" ON "announcements"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "announcements_priority_createdAt_idx" ON "announcements"("priority", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "osis_activities_status_createdAt_idx" ON "osis_activities"("status", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "osis_activities_date_idx" ON "osis_activities"("date");
+
+-- CreateIndex
+CREATE INDEX "osis_activities_author_id_status_idx" ON "osis_activities"("author_id", "status");
+
+-- CreateIndex
+CREATE INDEX "student_achievements_siswa_id_status_persetujuan_idx" ON "student_achievements"("siswa_id", "status_persetujuan");
+
+-- CreateIndex
+CREATE INDEX "student_achievements_status_persetujuan_createdAt_idx" ON "student_achievements"("status_persetujuan", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "student_works_siswa_id_status_persetujuan_idx" ON "student_works"("siswa_id", "status_persetujuan");
+
+-- CreateIndex
+CREATE INDEX "student_works_status_persetujuan_createdAt_idx" ON "student_works"("status_persetujuan", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "facilities_createdAt_idx" ON "facilities"("createdAt");
 
 -- CreateIndex
 CREATE INDEX "login_attempts_ip_createdAt_idx" ON "login_attempts"("ip", "createdAt");
@@ -468,6 +510,18 @@ CREATE INDEX "lateness_records_recorded_by_idx" ON "lateness_records"("recorded_
 
 -- CreateIndex
 CREATE INDEX "notifications_userId_read_createdAt_idx" ON "notifications"("userId", "read", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "worship_adzan_schedules_date_status_idx" ON "worship_adzan_schedules"("date", "status");
+
+-- CreateIndex
+CREATE INDEX "worship_adzan_schedules_siswa_id_date_idx" ON "worship_adzan_schedules"("siswa_id", "date");
+
+-- CreateIndex
+CREATE INDEX "worship_carpet_schedules_date_status_idx" ON "worship_carpet_schedules"("date", "status");
+
+-- CreateIndex
+CREATE INDEX "worship_carpet_schedules_date_zone_idx" ON "worship_carpet_schedules"("date", "zone");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "site_settings_key_key" ON "site_settings"("key");
