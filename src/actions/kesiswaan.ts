@@ -50,7 +50,7 @@ export interface ValidationQueueResult {
 export async function getValidationQueue(
   statusFilter: StatusApproval | "ALL" = "PENDING",
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
 ): Promise<ValidationQueueResult> {
   // Verify authorization
   const auth = await verifyKesiswaanRole();
@@ -115,8 +115,7 @@ export async function getValidationQueue(
       status: a.statusPersetujuan,
       category: a.category,
       image: a.image,
-      // Optional in older prisma clients; guard to satisfy type safety on Vercel build
-      rejectionNote: "rejectionNote" in a ? (a as { rejectionNote?: string | null }).rejectionNote ?? null : null,
+      rejectionNote: a.rejectionNote,
     }));
 
     const normalizedWorks: ValidationItem[] = works.map((w) => ({
@@ -131,14 +130,13 @@ export async function getValidationQueue(
       category: w.workType === "PHOTO" ? "Fotografi" : "Videografi",
       image: w.mediaUrl,
       videoLink: w.videoLink,
-      rejectionNote: "rejectionNote" in w ? (w as { rejectionNote?: string | null }).rejectionNote ?? null : null,
+      rejectionNote: w.rejectionNote,
     }));
 
     // Combine, sort by date descending, and paginate
-    const allItems = [
-      ...normalizedAchievements,
-      ...normalizedWorks,
-    ].sort((a, b) => b.date.getTime() - a.date.getTime());
+    const allItems = [...normalizedAchievements, ...normalizedWorks].sort(
+      (a, b) => b.date.getTime() - a.date.getTime(),
+    );
 
     const skip = (page - 1) * limit;
     const items = allItems.slice(skip, skip + limit);
@@ -167,7 +165,7 @@ export async function validateContent(
   type: "achievement" | "work" | "news",
   action: "APPROVE" | "REJECT",
   note?: string,
-  updatedContent?: { title?: string; description?: string }
+  updatedContent?: { title?: string; description?: string },
 ) {
   // Verify authorization
   const auth = await verifyKesiswaanRole();
@@ -231,14 +229,14 @@ export async function validateContent(
         await NotificationService.createAchievementApprovedNotification(
           userId,
           contentTitle,
-          id
+          id,
         );
       } else {
         await NotificationService.createAchievementRejectedNotification(
           userId,
           contentTitle,
           id,
-          note
+          note,
         );
       }
     } else if (type === "work") {
@@ -271,14 +269,14 @@ export async function validateContent(
         await NotificationService.createWorkApprovedNotification(
           userId,
           contentTitle,
-          id
+          id,
         );
       } else {
         await NotificationService.createWorkRejectedNotification(
           userId,
           contentTitle,
           id,
-          note
+          note,
         );
       }
     }
@@ -298,16 +296,14 @@ export async function validateContent(
 // STUDENT DATA MANAGEMENT
 // =============================================
 
-export async function getStudents(search?: string) {
+export async function getStudents(search?: string, limit: number = 50) {
   try {
     const where: Prisma.SiswaWhereInput = search
       ? {
           OR: [
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            { name: { contains: search, mode: "insensitive" } as any },
+            { name: { contains: search, mode: Prisma.QueryMode.insensitive } },
             { nisn: { contains: search } },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            { class: { contains: search, mode: "insensitive" } as any },
+            { class: { contains: search, mode: Prisma.QueryMode.insensitive } },
           ],
         }
       : {};
@@ -315,7 +311,7 @@ export async function getStudents(search?: string) {
     const students = await prisma.siswa.findMany({
       where,
       orderBy: { name: "asc" },
-      take: 50, // Limit for performance
+      take: limit,
     });
 
     return students;
@@ -366,103 +362,169 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     };
   }
 
-  // Parallel fetch for basic stats
-  const [achievements, works] = await Promise.all([
-    prisma.studentAchievement.findMany(),
-    prisma.studentWork.findMany(),
-  ]);
+  try {
+    // Use database aggregation for better performance
+    const [
+      achievementsPending,
+      achievementsApproved,
+      achievementsRejected,
+      achievementsTotal,
+      worksPending,
+      worksApproved,
+      worksRejected,
+      worksTotal,
+    ] = await Promise.all([
+      // Achievement counts
+      prisma.studentAchievement.count({
+        where: { statusPersetujuan: "PENDING" },
+      }),
+      prisma.studentAchievement.count({
+        where: { statusPersetujuan: "APPROVED" },
+      }),
+      prisma.studentAchievement.count({
+        where: { statusPersetujuan: "REJECTED" },
+      }),
+      prisma.studentAchievement.count(),
+      // Work counts
+      prisma.studentWork.count({
+        where: { statusPersetujuan: "PENDING" },
+      }),
+      prisma.studentWork.count({
+        where: { statusPersetujuan: "APPROVED" },
+      }),
+      prisma.studentWork.count({
+        where: { statusPersetujuan: "REJECTED" },
+      }),
+      prisma.studentWork.count(),
+    ]);
 
-  const allItems = [
-    ...achievements.map((a) => ({ ...a, type: "achievement" })),
-    ...works.map((w) => ({ ...w, type: "work" })),
-  ];
+    // Calculate summary
+    const pending = achievementsPending + worksPending;
+    const approved = achievementsApproved + worksApproved;
+    const rejected = achievementsRejected + worksRejected;
+    const total = achievementsTotal + worksTotal;
 
-  // Calculate summary
-  const pending = allItems.filter(
-    (i) => i.statusPersetujuan === "PENDING"
-  ).length;
-  const approved = allItems.filter(
-    (i) => i.statusPersetujuan === "APPROVED"
-  ).length;
-  const rejected = allItems.filter(
-    (i) => i.statusPersetujuan === "REJECTED"
-  ).length;
+    // Calculate By Status
+    const byStatus = [
+      { status: "Disetujui", count: approved, color: "bg-green-500" },
+      { status: "Pending", count: pending, color: "bg-yellow-500" },
+      { status: "Ditolak", count: rejected, color: "bg-red-500" },
+    ];
 
-  // Calculate By Status
-  const byStatus = [
-    { status: "Disetujui", count: approved, color: "bg-green-500" },
-    { status: "Pending", count: pending, color: "bg-yellow-500" },
-    { status: "Ditolak", count: rejected, color: "bg-red-500" },
-  ];
+    // Calculate By Category
+    const byCategory = [
+      {
+        category: "Prestasi Siswa",
+        count: achievementsTotal,
+        percentage: total > 0 ? (achievementsTotal / total) * 100 : 0,
+      },
+      {
+        category: "Karya Siswa",
+        count: worksTotal,
+        percentage: total > 0 ? (worksTotal / total) * 100 : 0,
+      },
+    ];
 
-  // Calculate By Category (simplified)
-  const achievementCount = achievements.length;
-  const workCount = works.length;
-  const total = allItems.length;
+    // Calculate Monthly stats with database queries for last 6 months
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "Mei",
+      "Jun",
+      "Jul",
+      "Agu",
+      "Sep",
+      "Okt",
+      "Nov",
+      "Des",
+    ];
+    const currentMonth = new Date().getMonth();
+    const monthlyStats = [];
 
-  const byCategory = [
-    {
-      category: "Prestasi Siswa",
-      count: achievementCount,
-      percentage: total > 0 ? (achievementCount / total) * 100 : 0,
-    },
-    {
-      category: "Karya Siswa",
-      count: workCount,
-      percentage: total > 0 ? (workCount / total) * 100 : 0,
-    },
-  ];
-
-  // Calculate Monthly (Mock for now or real aggregation if needed)
-  // For simplicity and performance, we'll group the last 6 months in code
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "Mei",
-    "Jun",
-    "Jul",
-    "Agu",
-    "Sep",
-    "Okt",
-    "Nov",
-    "Des",
-  ];
-  const currentMonth = new Date().getMonth();
-  const monthlyStats = [];
-
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date();
-    d.setMonth(currentMonth - i);
-    const mIndex = d.getMonth();
-
-    // Count items created in this month
-    const itemsInMonth = allItems.filter((item) => {
-      const itemDate = new Date(item.createdAt);
-      return (
-        itemDate.getMonth() === mIndex &&
-        itemDate.getFullYear() === d.getFullYear()
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(currentMonth - i);
+      const startOfMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+      const endOfMonth = new Date(
+        d.getFullYear(),
+        d.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
       );
-    });
 
-    monthlyStats.push({
-      month: months[mIndex],
-      validated: itemsInMonth.filter((i) => i.statusPersetujuan === "APPROVED")
-        .length,
-      pending: itemsInMonth.filter((i) => i.statusPersetujuan === "PENDING")
-        .length,
-      rejected: itemsInMonth.filter((i) => i.statusPersetujuan === "REJECTED")
-        .length,
-    });
+      const [
+        achievementValidated,
+        achievementPending,
+        achievementRejected,
+        workValidated,
+        workPending,
+        workRejected,
+      ] = await Promise.all([
+        prisma.studentAchievement.count({
+          where: {
+            statusPersetujuan: "APPROVED",
+            createdAt: { gte: startOfMonth, lte: endOfMonth },
+          },
+        }),
+        prisma.studentAchievement.count({
+          where: {
+            statusPersetujuan: "PENDING",
+            createdAt: { gte: startOfMonth, lte: endOfMonth },
+          },
+        }),
+        prisma.studentAchievement.count({
+          where: {
+            statusPersetujuan: "REJECTED",
+            createdAt: { gte: startOfMonth, lte: endOfMonth },
+          },
+        }),
+        prisma.studentWork.count({
+          where: {
+            statusPersetujuan: "APPROVED",
+            createdAt: { gte: startOfMonth, lte: endOfMonth },
+          },
+        }),
+        prisma.studentWork.count({
+          where: {
+            statusPersetujuan: "PENDING",
+            createdAt: { gte: startOfMonth, lte: endOfMonth },
+          },
+        }),
+        prisma.studentWork.count({
+          where: {
+            statusPersetujuan: "REJECTED",
+            createdAt: { gte: startOfMonth, lte: endOfMonth },
+          },
+        }),
+      ]);
+
+      monthlyStats.push({
+        month: months[d.getMonth()],
+        validated: achievementValidated + workValidated,
+        pending: achievementPending + workPending,
+        rejected: achievementRejected + workRejected,
+      });
+    }
+
+    return {
+      monthly: monthlyStats,
+      byCategory,
+      byStatus,
+      summary: { pending, approved, rejected, total },
+    };
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    return {
+      monthly: [],
+      byCategory: [],
+      byStatus: [],
+      summary: { pending: 0, approved: 0, rejected: 0, total: 0 },
+    };
   }
-
-  return {
-    monthly: monthlyStats,
-    byCategory,
-    byStatus,
-    summary: { pending, approved, rejected, total },
-  };
 }
 
 // =============================================
