@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
 
 interface Student {
@@ -70,16 +71,19 @@ export default function StudentCardPreview({
               justifyContent: "center",
               padding: "4px",
               boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+              position: "relative",
             }}
           >
-            <img
+            <Image
               src="/logo.png"
               alt="Logo SMP IP YAKIN"
+              width={28}
+              height={28}
               style={{
-                width: "100%",
-                height: "100%",
                 objectFit: "contain",
               }}
+              priority
+              unoptimized
             />
           </div>
           <div>

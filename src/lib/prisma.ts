@@ -25,7 +25,13 @@ export const prisma =
   });
 
 // Graceful shutdown: disconnect Prisma on process termination
-if (typeof window === "undefined") {
+// Only run in Node.js runtime (not Edge Runtime for middleware)
+if (typeof window === "undefined" && typeof process.on === "function") {
+  // Increase max listeners to prevent warnings during hot reload
+  if (typeof process.setMaxListeners === "function") {
+    process.setMaxListeners(15);
+  }
+
   // Handle graceful shutdown for both development and production
   const shutdownHandler = async () => {
     console.log("Disconnecting Prisma Client...");
