@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle, Settings, Users, QrCode, FileText } from "lucide-react";
+import {
+  CheckCircle,
+  Settings,
+  Users,
+  FileText,
+  CreditCard,
+} from "lucide-react";
 import {
   Header,
   AlertCard,
@@ -31,7 +37,8 @@ import {
 } from "@/actions/kesiswaan/notifications";
 import toast from "react-hot-toast";
 import { useSidebar } from "@/hooks/useSidebar";
-import QRCodePrintContent from "@/components/dashboard/kesiswaan/QRCodePrintContent";
+import StudentCardSystem from "@/components/dashboard/kesiswaan/StudentCard/StudentCardSystem";
+import "@/components/dashboard/kesiswaan/StudentCard/studentCard.styles.css";
 // import LatenessReportsContent from "@/components/dashboard/kesiswaan/LatenessReportsContent"; // Removed, used in wrapper
 
 interface DashboardClientProps {
@@ -48,7 +55,7 @@ export default function DashboardClient({
     KesiswaanNotificationData[]
   >([]);
   const [validationQueue, setValidationQueue] = useState<ValidationItem[]>(
-    initialQueueResult.items
+    initialQueueResult.items,
   );
   const [pagination, setPagination] = useState({
     page: initialQueueResult.page,
@@ -63,7 +70,7 @@ export default function DashboardClient({
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(
-    null
+    null,
   );
   const [validationAction, setValidationAction] = useState<
     "approve" | "reject"
@@ -103,7 +110,7 @@ export default function DashboardClient({
       const result = await markKesiswaanNotificationAsRead(notificationId);
       if (result.success) {
         setNotifications((prev) =>
-          prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+          prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)),
         );
       }
     } catch (error) {
@@ -153,7 +160,7 @@ export default function DashboardClient({
       const result = await getValidationQueue(
         status,
         newPage,
-        pagination.limit
+        pagination.limit,
       );
       setValidationQueue(result.items);
       setPagination({
@@ -180,7 +187,7 @@ export default function DashboardClient({
         undefined,
     },
     { id: "students", label: "Data Siswa", icon: Users },
-    { id: "qr-siswa", label: "Cetak QR Siswa", icon: QrCode },
+    { id: "kartu-siswa", label: "Kartu Siswa", icon: CreditCard },
     { id: "reports", label: "Laporan", icon: FileText }, // Consolidated menu
     { id: "settings", label: "Pengaturan", icon: Settings },
   ];
@@ -198,7 +205,7 @@ export default function DashboardClient({
 
   const handleApprove = (
     content: ContentItem,
-    updatedContent?: { title: string; description: string }
+    updatedContent?: { title: string; description: string },
   ) => {
     setSelectedContent(content);
     setPendingUpdatedContent(updatedContent);
@@ -227,14 +234,14 @@ export default function DashboardClient({
         selectedContent.type,
         validationAction === "approve" ? "APPROVE" : "REJECT",
         note,
-        pendingUpdatedContent
+        pendingUpdatedContent,
       );
 
       if (result.success) {
         toast.success(
           `Konten berhasil ${
             validationAction === "approve" ? "disetujui" : "ditolak"
-          }`
+          }`,
         );
         setShowValidationModal(false);
         setShowPreviewModal(false);
@@ -247,7 +254,7 @@ export default function DashboardClient({
         const refreshResult = await getValidationQueue(
           status,
           pagination.page,
-          pagination.limit
+          pagination.limit,
         );
         setValidationQueue(refreshResult.items);
         setPagination({
@@ -328,9 +335,9 @@ export default function DashboardClient({
             </div>
           )}
           {activeMenu === "students" && <StudentManagement />}
-          {activeMenu === "qr-siswa" && <QRCodePrintContent />}
+          {activeMenu === "kartu-siswa" && <StudentCardSystem />}
           {activeMenu === "reports" && (
-             <ReportsWrapper reportStats={initialStats} />
+            <ReportsWrapper reportStats={initialStats} />
           )}
           {activeMenu === "settings" && <SettingsContent />}
         </main>

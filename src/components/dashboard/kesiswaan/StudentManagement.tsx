@@ -39,7 +39,7 @@ export default function StudentManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [classFilter, setClassFilter] = useState("all");
   const [genderFilter, setGenderFilter] = useState<"all" | "MALE" | "FEMALE">(
-    "all"
+    "all",
   );
   const [angkatanFilter, setAngkatanFilter] = useState<number | "all">("all");
   const [availableClasses, setAvailableClasses] = useState<string[]>([]);
@@ -64,7 +64,7 @@ export default function StudentManagement() {
 
   // Modal state
   const [selectedStudent, setSelectedStudent] = useState<StudentData | null>(
-    null
+    null,
   );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -156,6 +156,7 @@ export default function StudentManagement() {
     setIsExporting(true);
     try {
       const result = await getAllStudentsForExport({
+        search: searchQuery || undefined,
         classFilter: classFilter !== "all" ? classFilter : undefined,
         genderFilter: genderFilter !== "all" ? genderFilter : undefined,
         angkatanFilter: angkatanFilter !== "all" ? angkatanFilter : undefined,
@@ -282,7 +283,7 @@ export default function StudentManagement() {
               value={genderFilter}
               onChange={(e) =>
                 handleGenderFilterChange(
-                  e.target.value as "all" | "MALE" | "FEMALE"
+                  e.target.value as "all" | "MALE" | "FEMALE",
                 )
               }
               className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
@@ -310,34 +311,34 @@ export default function StudentManagement() {
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2">
-                <button
+              <button
                 onClick={() => setIsImportModalOpen(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                >
+              >
                 <Upload className="w-4 h-4" />
                 Import
-                </button>
-                
-                <button
+              </button>
+
+              <button
                 onClick={() => setIsAddModalOpen(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
-                >
+              >
                 <Plus className="w-4 h-4" />
                 Tambah Siswa
-                </button>
+              </button>
 
-                <button
+              <button
                 onClick={handleExport}
                 disabled={isExporting}
                 className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 text-sm font-medium"
-                >
+              >
                 {isExporting ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                    <Download className="w-4 h-4" />
+                  <Download className="w-4 h-4" />
                 )}
                 Export
-                </button>
+              </button>
             </div>
           </div>
         </div>
@@ -468,7 +469,7 @@ export default function StudentManagement() {
                   Menampilkan {(pagination.page - 1) * pagination.limit + 1} -{" "}
                   {Math.min(
                     pagination.page * pagination.limit,
-                    pagination.total
+                    pagination.total,
                   )}{" "}
                   dari {pagination.total} siswa
                 </p>
@@ -506,7 +507,7 @@ export default function StudentManagement() {
                           {pageNum}
                         </button>
                       );
-                    }
+                    },
                   )}
                   <button
                     onClick={() => handlePageChange(pagination.page + 1)}
@@ -638,28 +639,65 @@ export default function StudentManagement() {
                 </div>
               </div>
             </div>
+
+            {/* Modal Footer with Edit Button */}
+            <div className="flex gap-3 pt-6 border-t border-gray-100">
+              <button
+                onClick={() => {
+                  setIsDetailModalOpen(false);
+                  setIsAddModalOpen(true);
+                }}
+                className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+                Edit Data Siswa
+              </button>
+              <button
+                onClick={() => setIsDetailModalOpen(false)}
+                className="px-6 py-2.5 border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+              >
+                Tutup
+              </button>
+            </div>
           </div>
         </div>
       )}
-      
-      {/* Add Student Modal */}
+
+      {/* Add/Edit Student Modal */}
       <AddStudentModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setSelectedStudent(null);
+        }}
         onSuccess={() => {
-            fetchStudents();
-            setIsAddModalOpen(false);
+          fetchStudents();
+          setIsAddModalOpen(false);
+          setSelectedStudent(null);
         }}
         availableClasses={availableClasses}
+        editingStudent={selectedStudent}
       />
 
       {/* Import Student Modal */}
-      <ImportStudentModal 
+      <ImportStudentModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
         onSuccess={() => {
-            fetchStudents();
-            setIsImportModalOpen(false);
+          fetchStudents();
+          setIsImportModalOpen(false);
         }}
       />
     </div>
