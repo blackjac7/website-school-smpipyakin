@@ -13,33 +13,45 @@ export async function getOsisStats() {
   // 4. Upcoming Activities (Next 30 days)
 
   try {
-    const activities = await prisma.osisActivity.findMany();
-
-    const totalBudget = activities
-      .filter((a) => a.status === "APPROVED")
-      .reduce((sum, a) => sum + a.budget, 0);
-
-    const pendingProposals = activities.filter((a) => a.status === "PENDING").length;
-    const approvedCount = activities.filter((a) => a.status === "APPROVED").length;
-
     const today = new Date();
     const nextMonth = new Date(today);
     nextMonth.setDate(today.getDate() + 30);
 
-    const upcomingCount = activities.filter(
-      (a) =>
-        a.status === "APPROVED" &&
-        a.date >= today &&
-        a.date <= nextMonth
-    ).length;
+    // Use database aggregation for better performance
+    const [budgetResult, pendingCount, approvedCount, upcomingCount] =
+      await Promise.all([
+        // Total budget from approved activities
+        prisma.osisActivity.aggregate({
+          where: { status: "APPROVED" },
+          _sum: { budget: true },
+        }),
+        // Count pending proposals
+        prisma.osisActivity.count({
+          where: { status: "PENDING" },
+        }),
+        // Count approved activities
+        prisma.osisActivity.count({
+          where: { status: "APPROVED" },
+        }),
+        // Count upcoming approved activities (next 30 days)
+        prisma.osisActivity.count({
+          where: {
+            status: "APPROVED",
+            date: {
+              gte: today,
+              lte: nextMonth,
+            },
+          },
+        }),
+      ]);
 
     return {
       success: true,
       data: {
-        totalBudget,
-        pendingProposals,
-        approvedCount,
-        upcomingCount,
+        totalBudget: budgetResult._sum.budget || 0,
+        pendingProposals: pendingCount,
+        approvedCount: approvedCount,
+        upcomingCount: upcomingCount,
       },
     };
   } catch (error) {

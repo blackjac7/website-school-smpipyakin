@@ -19,14 +19,14 @@ function sortClasses(classes: string[]): string[] {
       if (cls.startsWith("IX") || cls.startsWith("9")) return 9;
       return 10; // Unknown grades go last
     };
-    
+
     const gradeA = getGradeOrder(a);
     const gradeB = getGradeOrder(b);
-    
+
     if (gradeA !== gradeB) {
       return gradeA - gradeB;
     }
-    
+
     // Same grade, sort alphabetically (VII-A before VII-B)
     return a.localeCompare(b);
   });
@@ -40,7 +40,8 @@ export async function getAllStudentQRCodes(
   classFilter?: string,
   page: number = 1,
   limit: number = 50,
-  searchTerm?: string
+  searchTerm?: string,
+  yearFilter?: string,
 ) {
   const user = await getAuthenticatedUser();
   if (!user) {
@@ -58,11 +59,15 @@ export async function getAllStudentQRCodes(
     // Build where clause
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {};
-    
+
     if (classFilter && classFilter !== "all") {
       where.class = classFilter;
     }
-    
+
+    if (yearFilter && yearFilter !== "all") {
+      where.year = parseInt(yearFilter);
+    }
+
     // Search by name or NISN (across ALL students)
     if (searchTerm && searchTerm.trim()) {
       where.OR = [
@@ -82,10 +87,7 @@ export async function getAllStudentQRCodes(
           qrToken: true,
           image: true,
         },
-        orderBy: [
-          { class: "asc" },
-          { name: "asc" },
-        ],
+        orderBy: [{ class: "asc" }, { name: "asc" }],
         skip,
         take: limit,
       }),
@@ -96,7 +98,7 @@ export async function getAllStudentQRCodes(
     const studentsWithQR = await Promise.all(
       students.map(async (student) => {
         let token = student.qrToken;
-        
+
         // Generate token if not exists
         if (!token) {
           token = generateQRToken(student.id);
@@ -116,7 +118,7 @@ export async function getAllStudentQRCodes(
           image: student.image,
           qrData: qrPayload,
         };
-      })
+      }),
     );
 
     // Custom sort by class (VII, VIII, IX)
@@ -128,16 +130,16 @@ export async function getAllStudentQRCodes(
         if (cls.startsWith("IX") || cls.startsWith("9")) return 9;
         return 10;
       };
-      
+
       const gradeA = getGradeOrder(a.class);
       const gradeB = getGradeOrder(b.class);
-      
+
       if (gradeA !== gradeB) return gradeA - gradeB;
-      
+
       // Same grade, sort by class name then by student name
       const classCompare = (a.class || "").localeCompare(b.class || "");
       if (classCompare !== 0) return classCompare;
-      
+
       return (a.name || "").localeCompare(b.name || "");
     });
 
@@ -159,7 +161,7 @@ export async function getAllStudentQRCodes(
 
 /**
  * Get all unique classes for filter dropdown (sorted properly)
- */  
+ */
 export async function getClassesForQR() {
   const user = await getAuthenticatedUser();
   if (!user) {
@@ -187,7 +189,46 @@ export async function getClassesForQR() {
     };
   } catch (error) {
     console.error("Error getting classes:", error);
-    return { success: false, error: "Gagal mengambil daftar kelas", classes: [] };
+    return {
+      success: false,
+      error: "Gagal mengambil daftar kelas",
+      classes: [],
+    };
+  }
+}
+
+/**
+ * Get all unique years for filter dropdown
+ */
+export async function getAvailableYearsForQR() {
+  const user = await getAuthenticatedUser();
+  if (!user) {
+    return { success: false, error: "Unauthorized", years: [] };
+  }
+
+  if (!isRoleMatch(user.role, ["kesiswaan", "admin"])) {
+    return { success: false, error: "Akses Kesiswaan diperlukan", years: [] };
+  }
+
+  try {
+    const years = await prisma.siswa.findMany({
+      where: { year: { not: null } },
+      select: { year: true },
+      distinct: ["year"],
+      orderBy: { year: "desc" },
+    });
+
+    const yearValues = years
+      .map((y) => y.year)
+      .filter((y): y is number => y !== null);
+
+    return {
+      success: true,
+      years: yearValues,
+    };
+  } catch (error) {
+    console.error("Error getting years:", error);
+    return { success: false, error: "Gagal mengambil daftar tahun", years: [] };
   }
 }
 

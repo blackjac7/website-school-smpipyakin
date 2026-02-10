@@ -15,24 +15,24 @@ datasource db {
 // =============================================
 
 model User {
-  id        String   @id @default(uuid())
-  username  String   @unique
-  email     String?  @unique  // Added for auth compatibility
-  password  String
-  role      UserRole
+  id       String   @id @default(uuid())
+  username String   @unique
+  email    String?  @unique // Added for auth compatibility
+  password String
+  role     UserRole
 
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  siswa               Siswa?
-  kesiswaan           Kesiswaan?
-  newsArticles        News[]               @relation("NewsAuthor")
-  schoolActivities    SchoolActivity[]     @relation("ActivityCreator")
-  osisActivities      OsisActivity[]       @relation("OsisActivityCreator")
-  notifications       Notification[]
-  latenessRecords     LatenessRecord[]     @relation("LatenessRecorder")
+  siswa            Siswa?
+  kesiswaan        Kesiswaan?
+  newsArticles     News[]           @relation("NewsAuthor")
+  schoolActivities SchoolActivity[] @relation("ActivityCreator")
+  osisActivities   OsisActivity[]   @relation("OsisActivityCreator")
+  notifications    Notification[]
+  latenessRecords  LatenessRecord[] @relation("LatenessRecorder")
 
   @@map("users")
 }
@@ -42,34 +42,34 @@ model User {
 // =============================================
 
 model Siswa {
-  id          String      @id @default(uuid())
-  userId      String      @unique
-  nisn         String      @unique
-  name        String?
-  image       String?
-  year        Int?
-  gender      GenderType
-  osisAccess  Boolean     @default(false) @map("osis_access")
+  id         String     @id @default(uuid())
+  userId     String     @unique
+  nisn       String     @unique
+  name       String?
+  image      String?
+  year       Int?
+  gender     GenderType
+  osisAccess Boolean    @default(false) @map("osis_access")
 
   // Profile fields
   email       String?
   phone       String?
   address     String?
-  birthDate   DateTime?   @map("birth_date")
-  birthPlace  String?     @map("birth_place")
-  parentName  String?     @map("parent_name")
-  parentPhone String?     @map("parent_phone")
+  birthDate   DateTime? @map("birth_date")
+  birthPlace  String?   @map("birth_place")
+  parentName  String?   @map("parent_name")
+  parentPhone String?   @map("parent_phone")
   class       String?
-  
+
   // QR Code for lateness tracking
-  qrToken     String?     @unique @map("qr_token")
+  qrToken String? @unique @map("qr_token")
 
   // Timestamps
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   achievements    StudentAchievement[]
   works           StudentWork[]
   latenessRecords LatenessRecord[]
@@ -83,20 +83,22 @@ model Siswa {
 }
 
 model Kesiswaan {
-  id           String      @id @default(uuid())
-  userId       String      @unique
-  nip          String      @unique
+  id           String     @id @default(uuid())
+  userId       String     @unique
+  nip          String     @unique
   name         String?
   gender       GenderType
-  statusActive Boolean     @default(true) @map("status_active")
+  statusActive Boolean    @default(true) @map("status_active")
 
   // Timestamps
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([statusActive])
+  @@index([nip])
   @@map("kesiswaan")
 }
 
@@ -105,31 +107,33 @@ model Kesiswaan {
 // =============================================
 
 model PPDBApplication {
-  id                String              @id @default(uuid())
-  name              String
-  nisn              String              @unique
-  gender            GenderType?
-  birthPlace        String?             @map("birth_place")
-  birthDate         DateTime?           @map("birth_date")
-  address           String?
-  asalSekolah       String?             @map("asal_sekolah")
-  parentContact     String?             @map("parent_contact")
-  parentName        String?             @map("parent_name")
-  parentEmail       String?             @map("parent_email")
-  status            PPDBStatus          @default(PENDING)
-  feedback          String?
+  id            String      @id @default(uuid())
+  name          String
+  nisn          String      @unique
+  gender        GenderType?
+  birthPlace    String?     @map("birth_place")
+  birthDate     DateTime?   @map("birth_date")
+  address       String?
+  asalSekolah   String?     @map("asal_sekolah")
+  parentContact String?     @map("parent_contact")
+  parentName    String?     @map("parent_name")
+  parentEmail   String?     @map("parent_email")
+  status        PPDBStatus  @default(PENDING)
+  feedback      String?
 
   // Document Cloudinary URLs
-  ijazahUrl         String?             @map("ijazah_url")
-  aktaKelahiranUrl  String?             @map("akta_kelahiran_url")
-  kartuKeluargaUrl  String?             @map("kartu_keluarga_url")
-  pasFotoUrl        String?             @map("pas_foto_url")
-  retries           Int                 @default(0)
+  ijazahUrl        String? @map("ijazah_url")
+  aktaKelahiranUrl String? @map("akta_kelahiran_url")
+  kartuKeluargaUrl String? @map("kartu_keluarga_url")
+  pasFotoUrl       String? @map("pas_foto_url")
+  retries          Int     @default(0)
 
   // Timestamps
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  @@index([status, createdAt])
+  @@index([createdAt])
   @@map("ppdb_applications")
 }
 
@@ -138,68 +142,70 @@ model PPDBApplication {
 // =============================================
 
 model News {
-  id                 String         @id @default(uuid())
-  title              String
-  date               DateTime
-  content            String
-  image              String?
-  kategori           BeritaKategori
-  statusPersetujuan  StatusApproval @map("status_persetujuan")
-  rejectionNote      String?        @map("rejection_note")
-  authorId           String         @map("author_id")
+  id                String         @id @default(uuid())
+  title             String
+  date              DateTime
+  content           String
+  image             String?
+  kategori          BeritaKategori
+  statusPersetujuan StatusApproval @map("status_persetujuan")
+  rejectionNote     String?        @map("rejection_note")
+  authorId          String         @map("author_id")
 
   // Timestamps
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  author             User           @relation("NewsAuthor", fields: [authorId], references: [id])
+  author User @relation("NewsAuthor", fields: [authorId], references: [id])
 
   @@map("news")
 }
 
 model Announcement {
-  id         String        @id @default(uuid())
-  title      String
-  date       DateTime
-  location   String?
-  content    String
-  priority   PriorityLevel
-  linkFile   String?       @map("link_file")
+  id       String        @id @default(uuid())
+  title    String
+  date     DateTime
+  location String?
+  content  String
+  priority PriorityLevel
+  linkFile String?       @map("link_file")
 
   // Timestamps
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  @@index([createdAt])
+  @@index([priority, createdAt])
   @@map("announcements")
 }
 
 model HeroSlide {
-  id                String   @id @default(uuid())
+  id                String  @id @default(uuid())
   title             String
   subtitle          String
-  imageSmall        String   @map("image_small")
-  imageMedium       String   @map("image_medium")
-  linkPrimaryText   String?  @map("link_primary_text")
-  linkPrimaryHref   String?  @map("link_primary_href")
-  linkSecondaryText String?  @map("link_secondary_text")
-  linkSecondaryHref String?  @map("link_secondary_href")
-  isActive          Boolean  @default(true) @map("is_active")
-  sortOrder         Int      @default(0) @map("sort_order")
+  imageSmall        String  @map("image_small")
+  imageMedium       String  @map("image_medium")
+  linkPrimaryText   String? @map("link_primary_text")
+  linkPrimaryHref   String? @map("link_primary_href")
+  linkSecondaryText String? @map("link_secondary_text")
+  linkSecondaryHref String? @map("link_secondary_href")
+  isActive          Boolean @default(true) @map("is_active")
+  sortOrder         Int     @default(0) @map("sort_order")
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("hero_slides")
 }
 
 model SchoolStat {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   label     String
   value     String
-  iconName  String   @map("icon_name")
-  isActive  Boolean  @default(true) @map("is_active")
-  sortOrder Int      @default(0) @map("sort_order")
+  iconName  String  @map("icon_name")
+  isActive  Boolean @default(true) @map("is_active")
+  sortOrder Int     @default(0) @map("sort_order")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -208,91 +214,98 @@ model SchoolStat {
 }
 
 model SchoolActivity {
-  id              String       @id @default(uuid())
-  title           String
-  date            DateTime
-  information     String
-  semester        SemesterType
-  tahunPelajaran  String       @map("tahun_pelajaran")
-  createdBy       String       @map("created_by")
+  id             String       @id @default(uuid())
+  title          String
+  date           DateTime
+  information    String
+  semester       SemesterType
+  tahunPelajaran String       @map("tahun_pelajaran")
+  createdBy      String       @map("created_by")
 
   // Timestamps
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  creator         User         @relation("ActivityCreator", fields: [createdBy], references: [id])
+  creator User @relation("ActivityCreator", fields: [createdBy], references: [id])
 
   @@map("school_activities")
 }
 
 model OsisActivity {
-  id              String       @id @default(uuid())
-  title           String
-  description     String
-  date            DateTime
-  time            String
-  location        String
-  budget          Int
-  participants    Int
-  organizer       String
-  proposalUrl     String?      @map("proposal_url")
-  status          StatusApproval @default(PENDING)
-  rejectionNote   String?      @map("rejection_note")
-  authorId        String       @map("author_id")
+  id            String         @id @default(uuid())
+  title         String
+  description   String
+  date          DateTime
+  time          String
+  location      String
+  budget        Int
+  participants  Int
+  organizer     String
+  proposalUrl   String?        @map("proposal_url")
+  status        StatusApproval @default(PENDING)
+  rejectionNote String?        @map("rejection_note")
+  authorId      String         @map("author_id")
 
   // Timestamps
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  author          User         @relation("OsisActivityCreator", fields: [authorId], references: [id])
+  author User @relation("OsisActivityCreator", fields: [authorId], references: [id])
 
+  @@index([status, createdAt])
+  @@index([date])
+  @@index([authorId, status])
   @@map("osis_activities")
 }
 
 model StudentAchievement {
-  id                 String         @id @default(uuid())
-  siswaId            String         @map("siswa_id")
-  title              String
-  description        String?
-  image              String?
-  statusPersetujuan  StatusApproval @map("status_persetujuan")
-  category           String?         // akademik, olahraga, seni, dll
-  level              String?         // sekolah, kecamatan, provinsi, dll
-  achievementDate    DateTime?      @map("achievement_date")
-  rejectionNote      String?        @map("rejection_note")
+  id                String         @id @default(uuid())
+  siswaId           String         @map("siswa_id")
+  title             String
+  description       String?
+  image             String?
+  statusPersetujuan StatusApproval @map("status_persetujuan")
+  category          String? // akademik, olahraga, seni, dll
+  level             String? // sekolah, kecamatan, provinsi, dll
+  achievementDate   DateTime?      @map("achievement_date")
+  rejectionNote     String?        @map("rejection_note")
 
   // Timestamps
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  siswa              Siswa          @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+  siswa Siswa @relation(fields: [siswaId], references: [id], onDelete: Cascade)
 
+  @@index([siswaId, statusPersetujuan])
+  @@index([statusPersetujuan, createdAt])
   @@map("student_achievements")
 }
 
 model StudentWork {
-  id                 String         @id @default(uuid())
-  siswaId            String         @map("siswa_id")
-  title              String
-  description        String?
-  workType           WorkType       @map("work_type")
-  mediaUrl           String?        @map("media_url")  // For photos (Cloudinary URL)
-  videoLink          String?        @map("video_link")  // For YouTube/GDrive links
-  category           String?         // seni, teknologi, tulis, dll
-  subject            String?         // mata pelajaran terkait
-  statusPersetujuan  StatusApproval @map("status_persetujuan")
-  rejectionNote      String?        @map("rejection_note")
+  id                String         @id @default(uuid())
+  siswaId           String         @map("siswa_id")
+  title             String
+  description       String?
+  workType          WorkType       @map("work_type")
+  mediaUrl          String?        @map("media_url") // For photos (Cloudinary URL)
+  videoLink         String?        @map("video_link") // For YouTube/GDrive links
+  category          String? // seni, teknologi, tulis, dll
+  subject           String? // mata pelajaran terkait
+  statusPersetujuan StatusApproval @map("status_persetujuan")
+  rejectionNote     String?        @map("rejection_note")
 
   // Timestamps
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  siswa              Siswa          @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+  siswa Siswa @relation(fields: [siswaId], references: [id], onDelete: Cascade)
 
+  @@index([siswaId, statusPersetujuan])
+  @@index([statusPersetujuan, createdAt])
   @@map("student_works")
 }
 
@@ -301,28 +314,29 @@ model StudentWork {
 // =============================================
 
 model Facility {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   title       String
   description String?
   image       String?
 
   // Timestamps
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  @@index([createdAt])
   @@map("facilities")
 }
 
 model Extracurricular {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   title       String
   description String?
   image       String?
   schedule    String?
 
   // Timestamps
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("extracurriculars")
 }
@@ -340,8 +354,8 @@ model Teacher {
   isActive    Boolean         @default(true) @map("is_active")
 
   // Timestamps
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("teachers")
 }
@@ -351,20 +365,20 @@ model Teacher {
 // =============================================
 
 enum TeacherCategory {
-  PIMPINAN          @map("pimpinan")
-  GURU_MAPEL        @map("guru_mapel")
-  STAFF             @map("staff")
+  PIMPINAN   @map("pimpinan")
+  GURU_MAPEL @map("guru_mapel")
+  STAFF      @map("staff")
 
   @@map("teacher_category")
 }
 
 enum UserRole {
-  ADMIN          @map("admin")
-  SISWA          @map("siswa")
-  OSIS           @map("osis")
-  KESISWAAN      @map("kesiswaan")
-  PPDB_ADMIN     @map("ppdb_admin")
-  PEMBINA_OSIS   @map("pembina_osis")
+  ADMIN        @map("admin")
+  SISWA        @map("siswa")
+  OSIS         @map("osis")
+  KESISWAAN    @map("kesiswaan")
+  PPDB_ADMIN   @map("ppdb_admin")
+  PEMBINA_OSIS @map("pembina_osis")
 
   @@map("user_role")
 }
@@ -377,9 +391,9 @@ enum GenderType {
 }
 
 enum PPDBStatus {
-  PENDING    @map("pending")
-  ACCEPTED   @map("accepted")
-  REJECTED   @map("rejected")
+  PENDING  @map("pending")
+  ACCEPTED @map("accepted")
+  REJECTED @map("rejected")
 
   @@map("ppdb_status")
 }
@@ -422,13 +436,13 @@ enum SemesterType {
 }
 
 enum NotificationType {
-  ACHIEVEMENT_APPROVED    @map("achievement_approved")
-  ACHIEVEMENT_REJECTED    @map("achievement_rejected")
-  WORK_APPROVED          @map("work_approved")
-  WORK_REJECTED          @map("work_rejected")
-  GENERAL_INFO           @map("general_info")
-  PPDB_UPDATE            @map("ppdb_update")
-  SYSTEM_ANNOUNCEMENT    @map("system_announcement")
+  ACHIEVEMENT_APPROVED @map("achievement_approved")
+  ACHIEVEMENT_REJECTED @map("achievement_rejected")
+  WORK_APPROVED        @map("work_approved")
+  WORK_REJECTED        @map("work_rejected")
+  GENERAL_INFO         @map("general_info")
+  PPDB_UPDATE          @map("ppdb_update")
+  SYSTEM_ANNOUNCEMENT  @map("system_announcement")
 
   @@map("notification_type")
 }
@@ -439,7 +453,7 @@ enum NotificationType {
 
 model LoginAttempt {
   id            String   @id @default(uuid())
-  ip            String    // IPv6 can be up to 45 chars
+  ip            String // IPv6 can be up to 45 chars
   username      String
   userAgent     String
   success       Boolean  @default(false)
@@ -460,18 +474,18 @@ model LoginAttempt {
 // =============================================
 
 model LatenessRecord {
-  id          String    @id @default(uuid())
-  siswaId     String    @map("siswa_id")
-  date        DateTime  @default(now())
-  arrivalTime String    @map("arrival_time") // Format: "HH:mm" (e.g., "07:35")
-  reason      String?   // Alasan terlambat (optional)
-  recordedBy  String    @map("recorded_by") // User ID who scanned
+  id          String   @id @default(uuid())
+  siswaId     String   @map("siswa_id")
+  date        DateTime @default(now())
+  arrivalTime String   @map("arrival_time") // Format: "HH:mm" (e.g., "07:35")
+  reason      String? // Alasan terlambat (optional)
+  recordedBy  String   @map("recorded_by") // User ID who scanned
 
-  createdAt   DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   // Relations
-  siswa       Siswa     @relation(fields: [siswaId], references: [id], onDelete: Cascade)
-  recorder    User      @relation("LatenessRecorder", fields: [recordedBy], references: [id])
+  siswa    Siswa @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+  recorder User  @relation("LatenessRecorder", fields: [recordedBy], references: [id])
 
   @@index([siswaId, date])
   @@index([date])
@@ -484,18 +498,18 @@ model LatenessRecord {
 // =============================================
 
 model Notification {
-  id          String           @id @default(uuid())
-  userId      String
-  type        NotificationType
-  title       String
-  message     String
-  data        Json?            // Additional data (e.g., achievementId, workId)
-  read        Boolean          @default(false)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json? // Additional data (e.g., achievementId, workId)
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 
   // Relations
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, read, createdAt])
   @@map("notifications")
@@ -506,72 +520,76 @@ model Notification {
 // =============================================
 
 model WorshipMenstruationRecord {
-  id          String    @id @default(uuid())
-  siswaId     String    @map("siswa_id")
-  startDate   DateTime  @map("start_date")
-  endDate     DateTime? @map("end_date")
-  notes       String?
+  id        String    @id @default(uuid())
+  siswaId   String    @map("siswa_id")
+  startDate DateTime  @map("start_date")
+  endDate   DateTime? @map("end_date")
+  notes     String?
 
   // Timestamps
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  siswa       Siswa     @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+  siswa Siswa @relation(fields: [siswaId], references: [id], onDelete: Cascade)
 
   @@map("worship_menstruation_records")
 }
 
 model WorshipAdzanSchedule {
-  id          String        @id @default(uuid())
-  siswaId     String        @map("siswa_id")
-  date        DateTime
-  prayerTime  PrayerTime    @map("prayer_time")
-  status      TaskStatus    @default(PENDING)
+  id         String     @id @default(uuid())
+  siswaId    String     @map("siswa_id")
+  date       DateTime
+  prayerTime PrayerTime @map("prayer_time")
+  status     TaskStatus @default(PENDING)
 
   // Timestamps
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  siswa       Siswa         @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+  siswa Siswa @relation(fields: [siswaId], references: [id], onDelete: Cascade)
 
+  @@index([date, status])
+  @@index([siswaId, date])
   @@map("worship_adzan_schedules")
 }
 
 model WorshipCarpetSchedule {
-  id          String      @id @default(uuid())
-  date        DateTime
-  zone        CarpetZone
-  status      TaskStatus  @default(PENDING)
-  className   String?     @map("class_name") // Class assigned to this task (e.g. "IX A")
+  id        String     @id @default(uuid())
+  date      DateTime
+  zone      CarpetZone
+  status    TaskStatus @default(PENDING)
+  className String?    @map("class_name") // Class assigned to this task (e.g. "IX A")
 
   // Relations
   assignments WorshipCarpetAssignment[]
 
   // Timestamps
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  @@index([date, status])
+  @@index([date, zone])
   @@map("worship_carpet_schedules")
 }
 
 model WorshipCarpetAssignment {
-  id          String                @id @default(uuid())
-  scheduleId  String                @map("schedule_id")
-  siswaId     String                @map("siswa_id")
+  id         String @id @default(uuid())
+  scheduleId String @map("schedule_id")
+  siswaId    String @map("siswa_id")
 
   // Relations
-  schedule    WorshipCarpetSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
-  siswa       Siswa                 @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+  schedule WorshipCarpetSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  siswa    Siswa                 @relation(fields: [siswaId], references: [id], onDelete: Cascade)
 
   @@map("worship_carpet_assignments")
 }
 
 enum PrayerTime {
-  ZUHUR  @map("zuhur")
-  ASHAR  @map("ashar")
-  JUMAT  @map("jumat")
+  ZUHUR @map("zuhur")
+  ASHAR @map("ashar")
+  JUMAT @map("jumat")
 
   @@map("prayer_time")
 }
@@ -596,16 +614,16 @@ enum CarpetZone {
 // =============================================
 
 model SiteSettings {
-  id          String   @id @default(uuid())
-  key         String   @unique
+  id          String      @id @default(uuid())
+  key         String      @unique
   value       String
   type        SettingType @default(STRING)
-  category    String   @default("general")
+  category    String      @default("general")
   description String?
-  isPublic    Boolean  @default(false) @map("is_public")
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isPublic    Boolean     @default(false) @map("is_public")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("site_settings")
 }
@@ -627,16 +645,16 @@ model MaintenanceSchedule {
   startTime   DateTime @map("start_time")
   endTime     DateTime @map("end_time")
   isActive    Boolean  @default(true) @map("is_active")
-  
+
   // Pages affected (null = all pages)
   affectedPaths String[] @map("affected_paths")
-  
+
   // Message to show during maintenance
-  message     String   @default("Website sedang dalam pemeliharaan. Silakan kembali beberapa saat lagi.")
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String?  @map("created_by")
+  message String @default("Website sedang dalam pemeliharaan. Silakan kembali beberapa saat lagi.")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?  @map("created_by")
 
   @@map("maintenance_schedules")
 }

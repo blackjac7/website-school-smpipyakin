@@ -14,7 +14,12 @@ import {
   RefreshCw,
   AlertTriangle,
 } from "lucide-react";
-import { getAllStudentQRCodes, getClassesForQR, regenerateAllQRTokens } from "@/actions/student-qr";
+import {
+  getAllStudentQRCodes,
+  getClassesForQR,
+  regenerateAllQRTokens,
+  getAvailableYearsForQR,
+} from "@/actions/student-qr";
 import toast from "react-hot-toast";
 
 interface StudentQR {
@@ -29,7 +34,9 @@ interface StudentQR {
 export default function QRCodePrintContent() {
   const [students, setStudents] = useState<StudentQR[]>([]);
   const [classes, setClasses] = useState<string[]>([]);
+  const [years, setYears] = useState<number[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("all");
+  const [selectedYear, setSelectedYear] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -51,15 +58,22 @@ export default function QRCodePrintContent() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Fetch classes for filter
+  // Fetch classes and years for filter
   useEffect(() => {
-    async function fetchClasses() {
-      const result = await getClassesForQR();
-      if (result.success) {
-        setClasses(result.classes);
+    async function fetchFilters() {
+      const [classResult, yearResult] = await Promise.all([
+        getClassesForQR(),
+        getAvailableYearsForQR(),
+      ]);
+
+      if (classResult.success) {
+        setClasses(classResult.classes);
+      }
+      if (yearResult.success) {
+        setYears(yearResult.years);
       }
     }
-    fetchClasses();
+    fetchFilters();
   }, []);
 
   // Fetch students with server-side search
@@ -69,7 +83,8 @@ export default function QRCodePrintContent() {
       selectedClass,
       pagination.page,
       50,
-      debouncedSearch || undefined
+      debouncedSearch || undefined,
+      selectedYear,
     );
     if (result.success && result.students) {
       setStudents(result.students);
@@ -82,7 +97,7 @@ export default function QRCodePrintContent() {
       }
     }
     setIsLoading(false);
-  }, [selectedClass, pagination.page, debouncedSearch]);
+  }, [selectedClass, pagination.page, debouncedSearch, selectedYear]);
 
   useEffect(() => {
     fetchStudents();
@@ -92,7 +107,7 @@ export default function QRCodePrintContent() {
   const handleRegenerateAll = async () => {
     setIsRegenerating(true);
     setShowConfirmRegenerate(false);
-    
+
     try {
       const result = await regenerateAllQRTokens();
       if (result.success) {
@@ -105,7 +120,7 @@ export default function QRCodePrintContent() {
     } catch {
       toast.error("Terjadi kesalahan");
     }
-    
+
     setIsRegenerating(false);
   };
 
@@ -158,7 +173,7 @@ export default function QRCodePrintContent() {
                 <p class="nisn">NISN: ${student.nisn}</p>
                 <p class="class">${student.class || "-"}</p>
               </div>
-            `
+            `,
               )
               .join("")}
           </div>
@@ -227,14 +242,19 @@ export default function QRCodePrintContent() {
                 <AlertTriangle className="w-6 h-6 text-orange-600" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Regenerate Semua QR?</h3>
-                <p className="text-sm text-gray-500">Tindakan ini tidak dapat dibatalkan</p>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Regenerate Semua QR?
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Tindakan ini tidak dapat dibatalkan
+                </p>
               </div>
             </div>
-            
+
             <p className="text-gray-600 mb-6">
-              Semua QR Code siswa yang lama akan <strong>tidak berlaku</strong> dan diganti dengan QR baru. 
-              Siswa perlu mengakses QR baru mereka untuk scan keterlambatan.
+              Semua QR Code siswa yang lama akan <strong>tidak berlaku</strong>{" "}
+              dan diganti dengan QR baru. Siswa perlu mengakses QR baru mereka
+              untuk scan keterlambatan.
             </p>
 
             <div className="flex gap-3">
@@ -297,6 +317,26 @@ export default function QRCodePrintContent() {
             ))}
           </select>
         </div>
+
+        {/* Year Filter */}
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-gray-400" />
+          <select
+            value={selectedYear}
+            onChange={(e) => {
+              setSelectedYear(e.target.value);
+              setPagination((p) => ({ ...p, page: 1 }));
+            }}
+            className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          >
+            <option value="all">Semua Tahun</option>
+            {years.map((y) => (
+              <option key={y} value={y.toString()}>
+                Tahun {y}
+              </option>
+            ))}
+          </select>
+        </div>
       </motion.div>
 
       {/* Loading */}
@@ -307,7 +347,10 @@ export default function QRCodePrintContent() {
       ) : (
         <>
           {/* QR Grid */}
-          <div ref={printRef} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div
+            ref={printRef}
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+          >
             {students.map((student) => (
               <motion.div
                 key={student.id}
@@ -341,10 +384,9 @@ export default function QRCodePrintContent() {
             <div className="text-center py-20">
               <QrCode className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500">
-                {debouncedSearch 
+                {debouncedSearch
                   ? `Tidak ditemukan siswa dengan kata kunci "${debouncedSearch}"`
-                  : "Tidak ada siswa ditemukan"
-                }
+                  : "Tidak ada siswa ditemukan"}
               </p>
             </div>
           )}
@@ -362,7 +404,8 @@ export default function QRCodePrintContent() {
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <span className="text-gray-600">
-                Halaman {pagination.page} dari {pagination.totalPages} ({pagination.totalCount} siswa)
+                Halaman {pagination.page} dari {pagination.totalPages} (
+                {pagination.totalCount} siswa)
               </span>
               <button
                 onClick={() =>

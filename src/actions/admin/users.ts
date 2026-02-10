@@ -4,7 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
-import { UserRole, GenderType } from "@prisma/client";
+import { UserRole, GenderType, Prisma } from "@prisma/client";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { isAdminRole } from "@/lib/roles";
 
@@ -19,7 +19,7 @@ async function verifyAdminRole() {
         "Admin authorization failed. User role:",
         user?.role,
         "normalized:",
-        user?.role ? String(user.role).toLowerCase() : undefined
+        user?.role ? String(user.role).toLowerCase() : undefined,
       );
     }
 
@@ -29,7 +29,6 @@ async function verifyAdminRole() {
     };
   }
 
-  return { authorized: true, user };
   return { authorized: true, user };
 }
 
@@ -101,7 +100,7 @@ export interface PaginatedUsersResponse {
 }
 
 export async function getUsers(
-  params?: GetUsersParams
+  params?: GetUsersParams,
 ): Promise<PaginatedUsersResponse> {
   // Verify admin authorization
   const auth = await verifyAdminRole();
@@ -120,38 +119,41 @@ export async function getUsers(
 
   try {
     // Build where clause for filtering
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {};
+    const where: Prisma.UserWhereInput = {};
 
     // Role filter
     if (role && role !== "all") {
-      where.role = role;
+      where.role = role as UserRole;
     }
 
-    // Class filter - for students
+    // Build siswa filter (class and angkatan) - combine to avoid type issues
+    const siswaFilter: Prisma.SiswaWhereInput = {};
     if (classFilter && classFilter !== "all") {
-      where.siswa = {
-        ...where.siswa,
-        class: classFilter,
-      };
+      siswaFilter.class = classFilter;
     }
-
-    // Angkatan filter - for students
     if (angkatanFilter) {
-      where.siswa = {
-        ...where.siswa,
-        year: angkatanFilter,
-      };
+      siswaFilter.year = angkatanFilter;
+    }
+    if (Object.keys(siswaFilter).length > 0) {
+      where.siswa = siswaFilter;
     }
 
     // Search filter (search in username, email, and related tables)
     if (search) {
       where.OR = [
-        { username: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-        { siswa: { name: { contains: search, mode: "insensitive" } } },
+        { username: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { email: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        {
+          siswa: {
+            name: { contains: search, mode: Prisma.QueryMode.insensitive },
+          },
+        },
         { siswa: { nisn: { contains: search } } },
-        { kesiswaan: { name: { contains: search, mode: "insensitive" } } },
+        {
+          kesiswaan: {
+            name: { contains: search, mode: Prisma.QueryMode.insensitive },
+          },
+        },
       ];
     }
 
@@ -574,7 +576,10 @@ export async function deleteUser(userId: string) {
 
   try {
     if (auth.user?.userId === userId) {
-        return { success: false, error: "Anda tidak dapat menghapus akun Anda sendiri" };
+      return {
+        success: false,
+        error: "Anda tidak dapat menghapus akun Anda sendiri",
+      };
     }
 
     await prisma.user.delete({
@@ -604,10 +609,14 @@ export async function bulkDeleteUsers(userIds: string[]) {
 
   try {
     // Filter out self if included
-    const idsToDelete = userIds.filter(id => id !== auth.user?.userId);
-    
+    const idsToDelete = userIds.filter((id) => id !== auth.user?.userId);
+
     if (idsToDelete.length === 0) {
-        return { success: false, error: "Tidak ada pengguna yang dapat dihapus (Anda tidak dapat menghapus diri sendiri)" };
+      return {
+        success: false,
+        error:
+          "Tidak ada pengguna yang dapat dihapus (Anda tidak dapat menghapus diri sendiri)",
+      };
     }
 
     // Delete users in a transaction

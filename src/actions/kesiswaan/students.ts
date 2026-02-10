@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { isKesiswaanRole } from "@/lib/roles";
 import { Prisma, GenderType } from "@prisma/client";
+import { generateQRToken, generateQRPayload } from "@/lib/qr-token";
 
 // Validation schemas
 const GetStudentsSchema = z.object({
@@ -63,7 +64,7 @@ async function verifyKesiswaanRole() {
  * Get paginated students for kesiswaan dashboard
  */
 export async function getStudentsForKesiswaan(
-  params: z.infer<typeof GetStudentsSchema> = { page: 1, limit: 10 }
+  params: z.infer<typeof GetStudentsSchema> = { page: 1, limit: 10 },
 ): Promise<StudentsResult> {
   try {
     const auth = await verifyKesiswaanRole();
@@ -185,6 +186,7 @@ export async function getStudentsForKesiswaan(
  * Get all students for export (no pagination)
  */
 export async function getAllStudentsForExport(params?: {
+  search?: string;
   classFilter?: string;
   genderFilter?: string;
   angkatanFilter?: number;
@@ -201,6 +203,16 @@ export async function getAllStudentsForExport(params?: {
 
     const where: Prisma.SiswaWhereInput = {};
     const conditions: Prisma.SiswaWhereInput[] = [];
+
+    if (params?.search) {
+      conditions.push({
+        OR: [
+          { name: { contains: params.search, mode: "insensitive" } },
+          { nisn: { contains: params.search } },
+          { email: { contains: params.search, mode: "insensitive" } },
+        ],
+      });
+    }
 
     if (params?.classFilter && params.classFilter !== "all") {
       conditions.push({ class: params.classFilter });
@@ -255,6 +267,158 @@ export async function getAllStudentsForExport(params?: {
     return { success: true, data: formattedStudents };
   } catch (error) {
     console.error("getAllStudentsForExport error:", error);
+    return { success: false, data: [], error: "Failed to fetch students" };
+  }
+}
+
+/**
+ * Student data with HMAC-signed QR payload for student cards
+ */
+export type StudentCardData = {
+  id: string;
+  name: string;
+  nisn: string;
+  class: string | null;
+  year: number | null;
+  gender: string | null;
+  birthPlace: string | null;
+  birthDate: string | null;
+  qrData: string; // HMAC-signed QR payload
+};
+
+/**
+ * Get all students with HMAC-signed QR codes for student card generation.
+ * Auto-generates qrToken if a student doesn't have one yet.
+ */
+export async function getStudentsForCards(params?: {
+  search?: string;
+  classFilter?: string;
+  angkatanFilter?: number;
+}): Promise<{
+  success: boolean;
+  data: StudentCardData[];
+  error?: string;
+}> {
+  try {
+    const auth = await verifyKesiswaanRole();
+    if (!auth.authorized) {
+      return { success: false, data: [], error: auth.error };
+    }
+
+    const where: Prisma.SiswaWhereInput = {};
+    const conditions: Prisma.SiswaWhereInput[] = [];
+
+    if (params?.search) {
+      conditions.push({
+        OR: [
+          { name: { contains: params.search, mode: "insensitive" } },
+          { nisn: { contains: params.search } },
+        ],
+      });
+    }
+
+    if (params?.classFilter && params.classFilter !== "all") {
+      conditions.push({ class: params.classFilter });
+    }
+
+    if (params?.angkatanFilter) {
+      conditions.push({ year: params.angkatanFilter });
+    }
+
+    if (conditions.length > 0) {
+      where.AND = conditions;
+    }
+
+    const students = await prisma.siswa.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        nisn: true,
+        class: true,
+        year: true,
+        gender: true,
+        birthPlace: true,
+        birthDate: true,
+        qrToken: true,
+      },
+      orderBy: [{ class: "asc" }, { name: "asc" }],
+    });
+
+    // Batch update students without QR tokens (avoid connection pool exhaustion)
+    const studentsNeedingTokens = students.filter((s) => !s.qrToken);
+
+    if (studentsNeedingTokens.length > 0) {
+      // Process in batches of 10 to avoid connection pool exhaustion
+      const BATCH_SIZE = 10;
+      for (let i = 0; i < studentsNeedingTokens.length; i += BATCH_SIZE) {
+        const batch = studentsNeedingTokens.slice(i, i + BATCH_SIZE);
+        await Promise.all(
+          batch.map((student) => {
+            const token = generateQRToken(student.id);
+            return prisma.siswa.update({
+              where: { id: student.id },
+              data: { qrToken: token },
+            });
+          }),
+        );
+      }
+
+      // Refetch students to get updated qrTokens
+      const updatedStudents = await prisma.siswa.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          nisn: true,
+          class: true,
+          year: true,
+          gender: true,
+          birthPlace: true,
+          birthDate: true,
+          qrToken: true,
+        },
+        orderBy: [{ class: "asc" }, { name: "asc" }],
+      });
+
+      // Build student card data with QR payloads
+      const studentsWithQR: StudentCardData[] = updatedStudents.map(
+        (student) => ({
+          id: student.id,
+          name: student.name || "",
+          nisn: student.nisn || "",
+          class: student.class,
+          year: student.year,
+          gender: student.gender,
+          birthPlace: student.birthPlace,
+          birthDate: student.birthDate
+            ? student.birthDate.toISOString().split("T")[0]
+            : null,
+          qrData: generateQRPayload(student.id, student.qrToken!),
+        }),
+      );
+
+      return { success: true, data: studentsWithQR };
+    }
+
+    // All students already have tokens, build payloads directly
+    const studentsWithQR: StudentCardData[] = students.map((student) => ({
+      id: student.id,
+      name: student.name || "",
+      nisn: student.nisn || "",
+      class: student.class,
+      year: student.year,
+      gender: student.gender,
+      birthPlace: student.birthPlace,
+      birthDate: student.birthDate
+        ? student.birthDate.toISOString().split("T")[0]
+        : null,
+      qrData: generateQRPayload(student.id, student.qrToken!),
+    }));
+
+    return { success: true, data: studentsWithQR };
+  } catch (error) {
+    console.error("getStudentsForCards error:", error);
     return { success: false, data: [], error: "Failed to fetch students" };
   }
 }
@@ -425,7 +589,7 @@ export async function createStudent(data: CreateStudentInput) {
     const birthYear = new Date(birthDate).getFullYear();
     const rawPassword = `${nisn}@${birthYear}`;
     const hashedPassword = await import("bcryptjs").then((bcrypt) =>
-      bcrypt.hash(rawPassword, 10)
+      bcrypt.hash(rawPassword, 10),
     );
 
     await prisma.$transaction(async (tx) => {
@@ -468,6 +632,99 @@ export async function createStudent(data: CreateStudentInput) {
 }
 
 /**
+ * Update existing student information
+ */
+export async function updateStudent(
+  studentId: string,
+  data: Partial<CreateStudentInput>,
+) {
+  try {
+    const auth = await verifyKesiswaanRole();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
+    const existingStudent = await prisma.siswa.findUnique({
+      where: { id: studentId },
+      include: { user: true },
+    });
+
+    if (!existingStudent) {
+      return { success: false, error: "Siswa tidak ditemukan" };
+    }
+
+    const {
+      name,
+      nisn,
+      gender,
+      class: className,
+      birthDate,
+      email,
+      phone,
+      parentName,
+      parentPhone,
+      address,
+      birthPlace,
+      year,
+    } = data;
+
+    // Check NISN uniqueness if changed
+    if (nisn && nisn !== existingStudent.nisn) {
+      const nisnTaken = await prisma.siswa.findFirst({
+        where: { nisn, NOT: { id: studentId } },
+      });
+      if (nisnTaken) {
+        return { success: false, error: "NISN sudah digunakan siswa lain" };
+      }
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Update Siswa data
+      const updateData: Prisma.SiswaUpdateInput = {};
+      if (name) updateData.name = name;
+      if (nisn) updateData.nisn = nisn;
+      if (className) updateData.class = className;
+      if (gender) updateData.gender = gender;
+      if (birthDate) updateData.birthDate = new Date(birthDate);
+      if (birthPlace !== undefined) updateData.birthPlace = birthPlace;
+      if (phone !== undefined) updateData.phone = phone;
+      if (address !== undefined) updateData.address = address;
+      if (parentName !== undefined) updateData.parentName = parentName;
+      if (parentPhone !== undefined) updateData.parentPhone = parentPhone;
+      if (email !== undefined) updateData.email = email;
+      if (year) updateData.year = year;
+
+      await tx.siswa.update({
+        where: { id: studentId },
+        data: updateData,
+      });
+
+      // Update User email and username if NISN changed
+      if (existingStudent.userId) {
+        const userUpdate: Prisma.UserUpdateInput = {};
+        if (nisn && nisn !== existingStudent.nisn) {
+          userUpdate.username = nisn;
+        }
+        if (email !== undefined) {
+          userUpdate.email = email || null;
+        }
+        if (Object.keys(userUpdate).length > 0) {
+          await tx.user.update({
+            where: { id: existingStudent.userId },
+            data: userUpdate,
+          });
+        }
+      }
+    });
+
+    return { success: true, message: "Data siswa berhasil diperbarui" };
+  } catch (error) {
+    console.error("updateStudent error:", error);
+    return { success: false, error: "Gagal memperbarui data siswa" };
+  }
+}
+
+/**
  * Bulk create students from Excel data
  */
 export async function bulkCreateStudents(students: CreateStudentInput[]) {
@@ -489,7 +746,7 @@ export async function bulkCreateStudents(students: CreateStudentInput[]) {
       const validation = CreateStudentSchema.safeParse(student);
       if (!validation.success) {
         errors.push(
-          `Baris ${index + 1}: ${validation.error.issues[0].message}`
+          `Baris ${index + 1}: ${validation.error.issues[0].message}`,
         );
       } else {
         validStudents.push(validation.data);
@@ -512,13 +769,13 @@ export async function bulkCreateStudents(students: CreateStudentInput[]) {
     for (const student of validStudents) {
       try {
         const existing = await prisma.siswa.findFirst({
-            where: { nisn: student.nisn }
+          where: { nisn: student.nisn },
         });
-        
+
         if (existing) {
-            failCount++;
-            processErrors.push(`NISN ${student.nisn} sudah terdaftar`);
-            continue;
+          failCount++;
+          processErrors.push(`NISN ${student.nisn} sudah terdaftar`);
+          continue;
         }
 
         const birthYear = new Date(student.birthDate).getFullYear();
@@ -526,37 +783,39 @@ export async function bulkCreateStudents(students: CreateStudentInput[]) {
         const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
         await prisma.$transaction(async (tx) => {
-            const newUser = await tx.user.create({
-                data: {
-                    username: student.nisn,
-                    email: student.email || null,
-                    password: hashedPassword,
-                    role: "SISWA",
-                }
-            });
+          const newUser = await tx.user.create({
+            data: {
+              username: student.nisn,
+              email: student.email || null,
+              password: hashedPassword,
+              role: "SISWA",
+            },
+          });
 
-            await tx.siswa.create({
-                data: {
-                    userId: newUser.id,
-                    name: student.name,
-                    nisn: student.nisn,
-                    class: student.class,
-                    gender: student.gender as GenderType,
-                    birthDate: new Date(student.birthDate),
-                    birthPlace: student.birthPlace,
-                    phone: student.phone,
-                    address: student.address,
-                    parentName: student.parentName,
-                    parentPhone: student.parentPhone,
-                    email: student.email,
-                    year: student.year || new Date().getFullYear(), // Use provided year (angkatan) or current
-                }
-            });
+          await tx.siswa.create({
+            data: {
+              userId: newUser.id,
+              name: student.name,
+              nisn: student.nisn,
+              class: student.class,
+              gender: student.gender as GenderType,
+              birthDate: new Date(student.birthDate),
+              birthPlace: student.birthPlace,
+              phone: student.phone,
+              address: student.address,
+              parentName: student.parentName,
+              parentPhone: student.parentPhone,
+              email: student.email,
+              year: student.year || new Date().getFullYear(), // Use provided year (angkatan) or current
+            },
+          });
         });
         successCount++;
       } catch (err) {
         failCount++;
-        processErrors.push(`Gagal memproses ${student.name} (${student.nisn}): ${(err as Error).message}`);
+        processErrors.push(
+          `Gagal memproses ${student.name} (${student.nisn}): ${(err as Error).message}`,
+        );
       }
     }
 
@@ -565,9 +824,11 @@ export async function bulkCreateStudents(students: CreateStudentInput[]) {
       message: `Proses selesai. Berhasil: ${successCount}, Gagal: ${failCount}`,
       details: processErrors,
     };
-
   } catch (error) {
     console.error("bulkCreateStudents error:", error);
-    return { success: false, error: "Terjadi kesalahan server saat proses import" };
+    return {
+      success: false,
+      error: "Terjadi kesalahan server saat proses import",
+    };
   }
 }

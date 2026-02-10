@@ -48,8 +48,16 @@ export function useAuth(): UseAuthReturn {
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
+        // Mark that we have a valid session
+        if (typeof window !== "undefined") {
+          localStorage.setItem("hasSession", "true");
+        }
       } else {
-        // 401 is expected when user is not authenticated, don't log as error
+        // Clear session marker
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("hasSession");
+        }
+        // Only log unexpected errors (not 401)
         if (response.status !== 401) {
           console.error("Auth check failed with status:", response.status);
         }
@@ -67,7 +75,7 @@ export function useAuth(): UseAuthReturn {
   const login = async (
     username: string,
     password: string,
-    role: string
+    role: string,
   ): Promise<boolean> => {
     try {
       setLoading(true);

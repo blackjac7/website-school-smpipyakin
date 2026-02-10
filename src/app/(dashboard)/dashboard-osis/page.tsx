@@ -45,13 +45,13 @@ function OSISDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [showForm, setShowForm] = useState(false);
   const [editingActivity, setEditingActivity] = useState<OsisActivity | null>(
-    null
+    null,
   );
   const [activities, setActivities] = useState<OsisActivity[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<OsisNotificationData[]>(
-    []
+    [],
   );
   const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } =
     useSidebar(true);
@@ -59,12 +59,40 @@ function OSISDashboard() {
 
   // Worship Data State
   const [worshipData, setWorshipData] = useState<{
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    menstruation: any[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    adzan: any[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    carpet: any[];
+    menstruation: Array<{
+      id: string;
+      siswaId: string;
+      startDate: Date;
+      endDate: Date | null;
+      notes: string | null;
+      createdAt: Date;
+      updatedAt: Date;
+      warning: string | null;
+      siswa: { name: string | null; class: string | null };
+    }>;
+    adzan: Array<{
+      id: string;
+      siswaId: string;
+      date: Date;
+      prayerTime: string;
+      status: string;
+      createdAt: Date;
+      updatedAt: Date;
+      siswa: { name: string | null; class: string | null };
+    }>;
+    carpet: Array<{
+      id: string;
+      date: Date;
+      zone: string;
+      status: string;
+      className: string | null;
+      assignments: Array<{
+        id: string;
+        scheduleId: string;
+        siswaId: string;
+        siswa: { name: string | null; class: string | null };
+      }>;
+    }>;
   }>({ menstruation: [], adzan: [], carpet: [] });
   const [loadingWorship, setLoadingWorship] = useState(false);
 
@@ -98,7 +126,7 @@ function OSISDashboard() {
       const result = await markOsisNotificationAsRead(notificationId);
       if (result.success) {
         setNotifications((prev) =>
-          prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+          prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)),
         );
       }
     } catch (error) {
@@ -172,7 +200,7 @@ function OSISDashboard() {
         } else {
           toast.error(res.error || "Gagal menghapus");
         }
-      }
+      },
     );
   };
 

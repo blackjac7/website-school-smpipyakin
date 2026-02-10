@@ -71,9 +71,24 @@ export async function getPPDBStats() {
       _count: true,
     });
 
-    // Monthly stats processing in JS
-    const allApps = await prisma.pPDBApplication.findMany({
-      select: { createdAt: true, status: true },
+    // Monthly stats with database aggregation for better performance
+    // Get applications from last 12 months
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+    const monthlyApplications = await prisma.pPDBApplication.findMany({
+      where: {
+        createdAt: {
+          gte: twelveMonthsAgo,
+        },
+      },
+      select: {
+        createdAt: true,
+        status: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
     });
 
     interface MonthlyStat {
@@ -85,8 +100,8 @@ export async function getPPDBStats() {
       Pending: number;
     }
 
-    // Process monthly stats
-    const monthlyStatsMap = allApps.reduce(
+    // Process monthly stats (only last 12 months)
+    const monthlyStatsMap = monthlyApplications.reduce(
       (acc, curr) => {
         const date = new Date(curr.createdAt);
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -110,12 +125,12 @@ export async function getPPDBStats() {
 
         return acc;
       },
-      {} as Record<string, MonthlyStat>
+      {} as Record<string, MonthlyStat>,
     );
 
-    // Sort by key (YYYY-MM) but return array
+    // Sort by key (YYYY-MM) and return array
     const monthlyStats = Object.values(monthlyStatsMap).sort((a, b) =>
-      a.key.localeCompare(b.key)
+      a.key.localeCompare(b.key),
     );
 
     return {
@@ -139,7 +154,7 @@ export async function getPPDBStats() {
 export async function updateApplicantStatus(
   id: string,
   status: PPDBStatus,
-  feedback?: string
+  feedback?: string,
 ) {
   const auth = await verifyPPDBAccess();
   if (!auth.authorized) {
@@ -195,13 +210,11 @@ export async function getApplicants(params: GetApplicantsParams) {
 
     if (search) {
       where.OR = [
-        // Cast to any to bypass type check if mode is not supported in current provider
-        // but usually better to omit if not supported.
-        // Assuming standard Prisma behavior, contains is supported.
-        // If using SQLite, mode: 'insensitive' is not supported.
-        { name: { contains: search } },
+        { name: { contains: search, mode: Prisma.QueryMode.insensitive } },
         { nisn: { contains: search } },
-        { asalSekolah: { contains: search } },
+        {
+          asalSekolah: { contains: search, mode: Prisma.QueryMode.insensitive },
+        },
       ];
     }
 

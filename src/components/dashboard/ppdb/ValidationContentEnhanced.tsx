@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Search,
   Filter,
@@ -70,12 +70,8 @@ export default function ValidationContentEnhanced({
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  useEffect(() => {
-    fetchApplicants();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, statusFilter, debouncedSearchTerm, refreshTrigger]);
-
-  const fetchApplicants = async () => {
+  // Fetch applicants with useCallback for optimization
+  const fetchApplicants = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -100,7 +96,11 @@ export default function ValidationContentEnhanced({
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, statusFilter, debouncedSearchTerm]);
+
+  useEffect(() => {
+    fetchApplicants();
+  }, [fetchApplicants, refreshTrigger]);
 
   const handleViewDetail = async (applicant: Applicant) => {
     setLoadingDetailId(applicant.id);
@@ -258,7 +258,7 @@ export default function ValidationContentEnhanced({
               link.setAttribute("href", url);
               link.setAttribute(
                 "download",
-                `data_pendaftar_ppdb_${new Date().toISOString().split("T")[0]}.csv`
+                `data_pendaftar_ppdb_${new Date().toISOString().split("T")[0]}.csv`,
               );
               document.body.appendChild(link);
               link.click();
