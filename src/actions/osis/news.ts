@@ -94,30 +94,35 @@ export async function createOsisNews(prevState: unknown, formData: FormData) {
 }
 
 export async function deleteOsisNews(id: string) {
-    const auth = await verifyOsisAccess();
-    if (!auth.authorized) return { success: false, error: auth.error };
+  const auth = await verifyOsisAccess();
+  if (!auth.authorized) return { success: false, error: auth.error };
 
-    const user = auth.user!;
+  const user = auth.user!;
 
+  try {
     const existing = await prisma.news.findUnique({ where: { id } });
-    if (!existing) return { success: false, error: "Not found" };
+    if (!existing) return { success: false, error: "Berita tidak ditemukan" };
 
     if (existing.authorId !== user.userId) {
-        return { success: false, error: "Forbidden" };
+      return {
+        success: false,
+        error: "Anda tidak memiliki akses untuk menghapus berita ini",
+      };
     }
 
-    // Allow delete if pending?
+    // Allow delete if pending only
     if (existing.statusPersetujuan !== "PENDING") {
-         return { success: false, error: "Cannot delete processed news" };
+      return {
+        success: false,
+        error: "Hanya berita dengan status pending yang dapat dihapus",
+      };
     }
 
-    try {
-        await prisma.news.delete({ where: { id } });
-        revalidatePath("/dashboard-osis");
-        return { success: true, message: "Berita dihapus" };
-    } catch (e) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _ = e;
-        return { success: false, error: "Error deleting" };
-    }
+    await prisma.news.delete({ where: { id } });
+    revalidatePath("/dashboard-osis");
+    return { success: true, message: "Berita berhasil dihapus" };
+  } catch (error) {
+    console.error("Delete news error:", error);
+    return { success: false, error: "Gagal menghapus berita" };
+  }
 }

@@ -65,12 +65,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Check authentication status on mount (skip for login page)
+  // Check authentication status on mount (skip for login page and public pages)
   useEffect(() => {
     // Avoid re-running on every navigation to keep UI smooth
     if (hasInitialized) return;
 
-    if (pathname !== "/login") {
+    // Public pages that don't need auth check
+    const publicPages = [
+      "/login",
+      "/",
+      "/news",
+      "/contact",
+      "/ppdb",
+      "/facilities",
+      "/extracurricular",
+      "/profile",
+    ];
+    const isPublicPage = publicPages.some(
+      (page) => pathname === page || pathname.startsWith(page + "/"),
+    );
+
+    // Only check auth if we're on a protected page (dashboard) or have a stored session
+    const hasStoredSession =
+      typeof window !== "undefined" &&
+      localStorage.getItem("hasSession") === "true";
+
+    if (!isPublicPage || hasStoredSession) {
       checkAuthStatus({ silent: false });
     } else {
       setIsLoading(false);
@@ -111,9 +131,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
+        // Mark that we have a valid session
+        if (typeof window !== "undefined") {
+          localStorage.setItem("hasSession", "true");
+        }
       } else {
-        // 401 is expected when user is not authenticated, don't log as error
-        if (response.status !== 401) {
+        // Clear session marker on any non-ok response
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("hasSession");
+        }
+        // Only log unexpected errors (not 401)
+        if (response.status !== 401 && !silent) {
           console.error("Auth check failed with status:", response.status);
         }
         setUser(null);
@@ -133,7 +161,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (
     username: string,
     password: string,
-    role: string
+    role: string,
   ): Promise<boolean> => {
     try {
       setIsLoading(true);
@@ -247,6 +275,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // Clear user state
       setUser(null);
+
+      // Clear session marker
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("hasSession");
+      }
 
       // Show success toast
       showToast({

@@ -1,0 +1,193 @@
+/* Print Styles for Student Cards */
+
+@media print {
+  /* Hide everything except print container */
+  body * {
+    visibility: hidden;
+  }
+
+  .print-container,
+  .print-container * {
+    visibility: visible;
+  }
+
+  /*
+   * A4 portrait: 210mm × 297mm
+   * @page margin: 5mm each side → usable: 200mm × 287mm
+   * Card: 85.6mm × 54mm (ISO/IEC 7810 ID-1 standard)
+   * 2 cols: 85.6mm × 2 = 171.2mm + 1 col-gap 4mm = 175.2mm ✓ (fits 200mm)
+   * 5 rows: 54mm × 5 = 270mm + 4 row-gaps 1.5mm = 276mm ✓ (fits 287mm)
+   */
+  .print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(2, 85.6mm) !important;
+    column-gap: 4mm !important;
+    row-gap: 1.5mm !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+    justify-content: center !important;
+  }
+
+  /* Page setup for A4 — tight margins to maximize usable area */
+  @page {
+    size: A4 portrait;
+    margin: 5mm 10mm;
+  }
+
+  /* Card layout for print — 10 cards per page (2×5 grid) */
+  .student-card {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    width: 85.6mm !important;
+    height: 54mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    /* High quality text rendering */
+    font-weight: 500 !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    text-rendering: optimizeLegibility !important;
+  }
+
+  /* Force page break after every 10 cards */
+  .student-card:nth-child(10n) {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  /* Ensure all backgrounds and colors print exactly */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Force visibility and proper rendering of all text */
+  .student-card * {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  /* Enhance text contrast for printing */
+  .student-card span,
+  .student-card div {
+    font-weight: 500 !important;
+    letter-spacing: 0.01em !important;
+  }
+
+  /* Ensure QR code prints at high quality */
+  .student-card svg {
+    shape-rendering: crispEdges !important;
+    image-rendering: pixelated !important;
+  }
+
+  /* Hide non-printable elements */
+  button,
+  .no-print,
+  nav,
+  aside,
+  header:not(.student-card header) {
+    display: none !important;
+  }
+}
+
+/* Screen styles for preview */
+@media screen {
+  .print-container {
+    max-width: 190mm; /* Close to A4 width (210mm - 2x10mm margins) */
+    margin: 0 auto;
+    padding: 10mm;
+    background: #f9fafb;
+    display: grid;
+    grid-template-columns: repeat(2, 85.6mm);
+    gap: 5mm;
+    justify-content: center;
+  }
+
+  .student-card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+  }
+
+  .student-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Visual page break indicator for preview */
+  .student-card:nth-child(10n)::after {
+    content: "--- Page Break ---";
+    display: block;
+    text-align: center;
+    padding: 10px 0;
+    color: #999;
+    font-size: 12px;
+    border-top: 2px dashed #ddd;
+    margin-top: 10mm;
+    grid-column: 1 / -1;
+  }
+}
+
+/* Ensure QR codes render properly */
+.student-card svg {
+  shape-rendering: crispEdges;
+}
+
+/* High quality text rendering */
+.student-card {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar for student list */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Crop marks for cutting (optional - for professional printing) */
+.print-container.with-crop-marks .student-card::before,
+.print-container.with-crop-marks .student-card::after {
+  content: "";
+  position: absolute;
+  border: 0.5px solid #999;
+}
+
+.print-container.with-crop-marks .student-card::before {
+  top: -2mm;
+  left: -2mm;
+  width: 5mm;
+  height: 5mm;
+  border-right: none;
+  border-bottom: none;
+}
+
+.print-container.with-crop-marks .student-card::after {
+  bottom: -2mm;
+  right: -2mm;
+  width: 5mm;
+  height: 5mm;
+  border-left: none;
+  border-top: none;
+}

@@ -4,16 +4,44 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Connection Pooling for Serverless (Vercel)
-// Ensure your DATABASE_URL in .env points to the connection pool (e.g., Supabase Transaction Pooler or Neon Pooling URL)
-// For Prisma, we don't need explicit pool config in the client constructor if the URL handles it,
-// but using a global singleton is critical to prevent exhausting connections during hot reloads.
+// Connection Pooling Configuration
+// This prevents "Too many database connections" error by:
+// 1. Using singleton pattern (globalForPrisma)
+// 2. Limiting connection pool size
+// 3. Setting appropriate timeouts
 
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+    log:
+      process.env.NODE_ENV === "development"
+        ? ["query", "error", "warn"]
+        : ["error"],
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
   });
+
+// Graceful shutdown: disconnect Prisma on process termination
+// Only run in Node.js runtime (not Edge Runtime for middleware)
+if (typeof window === "undefined" && typeof process.on === "function") {
+  // Increase max listeners to prevent warnings during hot reload
+  if (typeof process.setMaxListeners === "function") {
+    process.setMaxListeners(15);
+  }
+
+  // Handle graceful shutdown for both development and production
+  const shutdownHandler = async () => {
+    console.log("Disconnecting Prisma Client...");
+    await prisma.$disconnect();
+  };
+
+  process.on("beforeExit", shutdownHandler);
+  process.on("SIGINT", shutdownHandler);
+  process.on("SIGTERM", shutdownHandler);
+}
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 

@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Loader2, Save } from "lucide-react";
 import toast from "react-hot-toast";
-import { createStudent } from "@/actions/kesiswaan/students";
+import { createStudent, updateStudent } from "@/actions/kesiswaan/students";
+import { StudentData } from "@/actions/kesiswaan/students";
 
 interface AddStudentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   availableClasses: string[];
+  editingStudent?: StudentData | null;
 }
 
 export default function AddStudentModal({
@@ -17,6 +19,7 @@ export default function AddStudentModal({
   onClose,
   onSuccess,
   availableClasses,
+  editingStudent,
 }: AddStudentModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -33,10 +36,45 @@ export default function AddStudentModal({
     birthPlace: "",
   });
 
+  // Populate form when editing
+  useEffect(() => {
+    if (editingStudent) {
+      setFormData({
+        name: editingStudent.name || "",
+        nisn: editingStudent.nisn || "",
+        gender: editingStudent.gender || "MALE",
+        class: editingStudent.class || "",
+        birthDate: editingStudent.birthDate || "",
+        email: editingStudent.email || "",
+        phone: editingStudent.phone || "",
+        parentName: editingStudent.parentName || "",
+        parentPhone: editingStudent.parentPhone || "",
+        address: editingStudent.address || "",
+        birthPlace: editingStudent.birthPlace || "",
+      });
+    } else {
+      setFormData({
+        name: "",
+        nisn: "",
+        gender: "MALE",
+        class: "",
+        birthDate: "",
+        email: "",
+        phone: "",
+        parentName: "",
+        parentPhone: "",
+        address: "",
+        birthPlace: "",
+      });
+    }
+  }, [editingStudent]);
+
   if (!isOpen) return null;
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -47,31 +85,25 @@ export default function AddStudentModal({
     setIsLoading(true);
 
     try {
-      const result = await createStudent({
-        ...formData,
-        gender: formData.gender as "MALE" | "FEMALE",
-      });
+      const result = editingStudent
+        ? await updateStudent(editingStudent.id, {
+            ...formData,
+            gender: formData.gender as "MALE" | "FEMALE",
+          })
+        : await createStudent({
+            ...formData,
+            gender: formData.gender as "MALE" | "FEMALE",
+          });
 
       if (result.success) {
-        toast.success("Siswa berhasil ditambahkan");
+        toast.success(
+          editingStudent
+            ? "Data siswa berhasil diperbarui"
+            : "Siswa berhasil ditambahkan",
+        );
         onSuccess();
-        onClose();
-        // Reset form
-        setFormData({
-            name: "",
-            nisn: "",
-            gender: "MALE",
-            class: "",
-            birthDate: "",
-            email: "",
-            phone: "",
-            parentName: "",
-            parentPhone: "",
-            address: "",
-            birthPlace: "",
-        });
       } else {
-        toast.error(result.error || "Gagal menambahkan siswa");
+        toast.error(result.error || "Gagal menyimpan data");
       }
     } catch (error) {
       console.error("Submit error:", error);
@@ -85,7 +117,9 @@ export default function AddStudentModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
         <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-          <h3 className="font-semibold text-gray-900">Tambah Siswa Baru</h3>
+          <h3 className="font-semibold text-gray-900">
+            {editingStudent ? "Edit Data Siswa" : "Tambah Siswa Baru"}
+          </h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -93,9 +127,13 @@ export default function AddStudentModal({
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <div className="p-6 overflow-y-auto">
-          <form id="add-student-form" onSubmit={handleSubmit} className="space-y-4">
+          <form
+            id="add-student-form"
+            onSubmit={handleSubmit}
+            className="space-y-4"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* NISN */}
               <div>
@@ -138,21 +176,21 @@ export default function AddStudentModal({
                   Kelas <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                    <input
-                        type="text"
-                        name="class"
-                        list="class-options"
-                        required
-                        value={formData.class}
-                        onChange={handleChange}
-                        placeholder="Pilih atau ketik kelas"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
-                    <datalist id="class-options">
-                        {availableClasses.map((cls) => (
-                            <option key={cls} value={cls} />
-                        ))}
-                    </datalist>
+                  <input
+                    type="text"
+                    name="class"
+                    list="class-options"
+                    required
+                    value={formData.class}
+                    onChange={handleChange}
+                    placeholder="Pilih atau ketik kelas"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                  <datalist id="class-options">
+                    {availableClasses.map((cls) => (
+                      <option key={cls} value={cls} />
+                    ))}
+                  </datalist>
                 </div>
               </div>
 
@@ -204,8 +242,8 @@ export default function AddStudentModal({
                 </p>
               </div>
 
-               {/* Email */}
-               <div>
+              {/* Email */}
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Email
                 </label>
@@ -249,8 +287,8 @@ export default function AddStudentModal({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               {/* Nama Orang Tua */}
-               <div>
+              {/* Nama Orang Tua */}
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Nama Orang Tua
                 </label>
