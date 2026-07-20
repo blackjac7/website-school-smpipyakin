@@ -353,7 +353,7 @@ export default function StudentCardPreview({
             borderRadius: "3px",
           }}
         >
-          Valid until Jun {currentYear + 1}
+          Valid until Jun {(student.year || currentYear) + 3}
         </div>
       </div>
     </div>

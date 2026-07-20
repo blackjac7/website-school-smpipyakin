@@ -392,7 +392,15 @@ export async function getLatenessRecords(
             select: { name: true, nisn: true, class: true, image: true },
           },
           recorder: {
-            select: { username: true },
+            select: {
+              username: true,
+              siswa: {
+                select: { name: true },
+              },
+              kesiswaan: {
+                select: { name: true },
+              },
+            },
           },
         },
         orderBy: { date: "desc" },
@@ -412,7 +420,7 @@ export async function getLatenessRecords(
         arrivalTime: r.arrivalTime,
         date: r.date,
         reason: r.reason,
-        recordedBy: r.recorder.username,
+        recordedBy: r.recorder.siswa?.name || r.recorder.kesiswaan?.name || r.recorder.username,
       })),
       totalCount,
       totalPages: Math.ceil(totalCount / limit),
@@ -568,13 +576,29 @@ export async function getLatenessForExport(
           },
         },
         recorder: {
-          select: { username: true },
+          select: {
+            username: true,
+            siswa: {
+              select: { name: true },
+            },
+            kesiswaan: {
+              select: { name: true },
+            },
+          },
         },
       },
       orderBy: { date: "desc" },
     });
 
-    return { success: true, data: records };
+    return {
+      success: true,
+      data: records.map((r) => ({
+        ...r,
+        recorder: {
+          username: r.recorder.siswa?.name || r.recorder.kesiswaan?.name || r.recorder.username,
+        },
+      })),
+    };
   } catch (error) {
     console.error("Error fetching data for export:", error);
     return { success: false, error: "Gagal mengambil data export" };
