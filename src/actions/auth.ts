@@ -12,7 +12,14 @@ import { getJWTSecret, getJWTCookieOptions, JWT_CONFIG } from "@/lib/jwt";
 const LoginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  role: z.enum(["admin", "kesiswaan", "siswa", "osis", "ppdb_admin"]),
+  role: z.enum([
+    "admin",
+    "kesiswaan",
+    "siswa",
+    "osis",
+    "ppdb_admin",
+    "pembina_osis",
+  ]),
   honeypot: z.string().max(0, "Spam detected"), // Must be empty
   // Note: Captcha validation is client-side for UX in this implementation.
   // For strict server-side captcha, we would need to store the expected hash in a session/cookie
@@ -27,6 +34,7 @@ const ROLE_MAPPING = {
   SISWA: "siswa",
   OSIS: "osis",
   PPDB_ADMIN: "ppdb_admin",
+  PEMBINA_OSIS: "pembina_osis",
 } as const;
 
 // Reverse mapping for DB lookup
@@ -36,6 +44,7 @@ const REVERSE_ROLE_MAPPING: Record<string, keyof typeof ROLE_MAPPING> = {
   siswa: "SISWA",
   osis: "OSIS",
   ppdb_admin: "PPDB_ADMIN",
+  pembina_osis: "PEMBINA_OSIS",
 };
 
 // Permission mapping
@@ -45,6 +54,7 @@ const ROLE_PERMISSIONS = {
   SISWA: ["read", "view_profile", "submit_assignments"],
   OSIS: ["read", "write", "manage_events", "view_reports"],
   PPDB_ADMIN: ["read", "write", "manage_ppdb", "view_applications"],
+  PEMBINA_OSIS: ["read", "write", "validate_osis_activities", "view_reports"],
 } as const;
 
 // Helper to get IP address in Server Action
@@ -67,7 +77,7 @@ async function logSecurityEvent(
     ip: string;
     userAgent?: string;
     reason?: string;
-  }
+  },
 ) {
   // Placeholder for future security monitoring integration
   void _eventType;
@@ -93,7 +103,7 @@ export async function loginAction(prevState: unknown, formData: FormData) {
   if (!validationResult.success) {
     // If honeypot failed, log it as a bot attempt
     const honeypotError = validationResult.error.issues.find((e) =>
-      e.path.includes("honeypot")
+      e.path.includes("honeypot"),
     );
     if (honeypotError) {
       await logSecurityEvent("BOT_DETECTED", {

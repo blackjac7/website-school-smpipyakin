@@ -42,6 +42,12 @@ export const TEST_USERS = {
     role: "OSIS",
     dashboardUrl: "/dashboard-osis",
   },
+  pembina_osis: {
+    username: "pembina_osis",
+    password: "smpipyakinIDJKT705",
+    role: "PEMBINA_OSIS",
+    dashboardUrl: "/dashboard-pembina-osis",
+  },
 } as const;
 
 export type UserRole = keyof typeof TEST_USERS;

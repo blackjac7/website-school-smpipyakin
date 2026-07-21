@@ -8,7 +8,7 @@ import { isAdminRole } from "@/lib/roles";
 export default async function MaintenanceGuard() {
   // Check if maintenance mode is enabled
   const maintenanceEnabled = await isMaintenanceMode();
-  
+
   if (!maintenanceEnabled) {
     return null;
   }
@@ -19,7 +19,7 @@ export default async function MaintenanceGuard() {
 
   // Check if the current path is excluded from maintenance
   const isExcluded = MAINTENANCE_EXCLUDED_ROUTES.some((route) =>
-    currentPath.startsWith(route)
+    currentPath.startsWith(route),
   );
 
   if (isExcluded) {
@@ -28,7 +28,7 @@ export default async function MaintenanceGuard() {
 
   // Check if user is admin (admins bypass maintenance)
   const user = await getAuthenticatedUser();
-  
+
   if (user && isAdminRole(user.role)) {
     return null;
   }

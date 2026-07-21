@@ -341,13 +341,14 @@ Create a `.env` file from [.env.example](./.env.example) and fill in the values.
 
 > ⚠️ **Warning**: Change all default passwords before deploying to production!
 
-| Role       | Username    | Password   | Dashboard Access       |
-| ---------- | ----------- | ---------- | ---------------------- |
-| Admin      | `admin`     | `admin123` | `/dashboard-admin`     |
-| Kesiswaan  | `kesiswaan` | `admin123` | `/dashboard-kesiswaan` |
-| Student    | `siswa001`  | `admin123` | `/dashboard-siswa`     |
-| OSIS       | `osis001`   | `admin123` | `/dashboard-osis`      |
-| PPDB Staff | `ppdb001`   | `admin123` | `/dashboard-ppdb`      |
+| Role         | Username       | Password             | Dashboard Access          |
+| ------------ | -------------- | -------------------- | ------------------------- |
+| Admin        | `admin`        | `smpipyakinIDJKT705` | `/dashboard-admin`        |
+| Kesiswaan    | `kesiswaan`    | `smpipyakinIDJKT705` | `/dashboard-kesiswaan`    |
+| Student      | `siswa001`     | `smpipyakinIDJKT705` | `/dashboard-siswa`        |
+| OSIS         | `osis001`      | `smpipyakinIDJKT705` | `/dashboard-osis`         |
+| PPDB Staff   | `ppdb001`      | `smpipyakinIDJKT705` | `/dashboard-ppdb`         |
+| Pembina OSIS | `pembina_osis` | `smpipyakinIDJKT705` | `/dashboard-pembina-osis` |
 
 ---
 

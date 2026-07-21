@@ -26,7 +26,7 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
     // Also add Google Maps-related origins to support embedded maps and Maps JS API
     response.headers.set(
       "Content-Security-Policy",
-      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.emailjs.com https://cdn.jsdelivr.net https://maps.googleapis.com https://maps.gstatic.com https://flowise.zeabur.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' fonts.gstatic.com https://r2cdn.perplexity.ai; img-src 'self' data: https: https://maps.gstatic.com https://i.ytimg.com https://*.googleusercontent.com; connect-src 'self' api.emailjs.com https://va.vercel-scripts.com https://cdn.jsdelivr.net https://maps.googleapis.com https://flowise.zeabur.app; frame-src 'self' https://www.instagram.com https://www.google.com https://maps.google.com https://www.google.com/maps https://flowise.zeabur.app https://www.youtube.com https://youtube.com https://youtu.be https://www.youtube-nocookie.com https://drive.google.com https://docs.google.com https://drive.googleusercontent.com;"
+      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.emailjs.com https://cdn.jsdelivr.net https://maps.googleapis.com https://maps.gstatic.com https://flowise.zeabur.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' fonts.gstatic.com https://r2cdn.perplexity.ai; img-src 'self' data: https: https://maps.gstatic.com https://i.ytimg.com https://*.googleusercontent.com; connect-src 'self' api.emailjs.com https://va.vercel-scripts.com https://cdn.jsdelivr.net https://maps.googleapis.com https://flowise.zeabur.app; frame-src 'self' https://www.instagram.com https://www.google.com https://maps.google.com https://www.google.com/maps https://flowise.zeabur.app https://www.youtube.com https://youtube.com https://youtu.be https://www.youtube-nocookie.com https://drive.google.com https://docs.google.com https://drive.googleusercontent.com;",
     );
   }
 
@@ -76,7 +76,7 @@ export async function middleware(request: NextRequest) {
 
   // Check if the route is protected
   const protectedRoute = Object.keys(PROTECTED_ROUTES).find((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
   if (protectedRoute) {
@@ -148,14 +148,14 @@ export async function middleware(request: NextRequest) {
       response.headers.set("x-user-role", decoded.role as string);
       response.headers.set(
         "x-user-permissions",
-        JSON.stringify(decoded.permissions)
+        JSON.stringify(decoded.permissions),
       );
 
       return addSecurityHeaders(response);
     } catch (error) {
       console.error(
         `[SECURITY] Token verification error from IP ${clientIP}:`,
-        error
+        error,
       );
 
       // Redirect to login if token is invalid
@@ -184,7 +184,7 @@ export async function middleware(request: NextRequest) {
         }
 
         const response = NextResponse.redirect(
-          new URL(dashboardUrl, request.url)
+          new URL(dashboardUrl, request.url),
         );
         return addSecurityHeaders(response);
       } catch (error) {
