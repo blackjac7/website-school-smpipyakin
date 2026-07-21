@@ -16,7 +16,13 @@ import {
   Calendar as CalendarIcon,
 } from "lucide-react";
 
-type Role = "siswa" | "kesiswaan" | "admin" | "osis" | "ppdb_admin";
+type Role =
+  | "siswa"
+  | "kesiswaan"
+  | "admin"
+  | "osis"
+  | "ppdb_admin"
+  | "pembina_osis";
 
 interface IllustrationConfig {
   icon: LucideIcon;
@@ -73,6 +79,15 @@ const roleConfig: Record<Role, IllustrationConfig> = {
     darkBgColor: "dark:bg-purple-900/30",
     orbitIcons: [Users, School, BookOpen],
     particleColor: "bg-purple-400",
+  },
+  pembina_osis: {
+    icon: UserCog,
+    color: "text-orange-600",
+    bgColor: "bg-orange-100",
+    darkColor: "dark:text-orange-400",
+    darkBgColor: "dark:bg-orange-900/30",
+    orbitIcons: [ShieldCheck, Megaphone, Users],
+    particleColor: "bg-orange-400",
   },
 };
 

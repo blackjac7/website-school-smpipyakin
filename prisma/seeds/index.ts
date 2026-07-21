@@ -35,7 +35,7 @@ const defaultOptions: SeedOptions = {
  */
 export async function runAllSeeds(
   prisma: PrismaClient,
-  options: SeedOptions = {}
+  options: SeedOptions = {},
 ) {
   const opts = { ...defaultOptions, ...options };
 
@@ -99,6 +99,7 @@ export async function runAllSeeds(
   console.log("   Siswa: siswa001 / smpipyakinIDJKT705");
   console.log("   OSIS: osis001 / smpipyakinIDJKT705");
   console.log("   PPDB: ppdb001 / smpipyakinIDJKT705");
+  console.log("   Pembina OSIS: pembina_osis / smpipyakinIDJKT705");
 }
 
 // Re-export individual seeders for selective use

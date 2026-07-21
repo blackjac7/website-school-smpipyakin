@@ -19,6 +19,7 @@ const FORM_ROLE_MAP: Record<UserRole, string> = {
   admin: "admin",
   kesiswaan: "kesiswaan",
   osis: "osis",
+  pembina_osis: "pembina_osis",
 };
 
 export class LoginPage {

@@ -22,11 +22,11 @@ export class DashboardPage {
     this.sidebar = page.locator("aside, .sidebar, [role='navigation']").first();
     this.navbar = page.locator("nav, header").first();
     this.logoutButton = page.locator(
-      'button:has-text("Logout"), button:has-text("Keluar"), a:has-text("Logout"), a:has-text("Keluar")'
+      'button:has-text("Logout"), button:has-text("Keluar"), a:has-text("Logout"), a:has-text("Keluar")',
     );
     this.userInfo = page.locator('[class*="user"], [class*="profile"]');
     this.loadingSpinner = page.locator(
-      '[class*="loading"], [class*="spinner"], [aria-busy="true"]'
+      '[class*="loading"], [class*="spinner"], [aria-busy="true"]',
     );
   }
 
@@ -101,7 +101,7 @@ export class DashboardPage {
 
     // If any of these exist, we're good
     expect(
-      hasNav || hasSidebar || hasNavbar || hasLinks || hasMenuItems
+      hasNav || hasSidebar || hasNavbar || hasLinks || hasMenuItems,
     ).toBeTruthy();
   }
 
@@ -124,7 +124,7 @@ export class DashboardPage {
 
       // If login form exists, wait for it to be visible
       const loginSelector = this.page.locator(
-        '#username, input[name="username"]'
+        '#username, input[name="username"]',
       );
       if ((await loginSelector.count()) > 0) {
         await loginSelector
@@ -143,7 +143,7 @@ export class DashboardPage {
     expect(
       url.includes(dashboardPath) ||
         url.includes("dashboard") ||
-        !url.includes("login")
+        !url.includes("login"),
     ).toBeTruthy();
   }
 
@@ -208,7 +208,7 @@ export class DashboardPPDBPage extends DashboardPage {
     this.statsCards = page.locator('[class*="stat"], [class*="card"], .card');
     this.pendaftarTable = page.locator('table, [role="grid"], .data-table');
     this.searchInput = page.locator(
-      'input[type="search"], input[placeholder*="cari"], input[placeholder*="search"]'
+      'input[type="search"], input[placeholder*="cari"], input[placeholder*="search"]',
     );
     this.filterDropdown = page.locator('select, [role="listbox"]');
   }
@@ -342,6 +342,18 @@ export class DashboardOSISPage extends DashboardPage {
 
   async gotoNotifications(): Promise<void> {
     await this.page.goto(`${this.dashboardUrl}/notifications`);
+    await this.waitForLoad();
+  }
+}
+
+/**
+ * Dashboard Pembina OSIS Page
+ */
+export class DashboardPembinaOSISPage extends DashboardPage {
+  readonly dashboardUrl = "/dashboard-pembina-osis";
+
+  async goto(): Promise<void> {
+    await this.page.goto(this.dashboardUrl);
     await this.waitForLoad();
   }
 }

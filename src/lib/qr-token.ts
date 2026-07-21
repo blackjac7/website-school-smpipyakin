@@ -2,27 +2,27 @@ import { createHmac } from "crypto";
 
 /**
  * QR Token Utility for Student Lateness Tracking
- * 
+ *
  * ===== BEST PRACTICES IMPLEMENTED =====
- * 
+ *
  * 1. SECURITY:
  *    - HMAC-SHA256 with server secret (unforgeable without key)
  *    - Timing-safe comparison (prevents timing attacks)
  *    - Token is permanent (no expiry, simplifies school use)
- * 
+ *
  * 2. QR SIZE OPTIMIZATION:
  *    - Base64URL encoding (URL-safe, 33% smaller than hex)
  *    - Compact payload format (minimal JSON keys)
  *    - 16-char token (64-bit entropy, sufficient for school use)
- * 
+ *
  * 3. ERROR CORRECTION:
  *    - Level M (15%) - good balance for printed cards
  *    - Can survive moderate damage/wear on student ID cards
- * 
+ *
  * 4. COMPATIBILITY:
  *    - Version field for future upgrades
  *    - Backward compatible parsing
- * 
+ *
  * QR Payload: Base64URL({"i":"siswaId","t":"16charToken","v":2})
  * Total: ~60 characters (compact QR code)
  */
@@ -70,7 +70,7 @@ export function generateQRToken(siswaId: string): string {
  */
 export function verifyQRToken(token: string, siswaId: string): boolean {
   const expectedToken = generateQRToken(siswaId);
-  
+
   // Length check
   if (token.length !== expectedToken.length) return false;
 
@@ -91,7 +91,7 @@ export function verifyQRToken(token: string, siswaId: string): boolean {
  */
 export function generateQRPayload(siswaId: string, token: string): string {
   const payload = {
-    i: siswaId,    // compact key
+    i: siswaId, // compact key
     t: token,
     v: QR_VERSION,
   };
@@ -102,7 +102,7 @@ export function generateQRPayload(siswaId: string, token: string): string {
  * Parse QR code payload (supports both v1 and v2 formats)
  */
 export function parseQRPayload(
-  qrData: string
+  qrData: string,
 ): { id: string; token: string } | null {
   try {
     // Try Base64URL first (v2)
@@ -113,13 +113,13 @@ export function parseQRPayload(
       // Fallback to regular Base64 (v1)
       decoded = Buffer.from(qrData, "base64").toString("utf-8");
     }
-    
+
     const payload = JSON.parse(decoded);
-    
+
     // Support both v1 (id, t) and v2 (i, t) formats
     const siswaId = payload.i || payload.id;
     const token = payload.t;
-    
+
     if (!siswaId || !token) return null;
     return { id: siswaId, token };
   } catch {
@@ -146,7 +146,7 @@ export function validateQRScan(qrData: string): string | null {
 // Late time threshold: 06:30 WIB (Jakarta, UTC+7)
 export const LATE_THRESHOLD = {
   hour: 6,
-  minute: 30,
+  minute: 31,
   utcOffset: 7, // WIB is UTC+7
 };
 

@@ -9,7 +9,14 @@ import { test, expect } from "@playwright/test";
 import { LoginPage } from "./pages/LoginPage";
 
 // All roles to test
-const ROLES = ["admin", "siswa", "kesiswaan", "osis", "ppdb"] as const;
+const ROLES = [
+  "admin",
+  "siswa",
+  "kesiswaan",
+  "osis",
+  "ppdb",
+  "pembina_osis",
+] as const;
 type Role = (typeof ROLES)[number];
 
 const DASHBOARD_URLS: Record<Role, string> = {
@@ -18,6 +25,7 @@ const DASHBOARD_URLS: Record<Role, string> = {
   kesiswaan: "/dashboard-kesiswaan",
   osis: "/dashboard-osis",
   ppdb: "/dashboard-ppdb",
+  pembina_osis: "/dashboard-pembina-osis",
 };
 
 // Run dashboard smoke tests serially to avoid flakiness caused by parallel

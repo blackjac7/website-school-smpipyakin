@@ -41,7 +41,7 @@ export async function seedUsers(prisma: PrismaClient) {
       userId: kesiswaanUser.id,
       nip: "NIP001",
       name: "Staff Kesiswaan",
-      gender: "FEMALE",
+      gender: "MALE",
       statusActive: true,
     },
   });
@@ -99,7 +99,7 @@ export async function seedUsers(prisma: PrismaClient) {
       name: "Ketua OSIS",
       class: "IX A",
       year: 2023,
-      gender: "FEMALE",
+      gender: "MALE",
       osisAccess: true,
       phone: "081234567892",
       address: "Jl. Sudirman No. 456, Jakarta Selatan",
@@ -121,6 +121,18 @@ export async function seedUsers(prisma: PrismaClient) {
     },
   });
 
+  // 6. Pembina OSIS
+  const pembinaOsisUser = await prisma.user.upsert({
+    where: { username: "pembina_osis" },
+    update: {},
+    create: {
+      username: "pembina_osis",
+      email: "pembina.osis@smpipyakin.sch.id",
+      password: hashedPassword,
+      role: UserRole.PEMBINA_OSIS,
+    },
+  });
+
   console.log("✅ Users seeded");
 
   return {
@@ -130,5 +142,6 @@ export async function seedUsers(prisma: PrismaClient) {
     siswaProfile,
     osisUser,
     osisProfile,
+    pembinaOsisUser,
   };
 }
