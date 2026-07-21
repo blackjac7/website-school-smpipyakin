@@ -879,41 +879,47 @@ export async function bulkCreateStudents(students: CreateStudentInput[]) {
       }),
     );
 
-    // 6. DB creation in Chunks of 50 using Promise.allSettled
-    const CHUNK_SIZE = 50;
+    // 6. DB creation in Chunks of 10 using Promise.allSettled to avoid connection pool exhaustion
+    const CHUNK_SIZE = 10;
     for (let i = 0; i < studentsWithHashedPasswords.length; i += CHUNK_SIZE) {
       const chunk = studentsWithHashedPasswords.slice(i, i + CHUNK_SIZE);
 
       const chunkResults = await Promise.allSettled(
         chunk.map(async (student) => {
-          return prisma.$transaction(async (tx) => {
-            const newUser = await tx.user.create({
-              data: {
-                username: student.nisn,
-                email: student.email || null,
-                password: student.hashedPassword,
-                role: "SISWA",
-              },
-            });
+          return prisma.$transaction(
+            async (tx) => {
+              const newUser = await tx.user.create({
+                data: {
+                  username: student.nisn,
+                  email: student.email || null,
+                  password: student.hashedPassword,
+                  role: "SISWA",
+                },
+              });
 
-            await tx.siswa.create({
-              data: {
-                userId: newUser.id,
-                name: student.name,
-                nisn: student.nisn,
-                class: student.class,
-                gender: student.gender as GenderType,
-                birthDate: new Date(student.birthDate),
-                birthPlace: student.birthPlace,
-                phone: student.phone,
-                address: student.address,
-                parentName: student.parentName,
-                parentPhone: student.parentPhone,
-                email: student.email,
-                year: student.year || new Date().getFullYear(),
-              },
-            });
-          });
+              await tx.siswa.create({
+                data: {
+                  userId: newUser.id,
+                  name: student.name,
+                  nisn: student.nisn,
+                  class: student.class,
+                  gender: student.gender as GenderType,
+                  birthDate: new Date(student.birthDate),
+                  birthPlace: student.birthPlace,
+                  phone: student.phone,
+                  address: student.address,
+                  parentName: student.parentName,
+                  parentPhone: student.parentPhone,
+                  email: student.email,
+                  year: student.year || new Date().getFullYear(),
+                },
+              });
+            },
+            {
+              maxWait: 20000, // 20 seconds maximum wait to acquire a connection from the pool
+              timeout: 30000, // 30 seconds execution timeout for the transaction
+            }
+          );
         }),
       );
 
