@@ -101,20 +101,35 @@ export default function ImportStudentModal({
     setIsLoading(true);
     try {
       // Map Excel data to our schema structure
-      const formattedData = previewData.map((row) => ({
-        name: String(row["Nama"] || ""),
-        nisn: String(row["NISN"] || ""),
-        class: String(row["Kelas"] || ""),
-        gender: (String(row["Gender"]) === "P" ? "FEMALE" : "MALE") as
-          | "FEMALE"
-          | "MALE",
-        // Handle Excel Date serial or String
-        birthDate: parseExcelDate(row["Tanggal Lahir"]),
-        // Map 'Angkatan' from Excel to 'year' (Entry Year) in DB
-        year: row["Angkatan"] ? parseInt(String(row["Angkatan"])) : undefined,
-        email: String(row["Email"] || ""),
-        phone: String(row["No. HP"] || ""),
-      }));
+      const formattedData = previewData.map((row) => {
+        const rawNisn = String(row["NISN"] || "").trim();
+        const paddedNisn = rawNisn ? rawNisn.padStart(10, "0") : "";
+
+        const rawGender = String(row["Gender"] || "").trim().toUpperCase();
+        let mappedGender: "MALE" | "FEMALE" = "MALE";
+        if (rawGender.startsWith("P") || rawGender.startsWith("F")) {
+          mappedGender = "FEMALE";
+        } else if (rawGender.startsWith("L") || rawGender.startsWith("M")) {
+          mappedGender = "MALE";
+        }
+
+        const rawEmail = String(row["Email"] || "").trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const validEmail = emailRegex.test(rawEmail) ? rawEmail : "";
+
+        return {
+          name: String(row["Nama"] || "").trim(),
+          nisn: paddedNisn,
+          class: String(row["Kelas"] || "").trim(),
+          gender: mappedGender,
+          // Handle Excel Date serial or String
+          birthDate: parseExcelDate(row["Tanggal Lahir"]),
+          // Map 'Angkatan' from Excel to 'year' (Entry Year) in DB
+          year: row["Angkatan"] ? parseInt(String(row["Angkatan"])) : undefined,
+          email: validEmail,
+          phone: String(row["No. HP"] || "").trim(),
+        };
+      });
 
       const result = await bulkCreateStudents(formattedData);
 
@@ -157,9 +172,24 @@ export default function ImportStudentModal({
     }
 
     // If string (try to parse YYYY-MM-DD or DD/MM/YYYY)
-    const dateStr = String(dateVal);
-    // Simple check, standard Javascript Date parsing
-    // Improve robustness if needed
+    const dateStr = String(dateVal).trim();
+
+    // Robustly parse DD/MM/YYYY or DD-MM-YYYY
+    const dmyMatch = dateStr.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+    if (dmyMatch) {
+      const day = parseInt(dmyMatch[1], 10);
+      const month = parseInt(dmyMatch[2], 10) - 1; // 0-based
+      const year = parseInt(dmyMatch[3], 10);
+      const date = new Date(year, month, day);
+      if (!isNaN(date.getTime())) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+      }
+    }
+
+    // Standard Javascript Date parsing
     try {
       const date = new Date(dateStr);
       if (!isNaN(date.getTime())) {
