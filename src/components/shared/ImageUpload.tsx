@@ -212,12 +212,12 @@ export default function ImageUpload({
             <div className="mt-4">
               <p className="text-sm text-gray-600">
                 <span className="font-medium text-blue-600 hover:text-blue-500">
-                  Click to upload
+                  Klik untuk upload
                 </span>{" "}
-                or drag and drop
+                atau drag and drop
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                {acceptedFormats.join(", ")} up to {maxSizeMB}MB
+                {acceptedFormats.join(", ")} maks {maxSizeMB}MB
               </p>
             </div>
           </div>

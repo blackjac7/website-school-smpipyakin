@@ -13,10 +13,12 @@
 
   /*
    * A4 portrait: 210mm × 297mm
-   * @page margin: 5mm each side → usable: 200mm × 287mm
+   * @page margin: 15mm each side → usable: 180mm × 267mm
    * Card: 85.6mm × 54mm (ISO/IEC 7810 ID-1 standard)
-   * 2 cols: 85.6mm × 2 = 171.2mm + 1 col-gap 4mm = 175.2mm ✓ (fits 200mm)
-   * 5 rows: 54mm × 5 = 270mm + 4 row-gaps 1.5mm = 276mm ✓ (fits 287mm)
+   * 2 cols: 85.6mm × 2 = 171.2mm + 1 col-gap 8mm = 179.2mm ✓ (fits 180mm)
+   * 4 rows: 54mm × 4 = 216mm + 3 row-gaps 8mm = 240mm ✓ (fits 267mm)
+   * Only 8 cards/page (instead of 10) so there's a wide enough gap between
+   * cards to cut safely with scissors after laminating.
    */
   .print-container {
     position: absolute;
@@ -25,8 +27,8 @@
     width: 100%;
     display: grid !important;
     grid-template-columns: repeat(2, 85.6mm) !important;
-    column-gap: 4mm !important;
-    row-gap: 1.5mm !important;
+    column-gap: 8mm !important;
+    row-gap: 8mm !important;
     padding: 0 !important;
     margin: 0 !important;
     background: white !important;
@@ -36,10 +38,10 @@
   /* Page setup for A4 — exact margins to achieve 100% actual size (no auto-scaling) */
   @page {
     size: A4 portrait;
-    margin: 10mm 17.4mm;
+    margin: 15mm;
   }
 
-  /* Card layout for print — 10 cards per page (2×5 grid) */
+  /* Card layout for print — 8 cards per page (2×4 grid) with cutting gap */
   .student-card {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
@@ -58,8 +60,8 @@
     text-rendering: optimizeLegibility !important;
   }
 
-  /* Force page break after every 10 cards */
-  .student-card:nth-child(10n) {
+  /* Force page break after every 8 cards */
+  .student-card:nth-child(8n) {
     page-break-after: always !important;
     break-after: page !important;
   }
@@ -126,7 +128,7 @@
   }
 
   /* Visual page break indicator for preview */
-  .student-card:nth-child(10n)::after {
+  .student-card:nth-child(8n)::after {
     content: "--- Page Break ---";
     display: block;
     text-align: center;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Home, Clock, History, Menu, Bell } from "lucide-react";
+import { Home, Clock, History, Menu } from "lucide-react";
 import PendingActivitiesList from "./PendingActivitiesList";
 import ActivityHistoryList from "./ActivityHistoryList";
 import { DashboardSidebar } from "@/components/dashboard/layout";

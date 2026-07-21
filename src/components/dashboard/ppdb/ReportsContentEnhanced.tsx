@@ -104,14 +104,16 @@ export default function ReportsContentEnhanced() {
   return (
     <div className="space-y-8">
       {/* Enhanced Header */}
-      <div className="bg-linear-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-white shadow-xl">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-inner">
-            <BarChart3 className="w-8 h-8 text-white" />
+      <div className="bg-linear-to-r from-purple-600 to-pink-600 rounded-2xl p-5 sm:p-8 text-white shadow-xl">
+        <div className="flex items-center gap-3 sm:gap-4 mb-6">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-inner">
+            <BarChart3 className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Laporan & Analytics</h1>
-            <p className="text-purple-100 opacity-90 text-lg">
+            <h1 className="text-xl sm:text-3xl font-bold">
+              Laporan & Analytics
+            </h1>
+            <p className="text-sm sm:text-lg text-purple-100 opacity-90">
               Analisis mendalam performa PPDB
             </p>
           </div>
@@ -119,9 +121,9 @@ export default function ReportsContentEnhanced() {
 
         {/* Controls */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <select
-              className="px-4 py-2 bg-white/10 border border-white/20 text-white rounded-xl focus:bg-white/20 focus:outline-none transition-colors backdrop-blur-sm cursor-pointer [&>option]:text-gray-900"
+              className="w-full sm:w-auto px-4 py-2 bg-white/10 border border-white/20 text-white rounded-xl focus:bg-white/20 focus:outline-none transition-colors backdrop-blur-sm cursor-pointer [&>option]:text-gray-900"
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
             >
@@ -132,7 +134,7 @@ export default function ReportsContentEnhanced() {
             </select>
 
             <select
-              className="px-4 py-2 bg-white/10 border border-white/20 text-white rounded-xl focus:bg-white/20 focus:outline-none transition-colors backdrop-blur-sm cursor-pointer [&>option]:text-gray-900"
+              className="w-full sm:w-auto px-4 py-2 bg-white/10 border border-white/20 text-white rounded-xl focus:bg-white/20 focus:outline-none transition-colors backdrop-blur-sm cursor-pointer [&>option]:text-gray-900"
               value={reportType}
               onChange={(e) => setReportType(e.target.value)}
             >
@@ -143,7 +145,7 @@ export default function ReportsContentEnhanced() {
             </select>
           </div>
 
-          <div className="flex gap-2 ml-auto">
+          <div className="flex gap-2 sm:ml-auto">
             <button
               onClick={exportToExcel}
               className="flex items-center gap-2 px-4 py-2 bg-white text-purple-700 rounded-xl hover:bg-gray-50 transition-colors font-medium shadow-sm"
@@ -298,7 +300,7 @@ export default function ReportsContentEnhanced() {
           <div className="space-y-6">
             {stats.genderStats.map((item, index) => {
               const percentage = Math.round(
-                (item._count / (stats.overview.total || 1)) * 100
+                (item._count / (stats.overview.total || 1)) * 100,
               );
               const label =
                 item.gender === "MALE"

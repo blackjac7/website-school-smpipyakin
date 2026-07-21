@@ -96,7 +96,7 @@ export default function EditWorkModal({
             mediaUrl: "",
             videoLink: "",
           }));
-        }
+        },
       );
     } else {
       setWorkType(newWorkType);
@@ -234,7 +234,7 @@ export default function EditWorkModal({
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Jenis Karya <span className="text-red-500">*</span>
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 type="button"
                 disabled={!canEdit}

@@ -22,25 +22,25 @@ export default function ReportsWrapper({ reportStats }: ReportsWrapperProps) {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1 flex space-x-1 w-full md:w-fit">
         <button
           onClick={() => setActiveTab("lateness")}
-          className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
+          className={`flex-1 md:flex-none min-w-0 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-6 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all truncate ${
             activeTab === "lateness"
               ? "bg-blue-600 text-white shadow-sm"
               : "text-gray-600 hover:bg-gray-50"
           }`}
         >
-          <Clock className="w-4 h-4" />
-          Keterlambatan
+          <Clock className="w-4 h-4 shrink-0" />
+          <span className="truncate">Keterlambatan</span>
         </button>
         <button
           onClick={() => setActiveTab("general")}
-          className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
+          className={`flex-1 md:flex-none min-w-0 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-6 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all truncate ${
             activeTab === "general"
               ? "bg-blue-600 text-white shadow-sm"
               : "text-gray-600 hover:bg-gray-50"
           }`}
         >
-          <FileText className="w-4 h-4" />
-          Validasi & Umum
+          <FileText className="w-4 h-4 shrink-0" />
+          <span className="truncate">Validasi & Umum</span>
         </button>
       </div>
 

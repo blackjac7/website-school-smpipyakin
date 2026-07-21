@@ -16,7 +16,7 @@ export default function StudentList({
 }: StudentListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<StudentItem | null>(
-    null
+    null,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,7 +26,7 @@ export default function StudentList({
     (s) =>
       (s.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
       (s.nisn?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (s.class?.toLowerCase() || "").includes(searchTerm.toLowerCase())
+      (s.class?.toLowerCase() || "").includes(searchTerm.toLowerCase()),
   );
 
   const handleCreateAchievement = (student: StudentItem) => {
@@ -176,7 +176,7 @@ export default function StudentList({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label
                     htmlFor="category"

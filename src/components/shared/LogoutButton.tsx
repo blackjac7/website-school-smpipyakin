@@ -80,9 +80,9 @@ export default function LogoutButton({
       <div className="relative">
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className={`flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer ${className}`}
+          className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer shrink-0 ${className}`}
         >
-          <div className="relative">
+          <div className="relative shrink-0">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-md overflow-hidden">
               {userAvatar ? (
                 <Image
@@ -104,9 +104,13 @@ export default function LogoutButton({
             )}
           </div>
           {variant === "profile" && (
-            <div className="text-left">
-              <p className="text-sm font-medium text-gray-900">{userName}</p>
-              <p className="text-xs text-gray-500">{userRole}</p>
+            <div className="hidden sm:block text-left min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate max-w-40">
+                {userName}
+              </p>
+              <p className="text-xs text-gray-500 truncate max-w-40">
+                {userRole}
+              </p>
             </div>
           )}
         </button>

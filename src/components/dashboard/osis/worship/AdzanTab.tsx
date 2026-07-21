@@ -60,7 +60,7 @@ export default function AdzanTab({ schedules, onRefresh }: AdzanTabProps) {
       acc[dateKey].push(curr);
       return acc;
     },
-    {} as Record<string, AdzanSchedule[]>
+    {} as Record<string, AdzanSchedule[]>,
   );
 
   const sortedDates = Object.keys(schedulesByDate).sort();
@@ -70,7 +70,7 @@ export default function AdzanTab({ schedules, onRefresh }: AdzanTabProps) {
   const startIndex = (currentPage - 1) * DATES_PER_PAGE;
   const paginatedDates = sortedDates.slice(
     startIndex,
-    startIndex + DATES_PER_PAGE
+    startIndex + DATES_PER_PAGE,
   );
 
   const handlePageChange = (page: number) => {
@@ -133,7 +133,7 @@ export default function AdzanTab({ schedules, onRefresh }: AdzanTabProps) {
           console.error(error);
           toast.error("Gagal menghapus");
         }
-      }
+      },
     );
   };
 
@@ -306,7 +306,7 @@ export default function AdzanTab({ schedules, onRefresh }: AdzanTabProps) {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Batal
                 </button>

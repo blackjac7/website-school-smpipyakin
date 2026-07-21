@@ -74,21 +74,25 @@ export default function StatsCards() {
       variants={container}
       initial="hidden"
       animate="show"
-      className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+      className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-8"
     >
       {stats.map((stat, index) => (
         <motion.div
           key={index}
           variants={item}
-          className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+          className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">{stat.label}</p>
-              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1 leading-tight">
+                {stat.label}
+              </p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
+                {stat.value}
+              </p>
             </div>
-            <div className={`p-3 rounded-lg ${stat.bg}`}>
-              <stat.icon className={`w-6 h-6 ${stat.color}`} />
+            <div className={`p-2 sm:p-3 rounded-lg shrink-0 ${stat.bg}`}>
+              <stat.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.color}`} />
             </div>
           </div>
         </motion.div>

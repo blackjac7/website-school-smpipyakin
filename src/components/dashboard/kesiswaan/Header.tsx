@@ -7,6 +7,7 @@ import {
   FileText,
   Settings,
   Users,
+  CreditCard,
 } from "lucide-react";
 import { LogoutButton } from "@/components/shared";
 import { useAuth } from "@/components/shared/AuthProvider";
@@ -48,16 +49,28 @@ export default function Header({
           description: "Kelola data dan informasi siswa",
           icon: Users,
         };
+      case "kartu-siswa":
+        return {
+          title: "Kartu Siswa",
+          description: "Cetak kartu identitas siswa dengan QR Code",
+          icon: CreditCard,
+        };
       case "reports":
         return {
           title: "Laporan Validasi",
           description: "Analisis dan statistik validasi konten",
           icon: FileText,
         };
-      default:
+      case "settings":
         return {
           title: "Pengaturan",
           description: "Pengaturan sistem validasi",
+          icon: Settings,
+        };
+      default:
+        return {
+          title: "Kesiswaan",
+          description: "Management area kesiswaan",
           icon: Settings,
         };
     }
@@ -71,32 +84,32 @@ export default function Header({
       animate={{ y: 0, opacity: 1 }}
       className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 md:px-6 py-4"
     >
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-3">
+      <div className="flex justify-between items-center gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           {/* Mobile Menu Button */}
           {onToggleSidebar && (
             <button
               onClick={onToggleSidebar}
-              className="lg:hidden p-2 rounded-lg hover:bg-purple-50 hover:text-purple-600 transition-colors"
+              className="lg:hidden shrink-0 p-2 rounded-lg hover:bg-purple-50 hover:text-purple-600 transition-colors"
             >
               <Menu className="w-5 h-5 text-gray-600" />
             </button>
           )}
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex w-10 h-10 bg-linear-to-br from-purple-500 to-violet-600 rounded-xl items-center justify-center shadow-sm">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="hidden sm:flex w-10 h-10 bg-linear-to-br from-purple-500 to-violet-600 rounded-xl items-center justify-center shadow-sm shrink-0">
               <headerInfo.icon className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <h2 className="text-lg md:text-xl font-bold text-gray-900">
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 truncate">
                 {headerInfo.title}
               </h2>
-              <p className="text-xs md:text-sm text-gray-500 hidden md:block">
+              <p className="text-xs md:text-sm text-gray-500 hidden md:block truncate">
                 {headerInfo.description}
               </p>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex items-center gap-2 md:gap-3 shrink-0">
           {/* Notification Bell */}
           <div className="relative">
             <motion.button

@@ -191,14 +191,16 @@ export default function StudentManagement() {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-50 rounded-lg">
+            <div className="p-2 bg-blue-50 rounded-lg shrink-0">
               <Users className="w-5 h-5 text-blue-600" />
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Total Siswa</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-gray-500 leading-tight">
+                Total Siswa
+              </p>
               <p className="text-xl font-bold text-gray-900">
                 {stats.totalStudents}
               </p>
@@ -207,11 +209,13 @@ export default function StudentManagement() {
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-50 rounded-lg">
+            <div className="p-2 bg-indigo-50 rounded-lg shrink-0">
               <User className="w-5 h-5 text-indigo-600" />
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Laki-laki</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-gray-500 leading-tight">
+                Laki-laki
+              </p>
               <p className="text-xl font-bold text-gray-900">
                 {stats.maleCount}
               </p>
@@ -220,11 +224,13 @@ export default function StudentManagement() {
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-pink-50 rounded-lg">
+            <div className="p-2 bg-pink-50 rounded-lg shrink-0">
               <User className="w-5 h-5 text-pink-600" />
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Perempuan</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-gray-500 leading-tight">
+                Perempuan
+              </p>
               <p className="text-xl font-bold text-gray-900">
                 {stats.femaleCount}
               </p>
@@ -233,11 +239,13 @@ export default function StudentManagement() {
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-50 rounded-lg">
+            <div className="p-2 bg-green-50 rounded-lg shrink-0">
               <Users className="w-5 h-5 text-green-600" />
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Jumlah Kelas</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-gray-500 leading-tight">
+                Jumlah Kelas
+              </p>
               <p className="text-xl font-bold text-gray-900">
                 {stats.byClass.length}
               </p>
@@ -250,7 +258,7 @@ export default function StudentManagement() {
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
         <div className="flex flex-col lg:flex-row gap-4 justify-between">
           {/* Search */}
-          <div className="relative flex-1 max-w-md">
+          <div className="relative w-full lg:flex-1 lg:max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
@@ -262,58 +270,63 @@ export default function StudentManagement() {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-400" />
-              <select
-                value={classFilter}
-                onChange={(e) => handleClassFilterChange(e.target.value)}
-                className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
-              >
-                <option value="all">Semua Kelas</option>
-                {availableClasses.map((cls) => (
-                  <option key={cls} value={cls}>
-                    {cls}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="flex flex-col lg:flex-row lg:flex-wrap lg:items-center gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-center gap-3">
+              <div className="flex items-center gap-2 w-full lg:w-auto">
+                <Filter className="w-4 h-4 text-gray-400 shrink-0" />
+                <select
+                  value={classFilter}
+                  onChange={(e) => handleClassFilterChange(e.target.value)}
+                  className="w-full lg:w-auto px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                >
+                  <option value="all">Semua Kelas</option>
+                  {availableClasses.map((cls) => (
+                    <option key={cls} value={cls}>
+                      {cls}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <select
-              value={genderFilter}
-              onChange={(e) =>
-                handleGenderFilterChange(
-                  e.target.value as "all" | "MALE" | "FEMALE",
-                )
-              }
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
-            >
-              <option value="all">Semua Gender</option>
-              <option value="MALE">Laki-laki</option>
-              <option value="FEMALE">Perempuan</option>
-            </select>
+              <div className="flex items-center gap-2 w-full lg:w-auto">
+                <Users className="w-4 h-4 text-gray-400 shrink-0" />
+                <select
+                  value={genderFilter}
+                  onChange={(e) =>
+                    handleGenderFilterChange(
+                      e.target.value as "all" | "MALE" | "FEMALE",
+                    )
+                  }
+                  className="w-full lg:w-auto px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                >
+                  <option value="all">Semua Gender</option>
+                  <option value="MALE">Laki-laki</option>
+                  <option value="FEMALE">Perempuan</option>
+                </select>
+              </div>
 
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-400" />
-              <select
-                value={angkatanFilter}
-                onChange={(e) => handleAngkatanFilterChange(e.target.value)}
-                className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
-              >
-                <option value="all">Semua Angkatan</option>
-                {availableAngkatan.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2 w-full sm:col-span-2 lg:w-auto lg:col-span-1">
+                <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
+                <select
+                  value={angkatanFilter}
+                  onChange={(e) => handleAngkatanFilterChange(e.target.value)}
+                  className="w-full lg:w-auto px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                >
+                  <option value="all">Semua Angkatan</option>
+                  {availableAngkatan.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:items-center gap-2">
               <button
                 onClick={() => setIsImportModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
               >
                 <Upload className="w-4 h-4" />
                 Import
@@ -321,7 +334,7 @@ export default function StudentManagement() {
 
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium whitespace-nowrap"
               >
                 <Plus className="w-4 h-4" />
                 Tambah Siswa
@@ -330,7 +343,7 @@ export default function StudentManagement() {
               <button
                 onClick={handleExport}
                 disabled={isExporting}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 text-sm font-medium"
+                className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 text-sm font-medium"
               >
                 {isExporting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -350,9 +363,71 @@ export default function StudentManagement() {
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
           </div>
+        ) : students.length === 0 ? (
+          <div className="px-6 py-12 text-center text-gray-500">
+            <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p>Tidak ada data siswa ditemukan</p>
+          </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Mobile card list (below md) */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {students.map((student, index) => (
+                <div key={student.id} className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-400 mb-0.5">
+                        #{(pagination.page - 1) * pagination.limit + index + 1}
+                      </p>
+                      <p className="font-medium text-gray-900 truncate">
+                        {student.name}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {student.email || "-"}
+                      </p>
+                      <p className="text-xs text-gray-600 font-mono mt-1">
+                        NISN: {student.nisn}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleViewDetail(student)}
+                      className="shrink-0 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Detail
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
+                    <span className="px-2 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-medium border border-purple-100">
+                      {student.class || "Belum ada kelas"}
+                    </span>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        student.gender === "MALE"
+                          ? "bg-blue-50 text-blue-700 border border-blue-100"
+                          : student.gender === "FEMALE"
+                            ? "bg-pink-50 text-pink-700 border border-pink-100"
+                            : "bg-gray-50 text-gray-500 border border-gray-100"
+                      }`}
+                    >
+                      {student.gender === "MALE"
+                        ? "Laki-laki"
+                        : student.gender === "FEMALE"
+                          ? "Perempuan"
+                          : "-"}
+                    </span>
+                    <span className="px-2 py-1 rounded-full bg-yellow-50 text-yellow-700 text-xs font-medium border border-yellow-100">
+                      {student.achievementCount} Prestasi
+                    </span>
+                    <span className="px-2 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium border border-green-100">
+                      {student.workCount} Karya
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table (md and up) */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
@@ -383,81 +458,69 @@ export default function StudentManagement() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {students.length > 0 ? (
-                    students.map((student, index) => (
-                      <tr
-                        key={student.id}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-6 py-4 text-gray-500">
-                          {(pagination.page - 1) * pagination.limit + index + 1}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="font-medium text-gray-900">
-                            {student.name}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {student.email || "-"}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-gray-600 font-mono">
-                          {student.nisn}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-medium border border-purple-100">
-                            {student.class || "Belum ada"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              student.gender === "MALE"
-                                ? "bg-blue-50 text-blue-700 border border-blue-100"
-                                : student.gender === "FEMALE"
-                                  ? "bg-pink-50 text-pink-700 border border-pink-100"
-                                  : "bg-gray-50 text-gray-500 border border-gray-100"
-                            }`}
-                          >
-                            {student.gender === "MALE"
-                              ? "L"
+                  {students.map((student, index) => (
+                    <tr
+                      key={student.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-gray-500">
+                        {(pagination.page - 1) * pagination.limit + index + 1}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-gray-900">
+                          {student.name}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {student.email || "-"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600 font-mono">
+                        {student.nisn}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-medium border border-purple-100">
+                          {student.class || "Belum ada"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            student.gender === "MALE"
+                              ? "bg-blue-50 text-blue-700 border border-blue-100"
                               : student.gender === "FEMALE"
-                                ? "P"
-                                : "-"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-1 rounded-full bg-yellow-50 text-yellow-700 text-xs font-medium border border-yellow-100">
-                            {student.achievementCount}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium border border-green-100">
-                            {student.workCount}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => handleViewDetail(student)}
-                              className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                              Detail
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={8}
-                        className="px-6 py-12 text-center text-gray-500"
-                      >
-                        <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                        <p>Tidak ada data siswa ditemukan</p>
+                                ? "bg-pink-50 text-pink-700 border border-pink-100"
+                                : "bg-gray-50 text-gray-500 border border-gray-100"
+                          }`}
+                        >
+                          {student.gender === "MALE"
+                            ? "L"
+                            : student.gender === "FEMALE"
+                              ? "P"
+                              : "-"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 rounded-full bg-yellow-50 text-yellow-700 text-xs font-medium border border-yellow-100">
+                          {student.achievementCount}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium border border-green-100">
+                          {student.workCount}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleViewDetail(student)}
+                            className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            Detail
+                          </button>
+                        </div>
                       </td>
                     </tr>
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -551,7 +614,7 @@ export default function StudentManagement() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Kelas</p>
                   <p className="font-medium text-gray-900">
@@ -603,7 +666,7 @@ export default function StudentManagement() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Nama Orang Tua</p>
                   <p className="font-medium text-gray-900">

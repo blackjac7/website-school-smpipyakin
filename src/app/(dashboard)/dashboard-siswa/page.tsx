@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { Trophy, Medal, Award, LucideIcon, Home, BookOpen, QrCode } from "lucide-react";
+import {
+  Trophy,
+  Medal,
+  Award,
+  LucideIcon,
+  Home,
+  BookOpen,
+  QrCode,
+} from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   AchievementsSection,
@@ -141,7 +149,7 @@ function SiswaDashboardContent() {
   const [works, setWorks] = useState<Work[]>([]);
 
   const [notifications, setNotifications] = useState<FormattedNotification[]>(
-    []
+    [],
   );
 
   // Load profile data from server action
@@ -199,7 +207,7 @@ function SiswaDashboardContent() {
                 : achievement.status === "pending"
                   ? "text-yellow-600"
                   : "text-red-600",
-          })
+          }),
         );
         setAchievements(formattedAchievements);
       }
@@ -262,8 +270,8 @@ function SiswaDashboardContent() {
         prev.map((notification) =>
           notification.id === notificationId
             ? { ...notification, read: true }
-            : notification
-        )
+            : notification,
+        ),
       );
     }
   };
@@ -316,7 +324,7 @@ function SiswaDashboardContent() {
           toast.error(result.message || "Limit tercapai");
         } else {
           toast.error(
-            result.error || "Gagal mengunggah prestasi. Silakan coba lagi."
+            result.error || "Gagal mengunggah prestasi. Silakan coba lagi.",
           );
         }
       }
@@ -386,14 +394,14 @@ function SiswaDashboardContent() {
             await loadWorks(); // Reload works
           } else {
             toast.error(
-              result.error || "Gagal menghapus karya. Silakan coba lagi."
+              result.error || "Gagal menghapus karya. Silakan coba lagi.",
             );
           }
         } catch (error) {
           console.error("Failed to delete work:", error);
           toast.error("Terjadi kesalahan. Silakan coba lagi.");
         }
-      }
+      },
     );
   };
 
@@ -438,9 +446,11 @@ function SiswaDashboardContent() {
         );
       case "qrcode":
         return (
-          <div className="flex flex-col items-center">
-            <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl p-8 shadow-xl">
-              <h2 className="text-xl font-bold text-white text-center mb-6">QR Code Siswa</h2>
+          <div className="flex flex-col items-center px-2 sm:px-0">
+            <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl p-4 sm:p-8 shadow-xl w-full max-w-sm sm:w-auto">
+              <h2 className="text-lg sm:text-xl font-bold text-white text-center mb-6">
+                QR Code Siswa
+              </h2>
               <StudentQRCode siswaId={profileData.id} />
             </div>
           </div>

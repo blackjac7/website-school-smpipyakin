@@ -63,6 +63,11 @@ export default function DashboardClient({
     totalCount: initialQueueResult.totalCount,
     limit: initialQueueResult.limit,
   });
+  // Tracks the actual count of PENDING items, independent of the currently
+  // selected status filter (which drives `pagination.totalCount` above).
+  const [pendingCount, setPendingCount] = useState(
+    initialStats.summary.pending,
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Pending");
   const [categoryFilter, setCategoryFilter] = useState("Semua Kategori");
@@ -246,6 +251,8 @@ export default function DashboardClient({
         setShowValidationModal(false);
         setShowPreviewModal(false);
         setPendingUpdatedContent(undefined);
+        // The approved/rejected item was PENDING, so the pending count drops by one
+        setPendingCount((prev) => Math.max(0, prev - 1));
         // Refresh the list immediately with current page
         const status =
           statusFilter === "Semua Status"
@@ -291,7 +298,7 @@ export default function DashboardClient({
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <Header
           activeMenu={activeMenu}
           notifications={notifications}
@@ -306,11 +313,13 @@ export default function DashboardClient({
         <main className="flex-1 p-4 md:p-6 overflow-y-auto">
           {activeMenu === "validation" && (
             <div className="space-y-6">
-              <AlertCard count={pagination.totalCount} />
+              <AlertCard count={pendingCount} />
               {isLoading ? (
-                <div className="flex justify-center py-10">
-                  <LoadingEffect showMessage={false} size="sm" />
-                </div>
+                <LoadingEffect
+                  fullScreen={false}
+                  showMessage={false}
+                  size="sm"
+                />
               ) : (
                 <ContentList
                   contentItems={validationQueue}

@@ -77,7 +77,7 @@ export default function UploadWorkModal({
             mediaUrl: "",
             videoLink: "",
           }));
-        }
+        },
       );
     } else {
       setWorkType(newWorkType);
@@ -96,7 +96,7 @@ export default function UploadWorkModal({
     // Check if user already has 2 pending works
     if (pendingCount >= 2) {
       toast.error(
-        "Anda sudah memiliki 2 karya yang sedang menunggu persetujuan. Silakan tunggu hingga ada yang disetujui atau ditolak sebelum mengunggah karya baru."
+        "Anda sudah memiliki 2 karya yang sedang menunggu persetujuan. Silakan tunggu hingga ada yang disetujui atau ditolak sebelum mengunggah karya baru.",
       );
       return;
     }
@@ -115,14 +115,14 @@ export default function UploadWorkModal({
     // Ensure only one media type is provided
     if (workType === "photo" && formData.videoLink) {
       toast.error(
-        "Anda memilih jenis karya foto/gambar, tapi ada link video yang terisi. Silakan pilih salah satu jenis karya saja."
+        "Anda memilih jenis karya foto/gambar, tapi ada link video yang terisi. Silakan pilih salah satu jenis karya saja.",
       );
       return;
     }
 
     if (workType === "video" && formData.mediaUrl) {
       toast.error(
-        "Anda memilih jenis karya video, tapi ada gambar yang terupload. Silakan pilih salah satu jenis karya saja."
+        "Anda memilih jenis karya video, tapi ada gambar yang terupload. Silakan pilih salah satu jenis karya saja.",
       );
       return;
     }
@@ -227,7 +227,7 @@ export default function UploadWorkModal({
                 Tidak bisa keduanya sekaligus.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 type="button"
                 onClick={() => handleWorkTypeChange("photo")}

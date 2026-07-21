@@ -6,11 +6,12 @@ import { useRouter } from "next/navigation";
 import { NotificationAPIService } from "@/hooks/useNotifications";
 import { FormattedNotification } from "@/utils/notificationHelpers";
 import NotificationCard from "@/components/shared/NotificationCard";
+import LoadingEffect from "@/components/shared/LoadingEffect";
 
 export default function PPDBOfficerNotificationsPage() {
   const router = useRouter();
   const [notifications, setNotifications] = useState<FormattedNotification[]>(
-    []
+    [],
   );
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "unread">("all");
@@ -20,7 +21,7 @@ export default function PPDBOfficerNotificationsPage() {
   // Load notifications with pagination
   const loadNotifications = async (
     pageNum: number = 1,
-    filterType: "all" | "unread" = "all"
+    filterType: "all" | "unread" = "all",
   ) => {
     try {
       // Use PPDB officer-specific API endpoint
@@ -55,7 +56,7 @@ export default function PPDBOfficerNotificationsPage() {
   const markAsRead = async (notificationId: string) => {
     const result = await NotificationAPIService.markNotificationAsReadByRole(
       notificationId,
-      "ppdb_admin"
+      "ppdb_admin",
     );
 
     if (result.success) {
@@ -63,8 +64,8 @@ export default function PPDBOfficerNotificationsPage() {
         prev.map((notification) =>
           notification.id === notificationId
             ? { ...notification, read: true }
-            : notification
-        )
+            : notification,
+        ),
       );
     }
   };
@@ -78,12 +79,12 @@ export default function PPDBOfficerNotificationsPage() {
       for (const notification of unreadNotifications) {
         await NotificationAPIService.markNotificationAsReadByRole(
           notification.id,
-          "ppdb_admin"
+          "ppdb_admin",
         );
       }
 
       setNotifications((prev) =>
-        prev.map((notification) => ({ ...notification, read: true }))
+        prev.map((notification) => ({ ...notification, read: true })),
       );
     } catch (error) {
       console.error("Failed to mark all as read:", error);
@@ -98,16 +99,7 @@ export default function PPDBOfficerNotificationsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-pulse">
-          <div className="text-center">
-            <div className="h-8 bg-gray-200 rounded w-48 mx-auto mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingEffect message="Memuat notifikasi..." />;
   }
 
   return (

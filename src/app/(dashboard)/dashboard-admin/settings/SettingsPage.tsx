@@ -18,6 +18,7 @@ import {
   Info,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import LoadingEffect from "@/components/shared/LoadingEffect";
 import {
   toggleMaintenanceMode,
   updatePPDBSettings,
@@ -91,7 +92,7 @@ export default function SettingsPage() {
       isActive: false,
       message: "",
       allowedIPs: [],
-    }
+    },
   );
 
   const [maintenanceSchedules, setMaintenanceSchedules] = useState<
@@ -140,7 +141,9 @@ export default function SettingsPage() {
       if (ppdbRes.success && ppdbRes.data) {
         setPPDBStatus(ppdbRes.data);
         // Safe date parsing helper
-        const safeDateToString = (dateValue: Date | string | null | undefined): string => {
+        const safeDateToString = (
+          dateValue: Date | string | null | undefined,
+        ): string => {
           if (!dateValue) return "";
           try {
             const date = new Date(dateValue);
@@ -196,7 +199,7 @@ export default function SettingsPage() {
 
     const result = await toggleMaintenanceMode(
       newValue,
-      maintenanceStatus.message
+      maintenanceStatus.message,
     );
     if (result.success) {
       setMaintenanceStatus((prev) => ({ ...prev, isActive: newValue }));
@@ -214,7 +217,7 @@ export default function SettingsPage() {
     if (ppdbForm.startDate && ppdbForm.endDate) {
       if (new Date(ppdbForm.startDate) > new Date(ppdbForm.endDate)) {
         toast.error(
-          "Tanggal mulai tidak boleh lebih akhir dari tanggal berakhir"
+          "Tanggal mulai tidak boleh lebih akhir dari tanggal berakhir",
         );
         return;
       }
@@ -302,29 +305,25 @@ export default function SettingsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <RefreshCw className="w-8 h-8 animate-spin text-blue-500" />
-      </div>
-    );
+    return <LoadingEffect fullScreen={false} showMessage={false} size="sm" />;
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Settings className="w-6 h-6" />
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <Settings className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
             Pengaturan Sistem
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
             Kelola mode pemeliharaan, PPDB, dan fitur website
           </p>
         </div>
         <button
           onClick={handleSeedSettings}
-          className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          className="self-start sm:self-auto px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
         >
           <RefreshCw className="w-4 h-4 inline mr-2" />
           Reset ke Default
@@ -332,11 +331,11 @@ export default function SettingsPage() {
       </div>
 
       {/* Maintenance Mode Card */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div className="flex items-center gap-3 min-w-0">
             <div
-              className={`p-3 rounded-lg ${
+              className={`p-3 rounded-lg shrink-0 ${
                 maintenanceStatus.isActive
                   ? "bg-red-100 dark:bg-red-900/30"
                   : "bg-green-100 dark:bg-green-900/30"
@@ -350,7 +349,7 @@ export default function SettingsPage() {
                 }`}
               />
             </div>
-            <div>
+            <div className="min-w-0">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Mode Pemeliharaan
               </h2>
@@ -364,7 +363,7 @@ export default function SettingsPage() {
           <button
             onClick={handleToggleMaintenance}
             disabled={saving}
-            className={`px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+            className={`w-full sm:w-auto px-6 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 shrink-0 ${
               maintenanceStatus.isActive
                 ? "bg-green-500 hover:bg-green-600 text-white"
                 : "bg-red-500 hover:bg-red-600 text-white"
@@ -416,7 +415,7 @@ export default function SettingsPage() {
               : "bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-700"
           }`}
         >
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div className="flex items-start gap-3">
               <div
                 className={`mt-0.5 ${ppdbStatus.isOpen ? "text-green-600" : "text-gray-500"}`}
@@ -443,14 +442,14 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="text-right min-w-37.5">
+            <div className="text-left sm:text-right sm:min-w-37.5">
               <div className="mb-2">
                 <div className="flex justify-between text-xs text-gray-500 mb-1">
                   <span>Terisi</span>
                   <span>
                     {ppdbStatus.quota > 0
                       ? Math.round(
-                          (ppdbStatus.registeredCount / ppdbStatus.quota) * 100
+                          (ppdbStatus.registeredCount / ppdbStatus.quota) * 100,
                         )
                       : 0}
                     %
