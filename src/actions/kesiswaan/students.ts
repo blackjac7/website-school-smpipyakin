@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { isKesiswaanRole } from "@/lib/roles";
 import { Prisma, GenderType } from "@prisma/client";
@@ -738,86 +739,199 @@ export async function bulkCreateStudents(students: CreateStudentInput[]) {
       return { success: false, error: "Data kosong" };
     }
 
-    // Validate all rows first
-    const errors: string[] = [];
-    const validStudents: CreateStudentInput[] = [];
-
-    students.forEach((student, index) => {
-      const validation = CreateStudentSchema.safeParse(student);
-      if (!validation.success) {
-        errors.push(
-          `Baris ${index + 1}: ${validation.error.issues[0].message}`,
-        );
-      } else {
-        validStudents.push(validation.data);
-      }
-    });
-
-    if (errors.length > 0) {
-      return {
-        success: false,
-        error: "Validasi gagal",
-        details: errors,
-      };
-    }
-
     let successCount = 0;
     let failCount = 0;
     const processErrors: string[] = [];
-    const bcrypt = await import("bcryptjs");
+
+    // 1. Sanitize input
+    const sanitizedStudents = students.map((student, index) => {
+      const rawNisn = String(student.nisn || "").trim();
+      const paddedNisn = rawNisn ? rawNisn.padStart(10, "0") : "";
+
+      const rawGender = String(student.gender || "").trim().toUpperCase();
+      let finalGender = student.gender;
+      if (rawGender.startsWith("P") || rawGender.startsWith("F")) {
+        finalGender = "FEMALE";
+      } else if (rawGender.startsWith("L") || rawGender.startsWith("M")) {
+        finalGender = "MALE";
+      }
+
+      const rawEmail = String(student.email || "").trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const validEmail = emailRegex.test(rawEmail) ? rawEmail : "";
+
+      return {
+        ...student,
+        nisn: paddedNisn,
+        gender: finalGender,
+        email: validEmail,
+        _originalIndex: index + 1,
+      };
+    });
+
+    // 2. Schema Validation (collect errors, but proceed with valid ones)
+    const validStudents: (CreateStudentInput & { _originalIndex: number })[] = [];
+
+    sanitizedStudents.forEach((student) => {
+      const { _originalIndex, ...cleanStudent } = student;
+      const validation = CreateStudentSchema.safeParse(cleanStudent);
+      if (!validation.success) {
+        failCount++;
+        processErrors.push(
+          `Baris ${_originalIndex}: ${validation.error.issues[0].message}`,
+        );
+      } else {
+        validStudents.push({
+          ...validation.data,
+          _originalIndex,
+        });
+      }
+    });
+
+    if (validStudents.length === 0) {
+      return {
+        success: false,
+        error: "Semua baris gagal validasi",
+        details: processErrors,
+      };
+    }
+
+    // 3. Batch Check Uniqueness in Database (2 queries)
+    const allNisns = validStudents.map((s) => s.nisn);
+    const allEmails = validStudents
+      .map((s) => s.email)
+      .filter((e): e is string => !!e && e.trim() !== "");
+
+    const [existingStudents, existingUsers] = await Promise.all([
+      prisma.siswa.findMany({
+        where: { nisn: { in: allNisns } },
+        select: { nisn: true },
+      }),
+      prisma.user.findMany({
+        where: {
+          OR: [
+            { username: { in: allNisns } },
+            { email: { in: allEmails } },
+          ],
+        },
+        select: { username: true, email: true },
+      }),
+    ]);
+
+    const existingNisnsSet = new Set(existingStudents.map((s) => s.nisn));
+    const existingUsernamesSet = new Set(existingUsers.map((u) => u.username));
+    const existingEmailsSet = new Set(
+      existingUsers
+        .map((u) => u.email)
+        .filter((e): e is string => !!e)
+        .map((e) => e.toLowerCase()),
+    );
+
+    // 4. Filter and track emails to prevent duplicate emails in the current batch
+    const usedEmailsInBatch = new Set<string>();
+    const studentsToProcess: (CreateStudentInput & { _originalIndex: number })[] = [];
 
     for (const student of validStudents) {
-      try {
-        const existing = await prisma.siswa.findFirst({
-          where: { nisn: student.nisn },
-        });
+      if (existingNisnsSet.has(student.nisn) || existingUsernamesSet.has(student.nisn)) {
+        failCount++;
+        processErrors.push(
+          `Baris ${student._originalIndex}: NISN ${student.nisn} sudah terdaftar`,
+        );
+        continue;
+      }
 
-        if (existing) {
-          failCount++;
-          processErrors.push(`NISN ${student.nisn} sudah terdaftar`);
-          continue;
+      let emailToUse =
+        student.email && student.email.trim() !== "" ? student.email.trim().toLowerCase() : null;
+      if (emailToUse) {
+        if (existingEmailsSet.has(emailToUse) || usedEmailsInBatch.has(emailToUse)) {
+          // Email is already used, set to null so the student can still be created
+          emailToUse = null;
+        } else {
+          usedEmailsInBatch.add(emailToUse);
         }
+      }
 
+      studentsToProcess.push({
+        ...student,
+        email: emailToUse || undefined,
+      });
+    }
+
+    if (studentsToProcess.length === 0) {
+      return {
+        success: true,
+        message: `Proses selesai. Berhasil: ${successCount}, Gagal: ${failCount}`,
+        details: processErrors,
+      };
+    }
+
+    // 5. Hash passwords in parallel
+    const bcrypt = await import("bcryptjs");
+    const studentsWithHashedPasswords = await Promise.all(
+      studentsToProcess.map(async (student) => {
         const birthYear = new Date(student.birthDate).getFullYear();
         const rawPassword = `${student.nisn}@${birthYear}`;
         const hashedPassword = await bcrypt.hash(rawPassword, 10);
+        return {
+          ...student,
+          hashedPassword,
+        };
+      }),
+    );
 
-        await prisma.$transaction(async (tx) => {
-          const newUser = await tx.user.create({
-            data: {
-              username: student.nisn,
-              email: student.email || null,
-              password: hashedPassword,
-              role: "SISWA",
-            },
-          });
+    // 6. DB creation in Chunks of 50 using Promise.allSettled
+    const CHUNK_SIZE = 50;
+    for (let i = 0; i < studentsWithHashedPasswords.length; i += CHUNK_SIZE) {
+      const chunk = studentsWithHashedPasswords.slice(i, i + CHUNK_SIZE);
 
-          await tx.siswa.create({
-            data: {
-              userId: newUser.id,
-              name: student.name,
-              nisn: student.nisn,
-              class: student.class,
-              gender: student.gender as GenderType,
-              birthDate: new Date(student.birthDate),
-              birthPlace: student.birthPlace,
-              phone: student.phone,
-              address: student.address,
-              parentName: student.parentName,
-              parentPhone: student.parentPhone,
-              email: student.email,
-              year: student.year || new Date().getFullYear(), // Use provided year (angkatan) or current
-            },
+      const chunkResults = await Promise.allSettled(
+        chunk.map(async (student) => {
+          return prisma.$transaction(async (tx) => {
+            const newUser = await tx.user.create({
+              data: {
+                username: student.nisn,
+                email: student.email || null,
+                password: student.hashedPassword,
+                role: "SISWA",
+              },
+            });
+
+            await tx.siswa.create({
+              data: {
+                userId: newUser.id,
+                name: student.name,
+                nisn: student.nisn,
+                class: student.class,
+                gender: student.gender as GenderType,
+                birthDate: new Date(student.birthDate),
+                birthPlace: student.birthPlace,
+                phone: student.phone,
+                address: student.address,
+                parentName: student.parentName,
+                parentPhone: student.parentPhone,
+                email: student.email,
+                year: student.year || new Date().getFullYear(),
+              },
+            });
           });
-        });
-        successCount++;
-      } catch (err) {
-        failCount++;
-        processErrors.push(
-          `Gagal memproses ${student.name} (${student.nisn}): ${(err as Error).message}`,
-        );
-      }
+        }),
+      );
+
+      chunkResults.forEach((result, idx) => {
+        const student = chunk[idx];
+        if (result.status === "fulfilled") {
+          successCount++;
+        } else {
+          failCount++;
+          processErrors.push(
+            `Baris ${student._originalIndex}: Gagal memproses ${student.name} (${student.nisn}): ${(result.reason as Error)?.message || "Kesalahan database"}`,
+          );
+        }
+      });
     }
+
+    revalidatePath("/dashboard-kesiswaan/students");
+    revalidatePath("/dashboard-kesiswaan");
 
     return {
       success: true,
