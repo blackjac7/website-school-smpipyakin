@@ -20,6 +20,14 @@ interface StudentCardPreviewProps {
   student: Student;
 }
 
+const getNameFontSize = (name: string) => {
+  const len = name ? name.length : 0;
+  if (len <= 15) return "12px";
+  if (len <= 20) return "10.5px";
+  if (len <= 28) return "9px";
+  return "8px";
+};
+
 export default function StudentCardPreview({
   student,
 }: StudentCardPreviewProps) {
@@ -38,7 +46,7 @@ export default function StudentCardPreview({
         width: "85.6mm",
         height: "54mm",
         backgroundColor: "rgb(255, 255, 255)",
-        border: "1px solid rgb(229, 231, 235)",
+        border: "1px solid rgb(203, 213, 225)", // Slate-300 for clearer cut-out guides
         borderRadius: "3.175mm",
         overflow: "hidden",
         position: "relative",
@@ -198,15 +206,18 @@ export default function StudentCardPreview({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: "12px",
+              fontSize: getNameFontSize(student.name || ""),
               fontWeight: "700",
               color: "rgb(31, 41, 55)",
               marginBottom: "4px",
-              lineHeight: "1.2",
+              lineHeight: "1.1",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
               overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              wordBreak: "break-word",
             }}
+            title={student.name || ""}
           >
             {student.name}
           </div>

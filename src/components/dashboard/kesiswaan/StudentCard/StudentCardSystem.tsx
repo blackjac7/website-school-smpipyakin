@@ -111,7 +111,7 @@ export default function StudentCardSystem() {
     contentRef: printRef,
     documentTitle: `Kartu-Siswa-${new Date().toISOString().split("T")[0]}`,
     pageStyle: `
-      @page { size: A4 portrait; margin: 5mm 10mm; }
+      @page { size: A4 portrait; margin: 10mm 17.4mm; }
       @media print {
         body { -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; padding: 0; }
       }
