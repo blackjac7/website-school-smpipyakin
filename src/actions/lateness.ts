@@ -10,6 +10,7 @@ import {
   validateQRScan,
   formatTimeWIB,
   isCurrentlyLateTime,
+  isAfterLatenessWindow,
 } from "@/lib/qr-token";
 import { revalidatePath } from "next/cache";
 import {
@@ -139,12 +140,12 @@ export async function verifyScanQR(qrData: string) {
     return { success: false, error: auth.error };
   }
 
-  // Lateness is only recorded after 06:30 WIB (i.e. from 06:31 onwards)
+  // Lateness is only recorded within the window: after 06:30 WIB, up to 09:00 WIB
   if (!isCurrentlyLateTime()) {
-    return {
-      success: false,
-      error: `Belum waktunya pencatatan keterlambatan. Keterlambatan dicatat mulai pukul 06:31 WIB (sekarang ${formatTimeWIB()} WIB).`,
-    };
+    const error = isAfterLatenessWindow()
+      ? `Waktu pencatatan keterlambatan sudah berakhir (sampai pukul 09:00 WIB). Sekarang pukul ${formatTimeWIB()} WIB.`
+      : `Belum waktunya pencatatan keterlambatan. Keterlambatan dicatat mulai pukul 06:31 WIB (sekarang ${formatTimeWIB()} WIB).`;
+    return { success: false, error };
   }
 
   try {
@@ -224,12 +225,12 @@ export async function recordLateness(
     return { success: false, error: auth.error };
   }
 
-  // Lateness is only recorded after 06:30 WIB (i.e. from 06:31 onwards)
+  // Lateness is only recorded within the window: after 06:30 WIB, up to 09:00 WIB
   if (!isCurrentlyLateTime()) {
-    return {
-      success: false,
-      error: `Belum waktunya pencatatan keterlambatan. Keterlambatan dicatat mulai pukul 06:31 WIB (sekarang ${formatTimeWIB()} WIB).`,
-    };
+    const error = isAfterLatenessWindow()
+      ? `Waktu pencatatan keterlambatan sudah berakhir (sampai pukul 09:00 WIB). Sekarang pukul ${formatTimeWIB()} WIB.`
+      : `Belum waktunya pencatatan keterlambatan. Keterlambatan dicatat mulai pukul 06:31 WIB (sekarang ${formatTimeWIB()} WIB).`;
+    return { success: false, error };
   }
 
   try {
