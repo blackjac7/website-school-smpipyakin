@@ -6,11 +6,12 @@ import { useRouter } from "next/navigation";
 import { NotificationAPIService } from "@/hooks/useNotifications";
 import { FormattedNotification } from "@/utils/notificationHelpers";
 import NotificationCard from "@/components/shared/NotificationCard";
+import LoadingEffect from "@/components/shared/LoadingEffect";
 
 export default function AllNotificationsPage() {
   const router = useRouter();
   const [notifications, setNotifications] = useState<FormattedNotification[]>(
-    []
+    [],
   );
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "unread">("all");
@@ -20,7 +21,7 @@ export default function AllNotificationsPage() {
   // Load notifications with pagination
   const loadNotifications = async (
     pageNum: number = 1,
-    filterType: "all" | "unread" = "all"
+    filterType: "all" | "unread" = "all",
   ) => {
     try {
       const result = await NotificationAPIService.fetchAllNotifications({
@@ -59,8 +60,8 @@ export default function AllNotificationsPage() {
         prev.map((notification) =>
           notification.id === notificationId
             ? { ...notification, read: true }
-            : notification
-        )
+            : notification,
+        ),
       );
     }
   };
@@ -71,7 +72,7 @@ export default function AllNotificationsPage() {
 
     if (result.success) {
       setNotifications((prev) =>
-        prev.map((notification) => ({ ...notification, read: true }))
+        prev.map((notification) => ({ ...notification, read: true })),
       );
     }
   };
@@ -84,16 +85,7 @@ export default function AllNotificationsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-pulse">
-          <div className="text-center">
-            <div className="h-8 bg-gray-200 rounded w-48 mx-auto mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingEffect message="Memuat notifikasi..." />;
   }
 
   return (

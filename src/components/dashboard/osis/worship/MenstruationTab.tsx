@@ -40,7 +40,10 @@ interface MenstruationTabProps {
   onRefresh?: () => void;
 }
 
-export default function MenstruationTab({ records, onRefresh }: MenstruationTabProps) {
+export default function MenstruationTab({
+  records,
+  onRefresh,
+}: MenstruationTabProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
@@ -56,7 +59,7 @@ export default function MenstruationTab({ records, onRefresh }: MenstruationTabP
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedRecords = records.slice(
     startIndex,
-    startIndex + ITEMS_PER_PAGE
+    startIndex + ITEMS_PER_PAGE,
   );
 
   const handlePageChange = (page: number) => {
@@ -120,7 +123,7 @@ export default function MenstruationTab({ records, onRefresh }: MenstruationTabP
           console.error(error);
           toast.error("Gagal update status");
         }
-      }
+      },
     );
   };
 
@@ -143,7 +146,7 @@ export default function MenstruationTab({ records, onRefresh }: MenstruationTabP
           console.error(error);
           toast.error("Gagal menghapus");
         }
-      }
+      },
     );
   };
 
@@ -162,119 +165,209 @@ export default function MenstruationTab({ records, onRefresh }: MenstruationTabP
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-pink-50 text-pink-900">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-semibold">
-                Siswi
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold">
-                Mulai
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold">
-                Selesai
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold">
-                Durasi
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold">
-                Status/Peringatan
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold">
-                Keterangan
-              </th>
-              <th className="px-6 py-3 text-right text-sm font-semibold">
-                Aksi
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {records.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                  Belum ada data tercatat
-                </td>
-              </tr>
-            ) : (
-              paginatedRecords.map((record) => {
-                const isActive = !record.endDate;
-                const duration = isActive
-                  ? Math.floor(
-                      (new Date().getTime() -
-                        new Date(record.startDate).getTime()) /
-                        86400000
-                    ) + 1
-                  : Math.floor(
-                      (new Date(record.endDate!).getTime() -
-                        new Date(record.startDate).getTime()) /
-                        86400000
-                    ) + 1;
+        {/* Mobile Card List */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {records.length === 0 ? (
+            <p className="px-6 py-8 text-center text-gray-500">
+              Belum ada data tercatat
+            </p>
+          ) : (
+            paginatedRecords.map((record) => {
+              const isActive = !record.endDate;
+              const duration = isActive
+                ? Math.floor(
+                    (new Date().getTime() -
+                      new Date(record.startDate).getTime()) /
+                      86400000,
+                  ) + 1
+                : Math.floor(
+                    (new Date(record.endDate!).getTime() -
+                      new Date(record.startDate).getTime()) /
+                      86400000,
+                  ) + 1;
 
-                return (
-                  <tr key={record.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900">
+              return (
+                <div key={record.id} className="p-4 hover:bg-gray-50">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">
                         {record.siswa.name}
-                      </div>
-                      <div className="text-xs text-gray-500">
+                      </p>
+                      <p className="text-xs text-gray-500">
                         {record.siswa.class}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {isActive && (
+                        <button
+                          onClick={() => handleEndPeriod(record)}
+                          className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg"
+                          title="Tandai Selesai"
+                        >
+                          <Check size={18} />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDelete(record.id)}
+                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
+                        title="Hapus Data"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 mb-2 text-xs text-gray-600">
+                    <span>
                       {format(new Date(record.startDate), "d MMM yyyy", {
                         locale: idLocale,
                       })}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {record.endDate ? (
-                        format(new Date(record.endDate), "d MMM yyyy", {
+                    </span>
+                    <span className="text-gray-300">→</span>
+                    {record.endDate ? (
+                      <span>
+                        {format(new Date(record.endDate), "d MMM yyyy", {
                           locale: idLocale,
-                        })
-                      ) : (
-                        <span className="text-green-600 font-medium">
-                          Sedang Berlangsung
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {duration} Hari
-                    </td>
-                    <td className="px-6 py-4">
-                      {record.warning ? (
-                        <div className="flex items-center gap-1.5 text-amber-600 bg-amber-50 px-2 py-1 rounded-full w-fit text-xs font-medium border border-amber-100">
-                          <AlertTriangle size={14} />
-                          {record.warning}
+                        })}
+                      </span>
+                    ) : (
+                      <span className="text-green-600 font-medium">
+                        Sedang Berlangsung
+                      </span>
+                    )}
+                    <span className="text-gray-300">•</span>
+                    <span>{duration} Hari</span>
+                  </div>
+                  {record.warning && (
+                    <div className="flex items-center gap-1.5 text-amber-600 bg-amber-50 px-2 py-1 rounded-full w-fit text-xs font-medium border border-amber-100">
+                      <AlertTriangle size={14} />
+                      {record.warning}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-pink-50 text-pink-900">
+              <tr>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  Siswi
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  Mulai
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  Selesai
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  Durasi
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  Status/Peringatan
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  Keterangan
+                </th>
+                <th className="px-6 py-3 text-right text-sm font-semibold">
+                  Aksi
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {records.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
+                    Belum ada data tercatat
+                  </td>
+                </tr>
+              ) : (
+                paginatedRecords.map((record) => {
+                  const isActive = !record.endDate;
+                  const duration = isActive
+                    ? Math.floor(
+                        (new Date().getTime() -
+                          new Date(record.startDate).getTime()) /
+                          86400000,
+                      ) + 1
+                    : Math.floor(
+                        (new Date(record.endDate!).getTime() -
+                          new Date(record.startDate).getTime()) /
+                          86400000,
+                      ) + 1;
+
+                  return (
+                    <tr key={record.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-gray-900">
+                          {record.siswa.name}
                         </div>
-                      ) : (
-                        <span className="text-gray-400 text-xs">-</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        {isActive && (
-                          <button
-                            onClick={() => handleEndPeriod(record)}
-                            className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg tooltip"
-                            title="Tandai Selesai"
-                          >
-                            <Check size={18} />
-                          </button>
+                        <div className="text-xs text-gray-500">
+                          {record.siswa.class}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {format(new Date(record.startDate), "d MMM yyyy", {
+                          locale: idLocale,
+                        })}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {record.endDate ? (
+                          format(new Date(record.endDate), "d MMM yyyy", {
+                            locale: idLocale,
+                          })
+                        ) : (
+                          <span className="text-green-600 font-medium">
+                            Sedang Berlangsung
+                          </span>
                         )}
-                        <button
-                          onClick={() => handleDelete(record.id)}
-                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
-                          title="Hapus Data"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {duration} Hari
+                      </td>
+                      <td className="px-6 py-4">
+                        {record.warning ? (
+                          <div className="flex items-center gap-1.5 text-amber-600 bg-amber-50 px-2 py-1 rounded-full w-fit text-xs font-medium border border-amber-100">
+                            <AlertTriangle size={14} />
+                            {record.warning}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-xs">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          {isActive && (
+                            <button
+                              onClick={() => handleEndPeriod(record)}
+                              className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg tooltip"
+                              title="Tandai Selesai"
+                            >
+                              <Check size={18} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDelete(record.id)}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
+                            title="Hapus Data"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
@@ -355,7 +448,7 @@ export default function MenstruationTab({ records, onRefresh }: MenstruationTabP
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Batal
                 </button>

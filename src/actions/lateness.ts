@@ -9,9 +9,16 @@ import {
   generateQRPayload,
   validateQRScan,
   formatTimeWIB,
+  isCurrentlyLateTime,
 } from "@/lib/qr-token";
 import { revalidatePath } from "next/cache";
-import { startOfDay, startOfWeek, startOfMonth, startOfYear, endOfDay } from "date-fns";
+import {
+  startOfDay,
+  startOfWeek,
+  startOfMonth,
+  startOfYear,
+  endOfDay,
+} from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
 // WIB Timezone for date calculations
@@ -132,6 +139,14 @@ export async function verifyScanQR(qrData: string) {
     return { success: false, error: auth.error };
   }
 
+  // Lateness is only recorded after 06:30 WIB (i.e. from 06:31 onwards)
+  if (!isCurrentlyLateTime()) {
+    return {
+      success: false,
+      error: `Belum waktunya pencatatan keterlambatan. Keterlambatan dicatat mulai pukul 06:31 WIB (sekarang ${formatTimeWIB()} WIB).`,
+    };
+  }
+
   try {
     const siswaId = validateQRScan(qrData);
     if (!siswaId) {
@@ -202,11 +217,19 @@ export async function verifyScanQR(qrData: string) {
 export async function recordLateness(
   siswaId: string,
   arrivalTime: string,
-  reason?: string
+  reason?: string,
 ) {
   const auth = await verifyOsisAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
+  }
+
+  // Lateness is only recorded after 06:30 WIB (i.e. from 06:31 onwards)
+  if (!isCurrentlyLateTime()) {
+    return {
+      success: false,
+      error: `Belum waktunya pencatatan keterlambatan. Keterlambatan dicatat mulai pukul 06:31 WIB (sekarang ${formatTimeWIB()} WIB).`,
+    };
   }
 
   try {
@@ -236,7 +259,10 @@ export async function recordLateness(
     });
 
     if (existingRecord) {
-      return { success: false, error: "Siswa sudah tercatat terlambat hari ini" };
+      return {
+        success: false,
+        error: "Siswa sudah tercatat terlambat hari ini",
+      };
     }
 
     // Create record
@@ -279,9 +305,9 @@ function getDateRange(period: Period, customStart?: Date, customEnd?: Date) {
   const zonedNow = toZonedTime(now, WIB_TIMEZONE);
 
   if (period === "custom" && customStart && customEnd) {
-    return { 
-      start: startOfDay(toZonedTime(customStart, WIB_TIMEZONE)), 
-      end: endOfDay(toZonedTime(customEnd, WIB_TIMEZONE)) 
+    return {
+      start: startOfDay(toZonedTime(customStart, WIB_TIMEZONE)),
+      end: endOfDay(toZonedTime(customEnd, WIB_TIMEZONE)),
     };
   }
 
@@ -289,7 +315,10 @@ function getDateRange(period: Period, customStart?: Date, customEnd?: Date) {
     case "day":
       return { start: startOfDay(zonedNow), end: endOfDay(zonedNow) };
     case "week":
-      return { start: startOfWeek(zonedNow, { weekStartsOn: 1 }), end: endOfDay(zonedNow) };
+      return {
+        start: startOfWeek(zonedNow, { weekStartsOn: 1 }),
+        end: endOfDay(zonedNow),
+      };
     case "month":
       return { start: startOfMonth(zonedNow), end: endOfDay(zonedNow) };
     case "year":
@@ -320,16 +349,36 @@ export async function getLatenessStats() {
   try {
     const [dayCount, weekCount, monthCount, yearCount] = await Promise.all([
       prisma.latenessRecord.count({
-        where: { date: { gte: getDateRange("day").start, lte: getDateRange("day").end } },
+        where: {
+          date: {
+            gte: getDateRange("day").start,
+            lte: getDateRange("day").end,
+          },
+        },
       }),
       prisma.latenessRecord.count({
-        where: { date: { gte: getDateRange("week").start, lte: getDateRange("week").end } },
+        where: {
+          date: {
+            gte: getDateRange("week").start,
+            lte: getDateRange("week").end,
+          },
+        },
       }),
       prisma.latenessRecord.count({
-        where: { date: { gte: getDateRange("month").start, lte: getDateRange("month").end } },
+        where: {
+          date: {
+            gte: getDateRange("month").start,
+            lte: getDateRange("month").end,
+          },
+        },
       }),
       prisma.latenessRecord.count({
-        where: { date: { gte: getDateRange("year").start, lte: getDateRange("year").end } },
+        where: {
+          date: {
+            gte: getDateRange("year").start,
+            lte: getDateRange("year").end,
+          },
+        },
       }),
     ]);
 
@@ -358,7 +407,7 @@ export async function getLatenessRecords(
   limit: number = 20,
   customStart?: Date,
   customEnd?: Date,
-  search?: string
+  search?: string,
 ) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
@@ -379,8 +428,8 @@ export async function getLatenessRecords(
 
     if (search) {
       where.OR = [
-        { siswa: { name: { contains: search, mode: 'insensitive' } } },
-        { siswa: { nisn: { contains: search } } }
+        { siswa: { name: { contains: search, mode: "insensitive" } } },
+        { siswa: { nisn: { contains: search } } },
       ];
     }
 
@@ -420,7 +469,10 @@ export async function getLatenessRecords(
         arrivalTime: r.arrivalTime,
         date: r.date,
         reason: r.reason,
-        recordedBy: r.recorder.siswa?.name || r.recorder.kesiswaan?.name || r.recorder.username,
+        recordedBy:
+          r.recorder.siswa?.name ||
+          r.recorder.kesiswaan?.name ||
+          r.recorder.username,
       })),
       totalCount,
       totalPages: Math.ceil(totalCount / limit),
@@ -436,9 +488,9 @@ export async function getLatenessRecords(
  * Get lateness by class for chart
  */
 export async function getLatenessByClass(
-  period: Period = "month", 
-  customStart?: Date, 
-  customEnd?: Date
+  period: Period = "month",
+  customStart?: Date,
+  customEnd?: Date,
 ) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
@@ -477,7 +529,7 @@ export async function getLatenessByClass(
 export async function getLatenesTrend(
   period: Period = "month",
   customStart?: Date,
-  customEnd?: Date
+  customEnd?: Date,
 ) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
@@ -539,7 +591,6 @@ export async function getAvailableClasses() {
   }
 }
 
-
 /**
  * Get raw lateness data for Excel export
  */
@@ -547,7 +598,7 @@ export async function getLatenessForExport(
   period: Period = "month",
   classFilter?: string,
   customStart?: Date,
-  customEnd?: Date
+  customEnd?: Date,
 ) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
@@ -595,7 +646,10 @@ export async function getLatenessForExport(
       data: records.map((r) => ({
         ...r,
         recorder: {
-          username: r.recorder.siswa?.name || r.recorder.kesiswaan?.name || r.recorder.username,
+          username:
+            r.recorder.siswa?.name ||
+            r.recorder.kesiswaan?.name ||
+            r.recorder.username,
         },
       })),
     };
@@ -613,7 +667,7 @@ export async function exportLatenessCSV(
   period: Period = "month",
   classFilter?: string,
   customStart?: Date,
-  customEnd?: Date
+  customEnd?: Date,
 ) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
@@ -646,7 +700,15 @@ export async function exportLatenessCSV(
     });
 
     // Generate CSV
-    const headers = ["Tanggal", "Nama", "NISN", "Kelas", "Jam Tiba", "Alasan", "Dicatat Oleh"];
+    const headers = [
+      "Tanggal",
+      "Nama",
+      "NISN",
+      "Kelas",
+      "Jam Tiba",
+      "Alasan",
+      "Dicatat Oleh",
+    ];
     const rows = records.map((r) => [
       new Date(r.date).toLocaleDateString("id-ID"),
       r.siswa.name || "-",
@@ -667,4 +729,3 @@ export async function exportLatenessCSV(
     return { success: false, error: "Gagal export CSV" };
   }
 }
-

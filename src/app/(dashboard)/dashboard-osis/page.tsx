@@ -25,6 +25,7 @@ import {
   OsisNotificationData,
 } from "@/actions/osis/notifications";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import LoadingEffect from "@/components/shared/LoadingEffect";
 import { DashboardSidebar } from "@/components/dashboard/layout";
 import { getActivities, deleteActivity } from "@/actions/osis/activities";
 import {
@@ -309,9 +310,7 @@ function OSISDashboard() {
 
           {activeMenu === "ibadah" &&
             (loadingWorship ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              </div>
+              <LoadingEffect fullScreen={false} showMessage={false} size="xs" />
             ) : (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <ReligiousDashboardClient

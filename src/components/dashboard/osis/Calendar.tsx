@@ -65,9 +65,13 @@ export default function Calendar({
 
     // Days
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+      const date = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        day,
+      );
 
-      const dayActivities = activities.filter(a => {
+      const dayActivities = activities.filter((a) => {
         const aDate = new Date(a.date);
         return isSameDay(aDate, date) && a.status === "APPROVED";
       });
@@ -77,24 +81,29 @@ export default function Calendar({
 
       days.push(
         <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: day * 0.01 }}
-            key={day}
-            className={`p-2 text-center cursor-pointer rounded-lg hover:bg-gray-100 relative ${
-                isToday ? "bg-blue-50 text-blue-700 font-bold ring-1 ring-blue-200" : "text-gray-700"
-            }`}
-            title={dayActivities.map(a => a.title).join(", ")}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: day * 0.01 }}
+          key={day}
+          className={`p-2 text-center cursor-pointer rounded-lg hover:bg-gray-100 relative ${
+            isToday
+              ? "bg-blue-50 text-blue-700 font-bold ring-1 ring-blue-200"
+              : "text-gray-700"
+          }`}
+          title={dayActivities.map((a) => a.title).join(", ")}
         >
           {day}
           {hasEvent && (
             <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-0.5">
-                {dayActivities.slice(0, 3).map((_, i) => (
-                    <div key={i} className="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-sm"></div>
-                ))}
+              {dayActivities.slice(0, 3).map((_, i) => (
+                <div
+                  key={i}
+                  className="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-sm"
+                ></div>
+              ))}
             </div>
           )}
-        </motion.div>
+        </motion.div>,
       );
     }
 
@@ -103,29 +112,29 @@ export default function Calendar({
 
   return (
     <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
     >
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-bold text-gray-900">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+        <h3 className="text-base sm:text-lg font-bold text-gray-900">
           Kalender Kegiatan
         </h3>
-        <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-1 self-start sm:self-auto">
           <button
             onClick={() =>
               setCurrentMonth(
                 new Date(
                   currentMonth.getFullYear(),
-                  currentMonth.getMonth() - 1
-                )
+                  currentMonth.getMonth() - 1,
+                ),
               )
             }
             className="p-1 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-600"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="text-sm font-medium px-3 text-gray-900 min-w-[120px] text-center">
+          <span className="text-sm font-medium px-2 sm:px-3 text-gray-900 min-w-25 sm:min-w-30 text-center">
             {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
           </span>
           <button
@@ -133,8 +142,8 @@ export default function Calendar({
               setCurrentMonth(
                 new Date(
                   currentMonth.getFullYear(),
-                  currentMonth.getMonth() + 1
-                )
+                  currentMonth.getMonth() + 1,
+                ),
               )
             }
             className="p-1 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-600"
@@ -158,10 +167,10 @@ export default function Calendar({
       <div className="grid grid-cols-7 gap-1">{renderCalendar()}</div>
 
       <div className="mt-6 pt-4 border-t border-gray-100 text-xs text-gray-500 flex gap-4">
-          <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full ring-2 ring-blue-100"></div>
-              <span>Kegiatan Disetujui</span>
-          </div>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-blue-500 rounded-full ring-2 ring-blue-100"></div>
+          <span>Kegiatan Disetujui</span>
+        </div>
       </div>
     </motion.div>
   );

@@ -143,10 +143,10 @@ export function validateQRScan(qrData: string): string | null {
 // TIME UTILITIES FOR LATENESS DETECTION
 // ==============================================
 
-// Late time threshold: 06:30 WIB (Jakarta, UTC+7)
+// Late time threshold: after 06:30 WIB (i.e. 06:31 onwards) is considered late (Jakarta, UTC+7)
 export const LATE_THRESHOLD = {
   hour: 6,
-  minute: 31,
+  minute: 30,
   utcOffset: 7, // WIB is UTC+7
 };
 

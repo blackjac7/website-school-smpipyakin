@@ -146,49 +146,59 @@ export default function DashboardOverviewEnhanced() {
       {/* Hero Section */}
       <motion.div
         variants={itemVariants}
-        className="relative overflow-hidden bg-linear-to-r from-[#1E3A8A] to-[#2563EB] rounded-2xl p-8 text-white shadow-xl"
+        className="relative overflow-hidden bg-linear-to-r from-[#1E3A8A] to-[#2563EB] rounded-2xl p-5 sm:p-8 text-white shadow-xl"
       >
         <div className="absolute top-0 right-0 p-4 opacity-10">
           <GraduationCap className="w-64 h-64" />
         </div>
 
         <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-inner">
-              <GraduationCap className="w-8 h-8 text-white" />
+          <div className="flex items-center gap-3 sm:gap-4 mb-6">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-inner">
+              <GraduationCap className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Dashboard PPDB 2025</h1>
-              <p className="text-blue-100 text-lg">
+              <h1 className="text-xl sm:text-3xl font-bold">
+                Dashboard PPDB 2025
+              </h1>
+              <p className="text-sm sm:text-lg text-blue-100">
                 Penerimaan Peserta Didik Baru SMP IT Pyakin
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10">
-              <div className="text-3xl font-bold text-[#F59E0B]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-8">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 sm:p-4 border border-white/10">
+              <div className="text-xl sm:text-3xl font-bold text-[#F59E0B]">
                 {stats.overview.total}
               </div>
-              <div className="text-sm text-blue-100">Total Pendaftar</div>
+              <div className="text-xs sm:text-sm text-blue-100">
+                Total Pendaftar
+              </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10">
-              <div className="text-3xl font-bold text-green-400">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 sm:p-4 border border-white/10">
+              <div className="text-xl sm:text-3xl font-bold text-green-400">
                 {acceptanceRate}%
               </div>
-              <div className="text-sm text-blue-100">Tingkat Diterima</div>
+              <div className="text-xs sm:text-sm text-blue-100">
+                Tingkat Diterima
+              </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10">
-              <div className="text-3xl font-bold text-yellow-400">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 sm:p-4 border border-white/10">
+              <div className="text-xl sm:text-3xl font-bold text-yellow-400">
                 {pendingRate}%
               </div>
-              <div className="text-sm text-blue-100">Sedang Diproses</div>
+              <div className="text-xs sm:text-sm text-blue-100">
+                Sedang Diproses
+              </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10">
-              <div className="text-3xl font-bold text-purple-400">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 sm:p-4 border border-white/10">
+              <div className="text-xl sm:text-3xl font-bold text-purple-400">
                 {stats.recentApplications.length}
               </div>
-              <div className="text-sm text-blue-100">Pendaftar Baru</div>
+              <div className="text-xs sm:text-sm text-blue-100">
+                Pendaftar Baru
+              </div>
             </div>
           </div>
         </div>

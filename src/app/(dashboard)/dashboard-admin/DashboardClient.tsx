@@ -148,28 +148,28 @@ export default function DashboardClient({
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden bg-gradient-to-r from-blue-900 to-blue-800 rounded-3xl p-8 text-white shadow-xl"
+        className="relative overflow-hidden bg-gradient-to-r from-blue-900 to-blue-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl"
       >
         <div className="relative z-10">
-          <h1 className="text-3xl font-bold mb-2">
+          <h1 className="text-xl sm:text-3xl font-bold mb-2">
             Selamat Datang, {userName}!
           </h1>
-          <p className="text-blue-100 max-w-2xl mb-6">
+          <p className="text-sm sm:text-base text-blue-100 max-w-2xl mb-5 sm:mb-6">
             Dashboard overview memberikan ringkasan real-time aktivitas sekolah.
             Kelola data, pantau statistik, dan akses fitur manajemen dengan
             cepat.
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3">
             <Link
               href="/dashboard-admin/news/create"
-              className="bg-yellow-500 hover:bg-yellow-400 text-blue-900 font-semibold px-5 py-2.5 rounded-xl transition shadow-lg shadow-yellow-500/20 flex items-center gap-2"
+              className="bg-yellow-500 hover:bg-yellow-400 text-blue-900 font-semibold px-5 py-2.5 rounded-xl transition shadow-lg shadow-yellow-500/20 flex items-center justify-center gap-2"
             >
               <FileText size={18} />
               Tulis Berita
             </Link>
             <Link
               href="/dashboard-admin/users"
-              className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-5 py-2.5 rounded-xl transition border border-white/10 flex items-center gap-2"
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-5 py-2.5 rounded-xl transition border border-white/10 flex items-center justify-center gap-2"
             >
               <Users size={18} />
               Kelola User

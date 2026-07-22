@@ -55,14 +55,14 @@ export default function UploadAchievementModal({
     // Check if user already has 2 pending achievements
     if (pendingCount >= 2) {
       toast.error(
-        "Anda sudah memiliki 2 prestasi yang sedang menunggu persetujuan. Silakan tunggu hingga ada yang disetujui atau ditolak sebelum mengunggah prestasi baru."
+        "Anda sudah memiliki 2 prestasi yang sedang menunggu persetujuan. Silakan tunggu hingga ada yang disetujui atau ditolak sebelum mengunggah prestasi baru.",
       );
       return;
     }
 
     if (!uploadedFile) {
       toast.error(
-        "Upload foto prestasi wajib! Silakan upload foto dokumentasi atau sertifikat prestasi terlebih dahulu."
+        "Upload foto prestasi wajib! Silakan upload foto dokumentasi atau sertifikat prestasi terlebih dahulu.",
       );
       return;
     }
@@ -217,7 +217,7 @@ export default function UploadAchievementModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label
                 htmlFor="achievement-date"

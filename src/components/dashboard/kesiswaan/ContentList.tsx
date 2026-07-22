@@ -8,6 +8,8 @@ import {
   X,
   Eye,
   User,
+  Tag,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -83,7 +85,7 @@ export default function ContentList({
     ? filteredItems // Already paginated from server
     : filteredItems.slice(
         (clientPage - 1) * itemsPerPage,
-        clientPage * itemsPerPage
+        clientPage * itemsPerPage,
       );
 
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -131,40 +133,46 @@ export default function ContentList({
               onChange={(e) => handleSearchChange(e.target.value)}
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <label htmlFor="category-filter" className="sr-only">
               Filter kategori
             </label>
-            <select
-              id="category-filter"
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
-              value={categoryFilter}
-              onChange={(e) => handleCategoryChange(e.target.value)}
-            >
-              <option>Semua Kategori</option>
-              <option value="Akademik">Akademik</option>
-              <option value="Olahraga">Olahraga</option>
-              <option value="Seni">Seni</option>
-              <option value="Fotografi">Fotografi</option>
-              <option value="Videografi">Videografi</option>
-              <option value="Kegiatan">Kegiatan OSIS</option>
-              <option value="Prestasi">Prestasi</option>
-            </select>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Tag className="w-4 h-4 text-gray-400 shrink-0" />
+              <select
+                id="category-filter"
+                className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                value={categoryFilter}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+              >
+                <option>Semua Kategori</option>
+                <option value="Akademik">Akademik</option>
+                <option value="Olahraga">Olahraga</option>
+                <option value="Seni">Seni</option>
+                <option value="Fotografi">Fotografi</option>
+                <option value="Videografi">Videografi</option>
+                <option value="Kegiatan">Kegiatan OSIS</option>
+                <option value="Prestasi">Prestasi</option>
+              </select>
+            </div>
             <label htmlFor="status-filter" className="sr-only">
               Filter status
             </label>
-            <select
-              id="status-filter"
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
-              value={statusFilter}
-              onChange={(e) => handleStatusChange(e.target.value)}
-            >
-              <option>Semua Status</option>
-              <option value="Pending">Pending</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-            <button className="btn-secondary flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <CheckCircle2 className="w-4 h-4 text-gray-400 shrink-0" />
+              <select
+                id="status-filter"
+                className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                value={statusFilter}
+                onChange={(e) => handleStatusChange(e.target.value)}
+              >
+                <option>Semua Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+            <button className="btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto">
               <Filter className="w-4 h-4" />
               Filter
             </button>
@@ -184,8 +192,8 @@ export default function ContentList({
               key={item.id}
               className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2 justify-between mb-4">
+                <div className="flex flex-wrap items-center gap-2">
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${
                       item.type === "achievement"
@@ -214,7 +222,7 @@ export default function ContentList({
                     {item.status}
                   </span>
 
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-500 whitespace-nowrap shrink-0">
                     {format(new Date(item.date), "dd MMM yyyy", {
                       locale: idLocale,
                     })}
@@ -222,7 +230,7 @@ export default function ContentList({
                 </div>
 
                 {item.status === "PENDING" && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => onApprove(item)}
                       className="btn-success flex items-center gap-1"
@@ -250,7 +258,7 @@ export default function ContentList({
                 {item.status !== "PENDING" && (
                   <button
                     onClick={() => onPreview(item)}
-                    className="btn-secondary flex items-center gap-1"
+                    className="btn-secondary flex items-center gap-1 shrink-0"
                   >
                     <Eye className="w-4 h-4" />
                     Detail
@@ -296,7 +304,7 @@ export default function ContentList({
             Menampilkan {startIndex + 1}-
             {Math.min(
               startIndex + itemsPerPage,
-              displayItems.length + startIndex
+              displayItems.length + startIndex,
             )}{" "}
             dari {totalItems} konten
           </p>

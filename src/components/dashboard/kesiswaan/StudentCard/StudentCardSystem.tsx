@@ -9,6 +9,7 @@ import {
   CreditCard,
   Loader2,
   Filter,
+  Calendar,
   CheckSquare,
   Square,
   Users,
@@ -111,7 +112,7 @@ export default function StudentCardSystem() {
     contentRef: printRef,
     documentTitle: `Kartu-Siswa-${new Date().toISOString().split("T")[0]}`,
     pageStyle: `
-      @page { size: A4 portrait; margin: 10mm 17.4mm; }
+      @page { size: A4 portrait; margin: 15mm; }
       @media print {
         body { -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; padding: 0; }
       }
@@ -181,18 +182,21 @@ export default function StudentCardSystem() {
           </div>
 
           {/* Year filter */}
-          <select
-            value={yearFilter}
-            onChange={(e) => setYearFilter(e.target.value)}
-            className="px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-          >
-            <option value="all">Semua Angkatan</option>
-            {availableYears.map((y) => (
-              <option key={y} value={y.toString()}>
-                Angkatan {y}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-1.5">
+            <Calendar className="w-4 h-4 text-gray-400" />
+            <select
+              value={yearFilter}
+              onChange={(e) => setYearFilter(e.target.value)}
+              className="px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+            >
+              <option value="all">Semua Angkatan</option>
+              {availableYears.map((y) => (
+                <option key={y} value={y.toString()}>
+                  Angkatan {y}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </motion.div>
 
@@ -204,11 +208,12 @@ export default function StudentCardSystem() {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-gray-800">
-              Batch Print: 10 Kartu per Halaman A4
+              Batch Print: 8 Kartu per Halaman A4
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              Layout 2 kolom × 5 baris · Ukuran 85.6 × 54 mm (standar ID card) ·
-              QR code HMAC-signed untuk keamanan
+              Layout 2 kolom × 4 baris · Ukuran 85.6 × 54 mm (standar ID card) ·
+              jarak antar kartu diperlebar agar mudah digunting setelah
+              dilaminating
             </p>
           </div>
         </div>
@@ -231,7 +236,7 @@ export default function StudentCardSystem() {
                 </p>
                 {selectedStudents.length > 0 && (
                   <p className="text-xs text-gray-400">
-                    {Math.ceil(selectedStudents.length / 10)} halaman A4
+                    {Math.ceil(selectedStudents.length / 8)} halaman A4
                   </p>
                 )}
               </div>
@@ -379,7 +384,7 @@ export default function StudentCardSystem() {
                 Preview Kartu
                 <span className="text-xs font-normal text-gray-400 ml-1">
                   ({selectedStudents.length} kartu ·{" "}
-                  {Math.ceil(selectedStudents.length / 10)} halaman)
+                  {Math.ceil(selectedStudents.length / 8)} halaman)
                 </span>
               </h2>
             </div>
@@ -391,8 +396,8 @@ export default function StudentCardSystem() {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(2, 85.6mm)",
-                  columnGap: "4mm",
-                  rowGap: "3mm",
+                  columnGap: "8mm",
+                  rowGap: "8mm",
                   padding: "8mm",
                   backgroundColor: "white",
                   justifyContent: "center",

@@ -326,6 +326,7 @@ export default function LatnessScannerContent() {
       const arrivalTime = currentTime.toLocaleTimeString("id-ID", {
         hour: "2-digit",
         minute: "2-digit",
+        timeZone: "Asia/Jakarta",
       });
 
       const result = await recordLateness(
@@ -385,6 +386,7 @@ export default function LatnessScannerContent() {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
+      timeZone: "Asia/Jakarta",
     });
   };
 

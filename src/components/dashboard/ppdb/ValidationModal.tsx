@@ -92,7 +92,7 @@ export default function ValidationModal({
                     {applicant.name}
                   </p>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-600">NISN</p>
                     <p className="font-medium text-gray-900">

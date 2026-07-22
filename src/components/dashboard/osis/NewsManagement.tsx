@@ -11,6 +11,7 @@ import {
   ImageIcon,
   ChevronLeft,
   ChevronRight,
+  Newspaper,
 } from "lucide-react";
 import ImageUpload from "@/components/shared/ImageUpload";
 import {
@@ -91,7 +92,8 @@ export default function NewsManagement() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">
+          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <Newspaper className="w-5 h-5 text-blue-600" />
             Berita Kegiatan Sekolah
           </h3>
           {news.length > 0 && (
@@ -330,9 +332,6 @@ function AddNewsModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Foto Kegiatan (Optional)
-            </label>
             <ImageUpload
               onUpload={(file) => {
                 const imageInput = document.querySelector<HTMLInputElement>(
@@ -347,7 +346,7 @@ function AddNewsModal({
                 if (imageInput) imageInput.value = "";
               }}
               folder="news/osis"
-              label="Upload Foto Kegiatan"
+              label="Foto Kegiatan (Opsional)"
               acceptedFormats={["JPEG", "PNG", "WebP"]}
               maxSizeMB={4}
             />

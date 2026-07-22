@@ -43,7 +43,10 @@ interface CarpetTabProps {
   schedules: CarpetSchedule[];
 }
 
-export default function CarpetTab({ schedules, onRefresh }: CarpetTabProps & { onRefresh?: () => void }) {
+export default function CarpetTab({
+  schedules,
+  onRefresh,
+}: CarpetTabProps & { onRefresh?: () => void }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
@@ -60,7 +63,7 @@ export default function CarpetTab({ schedules, onRefresh }: CarpetTabProps & { o
       acc[dateKey].push(curr);
       return acc;
     },
-    {} as Record<string, CarpetSchedule[]>
+    {} as Record<string, CarpetSchedule[]>,
   );
 
   const sortedDates = Object.keys(schedulesByDate).sort();
@@ -70,7 +73,7 @@ export default function CarpetTab({ schedules, onRefresh }: CarpetTabProps & { o
   const startIndex = (currentPage - 1) * DATES_PER_PAGE;
   const paginatedDates = sortedDates.slice(
     startIndex,
-    startIndex + DATES_PER_PAGE
+    startIndex + DATES_PER_PAGE,
   );
 
   const handlePageChange = (page: number) => {
@@ -132,7 +135,7 @@ export default function CarpetTab({ schedules, onRefresh }: CarpetTabProps & { o
           console.error(error);
           toast.error("Gagal menghapus");
         }
-      }
+      },
     );
   };
 
@@ -208,26 +211,33 @@ export default function CarpetTab({ schedules, onRefresh }: CarpetTabProps & { o
                       </div>
 
                       <div className="flex-1">
-                         <div className="flex items-center gap-2">
-                            <span className="font-semibold text-gray-700">Petugas:</span>
-                            {sch.className ? (
-                                <span className="bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded font-medium">
-                                    Kelas {sch.className}
-                                </span>
-                            ) : (
-                                <span className="text-gray-400 italic">Tidak ada assignment</span>
-                            )}
-                         </div>
-                         {/* Fallback for legacy assignments if needed, though we moved to class based */}
-                         {sch.assignments && sch.assignments.length > 0 && (
-                             <div className="flex flex-wrap gap-2 mt-2">
-                                {sch.assignments.map((assign, idx) => (
-                                    <span key={idx} className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-                                        {assign.siswa.name}
-                                    </span>
-                                ))}
-                             </div>
-                         )}
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-gray-700">
+                            Petugas:
+                          </span>
+                          {sch.className ? (
+                            <span className="bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded font-medium">
+                              Kelas {sch.className}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 italic">
+                              Tidak ada assignment
+                            </span>
+                          )}
+                        </div>
+                        {/* Fallback for legacy assignments if needed, though we moved to class based */}
+                        {sch.assignments && sch.assignments.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {sch.assignments.map((assign, idx) => (
+                              <span
+                                key={idx}
+                                className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded"
+                              >
+                                {assign.siswa.name}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
                       <button
@@ -303,12 +313,15 @@ export default function CarpetTab({ schedules, onRefresh }: CarpetTabProps & { o
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Pilih Kelas Petugas (Lantai 1 & 2)
                 </label>
-                <ClassSelector 
-                    selectedClass={formData.className}
-                    onSelect={(val) => setFormData({...formData, className: val})}
+                <ClassSelector
+                  selectedClass={formData.className}
+                  onSelect={(val) =>
+                    setFormData({ ...formData, className: val })
+                  }
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  * Jadwal untuk Lantai 1 dan Lantai 2 akan dibuat secara otomatis untuk kelas ini.
+                  * Jadwal untuk Lantai 1 dan Lantai 2 akan dibuat secara
+                  otomatis untuk kelas ini.
                 </p>
               </div>
 
@@ -316,7 +329,7 @@ export default function CarpetTab({ schedules, onRefresh }: CarpetTabProps & { o
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Batal
                 </button>

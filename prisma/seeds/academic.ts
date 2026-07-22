@@ -51,7 +51,7 @@ interface SeedAcademicParams {
  */
 export async function seedAcademic(
   prisma: PrismaClient,
-  { adminUser, siswaProfile, osisProfile }: SeedAcademicParams
+  { adminUser, siswaProfile, osisProfile }: SeedAcademicParams,
 ) {
   console.log("📚 Seeding Academic Content...");
 
@@ -155,7 +155,7 @@ export async function seedAcademic(
         achievementDate: new Date("2024-11-15"),
         statusPersetujuan: StatusApproval.APPROVED,
         image:
-          "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
+          "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?ixlib=rb-4.0.3",
       },
       {
         siswaId: osisProfile.id,
@@ -167,7 +167,7 @@ export async function seedAcademic(
         achievementDate: new Date("2024-10-20"),
         statusPersetujuan: StatusApproval.APPROVED,
         image:
-          "https://res.cloudinary.com/dvnyimxmi/image/upload/q_auto/f_auto/v1733056074/tari_prestasi_p3falv.webp",
+          "https://images.unsplash.com/photo-1609599006353-e629aaabfeae?ixlib=rb-4.0.3",
       },
     ],
   });
