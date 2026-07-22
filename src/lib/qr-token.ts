@@ -143,11 +143,19 @@ export function validateQRScan(qrData: string): string | null {
 // TIME UTILITIES FOR LATENESS DETECTION
 // ==============================================
 
-// Late time threshold: after 06:30 WIB (i.e. 06:31 onwards) is considered late (Jakarta, UTC+7)
+// Lateness recording window: after 06:30 WIB (i.e. 06:31 onwards) up to and
+// including 09:00 WIB is considered the valid "late" window (Jakarta, UTC+7)
 export const LATE_THRESHOLD = {
   hour: 6,
   minute: 30,
   utcOffset: 7, // WIB is UTC+7
+};
+
+// End of the lateness recording window — scans after this time are rejected
+// as "window closed" instead of being recorded as late
+export const LATE_THRESHOLD_END = {
+  hour: 9,
+  minute: 0,
 };
 
 /**
@@ -162,20 +170,42 @@ function getWIBTime(): Date {
 }
 
 /**
- * Check if current time is past the late threshold
+ * Compare current WIB time to a { hour, minute } threshold.
+ * Returns negative if before, 0 if equal, positive if after.
  */
-export function isCurrentlyLateTime(): boolean {
+function compareWIBTimeTo(threshold: { hour: number; minute: number }): number {
   const wibTime = getWIBTime();
   const currentHour = wibTime.getHours();
   const currentMinute = wibTime.getMinutes();
 
-  if (currentHour > LATE_THRESHOLD.hour) return true;
-  if (
-    currentHour === LATE_THRESHOLD.hour &&
-    currentMinute > LATE_THRESHOLD.minute
-  )
-    return true;
-  return false;
+  if (currentHour !== threshold.hour) return currentHour - threshold.hour;
+  return currentMinute - threshold.minute;
+}
+
+/**
+ * Check if current time is within the lateness recording window:
+ * after 06:30 WIB and at or before 09:00 WIB
+ */
+export function isCurrentlyLateTime(): boolean {
+  const afterStart = compareWIBTimeTo(LATE_THRESHOLD) > 0;
+  const beforeOrAtEnd = compareWIBTimeTo(LATE_THRESHOLD_END) <= 0;
+  return afterStart && beforeOrAtEnd;
+}
+
+/**
+ * Check if current time is still before the lateness window even opens
+ * (i.e. at or before 06:30 WIB)
+ */
+export function isBeforeLatenessWindow(): boolean {
+  return compareWIBTimeTo(LATE_THRESHOLD) <= 0;
+}
+
+/**
+ * Check if current time is past the end of the lateness window
+ * (i.e. after 09:00 WIB)
+ */
+export function isAfterLatenessWindow(): boolean {
+  return compareWIBTimeTo(LATE_THRESHOLD_END) > 0;
 }
 
 /**
