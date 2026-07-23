@@ -17,6 +17,7 @@ import {
   Award,
   Palette,
   Calendar,
+  AlertTriangle,
 } from "lucide-react";
 import {
   getStudentsForKesiswaan,
@@ -702,6 +703,17 @@ export default function StudentManagement() {
                     </p>
                   </div>
                   <p className="text-xs text-green-600">Karya</p>
+                </div>
+                <div className="flex-1 p-3 bg-red-50 rounded-lg text-center">
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <AlertTriangle className="w-4 h-4 text-red-600" />
+                    <p className="text-2xl font-bold text-red-700">
+                      {selectedStudent.latenessPoints}
+                    </p>
+                  </div>
+                  <p className="text-xs text-red-600">
+                    Poin ({selectedStudent.latenessCount}x Terlambat)
+                  </p>
                 </div>
               </div>
             </div>

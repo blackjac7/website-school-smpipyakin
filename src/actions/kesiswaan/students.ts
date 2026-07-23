@@ -7,6 +7,10 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { isKesiswaanRole } from "@/lib/roles";
 import { Prisma, GenderType } from "@prisma/client";
 import { generateQRToken, generateQRPayload } from "@/lib/qr-token";
+import {
+  getLatenessPointConfig,
+  calculateLatenessPoints,
+} from "@/lib/latenessPoints";
 
 // Validation schemas
 const GetStudentsSchema = z.object({
@@ -35,6 +39,8 @@ export type StudentData = {
   createdAt: string;
   achievementCount: number;
   workCount: number;
+  latenessCount: number;
+  latenessPoints: number;
 };
 
 export type StudentsResult = {
@@ -123,7 +129,7 @@ export async function getStudentsForKesiswaan(
     }
 
     // Get total count and students in parallel
-    const [total, students] = await Promise.all([
+    const [total, students, latenessPointConfig] = await Promise.all([
       prisma.siswa.count({ where }),
       prisma.siswa.findMany({
         where,
@@ -135,10 +141,12 @@ export async function getStudentsForKesiswaan(
             select: {
               achievements: true,
               works: true,
+              latenessRecords: true,
             },
           },
         },
       }),
+      getLatenessPointConfig(),
     ]);
 
     const formattedStudents: StudentData[] = students.map((student) => ({
@@ -160,6 +168,12 @@ export async function getStudentsForKesiswaan(
       createdAt: student.createdAt.toISOString(),
       achievementCount: student._count.achievements,
       workCount: student._count.works,
+      latenessCount: student._count.latenessRecords,
+      latenessPoints: calculateLatenessPoints(
+        student._count.latenessRecords,
+        latenessPointConfig.threshold,
+        latenessPointConfig.pointsPerThreshold,
+      ),
     }));
 
     return {
@@ -231,18 +245,22 @@ export async function getAllStudentsForExport(params?: {
       where.AND = conditions;
     }
 
-    const students = await prisma.siswa.findMany({
-      where,
-      orderBy: [{ class: "asc" }, { name: "asc" }],
-      include: {
-        _count: {
-          select: {
-            achievements: true,
-            works: true,
+    const [students, latenessPointConfig] = await Promise.all([
+      prisma.siswa.findMany({
+        where,
+        orderBy: [{ class: "asc" }, { name: "asc" }],
+        include: {
+          _count: {
+            select: {
+              achievements: true,
+              works: true,
+              latenessRecords: true,
+            },
           },
         },
-      },
-    });
+      }),
+      getLatenessPointConfig(),
+    ]);
 
     const formattedStudents: StudentData[] = students.map((student) => ({
       id: student.id,
@@ -263,6 +281,12 @@ export async function getAllStudentsForExport(params?: {
       createdAt: student.createdAt.toISOString(),
       achievementCount: student._count.achievements,
       workCount: student._count.works,
+      latenessCount: student._count.latenessRecords,
+      latenessPoints: calculateLatenessPoints(
+        student._count.latenessRecords,
+        latenessPointConfig.threshold,
+        latenessPointConfig.pointsPerThreshold,
+      ),
     }));
 
     return { success: true, data: formattedStudents };
@@ -748,7 +772,9 @@ export async function bulkCreateStudents(students: CreateStudentInput[]) {
       const rawNisn = String(student.nisn || "").trim();
       const paddedNisn = rawNisn ? rawNisn.padStart(10, "0") : "";
 
-      const rawGender = String(student.gender || "").trim().toUpperCase();
+      const rawGender = String(student.gender || "")
+        .trim()
+        .toUpperCase();
       let finalGender = student.gender;
       if (rawGender.startsWith("P") || rawGender.startsWith("F")) {
         finalGender = "FEMALE";
@@ -770,7 +796,8 @@ export async function bulkCreateStudents(students: CreateStudentInput[]) {
     });
 
     // 2. Schema Validation (collect errors, but proceed with valid ones)
-    const validStudents: (CreateStudentInput & { _originalIndex: number })[] = [];
+    const validStudents: (CreateStudentInput & { _originalIndex: number })[] =
+      [];
 
     sanitizedStudents.forEach((student) => {
       const { _originalIndex, ...cleanStudent } = student;
@@ -809,10 +836,7 @@ export async function bulkCreateStudents(students: CreateStudentInput[]) {
       }),
       prisma.user.findMany({
         where: {
-          OR: [
-            { username: { in: allNisns } },
-            { email: { in: allEmails } },
-          ],
+          OR: [{ username: { in: allNisns } }, { email: { in: allEmails } }],
         },
         select: { username: true, email: true },
       }),
@@ -829,10 +853,15 @@ export async function bulkCreateStudents(students: CreateStudentInput[]) {
 
     // 4. Filter and track emails to prevent duplicate emails in the current batch
     const usedEmailsInBatch = new Set<string>();
-    const studentsToProcess: (CreateStudentInput & { _originalIndex: number })[] = [];
+    const studentsToProcess: (CreateStudentInput & {
+      _originalIndex: number;
+    })[] = [];
 
     for (const student of validStudents) {
-      if (existingNisnsSet.has(student.nisn) || existingUsernamesSet.has(student.nisn)) {
+      if (
+        existingNisnsSet.has(student.nisn) ||
+        existingUsernamesSet.has(student.nisn)
+      ) {
         failCount++;
         processErrors.push(
           `Baris ${student._originalIndex}: NISN ${student.nisn} sudah terdaftar`,
@@ -841,9 +870,14 @@ export async function bulkCreateStudents(students: CreateStudentInput[]) {
       }
 
       let emailToUse =
-        student.email && student.email.trim() !== "" ? student.email.trim().toLowerCase() : null;
+        student.email && student.email.trim() !== ""
+          ? student.email.trim().toLowerCase()
+          : null;
       if (emailToUse) {
-        if (existingEmailsSet.has(emailToUse) || usedEmailsInBatch.has(emailToUse)) {
+        if (
+          existingEmailsSet.has(emailToUse) ||
+          usedEmailsInBatch.has(emailToUse)
+        ) {
           // Email is already used, set to null so the student can still be created
           emailToUse = null;
         } else {
@@ -918,7 +952,7 @@ export async function bulkCreateStudents(students: CreateStudentInput[]) {
             {
               maxWait: 20000, // 20 seconds maximum wait to acquire a connection from the pool
               timeout: 30000, // 30 seconds execution timeout for the transaction
-            }
+            },
           );
         }),
       );

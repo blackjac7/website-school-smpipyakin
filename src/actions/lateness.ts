@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { hasOsisAccess, isRoleMatch } from "@/lib/roles";
+import { hasOsisAccess, isRoleMatch, isSiswaRole } from "@/lib/roles";
 import {
   generateQRToken,
   generateQRPayload,
@@ -12,6 +12,11 @@ import {
   isCurrentlyLateTime,
   isAfterLatenessWindow,
 } from "@/lib/qr-token";
+import { updateSettings } from "@/lib/siteSettings";
+import {
+  getLatenessPointConfig,
+  calculateLatenessPoints,
+} from "@/lib/latenessPoints";
 import { revalidatePath } from "next/cache";
 import {
   startOfDay,
@@ -562,6 +567,197 @@ export async function getLatenesTrend(
   } catch (error) {
     console.error("Error getting lateness trend:", error);
     return { success: false, error: "Gagal mengambil trend data" };
+  }
+}
+
+// =============================================
+// LATENESS POINT SYSTEM (KESISWAAN)
+// =============================================
+
+/**
+ * Get current lateness point settings (threshold + points awarded).
+ */
+export async function getLatenessPointSettings() {
+  const auth = await verifyKesiswaanAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  try {
+    const config = await getLatenessPointConfig();
+    return { success: true, data: config };
+  } catch (error) {
+    console.error("Error getting lateness point settings:", error);
+    return {
+      success: false,
+      error: "Gagal mengambil pengaturan poin keterlambatan",
+    };
+  }
+}
+
+/**
+ * Update lateness point settings (threshold + points awarded per threshold).
+ */
+export async function updateLatenessPointSettings(
+  threshold: number,
+  pointsPerThreshold: number,
+) {
+  const auth = await verifyKesiswaanAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  if (!Number.isFinite(threshold) || threshold < 1) {
+    return {
+      success: false,
+      error: "Jumlah akumulasi keterlambatan minimal 1",
+    };
+  }
+
+  if (!Number.isFinite(pointsPerThreshold) || pointsPerThreshold < 0) {
+    return { success: false, error: "Jumlah poin tidak boleh negatif" };
+  }
+
+  try {
+    await updateSettings({
+      "lateness.pointThreshold": String(Math.trunc(threshold)),
+      "lateness.pointsPerThreshold": String(Math.trunc(pointsPerThreshold)),
+    });
+
+    revalidatePath("/dashboard-kesiswaan/settings");
+    revalidatePath("/dashboard-kesiswaan/keterlambatan");
+    revalidatePath("/dashboard-kesiswaan/siswa");
+
+    return {
+      success: true,
+      message: "Pengaturan poin keterlambatan berhasil disimpan",
+    };
+  } catch (error) {
+    console.error("Error updating lateness point settings:", error);
+    return {
+      success: false,
+      error: "Gagal menyimpan pengaturan poin keterlambatan",
+    };
+  }
+}
+
+/**
+ * Get per-student lateness point summary (lifetime accumulation, not
+ * affected by any period filter). Only students with at least 1 point are
+ * returned, sorted by points/lateness count descending.
+ */
+export async function getLatenessPointsSummary(
+  classFilter?: string,
+  search?: string,
+) {
+  const auth = await verifyKesiswaanAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error, data: [] };
+  }
+
+  try {
+    const { threshold, pointsPerThreshold } = await getLatenessPointConfig();
+
+    const where: Prisma.SiswaWhereInput = {
+      latenessRecords: { some: {} },
+    };
+
+    if (classFilter && classFilter !== "all") {
+      where.class = classFilter;
+    }
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { nisn: { contains: search } },
+      ];
+    }
+
+    const students = await prisma.siswa.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        nisn: true,
+        class: true,
+        _count: { select: { latenessRecords: true } },
+      },
+    });
+
+    const data = students
+      .map((s) => ({
+        siswaId: s.id,
+        name: s.name,
+        nisn: s.nisn,
+        class: s.class,
+        totalLate: s._count.latenessRecords,
+        points: calculateLatenessPoints(
+          s._count.latenessRecords,
+          threshold,
+          pointsPerThreshold,
+        ),
+      }))
+      .filter((s) => s.points > 0)
+      .sort((a, b) => b.points - a.points || b.totalLate - a.totalLate);
+
+    return {
+      success: true,
+      data,
+      config: { threshold, pointsPerThreshold },
+    };
+  } catch (error) {
+    console.error("Error getting lateness points summary:", error);
+    return {
+      success: false,
+      error: "Gagal mengambil data poin keterlambatan",
+      data: [],
+    };
+  }
+}
+
+// =============================================
+// LATENESS POINTS (STUDENT SELF-VIEW)
+// =============================================
+
+/**
+ * Get the authenticated student's own lifetime lateness count & points.
+ * Deliberately does not accept a siswaId param — always resolves the
+ * student from the authenticated session so a student can never query
+ * another student's data.
+ */
+export async function getMyLatenessPoints() {
+  const user = await getAuthenticatedUser();
+  if (!user || !isSiswaRole(user.role)) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const siswa = await prisma.siswa.findUnique({
+      where: { userId: user.userId },
+      select: {
+        _count: { select: { latenessRecords: true } },
+      },
+    });
+
+    if (!siswa) {
+      return { success: false, error: "Data siswa tidak ditemukan" };
+    }
+
+    const { threshold, pointsPerThreshold } = await getLatenessPointConfig();
+    const totalLate = siswa._count.latenessRecords;
+    const points = calculateLatenessPoints(
+      totalLate,
+      threshold,
+      pointsPerThreshold,
+    );
+
+    return {
+      success: true,
+      data: { totalLate, points, threshold, pointsPerThreshold },
+    };
+  } catch (error) {
+    console.error("Error getting student lateness points:", error);
+    return { success: false, error: "Gagal mengambil data poin keterlambatan" };
   }
 }
 
