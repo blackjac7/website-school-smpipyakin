@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Trophy,
   BookOpen,
@@ -12,11 +13,13 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  AlertTriangle,
 } from "lucide-react";
 import Image from "next/image";
 import { ProfileData } from "./types";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
+import { getMyLatenessPoints } from "@/actions/lateness";
 
 interface DashboardOverviewProps {
   profileData: ProfileData;
@@ -59,11 +62,25 @@ export default function DashboardOverview({
   onUploadWork,
 }: DashboardOverviewProps) {
   const approvedAchievements = achievements.filter(
-    (a) => a.status === "approved"
+    (a) => a.status === "approved",
   );
   const pendingAchievements = achievements.filter(
-    (a) => a.status === "pending"
+    (a) => a.status === "pending",
   );
+
+  const [latenessPoints, setLatenessPoints] = useState(0);
+  const [latenessCount, setLatenessCount] = useState(0);
+
+  useEffect(() => {
+    async function fetchLatenessPoints() {
+      const result = await getMyLatenessPoints();
+      if (result.success && result.data) {
+        setLatenessPoints(result.data.points);
+        setLatenessCount(result.data.totalLate);
+      }
+    }
+    fetchLatenessPoints();
+  }, []);
 
   // Keep optional props referenced to avoid lint warnings until they are used
   void works;
@@ -74,7 +91,7 @@ export default function DashboardOverview({
   const handleUploadAchievement = () => {
     if (pendingAchievements.length >= 2) {
       toast.error(
-        "Anda memiliki 2 prestasi pending. Mohon tunggu persetujuan."
+        "Anda memiliki 2 prestasi pending. Mohon tunggu persetujuan.",
       );
       return;
     }
@@ -139,6 +156,14 @@ export default function DashboardOverview({
       color: "bg-indigo-50 text-indigo-600",
       border: "border-indigo-100",
       subtitle: "Total aktivitas",
+    },
+    {
+      title: "Poin Keterlambatan",
+      value: latenessPoints,
+      icon: AlertTriangle,
+      color: "bg-red-50 text-red-600",
+      border: "border-red-100",
+      subtitle: `${latenessCount}x terlambat`,
     },
   ];
 

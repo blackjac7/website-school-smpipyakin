@@ -34,6 +34,7 @@ import {
   getLatenessByClass,
   getAvailableClasses,
   getLatenessForExport,
+  getLatenessPointsSummary,
   Period,
 } from "@/actions/lateness";
 import { exportToExcel, formatExcelDate } from "@/utils/excelExport";
@@ -48,6 +49,15 @@ interface LatenessRecordDisplay {
   date: Date;
   reason: string | null;
   recordedBy: string;
+}
+
+interface LatenessPointSummary {
+  siswaId: string;
+  name: string | null;
+  nisn: string;
+  class: string | null;
+  totalLate: number;
+  points: number;
 }
 
 export default function LatenessReportsContent() {
@@ -78,6 +88,16 @@ export default function LatenessReportsContent() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+
+  // Lateness point summary (lifetime accumulation, independent of period)
+  const [pointsSummary, setPointsSummary] = useState<LatenessPointSummary[]>(
+    [],
+  );
+  const [pointsConfig, setPointsConfig] = useState({
+    threshold: 3,
+    pointsPerThreshold: 2,
+  });
+  const [isLoadingPoints, setIsLoadingPoints] = useState(true);
 
   // Fetch classes on mount
   useEffect(() => {
@@ -150,6 +170,28 @@ export default function LatenessReportsContent() {
 
     return () => clearTimeout(timer);
   }, [period, classFilter, page, customStart, customEnd, searchTerm]);
+
+  // Fetch lifetime lateness point summary (not affected by period filter)
+  useEffect(() => {
+    async function fetchPoints() {
+      setIsLoadingPoints(true);
+      const result = await getLatenessPointsSummary(
+        classFilter === "all" ? undefined : classFilter,
+        searchTerm,
+      );
+      if (result.success && result.data) {
+        setPointsSummary(result.data);
+        if (result.config) setPointsConfig(result.config);
+      }
+      setIsLoadingPoints(false);
+    }
+
+    const timer = setTimeout(() => {
+      fetchPoints();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [classFilter, searchTerm]);
 
   // Export Excel
   const handleExport = async () => {
@@ -386,6 +428,109 @@ export default function LatenessReportsContent() {
             ))}
           </select>
         </div>
+      </div>
+
+      {/* Lateness Point Summary (lifetime accumulation, independent of period filter) */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-4 border-b border-gray-200">
+          <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-500" />
+            Poin Keterlambatan Siswa
+          </h3>
+          <p className="text-xs text-gray-500 mt-1">
+            Setiap {pointsConfig.threshold}x akumulasi keterlambatan ={" "}
+            {pointsConfig.pointsPerThreshold} poin. Dihitung sepanjang masa,
+            tidak dipengaruhi filter periode di atas.
+          </p>
+        </div>
+
+        {isLoadingPoints ? (
+          <div className="flex items-center justify-center py-10">
+            <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+          </div>
+        ) : pointsSummary.length === 0 ? (
+          <div className="text-center py-10 text-sm text-gray-500">
+            Belum ada siswa yang mencapai akumulasi poin keterlambatan.
+          </div>
+        ) : (
+          <>
+            {/* Mobile Card List */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {pointsSummary.map((s) => (
+                <div
+                  key={s.siswaId}
+                  className="p-4 flex items-center justify-between gap-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">
+                      {s.name || "Tanpa Nama"}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {s.nisn} • {s.class || "-"} • {s.totalLate}x terlambat
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-sm font-bold text-red-700 bg-red-50 rounded-lg px-2.5 py-1">
+                    {s.points} Poin
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Siswa
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Kelas
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Total Terlambat
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Poin
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {pointsSummary.map((s) => (
+                    <tr
+                      key={s.siswaId}
+                      className="hover:bg-red-50/30 transition-colors"
+                    >
+                      <td className="px-6 py-3">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-gray-900">
+                            {s.name || "Tanpa Nama"}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {s.nisn}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-3">
+                        <span className="px-2.5 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
+                          {s.class || "-"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3 text-sm text-gray-600">
+                        {s.totalLate}x
+                      </td>
+                      <td className="px-6 py-3">
+                        <span className="text-sm font-bold text-red-700 bg-red-50 rounded-lg px-2.5 py-1">
+                          {s.points} Poin
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Charts Section */}

@@ -129,6 +129,24 @@ export const DEFAULT_SETTINGS = {
     description: "Enable/disable announcements section",
     isPublic: false,
   },
+
+  // Lateness Point System
+  "lateness.pointThreshold": {
+    value: "3",
+    type: "NUMBER" as const,
+    category: "lateness",
+    description:
+      "Jumlah akumulasi keterlambatan siswa untuk mendapat poin pelanggaran",
+    isPublic: false,
+  },
+  "lateness.pointsPerThreshold": {
+    value: "2",
+    type: "NUMBER" as const,
+    category: "lateness",
+    description:
+      "Jumlah poin pelanggaran yang didapat setiap kelipatan akumulasi keterlambatan",
+    isPublic: false,
+  },
 };
 
 export type SettingKey = keyof typeof DEFAULT_SETTINGS;
@@ -203,7 +221,7 @@ export async function getPublicSettings() {
         acc[setting.key] = setting.value;
         return acc;
       },
-      {} as Record<string, string>
+      {} as Record<string, string>,
     );
   } catch {
     return {};
@@ -248,8 +266,8 @@ export async function updateSettings(settings: Record<string, string>) {
           description: DEFAULT_SETTINGS[key as SettingKey]?.description,
           isPublic: DEFAULT_SETTINGS[key as SettingKey]?.isPublic ?? false,
         },
-      })
-    )
+      }),
+    ),
   );
 }
 
@@ -321,7 +339,7 @@ export async function isPPDBOpen(): Promise<{
           year: "numeric",
           month: "long",
           day: "numeric",
-        }
+        },
       )}.`,
       startDate,
       endDate,
@@ -352,7 +370,7 @@ export async function isPPDBOpen(): Promise<{
  * Check if a feature is enabled
  */
 export async function isFeatureEnabled(
-  feature: "chatbot" | "studentWorks" | "announcements"
+  feature: "chatbot" | "studentWorks" | "announcements",
 ): Promise<boolean> {
   const key = `feature.${feature}` as SettingKey;
   return (await getSettingTyped<boolean>(key)) ?? true;
@@ -378,5 +396,4 @@ export async function seedDefaultSettings() {
       },
     });
   }
-
 }
