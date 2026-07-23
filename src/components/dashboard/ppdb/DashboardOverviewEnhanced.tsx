@@ -207,7 +207,7 @@ export default function DashboardOverviewEnhanced() {
       {/* Enhanced Stats Cards */}
       <motion.div
         variants={containerVariants}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6"
       >
         <StatsCard
           title="Total Pendaftar"
@@ -370,12 +370,12 @@ function StatsCard({
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all hover:-translate-y-1">
-      <div className="flex justify-between items-start mb-4">
+    <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all hover:-translate-y-1">
+      <div className="flex justify-between items-start mb-3 sm:mb-4">
         <div
-          className={`w-12 h-12 ${iconColors[color]} rounded-xl flex items-center justify-center shadow-lg shadow-${color}-200`}
+          className={`w-10 h-10 sm:w-12 sm:h-12 ${iconColors[color]} rounded-xl flex items-center justify-center shadow-lg shadow-${color}-200`}
         >
-          <Icon className="w-6 h-6 text-white" />
+          <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
         </div>
         {trend && (
           <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full">
@@ -384,11 +384,15 @@ function StatsCard({
         )}
       </div>
       <div>
-        <h4 className="text-gray-500 text-sm font-medium mb-1">{title}</h4>
-        <div className="text-3xl font-bold text-gray-900">{value}</div>
+        <h4 className="text-gray-500 text-xs sm:text-sm font-medium mb-1 truncate">
+          {title}
+        </h4>
+        <div className="text-2xl sm:text-3xl font-bold text-gray-900">
+          {value}
+        </div>
       </div>
       {progress !== undefined && (
-        <div className="mt-4">
+        <div className="mt-3 sm:mt-4">
           <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
             <div
               className={`h-2 rounded-full ${iconColors[color]}`}

@@ -57,7 +57,7 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
         toast.success(
           editingSlide
             ? "Slide berhasil diperbarui"
-            : "Slide berhasil ditambahkan"
+            : "Slide berhasil ditambahkan",
         );
         setIsModalOpen(false);
         setEditingSlide(null);
@@ -96,15 +96,15 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
           console.error("Failed to delete slide:", error);
           toast.error("Gagal menghapus slide");
         }
-      }
+      },
     );
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
             Manajemen Hero Carousel
           </h1>
           <p className="text-gray-500 text-sm mt-1">
@@ -117,7 +117,7 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
             setIsModalOpen(true);
           }}
           aria-label="Tambah slide baru"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="w-full sm:w-auto justify-center bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <Plus size={20} /> Tambah Slide
         </button>
@@ -253,13 +253,13 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
                 <ImageUpload
                   onUpload={(file) => {
                     const imageInput = document.querySelector<HTMLInputElement>(
-                      'input[name="imageSmall"]'
+                      'input[name="imageSmall"]',
                     );
                     if (imageInput) imageInput.value = file.url;
                   }}
                   onRemove={() => {
                     const imageInput = document.querySelector<HTMLInputElement>(
-                      'input[name="imageSmall"]'
+                      'input[name="imageSmall"]',
                     );
                     if (imageInput) imageInput.value = "";
                   }}
@@ -288,13 +288,13 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
                 <ImageUpload
                   onUpload={(file) => {
                     const imageInput = document.querySelector<HTMLInputElement>(
-                      'input[name="imageMedium"]'
+                      'input[name="imageMedium"]',
                     );
                     if (imageInput) imageInput.value = file.url;
                   }}
                   onRemove={() => {
                     const imageInput = document.querySelector<HTMLInputElement>(
-                      'input[name="imageMedium"]'
+                      'input[name="imageMedium"]',
                     );
                     if (imageInput) imageInput.value = "";
                   }}

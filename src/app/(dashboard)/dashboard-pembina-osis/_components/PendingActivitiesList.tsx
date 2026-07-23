@@ -142,8 +142,8 @@ export default function PendingActivitiesList({
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full border border-yellow-200 uppercase tracking-wide">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                <div className="px-2 sm:px-3 py-1 bg-yellow-100 text-yellow-700 text-[10px] sm:text-xs font-bold rounded-full border border-yellow-200 uppercase whitespace-nowrap sm:tracking-wide">
                   Menunggu Validasi
                 </div>
                 {expandedId === activity.id ? (
@@ -223,7 +223,7 @@ export default function PendingActivitiesList({
       {/* Reject Modal Overlay */}
       {isRejectModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full animate-in fade-in zoom-in duration-200">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-lg font-bold text-red-600 flex items-center gap-2">

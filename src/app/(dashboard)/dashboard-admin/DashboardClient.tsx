@@ -213,31 +213,34 @@ export default function DashboardClient({
           variants={container}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
         >
           {statCards.map((stat, index) => (
             <motion.div variants={item} key={index}>
               <Link href={stat.href} className="block h-full">
-                <div className="h-full p-5 rounded-2xl border transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-white border-gray-100 group">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={`p-3 rounded-xl ${colors[stat.color]}`}>
-                      <stat.icon size={24} />
+                <div className="h-full p-3 sm:p-5 rounded-2xl border transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-white border-gray-100 group">
+                  <div className="flex justify-between items-start mb-2 sm:mb-4">
+                    <div
+                      className={`p-2 sm:p-3 rounded-xl ${colors[stat.color]}`}
+                    >
+                      <stat.icon size={20} className="sm:hidden" />
+                      <stat.icon size={24} className="hidden sm:block" />
                     </div>
                     <ArrowRight
-                      className="text-gray-300 group-hover:text-blue-600 transition-colors"
+                      className="text-gray-300 group-hover:text-blue-600 transition-colors hidden sm:block"
                       size={20}
                     />
                   </div>
                   <div>
-                    <h3 className="text-gray-500 text-sm font-medium mb-1">
+                    <h3 className="text-gray-500 text-xs sm:text-sm font-medium mb-1 leading-tight">
                       {stat.title}
                     </h3>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-bold text-gray-900">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span className="text-xl sm:text-2xl font-bold text-gray-900">
                         {stat.value}
                       </span>
                       {stat.subValue && (
-                        <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] sm:text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
                           {stat.subValue}
                         </span>
                       )}
@@ -252,13 +255,13 @@ export default function DashboardClient({
 
       {/* Recent Activity Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
-              <Activity size={20} className="text-blue-600" />
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-4 sm:p-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4 sm:mb-6">
+            <h3 className="font-bold text-gray-800 text-base sm:text-lg flex items-center gap-2">
+              <Activity size={20} className="text-blue-600 shrink-0" />
               Aktivitas Terbaru
             </h3>
-            <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full font-medium">
+            <span className="self-start sm:self-auto text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full font-medium shrink-0">
               Real-time Feed
             </span>
           </div>
@@ -268,17 +271,17 @@ export default function DashboardClient({
               stats.recentActivities.map((activity) => (
                 <div
                   key={`${activity.type}-${activity.id}`}
-                  className="flex items-start gap-4 p-4 hover:bg-gray-50 rounded-xl transition border border-transparent hover:border-gray-100 group"
+                  className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-gray-50 rounded-xl transition border border-transparent hover:border-gray-100 group"
                 >
-                  <div className="mt-1 bg-white p-2 rounded-lg border border-gray-100 shadow-sm group-hover:border-blue-100 group-hover:shadow-md transition-all">
+                  <div className="mt-1 bg-white p-2 rounded-lg border border-gray-100 shadow-sm group-hover:border-blue-100 group-hover:shadow-md transition-all shrink-0">
                     {getActivityIcon(activity.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-0.5 sm:gap-2">
                       <p className="text-sm font-semibold text-gray-900 truncate">
                         {activity.title}
                       </p>
-                      <span className="text-xs text-gray-400 whitespace-nowrap ml-2">
+                      <span className="text-xs text-gray-400 whitespace-nowrap sm:ml-2">
                         {formatDistanceToNow(new Date(activity.date), {
                           addSuffix: true,
                           locale: id,

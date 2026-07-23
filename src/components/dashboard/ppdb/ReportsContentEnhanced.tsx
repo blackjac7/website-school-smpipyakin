@@ -158,7 +158,7 @@ export default function ReportsContentEnhanced() {
       </div>
 
       {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {/* Total Applications */}
         <MetricCard
           title="Total Pendaftar"
@@ -367,27 +367,31 @@ function MetricCard({
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start mb-4">
+    <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+      <div className="flex justify-between items-start mb-3 sm:mb-4">
         <div
-          className={`w-12 h-12 ${colors[color]} rounded-xl flex items-center justify-center`}
+          className={`w-10 h-10 sm:w-12 sm:h-12 ${colors[color]} rounded-xl flex items-center justify-center`}
         >
-          <Icon className="w-6 h-6" />
+          <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
         {trend && (
           <span
-            className={`text-xs font-bold px-2 py-1 rounded-full ${trendUp ? "bg-green-100 text-green-700" : "bg-purple-100 text-purple-700"}`}
+            className={`text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-1 rounded-full whitespace-nowrap ${trendUp ? "bg-green-100 text-green-700" : "bg-purple-100 text-purple-700"}`}
           >
             {trend}
           </span>
         )}
       </div>
       <div>
-        <h4 className="text-gray-500 text-sm font-medium mb-1">{title}</h4>
-        <div className="text-2xl font-bold text-gray-900">{value}</div>
+        <h4 className="text-gray-500 text-xs sm:text-sm font-medium mb-1 truncate">
+          {title}
+        </h4>
+        <div className="text-xl sm:text-2xl font-bold text-gray-900">
+          {value}
+        </div>
       </div>
       {progress !== undefined && (
-        <div className="mt-4">
+        <div className="mt-3 sm:mt-4">
           <div className="w-full bg-gray-100 rounded-full h-1.5">
             <div
               className="bg-green-500 h-1.5 rounded-full"

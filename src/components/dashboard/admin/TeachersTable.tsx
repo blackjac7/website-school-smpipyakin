@@ -241,104 +241,105 @@ export default function TeachersTable({
                   value={teacher}
                   onDragStart={() => setIsDragging(true)}
                   onDragEnd={handleDragEnd}
-                  className={`flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors ${
+                  className={`flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 hover:bg-gray-50 transition-colors ${
                     isDragging ? "cursor-grabbing" : "cursor-grab"
                   }`}
                 >
-                  {/* Drag Handle */}
-                  <div className="shrink-0 text-gray-400 hover:text-gray-600">
-                    <GripVertical className="w-5 h-5" />
-                  </div>
+                  <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                    {/* Drag Handle */}
+                    <div className="shrink-0 text-gray-400 hover:text-gray-600">
+                      <GripVertical className="w-5 h-5" />
+                    </div>
 
-                  {/* Photo */}
-                  <div className="shrink-0">
-                    {teacher.photo ? (
-                      <Image
-                        src={teacher.photo}
-                        alt={teacher.name}
-                        width={48}
-                        height={48}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                        <User className="w-6 h-6 text-gray-400" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="font-medium text-gray-900 truncate">
-                        {teacher.name}
-                      </h4>
-                      {!teacher.isActive && (
-                        <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-500 rounded-full">
-                          Nonaktif
-                        </span>
+                    {/* Photo */}
+                    <div className="shrink-0">
+                      {teacher.photo ? (
+                        <Image
+                          src={teacher.photo}
+                          alt={teacher.name}
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                          <User className="w-6 h-6 text-gray-400" />
+                        </div>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 truncate">
-                      {teacher.position}
-                    </p>
-                    {teacher.subject && (
-                      <p className="text-xs text-gray-500 truncate">
-                        Mata Pelajaran: {teacher.subject}
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-medium text-gray-900 truncate">
+                          {teacher.name}
+                        </h4>
+                        {!teacher.isActive && (
+                          <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-500 rounded-full shrink-0">
+                            Nonaktif
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 truncate">
+                        {teacher.position}
                       </p>
-                    )}
+                      {teacher.subject && (
+                        <p className="text-xs text-gray-500 truncate">
+                          Mata Pelajaran: {teacher.subject}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Category Badge */}
-                  <div className="hidden md:block shrink-0">
+                  {/* Category Badge + Actions */}
+                  <div className="flex items-center justify-between sm:justify-end gap-2 pl-8 sm:pl-0 shrink-0">
                     <span
-                      className={`px-3 py-1 text-xs font-medium rounded-full border ${
+                      className={`px-3 py-1 text-xs font-medium rounded-full border shrink-0 ${
                         categoryColors[teacher.category]
                       }`}
                     >
                       {categoryLabels[teacher.category]}
                     </span>
-                  </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => onToggleStatus(teacher.id)}
-                      className={`p-2 rounded-lg transition-colors ${
-                        teacher.isActive
-                          ? "text-green-600 hover:bg-green-50"
-                          : "text-gray-400 hover:bg-gray-100"
-                      }`}
-                      title={teacher.isActive ? "Nonaktifkan" : "Aktifkan"}
-                    >
-                      {teacher.isActive ? (
-                        <Eye className="w-4 h-4" />
-                      ) : (
-                        <EyeOff className="w-4 h-4" />
-                      )}
-                    </motion.button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => onToggleStatus(teacher.id)}
+                        className={`p-2 rounded-lg transition-colors ${
+                          teacher.isActive
+                            ? "text-green-600 hover:bg-green-50"
+                            : "text-gray-400 hover:bg-gray-100"
+                        }`}
+                        title={teacher.isActive ? "Nonaktifkan" : "Aktifkan"}
+                      >
+                        {teacher.isActive ? (
+                          <Eye className="w-4 h-4" />
+                        ) : (
+                          <EyeOff className="w-4 h-4" />
+                        )}
+                      </motion.button>
 
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => onEditTeacher(teacher)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      title="Edit"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => onEditTeacher(teacher)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </motion.button>
 
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => onDeleteTeacher(teacher.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Hapus"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => onDeleteTeacher(teacher.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Hapus"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </motion.button>
+                    </div>
                   </div>
                 </Reorder.Item>
               ))}

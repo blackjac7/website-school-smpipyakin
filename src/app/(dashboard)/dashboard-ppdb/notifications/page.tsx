@@ -103,31 +103,31 @@ export default function PPDBOfficerNotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-amber-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-amber-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-3 sm:h-16 sm:py-0">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
               <button
                 onClick={() => router.back()}
-                className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                className="p-2 -ml-2 shrink-0 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="w-8 h-8 shrink-0 bg-linear-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
                   <Bell className="w-4 h-4 text-white" />
                 </div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                <h1 className="text-lg sm:text-xl font-bold bg-linear-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent truncate">
                   Notifikasi PPDB
                 </h1>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 pl-11 sm:pl-0">
               <button
                 onClick={markAllAsRead}
-                className="text-sm text-amber-600 hover:text-orange-600 font-medium transition-colors"
+                className="text-sm text-amber-600 hover:text-orange-600 font-medium transition-colors whitespace-nowrap"
               >
                 Tandai Semua Dibaca
               </button>

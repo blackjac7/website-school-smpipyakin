@@ -40,7 +40,7 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [filterSemester, setFilterSemester] = useState<SemesterType | "ALL">(
-    "ALL"
+    "ALL",
   );
   const [filterTahunPelajaran, setFilterTahunPelajaran] =
     useState<string>("ALL");
@@ -71,7 +71,7 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedActivities = filteredActivities.slice(
     startIndex,
-    startIndex + ITEMS_PER_PAGE
+    startIndex + ITEMS_PER_PAGE,
   );
 
   const handlePageChange = (page: number) => {
@@ -110,7 +110,7 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
           information: activity.information,
           semester: activity.semester,
           tahunPelajaran: activity.tahunPelajaran,
-        })
+        }),
       );
 
       exportCalendarToExcel(exportData);
@@ -204,15 +204,15 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
           console.error("Failed to delete activity:", error);
           toast.error("Gagal menghapus kegiatan");
         }
-      }
+      },
     );
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+    <div className="p-4 sm:p-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
             Kalender Akademik
           </h1>
           <p className="text-gray-500 text-sm mt-1">
@@ -220,7 +220,7 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
             kegiatan)
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 w-full md:w-auto">
           {/* Filter Tahun Pelajaran */}
           <div className="relative">
             <CalendarIcon
@@ -286,7 +286,71 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Mobile Card List */}
+      <div className="md:hidden space-y-3">
+        {paginatedActivities.length > 0 ? (
+          paginatedActivities.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1">
+                    <CalendarIcon
+                      size={14}
+                      className="text-blue-500 shrink-0"
+                    />
+                    {format(new Date(item.date), "dd MMM yyyy", {
+                      locale: id,
+                    })}
+                  </div>
+                  <p className="text-sm font-medium text-gray-900">
+                    {item.title}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    {item.information}
+                  </p>
+                  <span
+                    className={`inline-flex mt-2 px-2 py-0.5 text-xs font-semibold rounded-full ${
+                      item.semester === "GANJIL"
+                        ? "bg-orange-100 text-orange-800"
+                        : "bg-green-100 text-green-800"
+                    }`}
+                  >
+                    {item.semester} {item.tahunPelajaran}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1 shrink-0">
+                  <button
+                    onClick={() => {
+                      setEditingItem(item);
+                      setIsModalOpen(true);
+                    }}
+                    aria-label={`Edit kegiatan ${item.title}`}
+                    className="text-blue-600 hover:text-blue-900 p-1.5 rounded hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    aria-label={`Hapus kegiatan ${item.title}`}
+                    className="text-red-600 hover:text-red-900 p-1.5 rounded hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 px-6 py-8 text-center text-gray-500">
+            Tidak ada kegiatan ditemukan.
+          </div>
+        )}
+      </div>
+
+      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -387,39 +451,39 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-gray-200 p-4">
-            <p className="text-sm text-gray-600">
-              Menampilkan {startIndex + 1}-
-              {Math.min(startIndex + ITEMS_PER_PAGE, filteredActivities.length)}{" "}
-              dari {filteredActivities.length} kegiatan
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                aria-label="Halaman sebelumnya"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="text-sm font-medium text-gray-700 px-3">
-                {currentPage} / {totalPages}
-              </span>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                aria-label="Halaman selanjutnya"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Pagination - shared by mobile card list and desktop table */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white border border-gray-200 rounded-xl p-4 mt-3">
+          <p className="text-sm text-gray-600 text-center sm:text-left">
+            Menampilkan {startIndex + 1}-
+            {Math.min(startIndex + ITEMS_PER_PAGE, filteredActivities.length)}{" "}
+            dari {filteredActivities.length} kegiatan
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              aria-label="Halaman sebelumnya"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-sm font-medium text-gray-700 px-3">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              aria-label="Halaman selanjutnya"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {isModalOpen && (
         <div
