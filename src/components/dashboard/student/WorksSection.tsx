@@ -439,6 +439,25 @@ export default function WorksSection({
                       <option value="video">Video</option>
                     </select>
                   </div>
+                  {/* Mobile Status Select */}
+                  <div className="sm:hidden">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      Status
+                    </label>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => {
+                        setStatusFilter(e.target.value);
+                        resetPage();
+                      }}
+                      className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    >
+                      <option value="all">Semua Status</option>
+                      <option value="pending">Menunggu</option>
+                      <option value="approved">Disetujui</option>
+                      <option value="rejected">Ditolak</option>
+                    </select>
+                  </div>
                 </div>
               </motion.div>
             )}

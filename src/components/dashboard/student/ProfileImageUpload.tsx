@@ -182,8 +182,8 @@ export default function ProfileImageUpload({
 
       {/* Upload Modal */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200">
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
             <div className="flex items-center justify-between pb-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50 -m-6 mb-6 p-6 rounded-t-2xl">
               <h3 className="text-lg font-semibold text-gray-900">
                 Upload Foto Profil

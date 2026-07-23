@@ -27,6 +27,7 @@ import {
   StudentData,
 } from "@/actions/kesiswaan/students";
 import { exportStudentsToExcel } from "@/utils/studentExport";
+import { formatDateWIB } from "@/utils/dateFormat";
 import toast from "react-hot-toast";
 import AddStudentModal from "./AddStudentModal";
 import ImportStudentModal from "./ImportStudentModal";
@@ -589,8 +590,8 @@ export default function StudentManagement() {
       {/* Detail Modal */}
       {isDetailModalOpen && selectedStudent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
               <h3 className="font-semibold text-gray-900">Detail Siswa</h3>
               <button
                 onClick={() => setIsDetailModalOpen(false)}
@@ -599,7 +600,7 @@ export default function StudentManagement() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 overflow-y-auto">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
                   <User className="w-8 h-8 text-purple-600" />
@@ -640,7 +641,9 @@ export default function StudentManagement() {
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Tanggal Lahir</p>
                   <p className="font-medium text-gray-900">
-                    {selectedStudent.birthDate || "-"}
+                    {selectedStudent.birthDate
+                      ? formatDateWIB(selectedStudent.birthDate)
+                      : "-"}
                   </p>
                 </div>
               </div>
@@ -704,7 +707,7 @@ export default function StudentManagement() {
             </div>
 
             {/* Modal Footer with Edit Button */}
-            <div className="flex gap-3 pt-6 border-t border-gray-100">
+            <div className="flex gap-3 p-4 border-t border-gray-100 bg-gray-50 shrink-0">
               <button
                 onClick={() => {
                   setIsDetailModalOpen(false);

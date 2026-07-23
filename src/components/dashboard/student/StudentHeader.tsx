@@ -7,6 +7,7 @@ import {
   Trophy,
   BookOpen,
   BellOff,
+  QrCode,
   LucideIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -42,6 +43,12 @@ const getHeaderInfo = (
         icon: BookOpen,
         title: "Karya Saya",
         subtitle: "Upload dan kelola karya terbaikmu",
+      };
+    case "qrcode":
+      return {
+        icon: QrCode,
+        title: "QR Code Saya",
+        subtitle: "Tunjukkan QR ini untuk presensi di sekolah",
       };
     default:
       return {

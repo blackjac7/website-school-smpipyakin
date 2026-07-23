@@ -7,6 +7,7 @@ import {
   Users,
   FileText,
   CreditCard,
+  Loader2,
 } from "lucide-react";
 import {
   Header,
@@ -22,7 +23,6 @@ import {
   ReportsWrapper, // Added
 } from "@/components/dashboard/kesiswaan";
 import { DashboardSidebar } from "@/components/dashboard/layout";
-import LoadingEffect from "@/components/shared/LoadingEffect";
 import {
   validateContent,
   getValidationQueue,
@@ -315,11 +315,9 @@ export default function DashboardClient({
             <div className="space-y-6">
               <AlertCard count={pendingCount} />
               {isLoading ? (
-                <LoadingEffect
-                  fullScreen={false}
-                  showMessage={false}
-                  size="sm"
-                />
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+                </div>
               ) : (
                 <ContentList
                   contentItems={validationQueue}
