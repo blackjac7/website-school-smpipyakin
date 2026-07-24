@@ -94,22 +94,22 @@ export default function AdminNotificationsPage() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-3 sm:h-16 sm:py-0">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
               <button
                 onClick={() => router.back()}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 -ml-2 shrink-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
-              <h1 className="text-xl font-bold text-gray-900">
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
                 Notifikasi Admin
               </h1>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 pl-11 sm:pl-0">
               <button
                 onClick={markAllAsRead}
-                className="text-sm text-blue-600 hover:text-orange-500 transition-colors"
+                className="text-sm text-blue-600 hover:text-orange-500 transition-colors whitespace-nowrap"
               >
                 Tandai Semua Dibaca
               </button>

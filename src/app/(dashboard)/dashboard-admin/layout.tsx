@@ -20,7 +20,7 @@ export default function AdminDashboardLayout({
   const pathname = usePathname();
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<AdminNotificationData[]>(
-    []
+    [],
   );
 
   // Map active menu based on pathname
@@ -29,6 +29,8 @@ export default function AdminDashboardLayout({
     if (pathname.includes("/stats")) return "stats";
     if (pathname.includes("/news")) return "news";
     if (pathname.includes("/announcements")) return "announcements";
+    if (pathname.includes("/facilities")) return "facilities";
+    if (pathname.includes("/extracurricular")) return "extracurricular";
     if (pathname.includes("/calendar")) return "calendar";
     if (pathname.includes("/teachers")) return "teachers";
     if (pathname.includes("/users")) return "users";
@@ -56,7 +58,7 @@ export default function AdminDashboardLayout({
       const result = await markAdminNotificationAsRead(notificationId);
       if (result.success) {
         setNotifications((prev) =>
-          prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+          prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)),
         );
       }
     } catch (error) {
@@ -89,7 +91,7 @@ export default function AdminDashboardLayout({
 
         {/* Content area */}
         <div className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="p-8 pb-20">{children}</div>
+          <div className="p-4 md:p-6 lg:p-8 pb-20">{children}</div>
         </div>
       </div>
     </div>

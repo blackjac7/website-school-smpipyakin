@@ -391,8 +391,142 @@ export default function UsersTable({
         </div>
       )}
 
-      {/* Users Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Users - Mobile Card List */}
+      <div className="md:hidden space-y-3">
+        {isLoading ? (
+          [...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-xl border border-gray-200 p-4 animate-pulse space-y-3"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-200 rounded-full shrink-0" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-32 bg-gray-200 rounded" />
+                  <div className="h-3 w-24 bg-gray-200 rounded" />
+                </div>
+              </div>
+            </div>
+          ))
+        ) : paginatedUsers.length === 0 ? (
+          <div className="bg-white rounded-xl border border-gray-200 px-6 py-16 text-center">
+            <UserIcon className="w-12 h-12 text-gray-300 mb-3 mx-auto" />
+            <p className="text-gray-500 font-medium">
+              {searchQuery || roleFilter !== "all"
+                ? "Tidak ada pengguna yang sesuai filter"
+                : "Belum ada data pengguna"}
+            </p>
+            {(searchQuery || roleFilter !== "all") && (
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setRoleFilter("all");
+                }}
+                className="mt-2 text-sm text-blue-600 hover:underline"
+              >
+                Reset filter
+              </button>
+            )}
+          </div>
+        ) : (
+          paginatedUsers.map((user) => (
+            <div
+              key={user.id}
+              className={`bg-white rounded-xl border p-4 ${selectedIds.has(user.id) ? "border-blue-300 bg-blue-50" : "border-gray-200"}`}
+            >
+              <div className="flex items-start gap-3">
+                {onBulkDelete && (
+                  <button
+                    onClick={() => handleSelectUser(user.id)}
+                    className={`mt-1 p-1 rounded hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 shrink-0 ${user.id === currentUserId ? "opacity-30 cursor-not-allowed" : ""}`}
+                    disabled={user.id === currentUserId}
+                    aria-label={
+                      user.id === currentUserId
+                        ? "Anda tidak dapat memilih akun sendiri"
+                        : selectedIds.has(user.id)
+                          ? `Batal pilih ${user.name}`
+                          : `Pilih ${user.name}`
+                    }
+                  >
+                    {selectedIds.has(user.id) ? (
+                      <CheckSquare className="w-5 h-5 text-blue-600" />
+                    ) : (
+                      <Square className="w-5 h-5 text-gray-400" />
+                    )}
+                  </button>
+                )}
+                <div className="w-10 h-10 bg-linear-to-br from-blue-100 to-blue-50 rounded-full flex items-center justify-center overflow-hidden border border-blue-100 shrink-0">
+                  <UserIcon
+                    className="w-5 h-5 text-blue-600"
+                    aria-hidden="true"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {user.name}
+                  </p>
+                  <p className="text-sm text-gray-500 truncate">
+                    @{user.username}
+                  </p>
+                  {user.email && (
+                    <p className="text-xs text-gray-400 truncate">
+                      {user.email}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => onEditUser(user)}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                    aria-label={`Edit pengguna ${user.name}`}
+                  >
+                    <Edit className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                  <button
+                    onClick={() => onDeleteUser(user.id)}
+                    className={`p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors focus:ring-2 focus:ring-red-300 focus:outline-none ${user.id === currentUserId ? "opacity-30 cursor-not-allowed" : ""}`}
+                    aria-label={
+                      user.id === currentUserId
+                        ? "Anda tidak dapat menghapus akun sendiri"
+                        : `Hapus pengguna ${user.name}`
+                    }
+                    disabled={user.id === currentUserId}
+                  >
+                    <Trash2 className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 mt-3">
+                <span
+                  className={`px-2.5 py-1 text-xs font-semibold rounded-full ${getRoleBadgeStyle(user.role)}`}
+                >
+                  {user.role}
+                </span>
+                {user.osisAccess && (
+                  <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200">
+                    <ShieldCheck className="w-3 h-3" aria-hidden="true" />
+                    Pengurus OSIS
+                  </span>
+                )}
+                {user.role === "SISWA" && (
+                  <span className="text-xs text-gray-500">
+                    NISN: {user.nisn || "-"} &middot; Kelas: {user.class || "-"}
+                  </span>
+                )}
+                {user.role === "KESISWAAN" && (
+                  <span className="text-xs text-gray-500">
+                    NIP: {user.nip || "-"}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Users Table (md and up) */}
+      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table
             className="w-full"
@@ -494,8 +628,8 @@ export default function UsersTable({
                             user.id === currentUserId
                               ? "Anda tidak dapat memilih akun sendiri"
                               : selectedIds.has(user.id)
-                              ? `Batal pilih ${user.name}`
-                              : `Pilih ${user.name}`
+                                ? `Batal pilih ${user.name}`
+                                : `Pilih ${user.name}`
                           }
                         >
                           {selectedIds.has(user.id) ? (
@@ -585,8 +719,16 @@ export default function UsersTable({
                         <button
                           onClick={() => onDeleteUser(user.id)}
                           className={`p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors focus:ring-2 focus:ring-red-300 focus:outline-none ${user.id === currentUserId ? "opacity-30 cursor-not-allowed" : ""}`}
-                          aria-label={user.id === currentUserId ? "Anda tidak dapat menghapus akun sendiri" : `Hapus pengguna ${user.name}`}
-                          title={user.id === currentUserId ? "Anda tidak dapat menghapus akun sendiri" : "Hapus"}
+                          aria-label={
+                            user.id === currentUserId
+                              ? "Anda tidak dapat menghapus akun sendiri"
+                              : `Hapus pengguna ${user.name}`
+                          }
+                          title={
+                            user.id === currentUserId
+                              ? "Anda tidak dapat menghapus akun sendiri"
+                              : "Hapus"
+                          }
                           disabled={user.id === currentUserId}
                         >
                           <Trash2 className="w-4 h-4" aria-hidden="true" />
@@ -599,76 +741,76 @@ export default function UsersTable({
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
-        {!isLoading && totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50">
-            <div className="text-sm text-gray-600">
-              Halaman {effectivePage} dari {totalPages}
-              {useServerPagination && pagination && (
-                <span className="ml-2 text-gray-400">
-                  ({pagination.total} total pengguna)
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handlePageChange(Math.max(1, effectivePage - 1))}
-                disabled={effectivePage === 1}
-                className="p-2 rounded-lg border border-gray-300 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                aria-label="Halaman sebelumnya"
-              >
-                <ChevronLeft className="w-4 h-4" aria-hidden="true" />
-              </button>
-
-              {/* Page Numbers */}
-              <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum: number;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (effectivePage <= 3) {
-                    pageNum = i + 1;
-                  } else if (effectivePage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = effectivePage - 2 + i;
-                  }
-
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors focus:ring-2 focus:ring-blue-300 focus:outline-none ${
-                        effectivePage === pageNum
-                          ? "bg-blue-600 text-white"
-                          : "hover:bg-white border border-gray-300"
-                      }`}
-                      aria-label={`Halaman ${pageNum}`}
-                      aria-current={
-                        effectivePage === pageNum ? "page" : undefined
-                      }
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <button
-                onClick={() =>
-                  handlePageChange(Math.min(totalPages, effectivePage + 1))
-                }
-                disabled={effectivePage === totalPages}
-                className="p-2 rounded-lg border border-gray-300 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                aria-label="Halaman berikutnya"
-              >
-                <ChevronRight className="w-4 h-4" aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Pagination */}
+      {!isLoading && totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 bg-gray-50 rounded-xl border border-gray-200 mt-3">
+          <div className="text-sm text-gray-600">
+            Halaman {effectivePage} dari {totalPages}
+            {useServerPagination && pagination && (
+              <span className="ml-2 text-gray-400">
+                ({pagination.total} total pengguna)
+              </span>
+            )}
+          </div>
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => handlePageChange(Math.max(1, effectivePage - 1))}
+              disabled={effectivePage === 1}
+              className="p-2 rounded-lg border border-gray-300 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:ring-2 focus:ring-blue-300 focus:outline-none"
+              aria-label="Halaman sebelumnya"
+            >
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+            </button>
+
+            {/* Page Numbers */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum: number;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (effectivePage <= 3) {
+                  pageNum = i + 1;
+                } else if (effectivePage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = effectivePage - 2 + i;
+                }
+
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors focus:ring-2 focus:ring-blue-300 focus:outline-none ${
+                      effectivePage === pageNum
+                        ? "bg-blue-600 text-white"
+                        : "hover:bg-white border border-gray-300"
+                    }`}
+                    aria-label={`Halaman ${pageNum}`}
+                    aria-current={
+                      effectivePage === pageNum ? "page" : undefined
+                    }
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() =>
+                handlePageChange(Math.min(totalPages, effectivePage + 1))
+              }
+              disabled={effectivePage === totalPages}
+              className="p-2 rounded-lg border border-gray-300 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:ring-2 focus:ring-blue-300 focus:outline-none"
+              aria-label="Halaman berikutnya"
+            >
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

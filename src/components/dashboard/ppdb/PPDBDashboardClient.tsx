@@ -90,7 +90,7 @@ export default function PPDBDashboardClient({
   const markAsRead = async (notificationId: string) => {
     const result = await NotificationAPIService.markNotificationAsReadByRole(
       notificationId,
-      "ppdb_admin"
+      "ppdb_admin",
     );
 
     if (result.success) {
@@ -98,8 +98,8 @@ export default function PPDBDashboardClient({
         prev.map((notification) =>
           notification.id === notificationId
             ? { ...notification, read: true }
-            : notification
-        )
+            : notification,
+        ),
       );
       toast.success("Notifikasi ditandai sudah dibaca");
     }
@@ -117,18 +117,18 @@ export default function PPDBDashboardClient({
   const handleStatusUpdate = async (
     id: string,
     status: string,
-    feedback: string
+    feedback: string,
   ) => {
     try {
       const result = await updateApplicantStatus(
         id,
         status as PPDBStatus,
-        feedback
+        feedback,
       );
 
       if (result.success) {
         toast.success(
-          `Status berhasil diperbarui menjadi ${status.toLowerCase()}`
+          `Status berhasil diperbarui menjadi ${status.toLowerCase()}`,
         );
         setRefreshTrigger((prev) => prev + 1);
         setShowDetailModal(false);
@@ -209,7 +209,7 @@ export default function PPDBDashboardClient({
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="p-6 pb-20 max-w-7xl mx-auto w-full">
+          <div className="p-4 md:p-6 lg:p-8 pb-20 max-w-7xl mx-auto w-full">
             {activeMenu === "dashboard" && <DashboardOverviewEnhanced />}
 
             {activeMenu === "validation" && (

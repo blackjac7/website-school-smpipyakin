@@ -111,7 +111,7 @@ export default function ApplicantDetailModal({
         {
           icon: "📧",
           duration: 4000,
-        }
+        },
       );
 
       // WhatsApp Prompt
@@ -120,7 +120,7 @@ export default function ApplicantDetailModal({
         if (phone.startsWith("0")) phone = "62" + phone.substring(1);
 
         const message = encodeURIComponent(
-          `Yth. Bpk/Ibu ${applicant.parentName || "Wali"}, status pendaftaran Calon Siswa ${applicant.name} telah diperbarui menjadi ${validationAction === "ACCEPTED" ? "DITERIMA" : validationAction === "REJECTED" ? "DITOLAK" : "PENDING"}. ${feedback ? "Catatan: " + feedback : ""} - Panitia PPDB SMP IP Yakin`
+          `Yth. Bpk/Ibu ${applicant.parentName || "Wali"}, status pendaftaran Calon Siswa ${applicant.name} telah diperbarui menjadi ${validationAction === "ACCEPTED" ? "DITERIMA" : validationAction === "REJECTED" ? "DITOLAK" : "PENDING"}. ${feedback ? "Catatan: " + feedback : ""} - Panitia PPDB SMP IP Yakin`,
         );
 
         const waLink = `https://wa.me/${phone}?text=${message}`;
@@ -148,7 +148,7 @@ export default function ApplicantDetailModal({
               </div>
             </div>
           ),
-          { duration: 6000 }
+          { duration: 6000 },
         );
       }
 
@@ -165,29 +165,30 @@ export default function ApplicantDetailModal({
     switch (status) {
       case "PENDING":
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-            <Clock className="w-4 h-4" />
-            Menunggu Review
+          <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-yellow-100 text-yellow-800 border border-yellow-200 whitespace-nowrap">
+            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="hidden sm:inline">Menunggu Review</span>
+            <span className="sm:hidden">Menunggu</span>
           </span>
         );
       case "ACCEPTED":
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">
-            <CheckCircle className="w-4 h-4" />
+          <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800 border border-green-200 whitespace-nowrap">
+            <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             Diterima
           </span>
         );
       case "REJECTED":
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 border border-red-200">
-            <XCircle className="w-4 h-4" />
+          <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-red-100 text-red-800 border border-red-200 whitespace-nowrap">
+            <XCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             Ditolak
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 border border-gray-200">
-            <AlertTriangle className="w-4 h-4" />
+          <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-gray-100 text-gray-800 border border-gray-200 whitespace-nowrap">
+            <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             Unknown
           </span>
         );
@@ -261,7 +262,7 @@ export default function ApplicantDetailModal({
   ];
 
   const completedDocs = documentTypes.filter(
-    (doc) => applicant.documents?.[doc.key as keyof typeof applicant.documents]
+    (doc) => applicant.documents?.[doc.key as keyof typeof applicant.documents],
   ).length;
 
   return (
@@ -270,49 +271,53 @@ export default function ApplicantDetailModal({
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
           {/* Header */}
-          <div className="bg-linear-to-r from-blue-600 to-purple-600 text-white p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                  <Users className="w-6 h-6" />
+          <div className="bg-linear-to-r from-blue-600 to-purple-600 text-white p-4 sm:p-6">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 bg-white/20 rounded-full flex items-center justify-center">
+                  <Users className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold">{applicant.name}</h2>
-                  <p className="text-blue-100">NISN: {applicant.nisn}</p>
+                <div className="min-w-0">
+                  <h2 className="text-lg sm:text-2xl font-bold truncate">
+                    {applicant.name}
+                  </h2>
+                  <p className="text-xs sm:text-base text-blue-100 truncate">
+                    NISN: {applicant.nisn}
+                  </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 {getStatusBadge(applicant.status)}
                 <button
                   onClick={onClose}
-                  className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+                  className="w-8 h-8 sm:w-10 sm:h-10 shrink-0 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 mt-6 bg-black/20 p-1 rounded-lg">
+            <div className="grid grid-cols-3 sm:flex gap-1 mt-4 sm:mt-6 bg-black/20 p-1 rounded-lg">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  className={`flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-all min-w-0 ${
                     activeTab === tab.id
                       ? "bg-white text-blue-600 shadow-sm"
                       : "text-white/80 hover:text-white hover:bg-white/10"
                   }`}
                 >
-                  <tab.icon className="w-4 h-4" />
-                  {tab.label}
+                  <tab.icon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{tab.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
           {/* Content */}
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+          <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
             {/* Personal Data Tab */}
             {activeTab === "personal" && (
               <div className="space-y-6">

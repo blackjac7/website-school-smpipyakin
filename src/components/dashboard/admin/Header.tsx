@@ -11,6 +11,9 @@ import {
   BarChart3,
   Settings,
   BellOff,
+  Building2,
+  Trophy,
+  GraduationCap,
 } from "lucide-react";
 import { LogoutButton } from "@/components/shared";
 import { useAuth } from "@/components/shared/AuthProvider";
@@ -71,6 +74,24 @@ const getHeaderInfo = (activeTab?: string) => {
         title: "Pengaturan",
         subtitle: "Konfigurasi sistem dashboard",
       };
+    case "facilities":
+      return {
+        icon: Building2,
+        title: "Manajemen Fasilitas",
+        subtitle: "Kelola data fasilitas sekolah",
+      };
+    case "extracurricular":
+      return {
+        icon: Trophy,
+        title: "Manajemen Ekstrakurikuler",
+        subtitle: "Kelola program ekstrakurikuler sekolah",
+      };
+    case "teachers":
+      return {
+        icon: GraduationCap,
+        title: "Profil Guru & Staff",
+        subtitle: "Kelola data guru dan staff sekolah",
+      };
     default:
       return {
         icon: LayoutDashboard,
@@ -123,7 +144,7 @@ export default function Header({
               <HeaderIcon className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 flex items-center gap-2 truncate">
+              <h2 className="text-sm sm:text-lg md:text-xl font-bold text-gray-900 flex items-center gap-2 truncate">
                 {headerInfo.title}
               </h2>
               <p className="hidden sm:block text-xs md:text-sm text-gray-500 truncate">
