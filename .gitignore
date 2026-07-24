@@ -66,3 +66,6 @@ public/workbox-*.js.map
 # Sitemap generated files
 public/sitemap*.xml
 public/robots.txt
+
+.github/instructions
+.github/copilot-instructions.md
