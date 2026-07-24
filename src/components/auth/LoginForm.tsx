@@ -9,7 +9,7 @@ import AntiBotComponents from "@/components/shared/AntiBotComponents";
 import { loginAction } from "@/actions/auth";
 import LoginHeader from "./LoginHeader";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Lock, ChevronDown } from "lucide-react";
+import { User, Lock, ChevronDown, Eye, EyeOff } from "lucide-react";
 import LoginIllustration from "./LoginIllustration";
 
 type Role =
@@ -23,6 +23,7 @@ type Role =
 const LoginForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<Role>("siswa");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLoginAnimation, setShowLoginAnimation] = useState(false);
@@ -192,13 +193,23 @@ const LoginForm = () => {
                       <Lock size={18} />
                     </div>
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       id="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Masukkan kata sandi"
-                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:bg-white dark:focus:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/50 focus:border-[#F59E0B] transition-all text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 font-medium text-sm"
+                      className="w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:bg-white dark:focus:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]/50 focus:border-[#F59E0B] transition-all text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 font-medium text-sm"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                      aria-label={
+                        showPassword ? "Sembunyikan password" : "Lihat password"
+                      }
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
                 </div>
 
