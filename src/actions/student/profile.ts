@@ -1,16 +1,19 @@
 "use server";
 
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { isSiswaRole } from "@/lib/roles";
+import { changePasswordSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
 
 // Validation schemas
+// NOTE: `class` and `year` (angkatan) are intentionally NOT included here -
+// students are not allowed to edit their own class/academic year, only
+// kesiswaan/admin can. Keep this enforced server-side, not just hidden in UI.
 const UpdateProfileSchema = z.object({
   name: z.string().min(2, "Nama minimal 2 karakter").optional(),
-  class: z.string().optional(),
-  year: z.coerce.number().optional(),
   email: z.string().email("Email tidak valid").optional().or(z.literal("")),
   phone: z.string().optional(),
   address: z.string().optional(),
@@ -110,7 +113,7 @@ export async function getStudentProfile(): Promise<{
  * Update student profile
  */
 export async function updateStudentProfile(
-  data: Partial<z.infer<typeof UpdateProfileSchema>>
+  data: Partial<z.infer<typeof UpdateProfileSchema>>,
 ): Promise<{
   success: boolean;
   data?: ProfileData;
@@ -130,8 +133,6 @@ export async function updateStudentProfile(
 
     const {
       name,
-      class: classValue,
-      year,
       email,
       phone,
       address,
@@ -146,8 +147,6 @@ export async function updateStudentProfile(
       where: { userId: auth.user!.userId },
       data: {
         name,
-        class: classValue,
-        year: year || null,
         email,
         phone,
         address,
@@ -190,5 +189,57 @@ export async function updateStudentProfile(
   } catch (error) {
     console.error("updateStudentProfile error:", error);
     return { success: false, error: "Failed to update profile" };
+  }
+}
+
+/**
+ * Change student's own account password
+ */
+export async function changeStudentPassword(data: {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const auth = await verifyStudentRole();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
+
+    const validation = changePasswordSchema.safeParse(data);
+    if (!validation.success) {
+      return { success: false, error: validation.error.issues[0].message };
+    }
+
+    const { currentPassword, newPassword } = validation.data;
+
+    const user = await prisma.user.findUnique({
+      where: { id: auth.user!.userId },
+      select: { password: true },
+    });
+
+    if (!user) {
+      return { success: false, error: "Pengguna tidak ditemukan" };
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
+    if (!isCurrentPasswordValid) {
+      return { success: false, error: "Password saat ini tidak sesuai" };
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: auth.user!.userId },
+      data: { password: hashedPassword },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("changeStudentPassword error:", error);
+    return { success: false, error: "Gagal mengubah password" };
   }
 }

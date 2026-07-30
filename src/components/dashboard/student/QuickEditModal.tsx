@@ -129,15 +129,14 @@ export default function QuickEditModal({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email *
+                Email
               </label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-text"
-                placeholder="Masukkan email"
-                required
+                placeholder="Masukkan email (opsional)"
               />
             </div>
 
