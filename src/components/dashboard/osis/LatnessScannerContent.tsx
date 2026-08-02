@@ -308,34 +308,53 @@ export default function LatnessScannerContent() {
     }
 
     try {
-      const result =
-        mode === "lateness"
-          ? await verifyScanQR(qrData)
-          : await verifyAttributeScanQR(qrData);
-
-      if (result.success && result.student) {
-        setStudentInfo({
-          id: result.student.id,
-          name: result.student.name,
-          nisn: result.student.nisn,
-          class: result.student.class,
-          image: result.student.image || null,
-        });
-        if (mode === "attribute" && "attributeItems" in result) {
+      // Call each mode's action in its own branch so `result` keeps its own
+      // precise type instead of collapsing into an untyped union.
+      if (mode === "attribute") {
+        const result = await verifyAttributeScanQR(qrData);
+        if (result.success && result.student) {
+          setStudentInfo({
+            id: result.student.id,
+            name: result.student.name,
+            nisn: result.student.nisn,
+            class: result.student.class,
+            image: result.student.image || null,
+          });
           setAttributeItems(result.attributeItems || []);
           setCheckedAttributeIds([]);
           setAttributeNotes("");
+          setScanState("found");
+          await playScanSound("success");
+          toast.success(`Siswa ditemukan: ${result.student.name}`);
+        } else {
+          setErrorMessage(
+            result.error || "QR Code tidak valid atau sudah kedaluwarsa.",
+          );
+          setScanState("error");
+          await playScanSound("error");
+          toast.error(result.error || "QR Code tidak valid!");
         }
-        setScanState("found");
-        await playScanSound("success");
-        toast.success(`Siswa ditemukan: ${result.student.name}`);
       } else {
-        setErrorMessage(
-          result.error || "QR Code tidak valid atau sudah kedaluwarsa.",
-        );
-        setScanState("error");
-        await playScanSound("error");
-        toast.error(result.error || "QR Code tidak valid!");
+        const result = await verifyScanQR(qrData);
+        if (result.success && result.student) {
+          setStudentInfo({
+            id: result.student.id,
+            name: result.student.name,
+            nisn: result.student.nisn,
+            class: result.student.class,
+            image: result.student.image || null,
+          });
+          setScanState("found");
+          await playScanSound("success");
+          toast.success(`Siswa ditemukan: ${result.student.name}`);
+        } else {
+          setErrorMessage(
+            result.error || "QR Code tidak valid atau sudah kedaluwarsa.",
+          );
+          setScanState("error");
+          await playScanSound("error");
+          toast.error(result.error || "QR Code tidak valid!");
+        }
       }
     } catch {
       setErrorMessage("Terjadi kesalahan saat verifikasi. Silakan coba lagi.");
