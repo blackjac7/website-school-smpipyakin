@@ -18,6 +18,7 @@ import {
   Palette,
   Calendar,
   AlertTriangle,
+  Shirt,
 } from "lucide-react";
 import {
   getStudentsForKesiswaan,
@@ -685,8 +686,8 @@ export default function StudentManagement() {
                 </div>
               </div>
 
-              <div className="flex gap-4 pt-4 border-t border-gray-100">
-                <div className="flex-1 p-3 bg-yellow-50 rounded-lg text-center">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-gray-100">
+                <div className="p-3 bg-yellow-50 rounded-lg text-center">
                   <div className="flex items-center justify-center gap-2 mb-1">
                     <Award className="w-4 h-4 text-yellow-600" />
                     <p className="text-2xl font-bold text-yellow-700">
@@ -695,7 +696,7 @@ export default function StudentManagement() {
                   </div>
                   <p className="text-xs text-yellow-600">Prestasi</p>
                 </div>
-                <div className="flex-1 p-3 bg-green-50 rounded-lg text-center">
+                <div className="p-3 bg-green-50 rounded-lg text-center">
                   <div className="flex items-center justify-center gap-2 mb-1">
                     <Palette className="w-4 h-4 text-green-600" />
                     <p className="text-2xl font-bold text-green-700">
@@ -704,7 +705,7 @@ export default function StudentManagement() {
                   </div>
                   <p className="text-xs text-green-600">Karya</p>
                 </div>
-                <div className="flex-1 p-3 bg-red-50 rounded-lg text-center">
+                <div className="p-3 bg-red-50 rounded-lg text-center">
                   <div className="flex items-center justify-center gap-2 mb-1">
                     <AlertTriangle className="w-4 h-4 text-red-600" />
                     <p className="text-2xl font-bold text-red-700">
@@ -713,6 +714,28 @@ export default function StudentManagement() {
                   </div>
                   <p className="text-xs text-red-600">
                     Poin ({selectedStudent.latenessCount}x Terlambat)
+                  </p>
+                </div>
+                <div className="p-3 bg-orange-50 rounded-lg text-center">
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <Shirt className="w-4 h-4 text-orange-600" />
+                    <p className="text-2xl font-bold text-orange-700">
+                      {selectedStudent.attributePoints}
+                    </p>
+                  </div>
+                  <p className="text-xs text-orange-600">
+                    Poin ({selectedStudent.attributeViolationCount}x Pelanggaran
+                    Atribut)
+                  </p>
+                </div>
+                <div className="col-span-2 sm:col-span-4 p-3 bg-gray-50 rounded-lg text-center">
+                  <p className="text-xs text-gray-500 mb-0.5">
+                    Total Poin Pelanggaran
+                  </p>
+                  <p className="text-xl font-bold text-gray-800">
+                    {selectedStudent.latenessPoints +
+                      selectedStudent.attributePoints}{" "}
+                    Poin
                   </p>
                 </div>
               </div>
