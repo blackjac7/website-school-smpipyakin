@@ -16,10 +16,17 @@ import {
   Scan,
   AlertCircle,
   Volume2,
+  Shirt,
+  ShieldCheck,
 } from "lucide-react";
 import { verifyScanQR, recordLateness } from "@/actions/lateness";
+import {
+  verifyAttributeScanQR,
+  recordAttributeViolation,
+} from "@/actions/attributes";
 import toast from "react-hot-toast";
 import { playScanSound, initAudio } from "@/lib/sound-effects";
+import AttributeChecklist from "./AttributeChecklist";
 
 interface StudentInfo {
   id: string;
@@ -28,6 +35,14 @@ interface StudentInfo {
   class: string | null;
   image?: string | null;
 }
+
+interface AttributeItemData {
+  id: string;
+  name: string;
+  description?: string | null;
+}
+
+type ScanMode = "lateness" | "attribute";
 
 type ScanState =
   | "input"
@@ -38,10 +53,14 @@ type ScanState =
   | "success";
 
 export default function LatnessScannerContent() {
+  const [mode, setMode] = useState<ScanMode>("lateness");
   const [scanState, setScanState] = useState<ScanState>("input");
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
   const [qrInput, setQrInput] = useState("");
   const [reason, setReason] = useState("");
+  const [attributeItems, setAttributeItems] = useState<AttributeItemData[]>([]);
+  const [checkedAttributeIds, setCheckedAttributeIds] = useState<string[]>([]);
+  const [attributeNotes, setAttributeNotes] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -289,7 +308,10 @@ export default function LatnessScannerContent() {
     }
 
     try {
-      const result = await verifyScanQR(qrData);
+      const result =
+        mode === "lateness"
+          ? await verifyScanQR(qrData)
+          : await verifyAttributeScanQR(qrData);
 
       if (result.success && result.student) {
         setStudentInfo({
@@ -299,6 +321,11 @@ export default function LatnessScannerContent() {
           class: result.student.class,
           image: result.student.image || null,
         });
+        if (mode === "attribute" && "attributeItems" in result) {
+          setAttributeItems(result.attributeItems || []);
+          setCheckedAttributeIds([]);
+          setAttributeNotes("");
+        }
         setScanState("found");
         await playScanSound("success");
         toast.success(`Siswa ditemukan: ${result.student.name}`);
@@ -321,6 +348,11 @@ export default function LatnessScannerContent() {
   const handleSubmit = async () => {
     if (!studentInfo) return;
 
+    if (mode === "attribute" && checkedAttributeIds.length === 0) {
+      toast.error("Pilih minimal satu atribut yang dilanggar");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const arrivalTime = currentTime.toLocaleTimeString("id-ID", {
@@ -329,17 +361,34 @@ export default function LatnessScannerContent() {
         timeZone: "Asia/Jakarta",
       });
 
-      const result = await recordLateness(
-        studentInfo.id,
-        arrivalTime,
-        reason || undefined,
-      );
+      const result =
+        mode === "lateness"
+          ? await recordLateness(
+              studentInfo.id,
+              arrivalTime,
+              reason || undefined,
+            )
+          : await recordAttributeViolation(
+              studentInfo.id,
+              arrivalTime,
+              checkedAttributeIds,
+              attributeNotes || undefined,
+            );
 
       if (result.success) {
         setScanState("success");
-        toast.success(`Keterlambatan ${studentInfo.name} berhasil dicatat`);
+        toast.success(
+          mode === "lateness"
+            ? `Keterlambatan ${studentInfo.name} berhasil dicatat`
+            : `Pelanggaran atribut ${studentInfo.name} berhasil dicatat`,
+        );
       } else {
-        toast.error(result.error || "Gagal mencatat keterlambatan");
+        toast.error(
+          result.error ||
+            (mode === "lateness"
+              ? "Gagal mencatat keterlambatan"
+              : "Gagal mencatat pelanggaran atribut"),
+        );
       }
     } catch {
       toast.error("Terjadi kesalahan");
@@ -352,6 +401,9 @@ export default function LatnessScannerContent() {
     setStudentInfo(null);
     setQrInput("");
     setReason("");
+    setAttributeItems([]);
+    setCheckedAttributeIds([]);
+    setAttributeNotes("");
     setErrorMessage("");
     setCameraError(null);
     setScannerReady(false);
@@ -363,11 +415,33 @@ export default function LatnessScannerContent() {
     setStudentInfo(null);
     setQrInput("");
     setReason("");
+    setAttributeItems([]);
+    setCheckedAttributeIds([]);
+    setAttributeNotes("");
     setErrorMessage("");
     setCameraError(null);
     setScannerReady(false);
     setIsScanning(false);
     setScanState("camera");
+  };
+
+  const switchMode = (newMode: ScanMode) => {
+    if (newMode === mode) return;
+    setMode(newMode);
+    resetScanner();
+  };
+
+  const toggleAttributeId = (id: string) => {
+    setCheckedAttributeIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  };
+
+  const handleNoViolation = () => {
+    toast.success(
+      `Atribut ${studentInfo?.name || "siswa"} lengkap, tidak ada yang dicatat`,
+    );
+    resetScanner();
   };
 
   const switchToCamera = () => {
@@ -396,12 +470,44 @@ export default function LatnessScannerContent() {
       <div className="text-center">
         <h1 className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
           <Camera className="w-7 h-7 text-blue-600" />
-          Scan Keterlambatan Siswa
+          {mode === "lateness"
+            ? "Scan Keterlambatan Siswa"
+            : "Scan Pelanggaran Atribut Siswa"}
         </h1>
         <p className="text-gray-500">
-          Scan QR Code siswa dengan kamera atau input manual
+          {mode === "lateness"
+            ? "Scan QR Code siswa dengan kamera atau input manual"
+            : "Periksa kelengkapan atribut siswa via scan QR Code"}
         </p>
       </div>
+
+      {/* Scan Type Toggle (only show on input/camera states) */}
+      {(scanState === "input" || scanState === "camera") && (
+        <div className="max-w-md mx-auto grid grid-cols-2 gap-2">
+          <button
+            onClick={() => switchMode("lateness")}
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors ${
+              mode === "lateness"
+                ? "bg-red-600 text-white shadow-sm"
+                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            <Clock className="w-4 h-4" />
+            Keterlambatan
+          </button>
+          <button
+            onClick={() => switchMode("attribute")}
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors ${
+              mode === "attribute"
+                ? "bg-red-600 text-white shadow-sm"
+                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            <Shirt className="w-4 h-4" />
+            Atribut
+          </button>
+        </div>
+      )}
 
       {/* Current Time */}
       <div className="text-center">
@@ -413,7 +519,7 @@ export default function LatnessScannerContent() {
         </div>
       </div>
 
-      {/* Mode Toggle (only show on input/camera states) */}
+      {/* Manual/Camera Input Toggle (only show on input/camera states) */}
       {(scanState === "input" || scanState === "camera") && (
         <div className="flex flex-col items-center gap-4">
           <div className="flex justify-center gap-2">
@@ -707,35 +813,58 @@ export default function LatnessScannerContent() {
                 </div>
               </div>
 
-              {/* Arrival Time */}
+              {/* Scan Time */}
               <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 text-center border border-red-100">
                 <p className="text-sm text-red-600 mb-1 font-medium">
-                  ⏰ Waktu Kedatangan
+                  {mode === "lateness"
+                    ? "⏰ Waktu Kedatangan"
+                    : "⏰ Waktu Pemeriksaan"}
                 </p>
                 <p className="text-3xl font-mono font-bold text-red-700">
                   {formatTime(currentTime)}
                 </p>
                 <p className="text-xs text-red-500 mt-1">
-                  Terlambat masuk sekolah
+                  {mode === "lateness"
+                    ? "Terlambat masuk sekolah"
+                    : "Pemeriksaan atribut siswa"}
                 </p>
               </div>
 
-              {/* Reason Input */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <FileText className="w-4 h-4 inline mr-1" />
-                  Alasan Keterlambatan (Opsional)
-                </label>
-                <textarea
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder="Masukkan alasan keterlambatan..."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                  rows={3}
+              {mode === "lateness" ? (
+                /* Reason Input */
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <FileText className="w-4 h-4 inline mr-1" />
+                    Alasan Keterlambatan (Opsional)
+                  </label>
+                  <textarea
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    placeholder="Masukkan alasan keterlambatan..."
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                    rows={3}
+                  />
+                </div>
+              ) : (
+                <AttributeChecklist
+                  items={attributeItems}
+                  selectedIds={checkedAttributeIds}
+                  onToggle={toggleAttributeId}
+                  notes={attributeNotes}
+                  onNotesChange={setAttributeNotes}
                 />
-              </div>
+              )}
 
               {/* Actions */}
+              {mode === "attribute" && (
+                <button
+                  onClick={handleNoViolation}
+                  className="w-full px-4 py-2.5 border border-green-300 text-green-700 bg-green-50 rounded-xl hover:bg-green-100 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  Tidak Ada Pelanggaran
+                </button>
+              )}
               <div className="flex gap-3">
                 <button
                   onClick={resetScanner}
@@ -745,7 +874,10 @@ export default function LatnessScannerContent() {
                 </button>
                 <button
                   onClick={handleSubmit}
-                  disabled={isSubmitting}
+                  disabled={
+                    isSubmitting ||
+                    (mode === "attribute" && checkedAttributeIds.length === 0)
+                  }
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
@@ -753,7 +885,9 @@ export default function LatnessScannerContent() {
                   ) : (
                     <CheckCircle2 className="w-5 h-5" />
                   )}
-                  Catat Terlambat
+                  {mode === "lateness"
+                    ? "Catat Terlambat"
+                    : "Catat Pelanggaran"}
                 </button>
               </div>
             </motion.div>
@@ -781,7 +915,9 @@ export default function LatnessScannerContent() {
                 Berhasil!
               </h3>
               <p className="text-green-600 mb-4">
-                Keterlambatan siswa telah dicatat ke sistem.
+                {mode === "lateness"
+                  ? "Keterlambatan siswa telah dicatat ke sistem."
+                  : "Pelanggaran atribut siswa telah dicatat ke sistem."}
               </p>
               <button
                 onClick={resetScanner}

@@ -59,8 +59,8 @@ const getHeaderInfo = (
     case "keterlambatan":
       return {
         icon: Clock,
-        title: "Scan Keterlambatan",
-        subtitle: "Scan QR Code siswa dengan kamera atau input manual",
+        title: "Scan Pelanggaran",
+        subtitle: "Scan keterlambatan atau pelanggaran atribut siswa",
       };
     case "dashboard":
       return {

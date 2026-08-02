@@ -14,12 +14,14 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
+  Shirt,
 } from "lucide-react";
 import Image from "next/image";
 import { ProfileData } from "./types";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { getMyLatenessPoints } from "@/actions/lateness";
+import { getMyAttributePoints } from "@/actions/attributes";
 
 interface DashboardOverviewProps {
   profileData: ProfileData;
@@ -70,6 +72,8 @@ export default function DashboardOverview({
 
   const [latenessPoints, setLatenessPoints] = useState(0);
   const [latenessCount, setLatenessCount] = useState(0);
+  const [attributePoints, setAttributePoints] = useState(0);
+  const [attributeViolationCount, setAttributeViolationCount] = useState(0);
 
   useEffect(() => {
     async function fetchLatenessPoints() {
@@ -80,6 +84,17 @@ export default function DashboardOverview({
       }
     }
     fetchLatenessPoints();
+  }, []);
+
+  useEffect(() => {
+    async function fetchAttributePoints() {
+      const result = await getMyAttributePoints();
+      if (result.success && result.data) {
+        setAttributePoints(result.data.points);
+        setAttributeViolationCount(result.data.totalViolations);
+      }
+    }
+    fetchAttributePoints();
   }, []);
 
   // Keep optional props referenced to avoid lint warnings until they are used
@@ -164,6 +179,22 @@ export default function DashboardOverview({
       color: "bg-red-50 text-red-600",
       border: "border-red-100",
       subtitle: `${latenessCount}x terlambat`,
+    },
+    {
+      title: "Poin Atribut",
+      value: attributePoints,
+      icon: Shirt,
+      color: "bg-orange-50 text-orange-600",
+      border: "border-orange-100",
+      subtitle: `${attributeViolationCount}x pelanggaran atribut`,
+    },
+    {
+      title: "Total Poin Pelanggaran",
+      value: latenessPoints + attributePoints,
+      icon: AlertTriangle,
+      color: "bg-gray-100 text-gray-700",
+      border: "border-gray-200",
+      subtitle: "Keterlambatan + Atribut",
     },
   ];
 
@@ -270,7 +301,7 @@ export default function DashboardOverview({
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {stats.map((stat, index) => (
           <motion.div
             key={index}

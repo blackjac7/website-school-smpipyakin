@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Clock, FileText } from "lucide-react";
+import { Clock, FileText, Shirt } from "lucide-react";
 import { ReportStats } from "./types";
 import LatenessReportsContent from "./LatenessReportsContent";
+import AttributeReportsContent from "./AttributeReportsContent";
 import ReportsContent from "./ReportsContent";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,7 +12,7 @@ interface ReportsWrapperProps {
   reportStats: ReportStats;
 }
 
-type Tab = "lateness" | "general";
+type Tab = "lateness" | "attribute" | "general";
 
 export default function ReportsWrapper({ reportStats }: ReportsWrapperProps) {
   const [activeTab, setActiveTab] = useState<Tab>("lateness");
@@ -19,7 +20,7 @@ export default function ReportsWrapper({ reportStats }: ReportsWrapperProps) {
   return (
     <div className="space-y-6">
       {/* Tab Navigation */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1 flex space-x-1 w-full md:w-fit">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1 grid grid-cols-3 sm:flex sm:space-x-1 w-full md:w-fit">
         <button
           onClick={() => setActiveTab("lateness")}
           className={`flex-1 md:flex-none min-w-0 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-6 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all truncate ${
@@ -30,6 +31,17 @@ export default function ReportsWrapper({ reportStats }: ReportsWrapperProps) {
         >
           <Clock className="w-4 h-4 shrink-0" />
           <span className="truncate">Keterlambatan</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("attribute")}
+          className={`flex-1 md:flex-none min-w-0 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-6 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all truncate ${
+            activeTab === "attribute"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-gray-600 hover:bg-gray-50"
+          }`}
+        >
+          <Shirt className="w-4 h-4 shrink-0" />
+          <span className="truncate">Atribut</span>
         </button>
         <button
           onClick={() => setActiveTab("general")}
@@ -55,6 +67,8 @@ export default function ReportsWrapper({ reportStats }: ReportsWrapperProps) {
         >
           {activeTab === "lateness" ? (
             <LatenessReportsContent />
+          ) : activeTab === "attribute" ? (
+            <AttributeReportsContent />
           ) : (
             <ReportsContent reportStats={reportStats} />
           )}
