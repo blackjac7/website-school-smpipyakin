@@ -441,6 +441,36 @@ Task ini hanya memindahkan sumber `getDateRange`, tanpa mengubah perilaku apa pu
 
 **Pemanggil `getDateRange` yang harus diubah di `lateness.ts`:** `getLatenessStats` (4 pemanggilan, baris 356-389), `getLatenessRecords` (424), `getLatenessByClass` (507), `getLatenesTrend` (546), `getLatenessForExport` (806), `exportLatenessCSV` (875). Di `attributes.ts`: pola yang setara.
 
+**Wajib: ubah tanda tangan fungsi daftar & chart menjadi `PeriodInput`.**
+
+Ini bukan kosmetik — ini mencegah bug konversi zona ganda. Bila komponen menghitung `{start, end}` lebih dulu lalu mengirimnya sebagai `customStart`/`customEnd`, cabang `custom` di server akan menjalankan `toZonedTime()` **untuk kedua kalinya** pada tanggal yang sudah ter-zona. `toZonedTime` menggeser +7 jam tiap pemanggilan, sehingga batas rentang melenceng 14 jam dan tanggal pertama/terakhir periode bisa salah masuk atau terbuang.
+
+Solusinya: satu representasi periode di semua lapisan. Fungsi berikut mengganti tiga parameter `(period, customStart, customEnd)` dengan satu `periodInput: PeriodInput`:
+
+| Berkas | Fungsi |
+|---|---|
+| `lateness.ts` | `getLatenessRecords`, `getLatenessByClass`, `getLatenesTrend` |
+| `attributes.ts` | `getAttributeViolations`, `getAttributeViolationsByClass`, `getAttributeViolationTrend`, `getMostViolatedAttributes` |
+
+Tanda tangan baru — objek, bukan posisional, karena `getLatenessRecords` sudah punya 7 parameter dan menambah lagi akan sangat rawan salah urut:
+
+```ts
+export async function getLatenessRecords(params: {
+  periodInput: PeriodInput;
+  classFilter?: string;
+  page?: number;
+  limit?: number;
+  search?: string;
+});
+
+export async function getLatenessByClass(params: { periodInput: PeriodInput });
+export async function getLatenesTrend(params: { periodInput: PeriodInput });
+```
+
+Di dalamnya cukup `const { start, end } = getDateRange(params.periodInput);` — konversi zona terjadi tepat sekali, di satu tempat.
+
+`getLatenessStats()` tidak berubah tanda tangannya (tidak menerima periode dari luar), hanya bentuk pemanggilan `getDateRange` internalnya.
+
 - [ ] **Step 1: Ubah `src/actions/lateness.ts`**
 
 Hapus blok `export type Period = ...` dan seluruh fungsi `getDateRange` lokal. Tambahkan di bagian import:
@@ -1606,27 +1636,31 @@ const [periodValue, setPeriodValue] = useState<PeriodFilterValue>(
 const [academicYears, setAcademicYears] = useState<number[]>([]);
 ```
 
-Fungsi daftar/chart yang ada (`getLatenessRecords`, `getLatenesTrend`, `getLatenessByClass`) masih bertanda tangan posisional `(period, ...)`. Untuk task ini teruskan `periodValue.period` beserta `start`/`end` hasil `getDateRange(toPeriodInput(periodValue))` sebagai `customStart`/`customEnd`, memakai `period: "custom"` — dengan begitu tabel di layar ikut menghormati periode akademik baru tanpa harus mengubah tanda tangan tiga fungsi tersebut.
+Fungsi daftar & chart kini menerima `PeriodInput` (Task 2), jadi komponen cukup meneruskan hasil `toPeriodInput(periodValue)` — **jangan** menghitung `{start, end}` di komponen lalu mengirimnya sebagai rentang custom, karena itu memicu konversi zona ganda.
 
 ```ts
-// Periode akademik dipetakan ke rentang custom agar fungsi daftar &
-// chart yang ada tidak perlu berubah tanda tangannya.
-const input = toPeriodInput(periodValue);
-const { start, end } = getDateRange(input);
-const isSimplePeriod = ["day", "week", "month", "year"].includes(input.period);
+const periodInput = toPeriodInput(periodValue);
 
-const recordsResult = await getLatenessRecords(
-  isSimplePeriod ? (input.period as Period) : "custom",
-  classFilter === "all" ? undefined : classFilter,
+const recordsResult = await getLatenessRecords({
+  periodInput,
+  classFilter: classFilter === "all" ? undefined : classFilter,
   page,
-  20,
-  isSimplePeriod ? undefined : start,
-  isSimplePeriod ? undefined : end,
-  searchTerm,
-);
+  limit: 20,
+  search: searchTerm,
+});
+
+if (page === 1) {
+  const [trendRes, classRes] = await Promise.all([
+    getLatenesTrend({ periodInput }),
+    getLatenessByClass({ periodInput }),
+  ]);
+
+  if (trendRes.success) setTrendData(trendRes.data || []);
+  if (classRes.success) setClassData(classRes.data || []);
+}
 ```
 
-Terapkan pola yang sama untuk `getLatenesTrend` dan `getLatenessByClass`. Import `getDateRange` dari `@/lib/reportPeriod`.
+`getDateRange` tidak perlu di-import ke komponen ini.
 
 Array dependensi `useEffect` (baris 172) berubah dari `[period, classFilter, page, customStart, customEnd, searchTerm]` menjadi `[periodValue, classFilter, page, searchTerm]`.
 
@@ -1815,9 +1849,8 @@ import {
   getAvailableAcademicYears,
   getLatenessReportForExport,
   getLatenessPointsSummary,
-  Period,
 } from "@/actions/lateness";
-import { getDateRange, getPeriodFilenameSlug } from "@/lib/reportPeriod";
+import { getPeriodFilenameSlug } from "@/lib/reportPeriod";
 import PeriodFilter, {
   createDefaultPeriodValue,
   toPeriodInput,
@@ -1831,7 +1864,7 @@ import {
 } from "@/utils/excelExport";
 ```
 
-`exportToExcel` tidak lagi dipakai di berkas ini — hapus dari import.
+`exportToExcel` tidak lagi dipakai di berkas ini — hapus dari import. `Period` juga tidak lagi dipakai langsung (tersembunyi di dalam `PeriodFilterValue`) — hapus agar lint tidak mengeluh soal import tak terpakai.
 
 - [ ] **Step 6: Typecheck & lint**
 
@@ -1898,9 +1931,8 @@ import {
   getAvailableAcademicYears,
   getAttributeReportForExport,
   getAttributePointsSummary,
-  Period,
 } from "@/actions/attributes";
-import { getDateRange, getPeriodFilenameSlug } from "@/lib/reportPeriod";
+import { getPeriodFilenameSlug } from "@/lib/reportPeriod";
 import PeriodFilter, {
   createDefaultPeriodValue,
   toPeriodInput,
@@ -1914,41 +1946,34 @@ import {
 } from "@/utils/excelExport";
 ```
 
-`exportToExcel` tidak lagi dipakai — hapus dari import.
+`exportToExcel` dan `Period` tidak lagi dipakai — hapus dari import.
 
-- [ ] **Step 3: Petakan periode akademik ke rentang custom**
+- [ ] **Step 3: Teruskan `PeriodInput` ke fungsi daftar & chart**
 
-Di `useEffect` pengambil data (baris 125-170), ganti perhitungan `start`/`end`:
+Di `useEffect` pengambil data (baris 125-170), ganti perhitungan `start`/`end`. Fungsi-fungsi ini kini menerima `PeriodInput` (Task 2) — **jangan** menghitung `{start, end}` di komponen lalu mengirimnya sebagai rentang custom, karena itu memicu konversi zona ganda:
 
 ```ts
-// Periode akademik dipetakan ke rentang custom agar keempat fungsi
-// daftar & chart tidak perlu berubah tanda tangannya.
-const input = toPeriodInput(periodValue);
-const { start, end } = getDateRange(input);
-const isSimplePeriod = ["day", "week", "month", "year"].includes(input.period);
-const effectivePeriod = (isSimplePeriod ? input.period : "custom") as Period;
-const rangeStart = isSimplePeriod ? undefined : start;
-const rangeEnd = isSimplePeriod ? undefined : end;
+const periodInput = toPeriodInput(periodValue);
 
-const recordsResult = await getAttributeViolations(
-  effectivePeriod,
-  classFilter === "all" ? undefined : classFilter,
+const recordsResult = await getAttributeViolations({
+  periodInput,
+  classFilter: classFilter === "all" ? undefined : classFilter,
   page,
-  20,
-  rangeStart,
-  rangeEnd,
-  searchTerm,
-);
-```
+  limit: 20,
+  search: searchTerm,
+});
 
-Dan untuk ketiga chart:
+if (page === 1) {
+  const [trendRes, classRes, attrRes] = await Promise.all([
+    getAttributeViolationTrend({ periodInput }),
+    getAttributeViolationsByClass({ periodInput }),
+    getMostViolatedAttributes({ periodInput }),
+  ]);
 
-```ts
-const [trendRes, classRes, attrRes] = await Promise.all([
-  getAttributeViolationTrend(effectivePeriod, rangeStart, rangeEnd),
-  getAttributeViolationsByClass(effectivePeriod, rangeStart, rangeEnd),
-  getMostViolatedAttributes(effectivePeriod, rangeStart, rangeEnd),
-]);
+  if (trendRes.success) setTrendData(trendRes.data || []);
+  if (classRes.success) setClassData(classRes.data || []);
+  if (attrRes.success) setAttributeData(attrRes.data || []);
+}
 ```
 
 Ubah array dependensi (baris 170) dari `[period, classFilter, page, customStart, customEnd, searchTerm]` menjadi `[periodValue, classFilter, page, searchTerm]`.

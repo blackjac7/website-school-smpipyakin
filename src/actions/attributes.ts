@@ -16,16 +16,23 @@ import {
   calculateAttributePoints,
 } from "@/lib/attributePoints";
 import { revalidatePath } from "next/cache";
-import {
-  startOfDay,
-  startOfWeek,
-  startOfMonth,
-  startOfYear,
-  endOfDay,
-} from "date-fns";
+import { startOfDay, endOfDay } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
+import {
+  getDateRange,
+  getPeriodLabel,
+  getCurrentAcademicYear,
+  WIB_TIMEZONE,
+  type PeriodInput,
+} from "@/lib/reportPeriod";
 
-const WIB_TIMEZONE = "Asia/Jakarta";
+// Periode di-re-export karena komponen laporan meng-import dari sini,
+// bukan langsung dari @/lib/reportPeriod.
+export type {
+  Period,
+  PeriodInput,
+  SemesterType,
+} from "@/lib/reportPeriod";
 
 // =============================================
 // HELPER FUNCTIONS
@@ -56,36 +63,6 @@ async function verifyKesiswaanAccess() {
   }
 
   return { authorized: true, user };
-}
-
-export type Period = "day" | "week" | "month" | "year" | "custom";
-
-function getDateRange(period: Period, customStart?: Date, customEnd?: Date) {
-  const now = new Date();
-  const zonedNow = toZonedTime(now, WIB_TIMEZONE);
-
-  if (period === "custom" && customStart && customEnd) {
-    return {
-      start: startOfDay(toZonedTime(customStart, WIB_TIMEZONE)),
-      end: endOfDay(toZonedTime(customEnd, WIB_TIMEZONE)),
-    };
-  }
-
-  switch (period) {
-    case "day":
-      return { start: startOfDay(zonedNow), end: endOfDay(zonedNow) };
-    case "week":
-      return {
-        start: startOfWeek(zonedNow, { weekStartsOn: 1 }),
-        end: endOfDay(zonedNow),
-      };
-    case "month":
-      return { start: startOfMonth(zonedNow), end: endOfDay(zonedNow) };
-    case "year":
-      return { start: startOfYear(zonedNow), end: endOfDay(zonedNow) };
-    default:
-      return { start: startOfDay(zonedNow), end: endOfDay(zonedNow) };
-  }
 }
 
 // =============================================
@@ -303,38 +280,25 @@ export async function getAttributeStats() {
   }
 
   try {
+    // Rentang dihitung sekali per bucket; sebelumnya getDateRange dipanggil
+    // dua kali untuk setiap bucket (gte dan lte).
+    const dayRange = getDateRange({ period: "day" });
+    const weekRange = getDateRange({ period: "week" });
+    const monthRange = getDateRange({ period: "month" });
+    const yearRange = getDateRange({ period: "year" });
+
     const [dayCount, weekCount, monthCount, yearCount] = await Promise.all([
       prisma.attributeViolation.count({
-        where: {
-          date: {
-            gte: getDateRange("day").start,
-            lte: getDateRange("day").end,
-          },
-        },
+        where: { date: { gte: dayRange.start, lte: dayRange.end } },
       }),
       prisma.attributeViolation.count({
-        where: {
-          date: {
-            gte: getDateRange("week").start,
-            lte: getDateRange("week").end,
-          },
-        },
+        where: { date: { gte: weekRange.start, lte: weekRange.end } },
       }),
       prisma.attributeViolation.count({
-        where: {
-          date: {
-            gte: getDateRange("month").start,
-            lte: getDateRange("month").end,
-          },
-        },
+        where: { date: { gte: monthRange.start, lte: monthRange.end } },
       }),
       prisma.attributeViolation.count({
-        where: {
-          date: {
-            gte: getDateRange("year").start,
-            lte: getDateRange("year").end,
-          },
-        },
+        where: { date: { gte: yearRange.start, lte: yearRange.end } },
       }),
     ]);
 
@@ -353,22 +317,29 @@ export async function getAttributeStats() {
   }
 }
 
-export async function getAttributeViolations(
-  period: Period = "day",
-  classFilter?: string,
-  page: number = 1,
-  limit: number = 20,
-  customStart?: Date,
-  customEnd?: Date,
-  search?: string,
-) {
+/**
+ * Menerima PeriodInput utuh, bukan (period, customStart, customEnd)
+ * terpisah: kalau pemanggil menghitung rentangnya sendiri lalu
+ * mengirimkannya sebagai custom range, toZonedTime akan dijalankan dua
+ * kali pada tanggal yang sama dan batas rentang melenceng 7 jam per
+ * konversi.
+ */
+export async function getAttributeViolations(params: {
+  periodInput: PeriodInput;
+  classFilter?: string;
+  page?: number;
+  limit?: number;
+  search?: string;
+}) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
+  const { periodInput, classFilter, page = 1, limit = 20, search } = params;
+
   try {
-    const { start, end } = getDateRange(period, customStart, customEnd);
+    const { start, end } = getDateRange(periodInput);
     const skip = (page - 1) * limit;
 
     const where: Prisma.AttributeViolationWhereInput = {
@@ -440,18 +411,16 @@ export async function getAttributeViolations(
   }
 }
 
-export async function getAttributeViolationsByClass(
-  period: Period = "month",
-  customStart?: Date,
-  customEnd?: Date,
-) {
+export async function getAttributeViolationsByClass(params: {
+  periodInput: PeriodInput;
+}) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
   try {
-    const { start, end } = getDateRange(period, customStart, customEnd);
+    const { start, end } = getDateRange(params.periodInput);
 
     const records = await prisma.attributeViolation.findMany({
       where: { date: { gte: start, lte: end } },
@@ -475,18 +444,16 @@ export async function getAttributeViolationsByClass(
   }
 }
 
-export async function getAttributeViolationTrend(
-  period: Period = "month",
-  customStart?: Date,
-  customEnd?: Date,
-) {
+export async function getAttributeViolationTrend(params: {
+  periodInput: PeriodInput;
+}) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
   try {
-    const { start, end } = getDateRange(period, customStart, customEnd);
+    const { start, end } = getDateRange(params.periodInput);
 
     const records = await prisma.attributeViolation.findMany({
       where: { date: { gte: start, lte: end } },
@@ -512,18 +479,16 @@ export async function getAttributeViolationTrend(
   }
 }
 
-export async function getMostViolatedAttributes(
-  period: Period = "month",
-  customStart?: Date,
-  customEnd?: Date,
-) {
+export async function getMostViolatedAttributes(params: {
+  periodInput: PeriodInput;
+}) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
   try {
-    const { start, end } = getDateRange(period, customStart, customEnd);
+    const { start, end } = getDateRange(params.periodInput);
 
     const items = await prisma.attributeViolationItem.findMany({
       where: { violation: { date: { gte: start, lte: end } } },
@@ -895,23 +860,71 @@ export async function deleteAttributeItem(id: string) {
 }
 
 // =============================================
-// EXPORT
+// EXPORT (KESISWAAN)
 // =============================================
 
-export async function getAttributeViolationsForExport(
-  period: Period = "month",
-  classFilter?: string,
-  customStart?: Date,
-  customEnd?: Date,
-) {
+export interface AttributeDetailRow {
+  date: Date;
+  siswaName: string | null;
+  nisn: string;
+  class: string | null;
+  time: string;
+  attributesLabel: string;
+  notes: string | null;
+  recordedBy: string;
+  /** Poin seumur hidup siswa ybs — melekat pada siswa, bukan kejadian. */
+  totalPoints: number;
+}
+
+export interface AttributeRecapRow {
+  siswaId: string;
+  name: string | null;
+  nisn: string;
+  class: string | null;
+  periodCount: number;
+  periodPoints: number;
+  totalCount: number;
+  totalPoints: number;
+  /** Atribut tersering dalam periode terpilih. */
+  topAttribute: string;
+}
+
+export interface ReportSummary {
+  periodLabel: string;
+  classLabel: string;
+  totalRecords: number;
+  totalStudents: number;
+  averagePerStudent: number;
+  topClass: string;
+  threshold: number;
+  pointsPerThreshold: number;
+}
+
+/**
+ * Data lengkap untuk export tiga sheet: Detail, Rekap Siswa, Ringkasan.
+ *
+ * Menggantikan getAttributeViolationsForExport() yang hanya mengembalikan
+ * baris kejadian dan mengabaikan kotak pencarian — sehingga isi berkas
+ * tidak cocok dengan yang terlihat di layar.
+ */
+export async function getAttributeReportForExport(params: {
+  periodInput: PeriodInput;
+  classFilter?: string;
+  search?: string;
+}) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
-    return { success: false, error: auth.error };
+    return { success: false as const, error: auth.error! };
   }
 
-  try {
-    const { start, end } = getDateRange(period, customStart, customEnd);
+  const { periodInput, classFilter, search } = params;
 
+  try {
+    const { start, end } = getDateRange(periodInput);
+    const { threshold, pointsPerThreshold } = await getAttributePointConfig();
+
+    // Predikat sama persis dengan getAttributeViolations agar isi export
+    // cocok dengan yang terlihat di layar.
     const where: Prisma.AttributeViolationWhereInput = {
       date: { gte: start, lte: end },
     };
@@ -920,38 +933,165 @@ export async function getAttributeViolationsForExport(
       where.siswa = { class: classFilter };
     }
 
-    const records = await prisma.attributeViolation.findMany({
-      where,
-      include: {
-        siswa: { select: { name: true, nisn: true, class: true } },
-        recorder: {
-          select: {
-            username: true,
-            siswa: { select: { name: true } },
-            kesiswaan: { select: { name: true } },
+    if (search) {
+      where.OR = [
+        { siswa: { name: { contains: search, mode: "insensitive" } } },
+        { siswa: { nisn: { contains: search } } },
+      ];
+    }
+
+    const [records, grouped] = await Promise.all([
+      prisma.attributeViolation.findMany({
+        where,
+        include: {
+          siswa: { select: { id: true, name: true, nisn: true, class: true } },
+          recorder: {
+            select: {
+              username: true,
+              siswa: { select: { name: true } },
+              kesiswaan: { select: { name: true } },
+            },
+          },
+          items: {
+            include: {
+              attributeItem: { select: { name: true, order: true } },
+            },
           },
         },
-        items: { include: { attributeItem: { select: { name: true } } } },
-      },
-      orderBy: { date: "desc" },
+        orderBy: { date: "desc" },
+      }),
+      prisma.attributeViolation.groupBy({
+        by: ["siswaId"],
+        where,
+        _count: { _all: true },
+      }),
+    ]);
+
+    const siswaIds = grouped.map((g) => g.siswaId);
+
+    // Jumlah seumur hidup: sengaja TANPA filter periode/kelas.
+    const students =
+      siswaIds.length > 0
+        ? await prisma.siswa.findMany({
+            where: { id: { in: siswaIds } },
+            select: {
+              id: true,
+              name: true,
+              nisn: true,
+              class: true,
+              _count: { select: { attributeViolations: true } },
+            },
+          })
+        : [];
+
+    // Atribut tersering per siswa, dihitung dari records yang sudah
+    // ter-fetch untuk sheet Detail — tanpa query tambahan. Seri diputus
+    // oleh AttributeItem.order terkecil supaya stabil antar export.
+    const attrTally = new Map<string, Map<string, { count: number; order: number }>>();
+    records.forEach((r) => {
+      const tally =
+        attrTally.get(r.siswa.id) ??
+        new Map<string, { count: number; order: number }>();
+      r.items.forEach((i) => {
+        const name = i.attributeItem.name;
+        tally.set(name, {
+          count: (tally.get(name)?.count ?? 0) + 1,
+          order: i.attributeItem.order,
+        });
+      });
+      attrTally.set(r.siswa.id, tally);
     });
 
-    return {
-      success: true,
-      data: records.map((r) => ({
-        ...r,
-        attributesLabel: r.items.map((i) => i.attributeItem.name).join(", "),
-        recorder: {
-          username:
-            r.recorder.siswa?.name ||
-            r.recorder.kesiswaan?.name ||
-            r.recorder.username,
-        },
-      })),
+    const topAttributeFor = (siswaId: string): string => {
+      const tally = attrTally.get(siswaId);
+      if (!tally || tally.size === 0) return "-";
+      return [...tally.entries()].sort(
+        ([, a], [, b]) => b.count - a.count || a.order - b.order,
+      )[0][0];
     };
+
+    const periodCountById = new Map(
+      grouped.map((g) => [g.siswaId, g._count._all]),
+    );
+
+    const recap: AttributeRecapRow[] = students
+      .map((s) => {
+        const periodCount = periodCountById.get(s.id) ?? 0;
+        const totalCount = s._count.attributeViolations;
+        return {
+          siswaId: s.id,
+          name: s.name,
+          nisn: s.nisn,
+          class: s.class,
+          periodCount,
+          periodPoints: calculateAttributePoints(
+            periodCount,
+            threshold,
+            pointsPerThreshold,
+          ),
+          totalCount,
+          totalPoints: calculateAttributePoints(
+            totalCount,
+            threshold,
+            pointsPerThreshold,
+          ),
+          topAttribute: topAttributeFor(s.id),
+        };
+      })
+      // Urutan stabil: poin, lalu jumlah, lalu nama.
+      .sort(
+        (a, b) =>
+          b.totalPoints - a.totalPoints ||
+          b.totalCount - a.totalCount ||
+          (a.name || "").localeCompare(b.name || ""),
+      );
+
+    const totalPointsById = new Map(
+      recap.map((r) => [r.siswaId, r.totalPoints]),
+    );
+
+    const detail: AttributeDetailRow[] = records.map((r) => ({
+      date: r.date,
+      siswaName: r.siswa.name,
+      nisn: r.siswa.nisn,
+      class: r.siswa.class,
+      time: r.scanTime,
+      attributesLabel: r.items.map((i) => i.attributeItem.name).join(", "),
+      notes: r.notes,
+      recordedBy:
+        r.recorder.siswa?.name ||
+        r.recorder.kesiswaan?.name ||
+        r.recorder.username,
+      totalPoints: totalPointsById.get(r.siswa.id) ?? 0,
+    }));
+
+    const byClass: Record<string, number> = {};
+    records.forEach((r) => {
+      const cls = r.siswa.class || "Tanpa Kelas";
+      byClass[cls] = (byClass[cls] || 0) + 1;
+    });
+    const topClass =
+      Object.entries(byClass).sort(([, a], [, b]) => b - a)[0]?.[0] || "-";
+
+    const summary: ReportSummary = {
+      periodLabel: getPeriodLabel(periodInput),
+      classLabel:
+        classFilter && classFilter !== "all" ? classFilter : "Semua Kelas",
+      totalRecords: records.length,
+      totalStudents: recap.length,
+      averagePerStudent:
+        recap.length > 0
+          ? Number((records.length / recap.length).toFixed(1))
+          : 0,
+      topClass,
+      threshold,
+      pointsPerThreshold,
+    };
+
+    return { success: true as const, detail, recap, summary };
   } catch (error) {
-    console.error("Error fetching attribute data for export:", error);
-    return { success: false, error: "Gagal mengambil data export" };
+    console.error("Error building attribute report:", error);
+    return { success: false as const, error: "Gagal mengambil data export" };
   }
 }
 
@@ -980,5 +1120,41 @@ export async function getAvailableClasses() {
   } catch (error) {
     console.error("Error getting classes:", error);
     return { success: false, error: "Gagal mengambil daftar kelas" };
+  }
+}
+
+/**
+ * Daftar tahun ajaran yang punya data pelanggaran atribut, dari record
+ * terlama sampai tahun ajaran berjalan.
+ */
+export async function getAvailableAcademicYears() {
+  const auth = await verifyKesiswaanAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error, years: [] as number[] };
+  }
+
+  try {
+    const oldest = await prisma.attributeViolation.aggregate({
+      _min: { date: true },
+    });
+
+    const current = getCurrentAcademicYear();
+    const earliest = oldest._min.date
+      ? getCurrentAcademicYear(oldest._min.date)
+      : current;
+
+    const years: number[] = [];
+    for (let y = current; y >= earliest; y--) {
+      years.push(y);
+    }
+
+    return { success: true, years };
+  } catch (error) {
+    console.error("Error getting academic years:", error);
+    return {
+      success: false,
+      error: "Gagal mengambil tahun ajaran",
+      years: [] as number[],
+    };
   }
 }

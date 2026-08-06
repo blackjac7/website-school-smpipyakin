@@ -34,11 +34,22 @@ import {
   getAttributeViolationsByClass,
   getMostViolatedAttributes,
   getAvailableClasses,
-  getAttributeViolationsForExport,
+  getAvailableAcademicYears,
+  getAttributeReportForExport,
   getAttributePointsSummary,
-  Period,
 } from "@/actions/attributes";
-import { exportToExcel, formatExcelDate } from "@/utils/excelExport";
+import { getPeriodFilenameSlug } from "@/lib/reportPeriod";
+import PeriodFilter, {
+  createDefaultPeriodValue,
+  toPeriodInput,
+  isPeriodValueComplete,
+  type PeriodFilterValue,
+} from "./PeriodFilter";
+import {
+  exportMultiSheetExcel,
+  formatExcelDate,
+  type SheetSpec,
+} from "@/utils/excelExport";
 import toast from "react-hot-toast";
 
 interface AttributeViolationDisplay {
@@ -79,10 +90,11 @@ export default function AttributeReportsContent() {
   const [attributeData, setAttributeData] = useState<any[]>([]);
 
   const [availableClasses, setAvailableClasses] = useState<string[]>([]);
+  const [academicYears, setAcademicYears] = useState<number[]>([]);
 
-  const [period, setPeriod] = useState<Period>("week");
-  const [customStart, setCustomStart] = useState("");
-  const [customEnd, setCustomEnd] = useState("");
+  const [periodValue, setPeriodValue] = useState<PeriodFilterValue>(
+    createDefaultPeriodValue,
+  );
 
   const [classFilter, setClassFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -112,6 +124,17 @@ export default function AttributeReportsContent() {
     fetchClasses();
   }, []);
 
+  // Fetch academic years that actually have data
+  useEffect(() => {
+    async function fetchYears() {
+      const result = await getAvailableAcademicYears();
+      if (result.success && result.years.length > 0) {
+        setAcademicYears(result.years);
+      }
+    }
+    fetchYears();
+  }, []);
+
   useEffect(() => {
     async function fetchStats() {
       const result = await getAttributeStats();
@@ -126,20 +149,18 @@ export default function AttributeReportsContent() {
     async function fetchData() {
       setIsLoading(true);
 
-      const start =
-        period === "custom" && customStart ? new Date(customStart) : undefined;
-      const end =
-        period === "custom" && customEnd ? new Date(customEnd) : undefined;
+      // PeriodInput diteruskan utuh. Jangan hitung {start, end} di sini lalu
+      // kirim sebagai custom range: server akan menjalankan toZonedTime
+      // untuk kedua kalinya dan batas rentang melenceng 7 jam per konversi.
+      const periodInput = toPeriodInput(periodValue);
 
-      const recordsResult = await getAttributeViolations(
-        period,
-        classFilter === "all" ? undefined : classFilter,
+      const recordsResult = await getAttributeViolations({
+        periodInput,
+        classFilter: classFilter === "all" ? undefined : classFilter,
         page,
-        20,
-        start,
-        end,
-        searchTerm,
-      );
+        limit: 20,
+        search: searchTerm,
+      });
 
       if (recordsResult.success && recordsResult.records) {
         setRecords(recordsResult.records);
@@ -149,9 +170,9 @@ export default function AttributeReportsContent() {
 
       if (page === 1) {
         const [trendRes, classRes, attrRes] = await Promise.all([
-          getAttributeViolationTrend(period, start, end),
-          getAttributeViolationsByClass(period, start, end),
-          getMostViolatedAttributes(period, start, end),
+          getAttributeViolationTrend({ periodInput }),
+          getAttributeViolationsByClass({ periodInput }),
+          getMostViolatedAttributes({ periodInput }),
         ]);
 
         if (trendRes.success) setTrendData(trendRes.data || []);
@@ -167,7 +188,7 @@ export default function AttributeReportsContent() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [period, classFilter, page, customStart, customEnd, searchTerm]);
+  }, [periodValue, classFilter, page, searchTerm]);
 
   useEffect(() => {
     async function fetchPoints() {
@@ -190,32 +211,43 @@ export default function AttributeReportsContent() {
     return () => clearTimeout(timer);
   }, [classFilter, searchTerm]);
 
+  // Export Excel (Detail + Rekap Siswa + Ringkasan)
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const start =
-        period === "custom" && customStart ? new Date(customStart) : undefined;
-      const end =
-        period === "custom" && customEnd ? new Date(customEnd) : undefined;
+      const periodInput = toPeriodInput(periodValue);
 
-      const result = await getAttributeViolationsForExport(
-        period,
-        classFilter === "all" ? undefined : classFilter,
-        start,
-        end,
-      );
+      const result = await getAttributeReportForExport({
+        periodInput,
+        classFilter: classFilter === "all" ? undefined : classFilter,
+        search: searchTerm || undefined,
+      });
 
-      if (result.success && result.data) {
-        exportToExcel({
-          filename: "Laporan_Pelanggaran_Atribut_Siswa",
-          sheetName: "Atribut",
-          title: "LAPORAN PELANGGARAN ATRIBUT SISWA",
-          subtitle: `Periode: ${period.toUpperCase()} ${
-            period === "custom"
-              ? `(${start?.toLocaleDateString()} - ${end?.toLocaleDateString()})`
-              : ""
-          }`,
-          data: result.data,
+      if (!result.success) {
+        toast.error(result.error || "Gagal mengambil data export");
+        return;
+      }
+
+      const { detail, recap, summary } = result;
+
+      // Periode nihil tetap menghasilkan berkas: kesiswaan butuh bukti
+      // bahwa periode itu memang kosong.
+      if (detail.length === 0) {
+        toast("Tidak ada data pada periode ini. Berkas tetap dibuat.", {
+          icon: "⚠️",
+        });
+      }
+
+      const headerTitle = "LAPORAN PELANGGARAN ATRIBUT SISWA";
+      const headerSubtitle = `${summary.classLabel} — ${summary.periodLabel}`;
+      const pointRule = `Setiap ${summary.threshold}x pelanggaran atribut = ${summary.pointsPerThreshold} poin.`;
+
+      const sheets: SheetSpec[] = [
+        {
+          sheetName: "Detail",
+          title: headerTitle,
+          subtitle: headerSubtitle,
+          data: detail,
           columns: [
             {
               header: "Tanggal",
@@ -223,24 +255,12 @@ export default function AttributeReportsContent() {
               width: 15,
               transform: (val) => formatExcelDate(val),
             },
-            {
-              header: "Nama Siswa",
-              key: "siswa.name",
-              width: 30,
-            },
-            {
-              header: "NISN",
-              key: "siswa.nisn",
-              width: 15,
-            },
-            {
-              header: "Kelas",
-              key: "siswa.class",
-              width: 10,
-            },
+            { header: "Nama Siswa", key: "siswaName", width: 30 },
+            { header: "NISN", key: "nisn", width: 15 },
+            { header: "Kelas", key: "class", width: 10 },
             {
               header: "Jam",
-              key: "scanTime",
+              key: "time",
               width: 12,
               transform: (val) => val || "-",
             },
@@ -256,40 +276,79 @@ export default function AttributeReportsContent() {
               width: 30,
               transform: (val) => val || "-",
             },
-            {
-              header: "Dicatat Oleh",
-              key: "recorder.username",
-              width: 15,
-            },
+            { header: "Dicatat Oleh", key: "recordedBy", width: 18 },
+            { header: "Total Poin Siswa", key: "totalPoints", width: 16 },
           ],
+          notes: [
+            "Catatan: kolom Total Poin Siswa adalah poin seumur hidup siswa tersebut,",
+            "melekat pada siswa dan bukan pada kejadian - kolom ini tidak boleh dijumlahkan.",
+          ],
+        },
+        {
+          sheetName: "Rekap Siswa",
+          title: headerTitle,
+          subtitle: `Rekap per Siswa — ${headerSubtitle}`,
+          data: recap,
+          columns: [
+            { header: "Nama Siswa", key: "name", width: 30 },
+            { header: "NISN", key: "nisn", width: 15 },
+            { header: "Kelas", key: "class", width: 10 },
+            { header: "Pelanggaran (Periode)", key: "periodCount", width: 20 },
+            { header: "Poin (Periode)", key: "periodPoints", width: 15 },
+            { header: "Total Pelanggaran", key: "totalCount", width: 18 },
+            { header: "Total Poin", key: "totalPoints", width: 12 },
+            { header: "Atribut Tersering", key: "topAttribute", width: 20 },
+          ],
+          notes: [
+            pointRule,
+            "Total Poin adalah angka resmi pembinaan, sama dengan yang tampil di dashboard.",
+            "Poin (Periode) hanya indikator intensitas periode ini dan TIDAK dapat",
+            "dijumlahkan antar periode: sisa pembagian hilang setiap kali dipotong.",
+            "Atribut Tersering dihitung dari pelanggaran dalam periode terpilih saja.",
+          ],
+        },
+        {
+          sheetName: "Ringkasan",
+          title: headerTitle,
+          subtitle: headerSubtitle,
+          data: [],
+          columns: [{ header: "Keterangan", key: "k", width: 32 }],
+          includeColumnHeaders: false,
           includeSummary: true,
           summaryData: {
-            "Total Data": result.data.length,
-            "Kelas Terbanyak":
-              Object.entries(
-                result.data.reduce(
-                  (
-                    acc: Record<string, number>,
-                    curr: { siswa: { class: string | null } },
-                  ) => {
-                    const cls = curr.siswa.class || "Unknown";
-                    acc[cls] = (acc[cls] || 0) + 1;
-                    return acc;
-                  },
-                  {},
-                ),
-              ).sort(([, a], [, b]) => b - a)[0]?.[0] || "-",
+            Periode: summary.periodLabel,
+            Kelas: summary.classLabel,
+            "Total Kejadian": summary.totalRecords,
+            "Jumlah Siswa Terlibat": summary.totalStudents,
+            "Rata-rata per Siswa": summary.averagePerStudent,
+            "Kelas Terbanyak": summary.topClass,
+            "Atribut Paling Sering Dilanggar": attributeData[0]?.name || "-",
+            "Aturan Poin": pointRule,
           },
-        });
-        toast.success("Data berhasil diexport ke Excel!");
-      } else {
-        toast.error(result.error || "Gagal mengambil data export");
-      }
+          notes: [
+            "Poin (Periode) di sheet Rekap Siswa tidak dapat dijumlahkan antar periode.",
+            "Gunakan Total Poin sebagai angka resmi pembinaan.",
+          ],
+        },
+      ];
+
+      const classSlug =
+        classFilter === "all" ? "Semua-Kelas" : classFilter.replace(/\s+/g, "-");
+
+      exportMultiSheetExcel({
+        filename: `Laporan_Atribut_${classSlug}_${getPeriodFilenameSlug(periodInput)}`,
+        sheets,
+      });
+
+      toast.success("Data berhasil diexport ke Excel!");
     } catch (error) {
       console.error("Export error:", error);
       toast.error("Terjadi kesalahan saat export");
+    } finally {
+      // finally, bukan di akhir try: tanpa ini isExporting tersangkut true
+      // selamanya kalau terjadi error di tengah jalan.
+      setIsExporting(false);
     }
-    setIsExporting(false);
   };
 
   const formatDate = (dateStr: string | Date) => {
@@ -316,7 +375,7 @@ export default function AttributeReportsContent() {
 
         <button
           onClick={handleExport}
-          disabled={isExporting || records.length === 0}
+          disabled={isExporting || !isPeriodValueComplete(periodValue)}
           className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-all shadow-lg disabled:opacity-50"
         >
           {isExporting ? (
@@ -369,43 +428,15 @@ export default function AttributeReportsContent() {
           />
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-gray-400" />
-            <select
-              value={period}
-              onChange={(e) => {
-                setPeriod(e.target.value as Period);
-                setPage(1);
-              }}
-              className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="day">Hari Ini</option>
-              <option value="week">Minggu Ini</option>
-              <option value="month">Bulan Ini</option>
-              <option value="year">Tahun Ini</option>
-              <option value="custom">Range Tanggal</option>
-            </select>
-          </div>
-
-          {period === "custom" && (
-            <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-4">
-              <input
-                type="date"
-                value={customStart}
-                onChange={(e) => setCustomStart(e.target.value)}
-                className="px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-              />
-              <span className="text-gray-400">-</span>
-              <input
-                type="date"
-                value={customEnd}
-                onChange={(e) => setCustomEnd(e.target.value)}
-                className="px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-              />
-            </div>
-          )}
-        </div>
+        {/* Period Filter */}
+        <PeriodFilter
+          value={periodValue}
+          onChange={(next) => {
+            setPeriodValue(next);
+            setPage(1);
+          }}
+          academicYears={academicYears}
+        />
 
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-gray-400" />
