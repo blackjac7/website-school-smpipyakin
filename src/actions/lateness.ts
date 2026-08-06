@@ -18,17 +18,23 @@ import {
   calculateLatenessPoints,
 } from "@/lib/latenessPoints";
 import { revalidatePath } from "next/cache";
-import {
-  startOfDay,
-  startOfWeek,
-  startOfMonth,
-  startOfYear,
-  endOfDay,
-} from "date-fns";
+import { startOfDay, endOfDay } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
+import {
+  getDateRange,
+  getPeriodLabel,
+  getCurrentAcademicYear,
+  WIB_TIMEZONE,
+  type PeriodInput,
+} from "@/lib/reportPeriod";
 
-// WIB Timezone for date calculations
-const WIB_TIMEZONE = "Asia/Jakarta";
+// Periode di-re-export karena komponen laporan meng-import dari sini,
+// bukan langsung dari @/lib/reportPeriod.
+export type {
+  Period,
+  PeriodInput,
+  SemesterType,
+} from "@/lib/reportPeriod";
 
 // =============================================
 // HELPER FUNCTIONS
@@ -298,50 +304,6 @@ export async function recordLateness(
 // LATENESS REPORTS (KESISWAAN)
 // =============================================
 
-// ... (imports remain the same)
-
-// WIB Timezone for date calculations
-// const WIB_TIMEZONE = "Asia/Jakarta"; // Removed duplicate
-
-export type Period = "day" | "week" | "month" | "year" | "custom";
-
-// Helper to get date range
-function getDateRange(period: Period, customStart?: Date, customEnd?: Date) {
-  const now = new Date();
-  const zonedNow = toZonedTime(now, WIB_TIMEZONE);
-
-  if (period === "custom" && customStart && customEnd) {
-    return {
-      start: startOfDay(toZonedTime(customStart, WIB_TIMEZONE)),
-      end: endOfDay(toZonedTime(customEnd, WIB_TIMEZONE)),
-    };
-  }
-
-  switch (period) {
-    case "day":
-      return { start: startOfDay(zonedNow), end: endOfDay(zonedNow) };
-    case "week":
-      return {
-        start: startOfWeek(zonedNow, { weekStartsOn: 1 }),
-        end: endOfDay(zonedNow),
-      };
-    case "month":
-      return { start: startOfMonth(zonedNow), end: endOfDay(zonedNow) };
-    case "year":
-      return { start: startOfYear(zonedNow), end: endOfDay(zonedNow) };
-    default:
-      return { start: startOfDay(zonedNow), end: endOfDay(zonedNow) };
-  }
-}
-
-// ... (existing verifyOsisAccess, verifyKesiswaanAccess, qr management functions remain same - lines 23-120)
-
-// ... (existing verifyScanQR, recordLateness functions remain same - lines 125-262)
-
-// =============================================
-// LATENESS REPORTS (KESISWAAN)
-// =============================================
-
 /**
  * Get lateness statistics for dashboard (Overview cards)
  * Now supports filtering by specific range if needed, or defaults to standard buckets
@@ -353,38 +315,25 @@ export async function getLatenessStats() {
   }
 
   try {
+    // Rentang dihitung sekali per bucket; sebelumnya getDateRange dipanggil
+    // dua kali untuk setiap bucket (gte dan lte).
+    const dayRange = getDateRange({ period: "day" });
+    const weekRange = getDateRange({ period: "week" });
+    const monthRange = getDateRange({ period: "month" });
+    const yearRange = getDateRange({ period: "year" });
+
     const [dayCount, weekCount, monthCount, yearCount] = await Promise.all([
       prisma.latenessRecord.count({
-        where: {
-          date: {
-            gte: getDateRange("day").start,
-            lte: getDateRange("day").end,
-          },
-        },
+        where: { date: { gte: dayRange.start, lte: dayRange.end } },
       }),
       prisma.latenessRecord.count({
-        where: {
-          date: {
-            gte: getDateRange("week").start,
-            lte: getDateRange("week").end,
-          },
-        },
+        where: { date: { gte: weekRange.start, lte: weekRange.end } },
       }),
       prisma.latenessRecord.count({
-        where: {
-          date: {
-            gte: getDateRange("month").start,
-            lte: getDateRange("month").end,
-          },
-        },
+        where: { date: { gte: monthRange.start, lte: monthRange.end } },
       }),
       prisma.latenessRecord.count({
-        where: {
-          date: {
-            gte: getDateRange("year").start,
-            lte: getDateRange("year").end,
-          },
-        },
+        where: { date: { gte: yearRange.start, lte: yearRange.end } },
       }),
     ]);
 
@@ -404,24 +353,30 @@ export async function getLatenessStats() {
 }
 
 /**
- * Get lateness records with filters (supports custom range)
+ * Get lateness records with filters.
+ *
+ * Menerima PeriodInput utuh, bukan (period, customStart, customEnd)
+ * terpisah: kalau pemanggil menghitung rentangnya sendiri lalu
+ * mengirimkannya sebagai custom range, toZonedTime akan dijalankan dua
+ * kali pada tanggal yang sama dan batas rentang melenceng 7 jam per
+ * konversi.
  */
-export async function getLatenessRecords(
-  period: Period = "day",
-  classFilter?: string,
-  page: number = 1,
-  limit: number = 20,
-  customStart?: Date,
-  customEnd?: Date,
-  search?: string,
-) {
+export async function getLatenessRecords(params: {
+  periodInput: PeriodInput;
+  classFilter?: string;
+  page?: number;
+  limit?: number;
+  search?: string;
+}) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
+  const { periodInput, classFilter, page = 1, limit = 20, search } = params;
+
   try {
-    const { start, end } = getDateRange(period, customStart, customEnd);
+    const { start, end } = getDateRange(periodInput);
     const skip = (page - 1) * limit;
 
     const where: Prisma.LatenessRecordWhereInput = {
@@ -493,18 +448,16 @@ export async function getLatenessRecords(
 /**
  * Get lateness by class for chart
  */
-export async function getLatenessByClass(
-  period: Period = "month",
-  customStart?: Date,
-  customEnd?: Date,
-) {
+export async function getLatenessByClass(params: {
+  periodInput: PeriodInput;
+}) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
   try {
-    const { start, end } = getDateRange(period, customStart, customEnd);
+    const { start, end } = getDateRange(params.periodInput);
 
     const records = await prisma.latenessRecord.findMany({
       where: { date: { gte: start, lte: end } },
@@ -532,18 +485,14 @@ export async function getLatenessByClass(
 /**
  * Get lateness trend for chart
  */
-export async function getLatenesTrend(
-  period: Period = "month",
-  customStart?: Date,
-  customEnd?: Date,
-) {
+export async function getLatenesTrend(params: { periodInput: PeriodInput }) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
   try {
-    const { start, end } = getDateRange(period, customStart, customEnd);
+    const { start, end } = getDateRange(params.periodInput);
 
     const records = await prisma.latenessRecord.findMany({
       where: { date: { gte: start, lte: end } },
@@ -789,91 +738,107 @@ export async function getAvailableClasses() {
 }
 
 /**
- * Get raw lateness data for Excel export
+ * Daftar tahun ajaran yang punya data, dari record terlama sampai tahun
+ * ajaran berjalan. Satu query agregat ringan pada kolom terindeks.
  */
-export async function getLatenessForExport(
-  period: Period = "month",
-  classFilter?: string,
-  customStart?: Date,
-  customEnd?: Date,
-) {
+export async function getAvailableAcademicYears() {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
-    return { success: false, error: auth.error };
+    return { success: false, error: auth.error, years: [] as number[] };
   }
 
   try {
-    const { start, end } = getDateRange(period, customStart, customEnd);
-
-    const where: Prisma.LatenessRecordWhereInput = {
-      date: { gte: start, lte: end },
-    };
-
-    if (classFilter && classFilter !== "all") {
-      where.siswa = { class: classFilter };
-    }
-
-    const records = await prisma.latenessRecord.findMany({
-      where,
-      include: {
-        siswa: {
-          select: {
-            name: true,
-            nisn: true,
-            class: true,
-          },
-        },
-        recorder: {
-          select: {
-            username: true,
-            siswa: {
-              select: { name: true },
-            },
-            kesiswaan: {
-              select: { name: true },
-            },
-          },
-        },
-      },
-      orderBy: { date: "desc" },
+    const oldest = await prisma.latenessRecord.aggregate({
+      _min: { date: true },
     });
 
-    return {
-      success: true,
-      data: records.map((r) => ({
-        ...r,
-        recorder: {
-          username:
-            r.recorder.siswa?.name ||
-            r.recorder.kesiswaan?.name ||
-            r.recorder.username,
-        },
-      })),
-    };
+    const current = getCurrentAcademicYear();
+    const earliest = oldest._min.date
+      ? getCurrentAcademicYear(oldest._min.date)
+      : current;
+
+    const years: number[] = [];
+    for (let y = current; y >= earliest; y--) {
+      years.push(y);
+    }
+
+    return { success: true, years };
   } catch (error) {
-    console.error("Error fetching data for export:", error);
-    return { success: false, error: "Gagal mengambil data export" };
+    console.error("Error getting academic years:", error);
+    return {
+      success: false,
+      error: "Gagal mengambil tahun ajaran",
+      years: [] as number[],
+    };
   }
 }
 
+// =============================================
+// EXPORT (KESISWAAN)
+// =============================================
+
+export interface ReportDetailRow {
+  date: Date;
+  siswaName: string | null;
+  nisn: string;
+  class: string | null;
+  time: string;
+  reason: string | null;
+  recordedBy: string;
+  /** Poin seumur hidup siswa ybs — melekat pada siswa, bukan kejadian. */
+  totalPoints: number;
+}
+
+export interface ReportRecapRow {
+  siswaId: string;
+  name: string | null;
+  nisn: string;
+  class: string | null;
+  periodCount: number;
+  periodPoints: number;
+  totalCount: number;
+  totalPoints: number;
+}
+
+export interface ReportSummary {
+  periodLabel: string;
+  classLabel: string;
+  totalRecords: number;
+  totalStudents: number;
+  averagePerStudent: number;
+  topClass: string;
+  threshold: number;
+  pointsPerThreshold: number;
+}
+
 /**
- * Export lateness records as CSV string
- * @deprecated Use client-side Excel export with getLatenessForExport instead
+ * Data lengkap untuk export tiga sheet: Detail, Rekap Siswa, Ringkasan.
+ *
+ * Menggantikan getLatenessForExport() yang hanya mengembalikan baris
+ * kejadian dan mengabaikan kotak pencarian — sehingga isi berkas tidak
+ * cocok dengan yang terlihat di layar.
+ *
+ * Tiga query agregat, bukan N+1: detail, groupBy per siswa untuk hitungan
+ * periode, dan satu findMany untuk identitas + hitungan seumur hidup.
  */
-export async function exportLatenessCSV(
-  period: Period = "month",
-  classFilter?: string,
-  customStart?: Date,
-  customEnd?: Date,
-) {
+export async function getLatenessReportForExport(params: {
+  periodInput: PeriodInput;
+  classFilter?: string;
+  search?: string;
+}) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
-    return { success: false, error: auth.error };
+    return { success: false as const, error: auth.error! };
   }
 
-  try {
-    const { start, end } = getDateRange(period, customStart, customEnd);
+  const { periodInput, classFilter, search } = params;
 
+  try {
+    const { start, end } = getDateRange(periodInput);
+    const { threshold, pointsPerThreshold } = await getLatenessPointConfig();
+
+    // Predikat sama persis dengan getLatenessRecords agar isi export
+    // cocok dengan yang terlihat di layar.
     const where: Prisma.LatenessRecordWhereInput = {
       date: { gte: start, lte: end },
     };
@@ -882,47 +847,131 @@ export async function exportLatenessCSV(
       where.siswa = { class: classFilter };
     }
 
-    const records = await prisma.latenessRecord.findMany({
-      where,
-      include: {
-        siswa: {
-          select: {
-            name: true,
-            nisn: true,
-            class: true,
+    if (search) {
+      where.OR = [
+        { siswa: { name: { contains: search, mode: "insensitive" } } },
+        { siswa: { nisn: { contains: search } } },
+      ];
+    }
+
+    const [records, grouped] = await Promise.all([
+      prisma.latenessRecord.findMany({
+        where,
+        include: {
+          siswa: { select: { id: true, name: true, nisn: true, class: true } },
+          recorder: {
+            select: {
+              username: true,
+              siswa: { select: { name: true } },
+              kesiswaan: { select: { name: true } },
+            },
           },
         },
-      },
-      orderBy: { date: "desc" },
-    });
-
-    // Generate CSV
-    const headers = [
-      "Tanggal",
-      "Nama",
-      "NISN",
-      "Kelas",
-      "Jam Tiba",
-      "Alasan",
-      "Dicatat Oleh",
-    ];
-    const rows = records.map((r) => [
-      new Date(r.date).toLocaleDateString("id-ID"),
-      r.siswa.name || "-",
-      r.siswa.nisn,
-      r.siswa.class || "-",
-      r.arrivalTime,
-      r.reason || "-",
-      r.recordedBy,
+        orderBy: { date: "desc" },
+      }),
+      prisma.latenessRecord.groupBy({
+        by: ["siswaId"],
+        where,
+        _count: { _all: true },
+      }),
     ]);
 
-    const csv = [headers, ...rows]
-      .map((row) => row.map((cell) => `"${cell}"`).join(","))
-      .join("\n");
+    const siswaIds = grouped.map((g) => g.siswaId);
 
-    return { success: true, csv };
+    // Jumlah seumur hidup: sengaja TANPA filter periode/kelas.
+    const students =
+      siswaIds.length > 0
+        ? await prisma.siswa.findMany({
+            where: { id: { in: siswaIds } },
+            select: {
+              id: true,
+              name: true,
+              nisn: true,
+              class: true,
+              _count: { select: { latenessRecords: true } },
+            },
+          })
+        : [];
+
+    const periodCountById = new Map(
+      grouped.map((g) => [g.siswaId, g._count._all]),
+    );
+
+    const recap: ReportRecapRow[] = students
+      .map((s) => {
+        const periodCount = periodCountById.get(s.id) ?? 0;
+        const totalCount = s._count.latenessRecords;
+        return {
+          siswaId: s.id,
+          name: s.name,
+          nisn: s.nisn,
+          class: s.class,
+          periodCount,
+          periodPoints: calculateLatenessPoints(
+            periodCount,
+            threshold,
+            pointsPerThreshold,
+          ),
+          totalCount,
+          totalPoints: calculateLatenessPoints(
+            totalCount,
+            threshold,
+            pointsPerThreshold,
+          ),
+        };
+      })
+      // Urutan stabil: poin, lalu jumlah, lalu nama.
+      .sort(
+        (a, b) =>
+          b.totalPoints - a.totalPoints ||
+          b.totalCount - a.totalCount ||
+          (a.name || "").localeCompare(b.name || ""),
+      );
+
+    const totalPointsById = new Map(
+      recap.map((r) => [r.siswaId, r.totalPoints]),
+    );
+
+    const detail: ReportDetailRow[] = records.map((r) => ({
+      date: r.date,
+      siswaName: r.siswa.name,
+      nisn: r.siswa.nisn,
+      class: r.siswa.class,
+      time: r.arrivalTime,
+      reason: r.reason,
+      recordedBy:
+        r.recorder.siswa?.name ||
+        r.recorder.kesiswaan?.name ||
+        r.recorder.username,
+      totalPoints: totalPointsById.get(r.siswa.id) ?? 0,
+    }));
+
+    const byClass: Record<string, number> = {};
+    records.forEach((r) => {
+      const cls = r.siswa.class || "Tanpa Kelas";
+      byClass[cls] = (byClass[cls] || 0) + 1;
+    });
+    const topClass =
+      Object.entries(byClass).sort(([, a], [, b]) => b - a)[0]?.[0] || "-";
+
+    const summary: ReportSummary = {
+      periodLabel: getPeriodLabel(periodInput),
+      classLabel:
+        classFilter && classFilter !== "all" ? classFilter : "Semua Kelas",
+      totalRecords: records.length,
+      totalStudents: recap.length,
+      averagePerStudent:
+        recap.length > 0
+          ? Number((records.length / recap.length).toFixed(1))
+          : 0,
+      topClass,
+      threshold,
+      pointsPerThreshold,
+    };
+
+    return { success: true as const, detail, recap, summary };
   } catch (error) {
-    console.error("Error exporting CSV:", error);
-    return { success: false, error: "Gagal export CSV" };
+    console.error("Error building lateness report:", error);
+    return { success: false as const, error: "Gagal mengambil data export" };
   }
 }

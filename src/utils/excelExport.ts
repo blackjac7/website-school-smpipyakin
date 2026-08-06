@@ -26,45 +26,44 @@ export interface ExcelColumn {
   transform?: (value: any, row: any) => string | number;
 }
 
+export interface SheetSpec {
+  sheetName: string;
+  title?: string;
+  subtitle?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any[];
+  columns: ExcelColumn[];
+  includeHeader?: boolean;
+  /** false untuk sheet ringkasan yang tidak punya tabel. Default true. */
+  includeColumnHeaders?: boolean;
+  includeSummary?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  summaryData?: Record<string, any>;
+  /** Baris catatan kaki di bawah tabel, satu baris per string. */
+  notes?: string[];
+}
+
 /**
- * Professional Excel Export Utility
- * Creates well-formatted Excel files with headers, styling, and auto-width columns
+ * Bangun isi sheet sebagai array-of-arrays. Dipisah dari pembuatan
+ * worksheet supaya bisa diverifikasi tanpa menyentuh berkas.
  */
-export function exportToExcel(config: ExcelExportConfig): void {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function buildSheetRows(spec: SheetSpec): any[][] {
   const {
-    filename,
-    sheetName,
     title,
     subtitle,
     data,
     columns,
     includeHeader = true,
+    includeColumnHeaders = true,
     includeSummary = false,
     summaryData,
-  } = config;
+    notes,
+  } = spec;
 
-  // Transform data according to column configuration
-  const transformedData = data.map((row, index) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transformedRow: Record<string, any> = {
-      No: index + 1,
-    };
-
-    columns.forEach((col) => {
-      const value = getNestedValue(row, col.key);
-      transformedRow[col.header] = col.transform
-        ? col.transform(value, row)
-        : (value ?? "-");
-    });
-
-    return transformedRow;
-  });
-
-  // Build worksheet data array
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wsData: any[][] = [];
 
-  // Add title row if provided
   if (includeHeader && title) {
     wsData.push([title]);
     if (subtitle) {
@@ -73,44 +72,54 @@ export function exportToExcel(config: ExcelExportConfig): void {
     wsData.push([
       `Tanggal Export: ${format(new Date(), "dd MMMM yyyy, HH:mm", { locale: id })}`,
     ]);
-    wsData.push([]); // Empty row for spacing
+    wsData.push([]);
   }
 
-  // Add column headers
-  const headers = ["No", ...columns.map((col) => col.header)];
-  wsData.push(headers);
+  if (includeColumnHeaders) {
+    wsData.push(["No", ...columns.map((col) => col.header)]);
+  }
 
-  // Add data rows
-  transformedData.forEach((row) => {
-    wsData.push(headers.map((header) => row[header] ?? "-"));
+  data.forEach((row, index) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cells: any[] = [index + 1];
+    columns.forEach((col) => {
+      const value = getNestedValue(row, col.key);
+      const cell = col.transform ? col.transform(value, row) : value;
+      // "-" diterapkan setelah transform, sama seperti implementasi lama:
+      // transform yang mengembalikan null/undefined tetap jadi "-".
+      cells.push(cell ?? "-");
+    });
+    wsData.push(cells);
   });
 
-  // Add summary section if provided
   if (includeSummary && summaryData) {
-    wsData.push([]); // Empty row
+    wsData.push([]);
     wsData.push(["RINGKASAN"]);
     Object.entries(summaryData).forEach(([key, value]) => {
       wsData.push([key, value]);
     });
   }
 
-  // Create worksheet from array
-  const worksheet = XLSX.utils.aoa_to_sheet(wsData);
+  if (notes && notes.length > 0) {
+    wsData.push([]);
+    notes.forEach((note) => wsData.push([note]));
+  }
 
-  // Set column widths
-  const columnWidths = [
-    { wch: 5 }, // No column
-    ...columns.map((col) => ({ wch: col.width || 20 })),
+  return wsData;
+}
+
+function buildWorksheet(spec: SheetSpec): XLSX.WorkSheet {
+  const worksheet = XLSX.utils.aoa_to_sheet(buildSheetRows(spec));
+
+  worksheet["!cols"] = [
+    { wch: 5 },
+    ...spec.columns.map((col) => ({ wch: col.width || 20 })),
   ];
-  worksheet["!cols"] = columnWidths;
 
-  // Merge title cells if title exists
-  if (includeHeader && title) {
-    const mergeEnd = columns.length; // Merge across all columns
-    worksheet["!merges"] = [
-      { s: { r: 0, c: 0 }, e: { r: 0, c: mergeEnd } }, // Title
-    ];
-    if (subtitle) {
+  if ((spec.includeHeader ?? true) && spec.title) {
+    const mergeEnd = spec.columns.length;
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: mergeEnd } }];
+    if (spec.subtitle) {
       worksheet["!merges"].push({
         s: { r: 1, c: 0 },
         e: { r: 1, c: mergeEnd },
@@ -118,16 +127,46 @@ export function exportToExcel(config: ExcelExportConfig): void {
     }
   }
 
-  // Create workbook
+  return worksheet;
+}
+
+/**
+ * Professional Excel Export Utility
+ * Creates well-formatted Excel files with headers, styling, and auto-width columns
+ */
+export function exportToExcel(config: ExcelExportConfig): void {
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  XLSX.utils.book_append_sheet(
+    workbook,
+    buildWorksheet(config),
+    config.sheetName,
+  );
 
-  // Generate filename with date
   const dateStr = format(new Date(), "yyyyMMdd_HHmm");
-  const fullFilename = `${filename}_${dateStr}.xlsx`;
+  XLSX.writeFile(workbook, `${config.filename}_${dateStr}.xlsx`);
+}
 
-  // Download file
-  XLSX.writeFile(workbook, fullFilename);
+/**
+ * Export beberapa sheet dalam satu workbook. Dipakai laporan keterlambatan
+ * dan atribut yang butuh Detail + Rekap Siswa + Ringkasan sekaligus.
+ */
+export function exportMultiSheetExcel(config: {
+  filename: string;
+  sheets: SheetSpec[];
+}): void {
+  const workbook = XLSX.utils.book_new();
+
+  config.sheets.forEach((sheet) => {
+    // Nama sheet Excel dibatasi 31 karakter.
+    XLSX.utils.book_append_sheet(
+      workbook,
+      buildWorksheet(sheet),
+      sheet.sheetName.slice(0, 31),
+    );
+  });
+
+  const dateStr = format(new Date(), "yyyyMMdd_HHmm");
+  XLSX.writeFile(workbook, `${config.filename}_${dateStr}.xlsx`);
 }
 
 /**
