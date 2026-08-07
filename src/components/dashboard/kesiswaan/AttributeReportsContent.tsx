@@ -46,10 +46,10 @@ import PeriodFilter, {
   type PeriodFilterValue,
 } from "./PeriodFilter";
 import {
-  exportMultiSheetExcel,
-  formatExcelDate,
+  exportMultiSheetStyledExcel,
   type SheetSpec,
-} from "@/utils/excelExport";
+} from "@/utils/excelExportMultiSheetStyled";
+import { formatExcelDate } from "@/utils/excelExport";
 import toast from "react-hot-toast";
 
 interface AttributeViolationDisplay {
@@ -335,7 +335,7 @@ export default function AttributeReportsContent() {
       const classSlug =
         classFilter === "all" ? "Semua-Kelas" : classFilter.replace(/\s+/g, "-");
 
-      exportMultiSheetExcel({
+      await exportMultiSheetStyledExcel({
         filename: `Laporan_Atribut_${classSlug}_${getPeriodFilenameSlug(periodInput)}`,
         sheets,
       });

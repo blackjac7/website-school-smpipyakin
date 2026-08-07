@@ -52,6 +52,23 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "4mb",
     },
   },
+  // Webpack config for ExcelJS browser compatibility
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
+        stream: false,
+        util: false,
+        path: false,
+        os: false,
+      };
+    }
+    return config;
+  },
   // Add custom headers for PWA and security
   async headers() {
     return [
