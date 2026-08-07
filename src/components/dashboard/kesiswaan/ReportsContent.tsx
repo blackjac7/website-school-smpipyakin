@@ -2,7 +2,7 @@
 
 import { Download } from "lucide-react";
 import { ReportStats } from "./types";
-import { exportKesiswaanReportToExcel } from "@/utils/excelExport";
+import { exportKesiswaanReportStyledToExcel } from "@/utils/excelExportStyled";
 import toast from "react-hot-toast";
 
 interface ReportsContentProps {
@@ -12,11 +12,11 @@ interface ReportsContentProps {
 export default function ReportsContent({ reportStats }: ReportsContentProps) {
   const totalItems = reportStats.summary.total;
 
-  // Excel Export function
-  const exportToExcel = () => {
+  // Excel Export function with professional styling
+  const exportToExcel = async () => {
     try {
-      exportKesiswaanReportToExcel(reportStats);
-      toast.success("Laporan berhasil diexport ke Excel");
+      await exportKesiswaanReportStyledToExcel(reportStats);
+      toast.success("Laporan berhasil diexport ke Excel dengan format profesional");
     } catch (error) {
       console.error("Export error:", error);
       toast.error("Gagal mengexport laporan");

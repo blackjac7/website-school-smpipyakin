@@ -38,6 +38,7 @@
     "cookies-next": "^6.1.0",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
+    "exceljs": "^4.4.0",
     "flowise-embed-react": "^3.0.3",
     "framer-motion": "^12.27.0",
     "html2canvas": "^1.4.1",
