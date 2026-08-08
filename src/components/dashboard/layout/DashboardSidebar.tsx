@@ -91,21 +91,26 @@ export default function DashboardSidebar({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto custom-scrollbar">
+        <nav
+          className="flex-1 p-4 space-y-1.5 overflow-y-auto custom-scrollbar"
+          aria-label={displayTitle}
+        >
           <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-3">
             Menu Utama
           </div>
           {menuItems.map((item) => {
             const isActive = activeMenu === item.id;
             return (
-              <motion.div
+              <motion.button
                 key={item.id}
+                type="button"
                 variants={menuItemVariants}
                 whileHover="hover"
                 whileTap="tap"
                 onClick={() => setActiveMenu(item.id)}
+                aria-current={isActive ? "page" : undefined}
                 className={`
-                  relative flex items-center gap-3 px-4 py-3.5 rounded-xl cursor-pointer transition-colors duration-200
+                  relative flex w-full items-center gap-3 px-4 py-3.5 rounded-xl cursor-pointer transition-colors duration-200 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
                   ${
                     isActive
                       ? "bg-blue-50 text-blue-700 font-semibold"
@@ -114,7 +119,7 @@ export default function DashboardSidebar({
                 `}
               >
                 {isActive && (
-                  <motion.div
+                  <motion.span
                     layoutId="activeIndicator"
                     className="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"
                     initial={{ opacity: 0 }}
@@ -123,11 +128,12 @@ export default function DashboardSidebar({
                   />
                 )}
                 <item.icon
-                  className={`w-5 h-5 ${
+                  className={`w-5 h-5 shrink-0 ${
                     isActive
                       ? "text-blue-600"
                       : "text-gray-400 group-hover:text-gray-600"
                   }`}
+                  aria-hidden="true"
                 />
                 <span className="text-sm">{item.label}</span>
                 {item.badge && (
@@ -135,7 +141,7 @@ export default function DashboardSidebar({
                     {item.badge}
                   </span>
                 )}
-              </motion.div>
+              </motion.button>
             );
           })}
         </nav>
