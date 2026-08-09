@@ -102,7 +102,7 @@ function OSISDashboard() {
     { id: "activities", label: "Program Kerja (Proker)", icon: FileText },
     { id: "news", label: "Berita Kegiatan", icon: Newspaper },
     { id: "schedule", label: "Jadwal Kegiatan", icon: CalendarIcon },
-    { id: "keterlambatan", label: "Scan Keterlambatan", icon: Clock },
+    { id: "keterlambatan", label: "Scan Pelanggaran", icon: Clock },
     { id: "ibadah", label: "Ibadah", icon: Heart },
   ];
 

@@ -118,12 +118,24 @@ export async function getUsers(
   } = params || {};
 
   try {
-    // Build where clause for filtering
-    const where: Prisma.UserWhereInput = {};
+    // Build where clause for filtering using AND so role/siswa/search
+    // conditions (each potentially using their own OR) don't clash.
+    const andConditions: Prisma.UserWhereInput[] = [];
 
-    // Role filter
+    // Role filter - "OSIS" must also match students marked as OSIS
+    // (role SISWA with siswa.osisAccess = true), not just the dedicated
+    // OSIS staff role.
     if (role && role !== "all") {
-      where.role = role as UserRole;
+      if (role === "OSIS") {
+        andConditions.push({
+          OR: [
+            { role: "OSIS" },
+            { role: "SISWA", siswa: { osisAccess: true } },
+          ],
+        });
+      } else {
+        andConditions.push({ role: role as UserRole });
+      }
     }
 
     // Build siswa filter (class and angkatan) - combine to avoid type issues
@@ -135,27 +147,34 @@ export async function getUsers(
       siswaFilter.year = angkatanFilter;
     }
     if (Object.keys(siswaFilter).length > 0) {
-      where.siswa = siswaFilter;
+      andConditions.push({ siswa: siswaFilter });
     }
 
     // Search filter (search in username, email, and related tables)
     if (search) {
-      where.OR = [
-        { username: { contains: search, mode: Prisma.QueryMode.insensitive } },
-        { email: { contains: search, mode: Prisma.QueryMode.insensitive } },
-        {
-          siswa: {
-            name: { contains: search, mode: Prisma.QueryMode.insensitive },
+      andConditions.push({
+        OR: [
+          {
+            username: { contains: search, mode: Prisma.QueryMode.insensitive },
           },
-        },
-        { siswa: { nisn: { contains: search } } },
-        {
-          kesiswaan: {
-            name: { contains: search, mode: Prisma.QueryMode.insensitive },
+          { email: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          {
+            siswa: {
+              name: { contains: search, mode: Prisma.QueryMode.insensitive },
+            },
           },
-        },
-      ];
+          { siswa: { nisn: { contains: search } } },
+          {
+            kesiswaan: {
+              name: { contains: search, mode: Prisma.QueryMode.insensitive },
+            },
+          },
+        ],
+      });
     }
+
+    const where: Prisma.UserWhereInput =
+      andConditions.length > 0 ? { AND: andConditions } : {};
 
     // Get total count for pagination
     const total = await prisma.user.count({ where });

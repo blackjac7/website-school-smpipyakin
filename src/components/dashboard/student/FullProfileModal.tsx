@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Save, User, Phone, School, Users } from "lucide-react";
+import { X, Save, User, Phone, School, Users, Lock } from "lucide-react";
 import { ProfileData } from "./types";
 import ProfileImageUpload from "./ProfileImageUpload";
 import toast from "react-hot-toast";
@@ -11,18 +11,32 @@ interface FullProfileModalProps {
   onClose: () => void;
   profileData: ProfileData;
   onUpdate: (updates: ProfileData) => Promise<void>;
+  onChangePassword: (data: {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) => Promise<{ success: boolean; error?: string }>;
 }
+
+const EMPTY_PASSWORD_FORM = {
+  currentPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+};
 
 export default function FullProfileModal({
   isOpen,
   onClose,
   profileData,
   onUpdate,
+  onChangePassword,
 }: FullProfileModalProps) {
   const [formData, setFormData] = useState<ProfileData>({
     ...profileData,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [passwordForm, setPasswordForm] = useState(EMPTY_PASSWORD_FORM);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   if (!isOpen) return null;
 
@@ -38,6 +52,44 @@ export default function FullProfileModal({
       ...prev,
       profileImage: imageUrl,
     }));
+  };
+
+  const handlePasswordInputChange = (field: string, value: string) => {
+    setPasswordForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!passwordForm.currentPassword || !passwordForm.newPassword) {
+      toast.error("Password saat ini dan password baru harus diisi");
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("Konfirmasi password baru tidak sesuai");
+      return;
+    }
+
+    setIsChangingPassword(true);
+
+    try {
+      const result = await onChangePassword(passwordForm);
+      if (result.success) {
+        toast.success("Password berhasil diubah!");
+        setPasswordForm(EMPTY_PASSWORD_FORM);
+      } else {
+        toast.error(result.error || "Gagal mengubah password");
+      }
+    } catch (error) {
+      console.error("Error changing password:", error);
+      toast.error("Terjadi kesalahan. Silakan coba lagi.");
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -185,15 +237,14 @@ export default function FullProfileModal({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email *
+                    Email
                   </label>
                   <input
                     type="email"
                     value={formData.email || ""}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-text"
-                    placeholder="Masukkan email"
-                    required
+                    placeholder="Masukkan email (opsional)"
                   />
                 </div>
 
@@ -239,26 +290,30 @@ export default function FullProfileModal({
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Kelas
+                    <span className="text-xs text-gray-500 ml-1">
+                      (Tidak dapat diubah)
+                    </span>
                   </label>
                   <input
                     type="text"
                     value={formData.class || ""}
-                    onChange={(e) => handleInputChange("class", e.target.value)}
-                    className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-text"
-                    placeholder="Masukkan kelas"
+                    disabled
+                    className="w-full px-3 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Tahun Angkatan
+                    <span className="text-xs text-gray-500 ml-1">
+                      (Tidak dapat diubah)
+                    </span>
                   </label>
                   <input
                     type="text"
                     value={formData.year || ""}
-                    onChange={(e) => handleInputChange("year", e.target.value)}
-                    className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-text"
-                    placeholder="Masukkan tahun angkatan"
+                    disabled
+                    className="w-full px-3 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -334,6 +389,94 @@ export default function FullProfileModal({
             </button>
           </div>
         </form>
+
+        {/* Change Password Section */}
+        <div className="px-6 pb-6">
+          <form
+            onSubmit={handleChangePassword}
+            className="pt-8 mt-8 border-t border-gray-200"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Lock className="w-5 h-5 text-red-500" />
+              <h4 className="text-lg font-semibold text-gray-900">
+                Ubah Password
+              </h4>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password Saat Ini
+                </label>
+                <input
+                  type="password"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) =>
+                    handlePasswordInputChange("currentPassword", e.target.value)
+                  }
+                  className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-text"
+                  placeholder="Masukkan password saat ini"
+                  autoComplete="current-password"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password Baru
+                </label>
+                <input
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) =>
+                    handlePasswordInputChange("newPassword", e.target.value)
+                  }
+                  className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-text"
+                  placeholder="Minimal 8 karakter"
+                  autoComplete="new-password"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Konfirmasi Password Baru
+                </label>
+                <input
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) =>
+                    handlePasswordInputChange("confirmPassword", e.target.value)
+                  }
+                  className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-text"
+                  placeholder="Ulangi password baru"
+                  autoComplete="new-password"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Password baru harus mengandung huruf besar, huruf kecil, angka,
+              dan karakter khusus.
+            </p>
+
+            <div className="flex justify-end mt-4">
+              <button
+                type="submit"
+                disabled={isChangingPassword}
+                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 font-medium"
+              >
+                {isChangingPassword ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Mengubah...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-5 h-5" />
+                    Ubah Password
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -5,18 +5,16 @@ import { Prisma } from "@prisma/client";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { hasOsisAccess, isRoleMatch, isSiswaRole } from "@/lib/roles";
 import {
-  generateQRToken,
-  generateQRPayload,
   validateQRScan,
   formatTimeWIB,
-  isCurrentlyLateTime,
-  isAfterLatenessWindow,
+  isWithinAttributeWindow,
+  isAfterAttributeWindow,
 } from "@/lib/qr-token";
 import { updateSettings } from "@/lib/siteSettings";
 import {
-  getLatenessPointConfig,
-  calculateLatenessPoints,
-} from "@/lib/latenessPoints";
+  getAttributePointConfig,
+  calculateAttributePoints,
+} from "@/lib/attributePoints";
 import { revalidatePath } from "next/cache";
 import { startOfDay, endOfDay } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
@@ -68,94 +66,48 @@ async function verifyKesiswaanAccess() {
 }
 
 // =============================================
-// QR TOKEN MANAGEMENT
+// ATTRIBUTE ITEMS (OSIS - read-only, for scanner checklist)
 // =============================================
 
-/**
- * Generate/regenerate QR token for a student
- * Called when needed (auto-generated on first scan attempt or manually)
- */
-export async function generateStudentQRToken(siswaId: string) {
-  const auth = await verifyKesiswaanAccess();
+export async function getActiveAttributeItems() {
+  const auth = await verifyOsisAccess();
   if (!auth.authorized) {
-    return { success: false, error: auth.error };
+    return { success: false, error: auth.error, data: [] };
   }
 
   try {
-    const token = generateQRToken(siswaId);
-
-    await prisma.siswa.update({
-      where: { id: siswaId },
-      data: { qrToken: token },
+    const items = await prisma.attributeItem.findMany({
+      where: { active: true },
+      orderBy: { order: "asc" },
+      select: { id: true, name: true, description: true },
     });
 
-    return { success: true, token };
+    return { success: true, data: items };
   } catch (error) {
-    console.error("Error generating QR token:", error);
-    return { success: false, error: "Gagal membuat QR token" };
-  }
-}
-
-/**
- * Get QR code data for a student (for display in student dashboard)
- */
-export async function getStudentQRCode(siswaId: string) {
-  const user = await getAuthenticatedUser();
-  if (!user) {
-    return { success: false, error: "Unauthorized" };
-  }
-
-  try {
-    const siswa = await prisma.siswa.findUnique({
-      where: { id: siswaId },
-      select: { id: true, qrToken: true, name: true, nisn: true },
-    });
-
-    if (!siswa) {
-      return { success: false, error: "Siswa tidak ditemukan" };
-    }
-
-    // Generate token if not exists
-    let token = siswa.qrToken;
-    if (!token) {
-      token = generateQRToken(siswa.id);
-      await prisma.siswa.update({
-        where: { id: siswa.id },
-        data: { qrToken: token },
-      });
-    }
-
-    const qrPayload = generateQRPayload(siswa.id, token);
-
+    console.error("Error getting attribute items:", error);
     return {
-      success: true,
-      qrData: qrPayload,
-      student: { name: siswa.name, nisn: siswa.nisn },
+      success: false,
+      error: "Gagal mengambil daftar atribut",
+      data: [],
     };
-  } catch (error) {
-    console.error("Error getting QR code:", error);
-    return { success: false, error: "Gagal mengambil QR code" };
   }
 }
 
 // =============================================
-// LATENESS RECORDING (OSIS)
+// ATTRIBUTE VIOLATION SCANNING (OSIS)
 // =============================================
 
-/**
- * Verify a scanned QR code and return student info
- */
-export async function verifyScanQR(qrData: string) {
+export async function verifyAttributeScanQR(qrData: string) {
   const auth = await verifyOsisAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
-  // Lateness is only recorded within the window: after 06:30 WIB, up to 09:00 WIB
-  if (!isCurrentlyLateTime()) {
-    const error = isAfterLatenessWindow()
-      ? `Waktu pencatatan keterlambatan sudah berakhir (sampai pukul 09:00 WIB). Sekarang pukul ${formatTimeWIB()} WIB.`
-      : `Belum waktunya pencatatan keterlambatan. Keterlambatan dicatat mulai pukul 06:31 WIB (sekarang ${formatTimeWIB()} WIB).`;
+  // Attribute scanning is only allowed within the window: after 06:30 WIB, up to 14:00 WIB
+  if (!isWithinAttributeWindow()) {
+    const error = isAfterAttributeWindow()
+      ? `Waktu pencatatan pelanggaran atribut sudah berakhir (sampai pukul 14:00 WIB). Sekarang pukul ${formatTimeWIB()} WIB.`
+      : `Belum waktunya pencatatan pelanggaran atribut. Pencatatan dimulai pukul 06:31 WIB (sekarang ${formatTimeWIB()} WIB).`;
     return { success: false, error };
   }
 
@@ -165,7 +117,6 @@ export async function verifyScanQR(qrData: string) {
       return { success: false, error: "QR Code tidak valid" };
     }
 
-    // Verify token matches database
     const siswa = await prisma.siswa.findUnique({
       where: { id: siswaId },
       include: {
@@ -177,25 +128,21 @@ export async function verifyScanQR(qrData: string) {
       return { success: false, error: "Siswa tidak ditemukan" };
     }
 
-    // Check if already recorded today
     const today = new Date();
     const startOfToday = startOfDay(toZonedTime(today, WIB_TIMEZONE));
     const endOfToday = endOfDay(toZonedTime(today, WIB_TIMEZONE));
 
-    const existingRecord = await prisma.latenessRecord.findFirst({
+    const existingRecord = await prisma.attributeViolation.findFirst({
       where: {
         siswaId: siswa.id,
-        date: {
-          gte: startOfToday,
-          lte: endOfToday,
-        },
+        date: { gte: startOfToday, lte: endOfToday },
       },
     });
 
     if (existingRecord) {
       return {
         success: false,
-        error: "Siswa sudah tercatat terlambat hari ini",
+        error: "Siswa sudah tercatat pelanggaran atribut hari ini",
         alreadyRecorded: true,
         student: {
           id: siswa.id,
@@ -205,6 +152,12 @@ export async function verifyScanQR(qrData: string) {
         },
       };
     }
+
+    const attributeItems = await prisma.attributeItem.findMany({
+      where: { active: true },
+      orderBy: { order: "asc" },
+      select: { id: true, name: true, description: true },
+    });
 
     return {
       success: true,
@@ -216,36 +169,40 @@ export async function verifyScanQR(qrData: string) {
         image: siswa.image,
       },
       currentTime: formatTimeWIB(),
+      attributeItems,
     };
   } catch (error) {
-    console.error("Error verifying QR:", error);
+    console.error("Error verifying attribute QR:", error);
     return { success: false, error: "Gagal memverifikasi QR" };
   }
 }
 
-/**
- * Record student lateness after successful QR scan
- */
-export async function recordLateness(
+export async function recordAttributeViolation(
   siswaId: string,
-  arrivalTime: string,
-  reason?: string,
+  scanTime: string,
+  attributeItemIds: string[],
+  notes?: string,
 ) {
   const auth = await verifyOsisAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
-  // Lateness is only recorded within the window: after 06:30 WIB, up to 09:00 WIB
-  if (!isCurrentlyLateTime()) {
-    const error = isAfterLatenessWindow()
-      ? `Waktu pencatatan keterlambatan sudah berakhir (sampai pukul 09:00 WIB). Sekarang pukul ${formatTimeWIB()} WIB.`
-      : `Belum waktunya pencatatan keterlambatan. Keterlambatan dicatat mulai pukul 06:31 WIB (sekarang ${formatTimeWIB()} WIB).`;
+  if (!isWithinAttributeWindow()) {
+    const error = isAfterAttributeWindow()
+      ? `Waktu pencatatan pelanggaran atribut sudah berakhir (sampai pukul 14:00 WIB). Sekarang pukul ${formatTimeWIB()} WIB.`
+      : `Belum waktunya pencatatan pelanggaran atribut. Pencatatan dimulai pukul 06:31 WIB (sekarang ${formatTimeWIB()} WIB).`;
     return { success: false, error };
   }
 
+  if (!attributeItemIds || attributeItemIds.length === 0) {
+    return {
+      success: false,
+      error: "Pilih minimal satu atribut yang dilanggar",
+    };
+  }
+
   try {
-    // Validate siswa exists
     const siswa = await prisma.siswa.findUnique({
       where: { id: siswaId },
       select: { id: true, name: true },
@@ -255,35 +212,47 @@ export async function recordLateness(
       return { success: false, error: "Siswa tidak ditemukan" };
     }
 
-    // Check for duplicate today
+    const validItems = await prisma.attributeItem.findMany({
+      where: { id: { in: attributeItemIds }, active: true },
+      select: { id: true },
+    });
+
+    if (validItems.length !== attributeItemIds.length) {
+      return {
+        success: false,
+        error: "Beberapa atribut yang dipilih tidak valid",
+      };
+    }
+
     const today = new Date();
     const startOfToday = startOfDay(toZonedTime(today, WIB_TIMEZONE));
     const endOfToday = endOfDay(toZonedTime(today, WIB_TIMEZONE));
 
-    const existingRecord = await prisma.latenessRecord.findFirst({
+    const existingRecord = await prisma.attributeViolation.findFirst({
       where: {
         siswaId,
-        date: {
-          gte: startOfToday,
-          lte: endOfToday,
-        },
+        date: { gte: startOfToday, lte: endOfToday },
       },
     });
 
     if (existingRecord) {
       return {
         success: false,
-        error: "Siswa sudah tercatat terlambat hari ini",
+        error: "Siswa sudah tercatat pelanggaran atribut hari ini",
       };
     }
 
-    // Create record
-    await prisma.latenessRecord.create({
+    await prisma.attributeViolation.create({
       data: {
         siswaId,
-        arrivalTime,
-        reason: reason || null,
+        scanTime,
+        notes: notes || null,
         recordedBy: auth.user!.userId,
+        items: {
+          create: attributeItemIds.map((attributeItemId) => ({
+            attributeItemId,
+          })),
+        },
       },
     });
 
@@ -292,23 +261,19 @@ export async function recordLateness(
 
     return {
       success: true,
-      message: `Keterlambatan ${siswa.name} berhasil dicatat`,
+      message: `Pelanggaran atribut ${siswa.name} berhasil dicatat`,
     };
   } catch (error) {
-    console.error("Error recording lateness:", error);
-    return { success: false, error: "Gagal mencatat keterlambatan" };
+    console.error("Error recording attribute violation:", error);
+    return { success: false, error: "Gagal mencatat pelanggaran atribut" };
   }
 }
 
 // =============================================
-// LATENESS REPORTS (KESISWAAN)
+// ATTRIBUTE VIOLATION REPORTS (KESISWAAN)
 // =============================================
 
-/**
- * Get lateness statistics for dashboard (Overview cards)
- * Now supports filtering by specific range if needed, or defaults to standard buckets
- */
-export async function getLatenessStats() {
+export async function getAttributeStats() {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
@@ -323,16 +288,16 @@ export async function getLatenessStats() {
     const yearRange = getDateRange({ period: "year" });
 
     const [dayCount, weekCount, monthCount, yearCount] = await Promise.all([
-      prisma.latenessRecord.count({
+      prisma.attributeViolation.count({
         where: { date: { gte: dayRange.start, lte: dayRange.end } },
       }),
-      prisma.latenessRecord.count({
+      prisma.attributeViolation.count({
         where: { date: { gte: weekRange.start, lte: weekRange.end } },
       }),
-      prisma.latenessRecord.count({
+      prisma.attributeViolation.count({
         where: { date: { gte: monthRange.start, lte: monthRange.end } },
       }),
-      prisma.latenessRecord.count({
+      prisma.attributeViolation.count({
         where: { date: { gte: yearRange.start, lte: yearRange.end } },
       }),
     ]);
@@ -347,21 +312,19 @@ export async function getLatenessStats() {
       },
     };
   } catch (error) {
-    console.error("Error getting lateness stats:", error);
+    console.error("Error getting attribute stats:", error);
     return { success: false, error: "Gagal mengambil statistik" };
   }
 }
 
 /**
- * Get lateness records with filters.
- *
  * Menerima PeriodInput utuh, bukan (period, customStart, customEnd)
  * terpisah: kalau pemanggil menghitung rentangnya sendiri lalu
  * mengirimkannya sebagai custom range, toZonedTime akan dijalankan dua
  * kali pada tanggal yang sama dan batas rentang melenceng 7 jam per
  * konversi.
  */
-export async function getLatenessRecords(params: {
+export async function getAttributeViolations(params: {
   periodInput: PeriodInput;
   classFilter?: string;
   page?: number;
@@ -379,7 +342,7 @@ export async function getLatenessRecords(params: {
     const { start, end } = getDateRange(periodInput);
     const skip = (page - 1) * limit;
 
-    const where: Prisma.LatenessRecordWhereInput = {
+    const where: Prisma.AttributeViolationWhereInput = {
       date: { gte: start, lte: end },
     };
 
@@ -395,7 +358,7 @@ export async function getLatenessRecords(params: {
     }
 
     const [records, totalCount] = await Promise.all([
-      prisma.latenessRecord.findMany({
+      prisma.attributeViolation.findMany({
         where,
         include: {
           siswa: {
@@ -404,20 +367,19 @@ export async function getLatenessRecords(params: {
           recorder: {
             select: {
               username: true,
-              siswa: {
-                select: { name: true },
-              },
-              kesiswaan: {
-                select: { name: true },
-              },
+              siswa: { select: { name: true } },
+              kesiswaan: { select: { name: true } },
             },
+          },
+          items: {
+            include: { attributeItem: { select: { name: true } } },
           },
         },
         orderBy: { date: "desc" },
         skip,
         take: limit,
       }),
-      prisma.latenessRecord.count({ where }),
+      prisma.attributeViolation.count({ where }),
     ]);
 
     return {
@@ -427,9 +389,10 @@ export async function getLatenessRecords(params: {
         siswaName: r.siswa.name,
         nisn: r.siswa.nisn,
         class: r.siswa.class,
-        arrivalTime: r.arrivalTime,
+        scanTime: r.scanTime,
         date: r.date,
-        reason: r.reason,
+        notes: r.notes,
+        attributes: r.items.map((i) => i.attributeItem.name),
         recordedBy:
           r.recorder.siswa?.name ||
           r.recorder.kesiswaan?.name ||
@@ -440,15 +403,15 @@ export async function getLatenessRecords(params: {
       page,
     };
   } catch (error) {
-    console.error("Error getting lateness records:", error);
-    return { success: false, error: "Gagal mengambil data keterlambatan" };
+    console.error("Error getting attribute violations:", error);
+    return {
+      success: false,
+      error: "Gagal mengambil data pelanggaran atribut",
+    };
   }
 }
 
-/**
- * Get lateness by class for chart
- */
-export async function getLatenessByClass(params: {
+export async function getAttributeViolationsByClass(params: {
   periodInput: PeriodInput;
 }) {
   const auth = await verifyKesiswaanAccess();
@@ -459,12 +422,11 @@ export async function getLatenessByClass(params: {
   try {
     const { start, end } = getDateRange(params.periodInput);
 
-    const records = await prisma.latenessRecord.findMany({
+    const records = await prisma.attributeViolation.findMany({
       where: { date: { gte: start, lte: end } },
       include: { siswa: { select: { class: true } } },
     });
 
-    // Group by class
     const byClass: Record<string, number> = {};
     records.forEach((r) => {
       const cls = r.siswa.class || "Tidak ada kelas";
@@ -477,15 +439,14 @@ export async function getLatenessByClass(params: {
 
     return { success: true, data: chartData };
   } catch (error) {
-    console.error("Error getting lateness by class:", error);
+    console.error("Error getting attribute violations by class:", error);
     return { success: false, error: "Gagal mengambil data per kelas" };
   }
 }
 
-/**
- * Get lateness trend for chart
- */
-export async function getLatenesTrend(params: { periodInput: PeriodInput }) {
+export async function getAttributeViolationTrend(params: {
+  periodInput: PeriodInput;
+}) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
@@ -494,13 +455,12 @@ export async function getLatenesTrend(params: { periodInput: PeriodInput }) {
   try {
     const { start, end } = getDateRange(params.periodInput);
 
-    const records = await prisma.latenessRecord.findMany({
+    const records = await prisma.attributeViolation.findMany({
       where: { date: { gte: start, lte: end } },
       select: { date: true },
       orderBy: { date: "asc" },
     });
 
-    // Group by date
     const byDate: Record<string, number> = {};
     records.forEach((r) => {
       const dateStr = r.date.toISOString().split("T")[0];
@@ -514,40 +474,67 @@ export async function getLatenesTrend(params: { periodInput: PeriodInput }) {
 
     return { success: true, data: chartData };
   } catch (error) {
-    console.error("Error getting lateness trend:", error);
+    console.error("Error getting attribute violation trend:", error);
     return { success: false, error: "Gagal mengambil trend data" };
   }
 }
 
-// =============================================
-// LATENESS POINT SYSTEM (KESISWAAN)
-// =============================================
-
-/**
- * Get current lateness point settings (threshold + points awarded).
- */
-export async function getLatenessPointSettings() {
+export async function getMostViolatedAttributes(params: {
+  periodInput: PeriodInput;
+}) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
   try {
-    const config = await getLatenessPointConfig();
+    const { start, end } = getDateRange(params.periodInput);
+
+    const items = await prisma.attributeViolationItem.findMany({
+      where: { violation: { date: { gte: start, lte: end } } },
+      include: { attributeItem: { select: { name: true } } },
+    });
+
+    const byAttribute: Record<string, number> = {};
+    items.forEach((i) => {
+      const name = i.attributeItem.name;
+      byAttribute[name] = (byAttribute[name] || 0) + 1;
+    });
+
+    const chartData = Object.entries(byAttribute)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+
+    return { success: true, data: chartData };
+  } catch (error) {
+    console.error("Error getting most violated attributes:", error);
+    return { success: false, error: "Gagal mengambil data atribut terbanyak" };
+  }
+}
+
+// =============================================
+// ATTRIBUTE POINT SYSTEM (KESISWAAN)
+// =============================================
+
+export async function getAttributePointSettings() {
+  const auth = await verifyKesiswaanAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  try {
+    const config = await getAttributePointConfig();
     return { success: true, data: config };
   } catch (error) {
-    console.error("Error getting lateness point settings:", error);
+    console.error("Error getting attribute point settings:", error);
     return {
       success: false,
-      error: "Gagal mengambil pengaturan poin keterlambatan",
+      error: "Gagal mengambil pengaturan poin atribut",
     };
   }
 }
 
-/**
- * Update lateness point settings (threshold + points awarded per threshold).
- */
-export async function updateLatenessPointSettings(
+export async function updateAttributePointSettings(
   threshold: number,
   pointsPerThreshold: number,
 ) {
@@ -559,7 +546,7 @@ export async function updateLatenessPointSettings(
   if (!Number.isFinite(threshold) || threshold < 1) {
     return {
       success: false,
-      error: "Jumlah akumulasi keterlambatan minimal 1",
+      error: "Jumlah akumulasi pelanggaran minimal 1",
     };
   }
 
@@ -569,8 +556,8 @@ export async function updateLatenessPointSettings(
 
   try {
     await updateSettings({
-      "lateness.pointThreshold": String(Math.trunc(threshold)),
-      "lateness.pointsPerThreshold": String(Math.trunc(pointsPerThreshold)),
+      "attribute.pointThreshold": String(Math.trunc(threshold)),
+      "attribute.pointsPerThreshold": String(Math.trunc(pointsPerThreshold)),
     });
 
     revalidatePath("/dashboard-kesiswaan/settings");
@@ -579,23 +566,18 @@ export async function updateLatenessPointSettings(
 
     return {
       success: true,
-      message: "Pengaturan poin keterlambatan berhasil disimpan",
+      message: "Pengaturan poin pelanggaran atribut berhasil disimpan",
     };
   } catch (error) {
-    console.error("Error updating lateness point settings:", error);
+    console.error("Error updating attribute point settings:", error);
     return {
       success: false,
-      error: "Gagal menyimpan pengaturan poin keterlambatan",
+      error: "Gagal menyimpan pengaturan poin pelanggaran atribut",
     };
   }
 }
 
-/**
- * Get per-student lateness point summary (lifetime accumulation, not
- * affected by any period filter). Only students with at least 1 point are
- * returned, sorted by points/lateness count descending.
- */
-export async function getLatenessPointsSummary(
+export async function getAttributePointsSummary(
   classFilter?: string,
   search?: string,
 ) {
@@ -605,10 +587,10 @@ export async function getLatenessPointsSummary(
   }
 
   try {
-    const { threshold, pointsPerThreshold } = await getLatenessPointConfig();
+    const { threshold, pointsPerThreshold } = await getAttributePointConfig();
 
     const where: Prisma.SiswaWhereInput = {
-      latenessRecords: { some: {} },
+      attributeViolations: { some: {} },
     };
 
     if (classFilter && classFilter !== "all") {
@@ -629,7 +611,7 @@ export async function getLatenessPointsSummary(
         name: true,
         nisn: true,
         class: true,
-        _count: { select: { latenessRecords: true } },
+        _count: { select: { attributeViolations: true } },
       },
     });
 
@@ -639,15 +621,17 @@ export async function getLatenessPointsSummary(
         name: s.name,
         nisn: s.nisn,
         class: s.class,
-        totalLate: s._count.latenessRecords,
-        points: calculateLatenessPoints(
-          s._count.latenessRecords,
+        totalViolations: s._count.attributeViolations,
+        points: calculateAttributePoints(
+          s._count.attributeViolations,
           threshold,
           pointsPerThreshold,
         ),
       }))
       .filter((s) => s.points > 0)
-      .sort((a, b) => b.points - a.points || b.totalLate - a.totalLate);
+      .sort(
+        (a, b) => b.points - a.points || b.totalViolations - a.totalViolations,
+      );
 
     return {
       success: true,
@@ -655,26 +639,24 @@ export async function getLatenessPointsSummary(
       config: { threshold, pointsPerThreshold },
     };
   } catch (error) {
-    console.error("Error getting lateness points summary:", error);
+    console.error("Error getting attribute points summary:", error);
     return {
       success: false,
-      error: "Gagal mengambil data poin keterlambatan",
+      error: "Gagal mengambil data poin pelanggaran atribut",
       data: [],
     };
   }
 }
 
 // =============================================
-// LATENESS POINTS (STUDENT SELF-VIEW)
+// ATTRIBUTE POINTS (STUDENT SELF-VIEW)
 // =============================================
 
 /**
- * Get the authenticated student's own lifetime lateness count & points.
- * Deliberately does not accept a siswaId param — always resolves the
- * student from the authenticated session so a student can never query
- * another student's data.
+ * Self-only, resolves via session — a student can never query another
+ * student's data (same IDOR-safe pattern as getMyLatenessPoints).
  */
-export async function getMyLatenessPoints() {
+export async function getMyAttributePoints() {
   const user = await getAuthenticatedUser();
   if (!user || !isSiswaRole(user.role)) {
     return { success: false, error: "Unauthorized" };
@@ -684,7 +666,7 @@ export async function getMyLatenessPoints() {
     const siswa = await prisma.siswa.findUnique({
       where: { userId: user.userId },
       select: {
-        _count: { select: { latenessRecords: true } },
+        _count: { select: { attributeViolations: true } },
       },
     });
 
@@ -692,84 +674,188 @@ export async function getMyLatenessPoints() {
       return { success: false, error: "Data siswa tidak ditemukan" };
     }
 
-    const { threshold, pointsPerThreshold } = await getLatenessPointConfig();
-    const totalLate = siswa._count.latenessRecords;
-    const points = calculateLatenessPoints(
-      totalLate,
+    const { threshold, pointsPerThreshold } = await getAttributePointConfig();
+    const totalViolations = siswa._count.attributeViolations;
+    const points = calculateAttributePoints(
+      totalViolations,
       threshold,
       pointsPerThreshold,
     );
 
     return {
       success: true,
-      data: { totalLate, points, threshold, pointsPerThreshold },
+      data: { totalViolations, points, threshold, pointsPerThreshold },
     };
   } catch (error) {
-    console.error("Error getting student lateness points:", error);
-    return { success: false, error: "Gagal mengambil data poin keterlambatan" };
+    console.error("Error getting student attribute points:", error);
+    return {
+      success: false,
+      error: "Gagal mengambil data poin pelanggaran atribut",
+    };
   }
 }
 
-/**
- * Get available classes for filtering
- */
-export async function getAvailableClasses() {
+// =============================================
+// ATTRIBUTE ITEM MANAGEMENT (KESISWAAN)
+// =============================================
+
+export async function getAttributeItemsForManagement() {
+  const auth = await verifyKesiswaanAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error, data: [] };
+  }
+
+  try {
+    const items = await prisma.attributeItem.findMany({
+      orderBy: { order: "asc" },
+      include: { _count: { select: { violationItems: true } } },
+    });
+
+    return {
+      success: true,
+      data: items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        description: i.description,
+        active: i.active,
+        order: i.order,
+        usageCount: i._count.violationItems,
+      })),
+    };
+  } catch (error) {
+    console.error("Error getting attribute items:", error);
+    return {
+      success: false,
+      error: "Gagal mengambil daftar atribut",
+      data: [],
+    };
+  }
+}
+
+export async function createAttributeItem(name: string, description?: string) {
+  const auth = await verifyKesiswaanAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  const trimmedName = name.trim();
+  if (!trimmedName) {
+    return { success: false, error: "Nama atribut tidak boleh kosong" };
+  }
+
+  try {
+    const maxOrder = await prisma.attributeItem.aggregate({
+      _max: { order: true },
+    });
+
+    await prisma.attributeItem.create({
+      data: {
+        name: trimmedName,
+        description: description || null,
+        order: (maxOrder._max.order ?? 0) + 1,
+      },
+    });
+
+    revalidatePath("/dashboard-kesiswaan/settings");
+    revalidatePath("/dashboard-osis/keterlambatan");
+
+    return { success: true, message: "Atribut berhasil ditambahkan" };
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return { success: false, error: "Atribut dengan nama ini sudah ada" };
+    }
+    console.error("Error creating attribute item:", error);
+    return { success: false, error: "Gagal menambahkan atribut" };
+  }
+}
+
+export async function updateAttributeItem(
+  id: string,
+  data: { name?: string; description?: string; active?: boolean },
+) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
   try {
-    const classes = await prisma.siswa.findMany({
-      select: { class: true },
-      distinct: ["class"],
-      orderBy: { class: "asc" },
-      where: { class: { not: null } },
+    const updateData: Prisma.AttributeItemUpdateInput = {};
+    if (data.name !== undefined) {
+      const trimmedName = data.name.trim();
+      if (!trimmedName) {
+        return { success: false, error: "Nama atribut tidak boleh kosong" };
+      }
+      updateData.name = trimmedName;
+    }
+    if (data.description !== undefined) {
+      updateData.description = data.description || null;
+    }
+    if (data.active !== undefined) {
+      updateData.active = data.active;
+    }
+
+    await prisma.attributeItem.update({
+      where: { id },
+      data: updateData,
     });
 
-    return {
-      success: true,
-      classes: classes.map((c) => c.class).filter(Boolean) as string[],
-    };
+    revalidatePath("/dashboard-kesiswaan/settings");
+    revalidatePath("/dashboard-osis/keterlambatan");
+
+    return { success: true, message: "Atribut berhasil diperbarui" };
   } catch (error) {
-    console.error("Error getting classes:", error);
-    return { success: false, error: "Gagal mengambil daftar kelas" };
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return { success: false, error: "Atribut dengan nama ini sudah ada" };
+    }
+    console.error("Error updating attribute item:", error);
+    return { success: false, error: "Gagal memperbarui atribut" };
   }
 }
 
 /**
- * Daftar tahun ajaran yang punya data, dari record terlama sampai tahun
- * ajaran berjalan. Satu query agregat ringan pada kolom terindeks.
+ * Deleting a never-used attribute removes it entirely; one already
+ * referenced by history is soft-deleted (active=false) to keep past reports intact.
  */
-export async function getAvailableAcademicYears() {
+export async function deleteAttributeItem(id: string) {
   const auth = await verifyKesiswaanAccess();
   if (!auth.authorized) {
-    return { success: false, error: auth.error, years: [] as number[] };
+    return { success: false, error: auth.error };
   }
 
   try {
-    const oldest = await prisma.latenessRecord.aggregate({
-      _min: { date: true },
+    const usageCount = await prisma.attributeViolationItem.count({
+      where: { attributeItemId: id },
     });
 
-    const current = getCurrentAcademicYear();
-    const earliest = oldest._min.date
-      ? getCurrentAcademicYear(oldest._min.date)
-      : current;
-
-    const years: number[] = [];
-    for (let y = current; y >= earliest; y--) {
-      years.push(y);
+    if (usageCount > 0) {
+      await prisma.attributeItem.update({
+        where: { id },
+        data: { active: false },
+      });
+      revalidatePath("/dashboard-kesiswaan/settings");
+      revalidatePath("/dashboard-osis/keterlambatan");
+      return {
+        success: true,
+        message:
+          "Atribut sudah pernah digunakan di riwayat, dinonaktifkan (bukan dihapus) agar laporan lama tetap utuh",
+      };
     }
 
-    return { success: true, years };
+    await prisma.attributeItem.delete({ where: { id } });
+
+    revalidatePath("/dashboard-kesiswaan/settings");
+    revalidatePath("/dashboard-osis/keterlambatan");
+
+    return { success: true, message: "Atribut berhasil dihapus" };
   } catch (error) {
-    console.error("Error getting academic years:", error);
-    return {
-      success: false,
-      error: "Gagal mengambil tahun ajaran",
-      years: [] as number[],
-    };
+    console.error("Error deleting attribute item:", error);
+    return { success: false, error: "Gagal menghapus atribut" };
   }
 }
 
@@ -777,19 +863,20 @@ export async function getAvailableAcademicYears() {
 // EXPORT (KESISWAAN)
 // =============================================
 
-export interface ReportDetailRow {
+export interface AttributeDetailRow {
   date: Date;
   siswaName: string | null;
   nisn: string;
   class: string | null;
   time: string;
-  reason: string | null;
+  attributesLabel: string;
+  notes: string | null;
   recordedBy: string;
   /** Poin seumur hidup siswa ybs — melekat pada siswa, bukan kejadian. */
   totalPoints: number;
 }
 
-export interface ReportRecapRow {
+export interface AttributeRecapRow {
   siswaId: string;
   name: string | null;
   nisn: string;
@@ -798,6 +885,8 @@ export interface ReportRecapRow {
   periodPoints: number;
   totalCount: number;
   totalPoints: number;
+  /** Atribut tersering dalam periode terpilih. */
+  topAttribute: string;
 }
 
 export interface ReportSummary {
@@ -814,14 +903,11 @@ export interface ReportSummary {
 /**
  * Data lengkap untuk export tiga sheet: Detail, Rekap Siswa, Ringkasan.
  *
- * Menggantikan getLatenessForExport() yang hanya mengembalikan baris
- * kejadian dan mengabaikan kotak pencarian — sehingga isi berkas tidak
- * cocok dengan yang terlihat di layar.
- *
- * Tiga query agregat, bukan N+1: detail, groupBy per siswa untuk hitungan
- * periode, dan satu findMany untuk identitas + hitungan seumur hidup.
+ * Menggantikan getAttributeViolationsForExport() yang hanya mengembalikan
+ * baris kejadian dan mengabaikan kotak pencarian — sehingga isi berkas
+ * tidak cocok dengan yang terlihat di layar.
  */
-export async function getLatenessReportForExport(params: {
+export async function getAttributeReportForExport(params: {
   periodInput: PeriodInput;
   classFilter?: string;
   search?: string;
@@ -835,11 +921,11 @@ export async function getLatenessReportForExport(params: {
 
   try {
     const { start, end } = getDateRange(periodInput);
-    const { threshold, pointsPerThreshold } = await getLatenessPointConfig();
+    const { threshold, pointsPerThreshold } = await getAttributePointConfig();
 
-    // Predikat sama persis dengan getLatenessRecords agar isi export
+    // Predikat sama persis dengan getAttributeViolations agar isi export
     // cocok dengan yang terlihat di layar.
-    const where: Prisma.LatenessRecordWhereInput = {
+    const where: Prisma.AttributeViolationWhereInput = {
       date: { gte: start, lte: end },
     };
 
@@ -855,7 +941,7 @@ export async function getLatenessReportForExport(params: {
     }
 
     const [records, grouped] = await Promise.all([
-      prisma.latenessRecord.findMany({
+      prisma.attributeViolation.findMany({
         where,
         include: {
           siswa: { select: { id: true, name: true, nisn: true, class: true } },
@@ -866,10 +952,15 @@ export async function getLatenessReportForExport(params: {
               kesiswaan: { select: { name: true } },
             },
           },
+          items: {
+            include: {
+              attributeItem: { select: { name: true, order: true } },
+            },
+          },
         },
         orderBy: { date: "desc" },
       }),
-      prisma.latenessRecord.groupBy({
+      prisma.attributeViolation.groupBy({
         by: ["siswaId"],
         where,
         _count: { _all: true },
@@ -888,36 +979,63 @@ export async function getLatenessReportForExport(params: {
               name: true,
               nisn: true,
               class: true,
-              _count: { select: { latenessRecords: true } },
+              _count: { select: { attributeViolations: true } },
             },
           })
         : [];
+
+    // Atribut tersering per siswa, dihitung dari records yang sudah
+    // ter-fetch untuk sheet Detail — tanpa query tambahan. Seri diputus
+    // oleh AttributeItem.order terkecil supaya stabil antar export.
+    const attrTally = new Map<string, Map<string, { count: number; order: number }>>();
+    records.forEach((r) => {
+      const tally =
+        attrTally.get(r.siswa.id) ??
+        new Map<string, { count: number; order: number }>();
+      r.items.forEach((i) => {
+        const name = i.attributeItem.name;
+        tally.set(name, {
+          count: (tally.get(name)?.count ?? 0) + 1,
+          order: i.attributeItem.order,
+        });
+      });
+      attrTally.set(r.siswa.id, tally);
+    });
+
+    const topAttributeFor = (siswaId: string): string => {
+      const tally = attrTally.get(siswaId);
+      if (!tally || tally.size === 0) return "-";
+      return [...tally.entries()].sort(
+        ([, a], [, b]) => b.count - a.count || a.order - b.order,
+      )[0][0];
+    };
 
     const periodCountById = new Map(
       grouped.map((g) => [g.siswaId, g._count._all]),
     );
 
-    const recap: ReportRecapRow[] = students
+    const recap: AttributeRecapRow[] = students
       .map((s) => {
         const periodCount = periodCountById.get(s.id) ?? 0;
-        const totalCount = s._count.latenessRecords;
+        const totalCount = s._count.attributeViolations;
         return {
           siswaId: s.id,
           name: s.name,
           nisn: s.nisn,
           class: s.class,
           periodCount,
-          periodPoints: calculateLatenessPoints(
+          periodPoints: calculateAttributePoints(
             periodCount,
             threshold,
             pointsPerThreshold,
           ),
           totalCount,
-          totalPoints: calculateLatenessPoints(
+          totalPoints: calculateAttributePoints(
             totalCount,
             threshold,
             pointsPerThreshold,
           ),
+          topAttribute: topAttributeFor(s.id),
         };
       })
       // Urutan stabil: poin, lalu jumlah, lalu nama.
@@ -932,13 +1050,14 @@ export async function getLatenessReportForExport(params: {
       recap.map((r) => [r.siswaId, r.totalPoints]),
     );
 
-    const detail: ReportDetailRow[] = records.map((r) => ({
+    const detail: AttributeDetailRow[] = records.map((r) => ({
       date: r.date,
       siswaName: r.siswa.name,
       nisn: r.siswa.nisn,
       class: r.siswa.class,
-      time: r.arrivalTime,
-      reason: r.reason,
+      time: r.scanTime,
+      attributesLabel: r.items.map((i) => i.attributeItem.name).join(", "),
+      notes: r.notes,
       recordedBy:
         r.recorder.siswa?.name ||
         r.recorder.kesiswaan?.name ||
@@ -971,7 +1090,71 @@ export async function getLatenessReportForExport(params: {
 
     return { success: true as const, detail, recap, summary };
   } catch (error) {
-    console.error("Error building lateness report:", error);
+    console.error("Error building attribute report:", error);
     return { success: false as const, error: "Gagal mengambil data export" };
+  }
+}
+
+// =============================================
+// SHARED (KESISWAAN)
+// =============================================
+
+export async function getAvailableClasses() {
+  const auth = await verifyKesiswaanAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  try {
+    const classes = await prisma.siswa.findMany({
+      select: { class: true },
+      distinct: ["class"],
+      orderBy: { class: "asc" },
+      where: { class: { not: null } },
+    });
+
+    return {
+      success: true,
+      classes: classes.map((c) => c.class).filter(Boolean) as string[],
+    };
+  } catch (error) {
+    console.error("Error getting classes:", error);
+    return { success: false, error: "Gagal mengambil daftar kelas" };
+  }
+}
+
+/**
+ * Daftar tahun ajaran yang punya data pelanggaran atribut, dari record
+ * terlama sampai tahun ajaran berjalan.
+ */
+export async function getAvailableAcademicYears() {
+  const auth = await verifyKesiswaanAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error, years: [] as number[] };
+  }
+
+  try {
+    const oldest = await prisma.attributeViolation.aggregate({
+      _min: { date: true },
+    });
+
+    const current = getCurrentAcademicYear();
+    const earliest = oldest._min.date
+      ? getCurrentAcademicYear(oldest._min.date)
+      : current;
+
+    const years: number[] = [];
+    for (let y = current; y >= earliest; y--) {
+      years.push(y);
+    }
+
+    return { success: true, years };
+  } catch (error) {
+    console.error("Error getting academic years:", error);
+    return {
+      success: false,
+      error: "Gagal mengambil tahun ajaran",
+      years: [] as number[],
+    };
   }
 }

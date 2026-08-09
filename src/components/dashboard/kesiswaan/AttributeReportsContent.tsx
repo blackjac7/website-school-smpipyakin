@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Clock,
+  Shirt,
   Search,
   Filter,
   Download,
@@ -28,15 +28,16 @@ import {
   Line,
 } from "recharts";
 import {
-  getLatenessRecords,
-  getLatenessStats,
-  getLatenesTrend,
-  getLatenessByClass,
+  getAttributeViolations,
+  getAttributeStats,
+  getAttributeViolationTrend,
+  getAttributeViolationsByClass,
+  getMostViolatedAttributes,
   getAvailableClasses,
   getAvailableAcademicYears,
-  getLatenessReportForExport,
-  getLatenessPointsSummary,
-} from "@/actions/lateness";
+  getAttributeReportForExport,
+  getAttributePointsSummary,
+} from "@/actions/attributes";
 import { getPeriodFilenameSlug } from "@/lib/reportPeriod";
 import PeriodFilter, {
   createDefaultPeriodValue,
@@ -51,28 +52,29 @@ import {
 import { formatExcelDate } from "@/utils/excelExport";
 import toast from "react-hot-toast";
 
-interface LatenessRecordDisplay {
+interface AttributeViolationDisplay {
   id: string;
   siswaName: string | null;
   nisn: string;
   class: string | null;
-  arrivalTime: string;
+  scanTime: string;
   date: Date;
-  reason: string | null;
+  notes: string | null;
+  attributes: string[];
   recordedBy: string;
 }
 
-interface LatenessPointSummary {
+interface AttributePointSummary {
   siswaId: string;
   name: string | null;
   nisn: string;
   class: string | null;
-  totalLate: number;
+  totalViolations: number;
   points: number;
 }
 
-export default function LatenessReportsContent() {
-  const [records, setRecords] = useState<LatenessRecordDisplay[]>([]);
+export default function AttributeReportsContent() {
+  const [records, setRecords] = useState<AttributeViolationDisplay[]>([]);
   const [stats, setStats] = useState({
     day: 0,
     week: 0,
@@ -80,11 +82,12 @@ export default function LatenessReportsContent() {
     year: 0,
   });
 
-  // Charts Data
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [trendData, setTrendData] = useState<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [classData, setClassData] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [attributeData, setAttributeData] = useState<any[]>([]);
 
   const [availableClasses, setAvailableClasses] = useState<string[]>([]);
   const [academicYears, setAcademicYears] = useState<number[]>([]);
@@ -101,8 +104,8 @@ export default function LatenessReportsContent() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Lateness point summary (lifetime accumulation, independent of period)
-  const [pointsSummary, setPointsSummary] = useState<LatenessPointSummary[]>(
+  // Attribute point summary (lifetime accumulation, independent of period)
+  const [pointsSummary, setPointsSummary] = useState<AttributePointSummary[]>(
     [],
   );
   const [pointsConfig, setPointsConfig] = useState({
@@ -111,7 +114,6 @@ export default function LatenessReportsContent() {
   });
   const [isLoadingPoints, setIsLoadingPoints] = useState(true);
 
-  // Fetch classes on mount
   useEffect(() => {
     async function fetchClasses() {
       const result = await getAvailableClasses();
@@ -133,10 +135,9 @@ export default function LatenessReportsContent() {
     fetchYears();
   }, []);
 
-  // Fetch global stats (Overview)
   useEffect(() => {
     async function fetchStats() {
-      const result = await getLatenessStats();
+      const result = await getAttributeStats();
       if (result.success && result.stats) {
         setStats(result.stats);
       }
@@ -144,7 +145,6 @@ export default function LatenessReportsContent() {
     fetchStats();
   }, []);
 
-  // Fetch records & charts based on filters
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
@@ -154,8 +154,7 @@ export default function LatenessReportsContent() {
       // untuk kedua kalinya dan batas rentang melenceng 7 jam per konversi.
       const periodInput = toPeriodInput(periodValue);
 
-      // 1. Fetch Records
-      const recordsResult = await getLatenessRecords({
+      const recordsResult = await getAttributeViolations({
         periodInput,
         classFilter: classFilter === "all" ? undefined : classFilter,
         page,
@@ -169,21 +168,21 @@ export default function LatenessReportsContent() {
         setTotalCount(recordsResult.totalCount || 0);
       }
 
-      // 2. Fetch Charts (only on page 1, to avoid excessive re-fetching)
       if (page === 1) {
-        const [trendRes, classRes] = await Promise.all([
-          getLatenesTrend({ periodInput }),
-          getLatenessByClass({ periodInput }),
+        const [trendRes, classRes, attrRes] = await Promise.all([
+          getAttributeViolationTrend({ periodInput }),
+          getAttributeViolationsByClass({ periodInput }),
+          getMostViolatedAttributes({ periodInput }),
         ]);
 
         if (trendRes.success) setTrendData(trendRes.data || []);
         if (classRes.success) setClassData(classRes.data || []);
+        if (attrRes.success) setAttributeData(attrRes.data || []);
       }
 
       setIsLoading(false);
     }
 
-    // Debounce search
     const timer = setTimeout(() => {
       fetchData();
     }, 500);
@@ -191,11 +190,10 @@ export default function LatenessReportsContent() {
     return () => clearTimeout(timer);
   }, [periodValue, classFilter, page, searchTerm]);
 
-  // Fetch lifetime lateness point summary (not affected by period filter)
   useEffect(() => {
     async function fetchPoints() {
       setIsLoadingPoints(true);
-      const result = await getLatenessPointsSummary(
+      const result = await getAttributePointsSummary(
         classFilter === "all" ? undefined : classFilter,
         searchTerm,
       );
@@ -219,7 +217,7 @@ export default function LatenessReportsContent() {
     try {
       const periodInput = toPeriodInput(periodValue);
 
-      const result = await getLatenessReportForExport({
+      const result = await getAttributeReportForExport({
         periodInput,
         classFilter: classFilter === "all" ? undefined : classFilter,
         search: searchTerm || undefined,
@@ -232,7 +230,7 @@ export default function LatenessReportsContent() {
 
       const { detail, recap, summary } = result;
 
-      // Periode nihil tetap menghasilkan berkas: wali kelas butuh bukti
+      // Periode nihil tetap menghasilkan berkas: kesiswaan butuh bukti
       // bahwa periode itu memang kosong.
       if (detail.length === 0) {
         toast("Tidak ada data pada periode ini. Berkas tetap dibuat.", {
@@ -240,9 +238,9 @@ export default function LatenessReportsContent() {
         });
       }
 
-      const headerTitle = "LAPORAN KETERLAMBATAN SISWA";
+      const headerTitle = "LAPORAN PELANGGARAN ATRIBUT SISWA";
       const headerSubtitle = `${summary.classLabel} — ${summary.periodLabel}`;
-      const pointRule = `Setiap ${summary.threshold}x keterlambatan = ${summary.pointsPerThreshold} poin.`;
+      const pointRule = `Setiap ${summary.threshold}x pelanggaran atribut = ${summary.pointsPerThreshold} poin.`;
 
       const sheets: SheetSpec[] = [
         {
@@ -261,15 +259,21 @@ export default function LatenessReportsContent() {
             { header: "NISN", key: "nisn", width: 15 },
             { header: "Kelas", key: "class", width: 10 },
             {
-              header: "Jam Tiba",
+              header: "Jam",
               key: "time",
               width: 12,
               transform: (val) => val || "-",
             },
             {
-              header: "Alasan",
-              key: "reason",
+              header: "Atribut Dilanggar",
+              key: "attributesLabel",
               width: 35,
+              transform: (val) => val || "-",
+            },
+            {
+              header: "Catatan",
+              key: "notes",
+              width: 30,
               transform: (val) => val || "-",
             },
             { header: "Dicatat Oleh", key: "recordedBy", width: 18 },
@@ -289,16 +293,18 @@ export default function LatenessReportsContent() {
             { header: "Nama Siswa", key: "name", width: 30 },
             { header: "NISN", key: "nisn", width: 15 },
             { header: "Kelas", key: "class", width: 10 },
-            { header: "Terlambat (Periode)", key: "periodCount", width: 18 },
+            { header: "Pelanggaran (Periode)", key: "periodCount", width: 20 },
             { header: "Poin (Periode)", key: "periodPoints", width: 15 },
-            { header: "Total Terlambat", key: "totalCount", width: 16 },
+            { header: "Total Pelanggaran", key: "totalCount", width: 18 },
             { header: "Total Poin", key: "totalPoints", width: 12 },
+            { header: "Atribut Tersering", key: "topAttribute", width: 20 },
           ],
           notes: [
             pointRule,
             "Total Poin adalah angka resmi pembinaan, sama dengan yang tampil di dashboard.",
             "Poin (Periode) hanya indikator intensitas periode ini dan TIDAK dapat",
             "dijumlahkan antar periode: sisa pembagian hilang setiap kali dipotong.",
+            "Atribut Tersering dihitung dari pelanggaran dalam periode terpilih saja.",
           ],
         },
         {
@@ -316,6 +322,7 @@ export default function LatenessReportsContent() {
             "Jumlah Siswa Terlibat": summary.totalStudents,
             "Rata-rata per Siswa": summary.averagePerStudent,
             "Kelas Terbanyak": summary.topClass,
+            "Atribut Paling Sering Dilanggar": attributeData[0]?.name || "-",
             "Aturan Poin": pointRule,
           },
           notes: [
@@ -329,7 +336,7 @@ export default function LatenessReportsContent() {
         classFilter === "all" ? "Semua-Kelas" : classFilter.replace(/\s+/g, "-");
 
       await exportMultiSheetStyledExcel({
-        filename: `Laporan_Keterlambatan_${classSlug}_${getPeriodFilenameSlug(periodInput)}`,
+        filename: `Laporan_Atribut_${classSlug}_${getPeriodFilenameSlug(periodInput)}`,
         sheets,
       });
 
@@ -358,15 +365,14 @@ export default function LatenessReportsContent() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Clock className="w-7 h-7 text-blue-600" />
-            Laporan Keterlambatan
+            <Shirt className="w-7 h-7 text-blue-600" />
+            Laporan Pelanggaran Atribut
           </h1>
           <p className="text-gray-500">
-            Monitoring & Analisis Keterlambatan Siswa
+            Monitoring & Analisis Pelanggaran Atribut Siswa
           </p>
         </div>
 
-        {/* Export Button */}
         <button
           onClick={handleExport}
           disabled={isExporting || !isPeriodValueComplete(periodValue)}
@@ -386,7 +392,7 @@ export default function LatenessReportsContent() {
         <StatsCard
           title="Hari Ini"
           value={stats.day}
-          icon={Clock}
+          icon={Shirt}
           color="from-red-500 to-red-600"
         />
         <StatsCard
@@ -411,7 +417,6 @@ export default function LatenessReportsContent() {
 
       {/* Filters Area */}
       <div className="bg-white rounded-xl shadow-sm p-4 flex flex-wrap items-center gap-4">
-        {/* Search */}
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -433,7 +438,6 @@ export default function LatenessReportsContent() {
           academicYears={academicYears}
         />
 
-        {/* Class Filter */}
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-gray-400" />
           <select
@@ -454,15 +458,15 @@ export default function LatenessReportsContent() {
         </div>
       </div>
 
-      {/* Lateness Point Summary (lifetime accumulation, independent of period filter) */}
+      {/* Attribute Point Summary (lifetime accumulation, independent of period filter) */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200">
           <h3 className="font-semibold text-gray-800 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-red-500" />
-            Poin Keterlambatan Siswa
+            Poin Pelanggaran Atribut Siswa
           </h3>
           <p className="text-xs text-gray-500 mt-1">
-            Setiap {pointsConfig.threshold}x akumulasi keterlambatan ={" "}
+            Setiap {pointsConfig.threshold}x akumulasi pelanggaran atribut ={" "}
             {pointsConfig.pointsPerThreshold} poin. Dihitung sepanjang masa,
             tidak dipengaruhi filter periode di atas.
           </p>
@@ -474,7 +478,7 @@ export default function LatenessReportsContent() {
           </div>
         ) : pointsSummary.length === 0 ? (
           <div className="text-center py-10 text-sm text-gray-500">
-            Belum ada siswa yang mencapai akumulasi poin keterlambatan.
+            Belum ada siswa yang mencapai akumulasi poin pelanggaran atribut.
           </div>
         ) : (
           <>
@@ -490,7 +494,8 @@ export default function LatenessReportsContent() {
                       {s.name || "Tanpa Nama"}
                     </p>
                     <p className="text-xs text-gray-400">
-                      {s.nisn} • {s.class || "-"} • {s.totalLate}x terlambat
+                      {s.nisn} • {s.class || "-"} • {s.totalViolations}x
+                      pelanggaran
                     </p>
                   </div>
                   <span className="shrink-0 text-sm font-bold text-red-700 bg-red-50 rounded-lg px-2.5 py-1">
@@ -512,7 +517,7 @@ export default function LatenessReportsContent() {
                       Kelas
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Total Terlambat
+                      Total Pelanggaran
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Poin
@@ -541,7 +546,7 @@ export default function LatenessReportsContent() {
                         </span>
                       </td>
                       <td className="px-6 py-3 text-sm text-gray-600">
-                        {s.totalLate}x
+                        {s.totalViolations}x
                       </td>
                       <td className="px-6 py-3">
                         <span className="text-sm font-bold text-red-700 bg-red-50 rounded-lg px-2.5 py-1">
@@ -564,7 +569,7 @@ export default function LatenessReportsContent() {
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-blue-500" />
-              Trend Keterlambatan
+              Trend Pelanggaran Atribut
             </h3>
             <div className="h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -645,6 +650,32 @@ export default function LatenessReportsContent() {
               </ResponsiveContainer>
             </div>
           </div>
+
+          {/* Most Violated Attributes Chart */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 lg:col-span-2">
+            <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <Shirt className="w-4 h-4 text-red-500" />
+              Atribut Paling Sering Dilanggar
+            </h3>
+            <div className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={attributeData}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#f0f0f0"
+                  />
+                  <XAxis dataKey="name" fontSize={12} />
+                  <YAxis allowDecimals={false} fontSize={12} />
+                  <Tooltip
+                    cursor={{ fill: "#f8fafc" }}
+                    contentStyle={{ borderRadius: "8px" }}
+                  />
+                  <Bar dataKey="value" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
       )}
 
@@ -672,7 +703,7 @@ export default function LatenessReportsContent() {
                       <p className="text-xs text-gray-400">{record.nisn}</p>
                     </div>
                     <span className="shrink-0 text-sm font-mono font-bold text-red-600 bg-red-50 rounded-lg px-2 py-0.5">
-                      {record.arrivalTime}
+                      {record.scanTime}
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -683,9 +714,21 @@ export default function LatenessReportsContent() {
                       {formatDate(record.date)}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 italic wrap-break-word">
-                    {record.reason || "-"}
-                  </p>
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {record.attributes.map((attr) => (
+                      <span
+                        key={attr}
+                        className="px-2 py-0.5 text-xs font-medium bg-red-50 text-red-600 rounded-full"
+                      >
+                        {attr}
+                      </span>
+                    ))}
+                  </div>
+                  {record.notes && (
+                    <p className="text-xs text-gray-500 italic wrap-break-word">
+                      {record.notes}
+                    </p>
+                  )}
                   <p className="text-xs text-gray-400 mt-1">
                     Dicatat oleh: {record.recordedBy}
                   </p>
@@ -708,10 +751,13 @@ export default function LatenessReportsContent() {
                       Kelas
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Jam Tiba
+                      Jam
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Alasan
+                      Atribut Dilanggar
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Catatan
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Pencatat
@@ -742,11 +788,25 @@ export default function LatenessReportsContent() {
                           {record.class || "-"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm font-mono font-bold text-red-600 bg-red-50 w-fit rounded-lg px-2">
-                        {record.arrivalTime}
+                      <td className="px-6 py-4 text-sm font-mono font-bold text-red-600">
+                        <span className="bg-red-50 w-fit rounded-lg px-2 py-0.5">
+                          {record.scanTime}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1 max-w-[220px]">
+                          {record.attributes.map((attr) => (
+                            <span
+                              key={attr}
+                              className="px-2 py-0.5 text-xs font-medium bg-red-50 text-red-600 rounded-full"
+                            >
+                              {attr}
+                            </span>
+                          ))}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 italic max-w-[200px] truncate">
-                        {record.reason || "-"}
+                        {record.notes || "-"}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-400">
                         {record.recordedBy}
@@ -831,7 +891,6 @@ function StatsCard({
           {title}
         </p>
       </div>
-      {/* Decorataive BG shape */}
       <div className="absolute -right-4 -bottom-4 bg-white/10 w-24 h-24 rounded-full blur-2xl"></div>
     </motion.div>
   );

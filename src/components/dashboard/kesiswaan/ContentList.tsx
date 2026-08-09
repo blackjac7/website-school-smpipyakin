@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Inbox,
 } from "lucide-react";
 import { ContentItem } from "./types";
 import { format } from "date-fns";
@@ -183,8 +184,16 @@ export default function ContentList({
       {/* Content List */}
       <div className="space-y-4">
         {displayItems.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-            <p className="text-gray-500">Tidak ada konten yang ditemukan</p>
+          <div className="text-center py-16 bg-white rounded-lg border border-gray-200">
+            <Inbox className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <h3 className="text-lg font-medium text-gray-900">
+              Tidak ada konten yang ditemukan
+            </h3>
+            <p className="text-gray-500 text-sm mt-1">
+              {searchTerm || categoryFilter !== "Semua Kategori"
+                ? "Coba sesuaikan pencarian atau filter kategori"
+                : "Belum ada konten dengan status ini"}
+            </p>
           </div>
         ) : (
           displayItems.map((item) => (

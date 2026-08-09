@@ -147,6 +147,24 @@ export const DEFAULT_SETTINGS = {
       "Jumlah poin pelanggaran yang didapat setiap kelipatan akumulasi keterlambatan",
     isPublic: false,
   },
+
+  // Attribute Violation Point System
+  "attribute.pointThreshold": {
+    value: "3",
+    type: "NUMBER" as const,
+    category: "attribute",
+    description:
+      "Jumlah akumulasi pelanggaran atribut siswa untuk mendapat poin pelanggaran",
+    isPublic: false,
+  },
+  "attribute.pointsPerThreshold": {
+    value: "2",
+    type: "NUMBER" as const,
+    category: "attribute",
+    description:
+      "Jumlah poin pelanggaran yang didapat setiap kelipatan akumulasi pelanggaran atribut",
+    isPublic: false,
+  },
 };
 
 export type SettingKey = keyof typeof DEFAULT_SETTINGS;

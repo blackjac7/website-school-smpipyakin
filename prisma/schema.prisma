@@ -26,13 +26,14 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  siswa            Siswa?
-  kesiswaan        Kesiswaan?
-  newsArticles     News[]           @relation("NewsAuthor")
-  schoolActivities SchoolActivity[] @relation("ActivityCreator")
-  osisActivities   OsisActivity[]   @relation("OsisActivityCreator")
-  notifications    Notification[]
-  latenessRecords  LatenessRecord[] @relation("LatenessRecorder")
+  siswa               Siswa?
+  kesiswaan           Kesiswaan?
+  newsArticles        News[]               @relation("NewsAuthor")
+  schoolActivities    SchoolActivity[]     @relation("ActivityCreator")
+  osisActivities      OsisActivity[]       @relation("OsisActivityCreator")
+  notifications       Notification[]
+  latenessRecords     LatenessRecord[]     @relation("LatenessRecorder")
+  attributeViolations AttributeViolation[] @relation("AttributeViolationRecorder")
 
   @@map("users")
 }
@@ -69,10 +70,11 @@ model Siswa {
   updatedAt DateTime @updatedAt
 
   // Relations
-  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  achievements    StudentAchievement[]
-  works           StudentWork[]
-  latenessRecords LatenessRecord[]
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievements        StudentAchievement[]
+  works               StudentWork[]
+  latenessRecords     LatenessRecord[]
+  attributeViolations AttributeViolation[]
 
   // Religious Activities
   menstruationRecords WorshipMenstruationRecord[]
@@ -491,6 +493,62 @@ model LatenessRecord {
   @@index([date])
   @@index([recordedBy])
   @@map("lateness_records")
+}
+
+// =============================================
+// ATTRIBUTE VIOLATION TRACKING SYSTEM
+// =============================================
+
+model AttributeItem {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  active      Boolean @default(true)
+  order       Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  violationItems AttributeViolationItem[]
+
+  @@map("attribute_items")
+}
+
+model AttributeViolation {
+  id         String   @id @default(uuid())
+  siswaId    String   @map("siswa_id")
+  date       DateTime @default(now())
+  scanTime   String   @map("scan_time") // Format: "HH:mm" (e.g., "07:35")
+  notes      String? // Catatan tambahan (optional)
+  recordedBy String   @map("recorded_by") // User ID who scanned
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  siswa    Siswa                    @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+  recorder User                     @relation("AttributeViolationRecorder", fields: [recordedBy], references: [id])
+  items    AttributeViolationItem[]
+
+  @@index([siswaId, date])
+  @@index([date])
+  @@index([recordedBy])
+  @@map("attribute_violations")
+}
+
+model AttributeViolationItem {
+  id              String @id @default(uuid())
+  violationId     String @map("violation_id")
+  attributeItemId String @map("attribute_item_id")
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  violation     AttributeViolation @relation(fields: [violationId], references: [id], onDelete: Cascade)
+  attributeItem AttributeItem      @relation(fields: [attributeItemId], references: [id], onDelete: Restrict)
+
+  @@unique([violationId, attributeItemId])
+  @@map("attribute_violation_items")
 }
 
 // =============================================

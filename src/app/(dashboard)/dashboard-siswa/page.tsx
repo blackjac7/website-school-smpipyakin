@@ -41,6 +41,7 @@ import {
 import {
   getStudentProfile,
   updateStudentProfile,
+  changeStudentPassword,
   ProfileData,
 } from "@/actions/student/profile";
 import {
@@ -519,6 +520,7 @@ function SiswaDashboardContent() {
         onClose={() => setShowFullProfile(false)}
         profileData={profileData}
         onUpdate={handleProfileUpdate}
+        onChangePassword={changeStudentPassword}
       />
 
       <EditWorkModal

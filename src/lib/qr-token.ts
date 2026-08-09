@@ -217,3 +217,39 @@ export function formatTimeWIB(): string {
   const minutes = wibTime.getMinutes().toString().padStart(2, "0");
   return `${hours}:${minutes}`;
 }
+
+// ==============================================
+// TIME UTILITIES FOR ATTRIBUTE VIOLATION SCANNING
+// ==============================================
+
+// Attribute violation scanning window: after 06:30 WIB (i.e. 06:31 onwards)
+// up to and including 14:00 WIB
+export const ATTRIBUTE_THRESHOLD = {
+  hour: 6,
+  minute: 30,
+};
+
+// End of the attribute scanning window — scans after this time are rejected
+// as "window closed" instead of being recorded
+export const ATTRIBUTE_THRESHOLD_END = {
+  hour: 14,
+  minute: 0,
+};
+
+/**
+ * Check if current time is within the attribute violation scanning window:
+ * after 06:30 WIB and at or before 14:00 WIB
+ */
+export function isWithinAttributeWindow(): boolean {
+  const afterStart = compareWIBTimeTo(ATTRIBUTE_THRESHOLD) > 0;
+  const beforeOrAtEnd = compareWIBTimeTo(ATTRIBUTE_THRESHOLD_END) <= 0;
+  return afterStart && beforeOrAtEnd;
+}
+
+/**
+ * Check if current time is past the end of the attribute scanning window
+ * (i.e. after 14:00 WIB)
+ */
+export function isAfterAttributeWindow(): boolean {
+  return compareWIBTimeTo(ATTRIBUTE_THRESHOLD_END) > 0;
+}

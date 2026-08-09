@@ -3,6 +3,7 @@ import { seedUsers } from "./users";
 import { seedContent } from "./content";
 import { seedAcademic } from "./academic";
 import { seedSite } from "./site";
+import { seedAttributes } from "./attributes";
 import { seedNotifications } from "./notifications";
 import { seedStudentsFromExcel } from "../importStudentsFromExcel";
 
@@ -67,6 +68,7 @@ export async function runAllSeeds(
   // 2. Site Configuration (hero, stats, settings)
   if (opts.site) {
     await seedSite(prisma);
+    await seedAttributes(prisma);
   }
 
   // 3. School Content
@@ -107,4 +109,5 @@ export { seedUsers } from "./users";
 export { seedSite } from "./site";
 export { seedContent } from "./content";
 export { seedAcademic } from "./academic";
+export { seedAttributes } from "./attributes";
 export { seedNotifications } from "./notifications";

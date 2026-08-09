@@ -26,45 +26,44 @@ export interface ExcelColumn {
   transform?: (value: any, row: any) => string | number;
 }
 
+export interface SheetSpec {
+  sheetName: string;
+  title?: string;
+  subtitle?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any[];
+  columns: ExcelColumn[];
+  includeHeader?: boolean;
+  /** false untuk sheet ringkasan yang tidak punya tabel. Default true. */
+  includeColumnHeaders?: boolean;
+  includeSummary?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  summaryData?: Record<string, any>;
+  /** Baris catatan kaki di bawah tabel, satu baris per string. */
+  notes?: string[];
+}
+
 /**
- * Professional Excel Export Utility
- * Creates well-formatted Excel files with headers, styling, and auto-width columns
+ * Bangun isi sheet sebagai array-of-arrays. Dipisah dari pembuatan
+ * worksheet supaya bisa diverifikasi tanpa menyentuh berkas.
  */
-export function exportToExcel(config: ExcelExportConfig): void {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function buildSheetRows(spec: SheetSpec): any[][] {
   const {
-    filename,
-    sheetName,
     title,
     subtitle,
     data,
     columns,
     includeHeader = true,
+    includeColumnHeaders = true,
     includeSummary = false,
     summaryData,
-  } = config;
+    notes,
+  } = spec;
 
-  // Transform data according to column configuration
-  const transformedData = data.map((row, index) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transformedRow: Record<string, any> = {
-      No: index + 1,
-    };
-
-    columns.forEach((col) => {
-      const value = getNestedValue(row, col.key);
-      transformedRow[col.header] = col.transform
-        ? col.transform(value, row)
-        : (value ?? "-");
-    });
-
-    return transformedRow;
-  });
-
-  // Build worksheet data array
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wsData: any[][] = [];
 
-  // Add title row if provided
   if (includeHeader && title) {
     wsData.push([title]);
     if (subtitle) {
@@ -73,44 +72,63 @@ export function exportToExcel(config: ExcelExportConfig): void {
     wsData.push([
       `Tanggal Export: ${format(new Date(), "dd MMMM yyyy, HH:mm", { locale: id })}`,
     ]);
-    wsData.push([]); // Empty row for spacing
+    wsData.push([]);
   }
 
-  // Add column headers
-  const headers = ["No", ...columns.map((col) => col.header)];
-  wsData.push(headers);
+  if (includeColumnHeaders) {
+    wsData.push(["No", ...columns.map((col) => col.header)]);
+  }
 
-  // Add data rows
-  transformedData.forEach((row) => {
-    wsData.push(headers.map((header) => row[header] ?? "-"));
+  data.forEach((row, index) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cells: any[] = [index + 1];
+    columns.forEach((col) => {
+      const value = getNestedValue(row, col.key);
+      const cell = col.transform ? col.transform(value, row) : value;
+      // "-" diterapkan setelah transform, sama seperti implementasi lama:
+      // transform yang mengembalikan null/undefined tetap jadi "-".
+      cells.push(cell ?? "-");
+    });
+    wsData.push(cells);
   });
 
-  // Add summary section if provided
   if (includeSummary && summaryData) {
-    wsData.push([]); // Empty row
+    wsData.push([]);
     wsData.push(["RINGKASAN"]);
     Object.entries(summaryData).forEach(([key, value]) => {
       wsData.push([key, value]);
     });
   }
 
-  // Create worksheet from array
-  const worksheet = XLSX.utils.aoa_to_sheet(wsData);
+  if (notes && notes.length > 0) {
+    wsData.push([]);
+    notes.forEach((note) => wsData.push([note]));
+  }
 
-  // Set column widths
-  const columnWidths = [
-    { wch: 5 }, // No column
-    ...columns.map((col) => ({ wch: col.width || 20 })),
+  return wsData;
+}
+
+function buildWorksheet(spec: SheetSpec): XLSX.WorkSheet {
+  const worksheet = XLSX.utils.aoa_to_sheet(buildSheetRows(spec));
+
+  worksheet["!cols"] = [
+    { wch: 5 },
+    ...spec.columns.map((col) => ({ wch: col.width || 20 })),
   ];
-  worksheet["!cols"] = columnWidths;
 
-  // Merge title cells if title exists
-  if (includeHeader && title) {
-    const mergeEnd = columns.length; // Merge across all columns
-    worksheet["!merges"] = [
-      { s: { r: 0, c: 0 }, e: { r: 0, c: mergeEnd } }, // Title
-    ];
-    if (subtitle) {
+  if ((spec.includeHeader ?? true) && spec.title) {
+    const mergeEnd = spec.columns.length;
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: mergeEnd } }];
+    if (spec.subtitle) {
+      worksheet["!merges"].push({
+        s: { r: 1, c: 0 },
+        e: { r: 1, c: mergeEnd },
+      });
+      worksheet["!merges"].push({
+        s: { r: 2, c: 0 },
+        e: { r: 2, c: mergeEnd },
+      });
+    } else {
       worksheet["!merges"].push({
         s: { r: 1, c: 0 },
         e: { r: 1, c: mergeEnd },
@@ -118,16 +136,94 @@ export function exportToExcel(config: ExcelExportConfig): void {
     }
   }
 
-  // Create workbook
+  applyPrintSettings(worksheet, spec);
+
+  return worksheet;
+}
+
+function applyPrintSettings(worksheet: XLSX.WorkSheet, spec: SheetSpec): void {
+  const headerRowCount = (spec.includeHeader ?? true) ? (spec.subtitle ? 4 : 3) : 0;
+  const dataStartRow = headerRowCount + (spec.includeColumnHeaders !== false ? 1 : 0);
+
+  worksheet["!autofilter"] = spec.includeColumnHeaders !== false && spec.data.length > 0
+    ? { ref: XLSX.utils.encode_range({
+        s: { r: headerRowCount, c: 0 },
+        e: { r: headerRowCount, c: spec.columns.length }
+      })}
+    : undefined;
+
+  if (headerRowCount > 0 && spec.includeColumnHeaders !== false) {
+    worksheet["!freeze"] = {
+      xSplit: 1,
+      ySplit: dataStartRow,
+      activePane: "bottomRight"
+    };
+  }
+
+  worksheet["!margins"] = {
+    left: 0.5,
+    right: 0.5,
+    top: 0.75,
+    bottom: 0.75,
+    header: 0.3,
+    footer: 0.3
+  };
+
+  worksheet["!pageSetup"] = {
+    paperSize: 9,
+    orientation: "landscape",
+    scale: 100,
+    fitToWidth: 1,
+    fitToHeight: 0,
+    firstPageNumber: 1
+  };
+
+  worksheet["!printOptions"] = {
+    headings: false,
+    gridLines: false,
+    gridLinesSet: true,
+    horizontalCentered: true,
+    verticalCentered: false
+  };
+}
+
+/**
+ * Professional Excel Export Utility
+ * Creates well-formatted Excel files with headers, styling, and auto-width columns
+ */
+export function exportToExcel(config: ExcelExportConfig): void {
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  XLSX.utils.book_append_sheet(
+    workbook,
+    buildWorksheet(config),
+    config.sheetName,
+  );
 
-  // Generate filename with date
   const dateStr = format(new Date(), "yyyyMMdd_HHmm");
-  const fullFilename = `${filename}_${dateStr}.xlsx`;
+  XLSX.writeFile(workbook, `${config.filename}_${dateStr}.xlsx`);
+}
 
-  // Download file
-  XLSX.writeFile(workbook, fullFilename);
+/**
+ * Export beberapa sheet dalam satu workbook. Dipakai laporan keterlambatan
+ * dan atribut yang butuh Detail + Rekap Siswa + Ringkasan sekaligus.
+ */
+export function exportMultiSheetExcel(config: {
+  filename: string;
+  sheets: SheetSpec[];
+}): void {
+  const workbook = XLSX.utils.book_new();
+
+  config.sheets.forEach((sheet) => {
+    // Nama sheet Excel dibatasi 31 karakter.
+    XLSX.utils.book_append_sheet(
+      workbook,
+      buildWorksheet(sheet),
+      sheet.sheetName.slice(0, 31),
+    );
+  });
+
+  const dateStr = format(new Date(), "yyyyMMdd_HHmm");
+  XLSX.writeFile(workbook, `${config.filename}_${dateStr}.xlsx`);
 }
 
 /**
@@ -610,11 +706,9 @@ export interface KesiswaanReportData {
 export function exportKesiswaanReportToExcel(
   report: KesiswaanReportData
 ): void {
-  // Build combined data for report
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wsData: any[][] = [];
 
-  // Title
   wsData.push(["LAPORAN VALIDASI KONTEN KESISWAAN"]);
   wsData.push(["SMP IP YAKIN"]);
   wsData.push([
@@ -622,7 +716,6 @@ export function exportKesiswaanReportToExcel(
   ]);
   wsData.push([]);
 
-  // Summary Section
   wsData.push(["RINGKASAN STATUS"]);
   wsData.push(["Status", "Jumlah", "Persentase"]);
   const total = report.summary.total || 1;
@@ -644,7 +737,6 @@ export function exportKesiswaanReportToExcel(
   wsData.push(["TOTAL", report.summary.total, "100%"]);
   wsData.push([]);
 
-  // Monthly Section
   wsData.push(["VALIDASI BULANAN"]);
   wsData.push(["Bulan", "Disetujui", "Pending", "Ditolak", "Total"]);
   report.monthly.forEach((m) => {
@@ -658,30 +750,62 @@ export function exportKesiswaanReportToExcel(
   });
   wsData.push([]);
 
-  // Category Section
   wsData.push(["DISTRIBUSI KATEGORI"]);
   wsData.push(["Kategori", "Jumlah", "Persentase"]);
   report.byCategory.forEach((c) => {
     wsData.push([c.category, c.count, `${c.percentage.toFixed(1)}%`]);
   });
 
-  // Create worksheet
   const worksheet = XLSX.utils.aoa_to_sheet(wsData);
 
-  // Set column widths
   worksheet["!cols"] = [
-    { wch: 25 },
+    { wch: 28 },
     { wch: 15 },
     { wch: 15 },
     { wch: 15 },
     { wch: 15 },
   ];
 
-  // Create workbook
+  worksheet["!merges"] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: 4 } },
+    { s: { r: 4, c: 0 }, e: { r: 4, c: 2 } },
+    { s: { r: 11, c: 0 }, e: { r: 11, c: 4 } },
+    { s: { r: 11 + report.monthly.length + 2, c: 0 }, e: { r: 11 + report.monthly.length + 2, c: 2 } },
+  ];
+
+  worksheet["!margins"] = {
+    left: 0.5,
+    right: 0.5,
+    top: 0.75,
+    bottom: 0.75,
+    header: 0.3,
+    footer: 0.3
+  };
+
+  worksheet["!pageSetup"] = {
+    paperSize: 9,
+    orientation: "landscape",
+    scale: 100,
+    fitToWidth: 1,
+    fitToHeight: 0,
+    firstPageNumber: 1
+  };
+
+  worksheet["!printOptions"] = {
+    headings: false,
+    gridLines: true,
+    gridLinesSet: true,
+    horizontalCentered: true,
+    verticalCentered: false
+  };
+
+  worksheet["!autofilter"] = { ref: "A6:C6" };
+
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Kesiswaan");
 
-  // Download
   const dateStr = format(new Date(), "yyyyMMdd_HHmm");
   XLSX.writeFile(workbook, `Laporan_Kesiswaan_${dateStr}.xlsx`);
 }
@@ -713,7 +837,6 @@ export function exportPPDBStatsToExcel(stats: PPDBStatsData): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wsData: any[][] = [];
 
-  // Title
   wsData.push(["LAPORAN STATISTIK PPDB"]);
   wsData.push(["SMP IP YAKIN - Tahun Ajaran 2025/2026"]);
   wsData.push([
@@ -721,7 +844,6 @@ export function exportPPDBStatsToExcel(stats: PPDBStatsData): void {
   ]);
   wsData.push([]);
 
-  // Overview Section
   wsData.push(["RINGKASAN PENDAFTARAN"]);
   wsData.push(["Metrik", "Jumlah", "Persentase"]);
   const total = stats.overview.total || 1;
@@ -743,7 +865,7 @@ export function exportPPDBStatsToExcel(stats: PPDBStatsData): void {
   ]);
   wsData.push([]);
 
-  // Monthly Section
+  const monthlyStartRow = wsData.length;
   wsData.push(["STATISTIK BULANAN"]);
   wsData.push(["Bulan", "Total", "Diterima", "Pending", "Ditolak"]);
   stats.monthlyStats.forEach((m) => {
@@ -751,9 +873,9 @@ export function exportPPDBStatsToExcel(stats: PPDBStatsData): void {
   });
   wsData.push([]);
 
-  // Gender Section
+  const genderStartRow = wsData.length;
   wsData.push(["DISTRIBUSI JENIS KELAMIN"]);
-  wsData.push(["Jenis Kelamin", "Jumlah"]);
+  wsData.push(["Jenis Kelamin", "Jumlah", "", "", ""]);
   stats.genderStats.forEach((g) => {
     const label =
       g.gender === "MALE"
@@ -761,24 +883,58 @@ export function exportPPDBStatsToExcel(stats: PPDBStatsData): void {
         : g.gender === "FEMALE"
           ? "Perempuan"
           : "Tidak Diketahui";
-    wsData.push([label, g._count]);
+    wsData.push([label, g._count, "", "", ""]);
   });
 
-  // Create worksheet
   const worksheet = XLSX.utils.aoa_to_sheet(wsData);
   worksheet["!cols"] = [
-    { wch: 25 },
+    { wch: 28 },
     { wch: 15 },
     { wch: 15 },
     { wch: 15 },
     { wch: 15 },
   ];
 
-  // Create workbook
+  worksheet["!merges"] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: 4 } },
+    { s: { r: 4, c: 0 }, e: { r: 4, c: 2 } },
+    { s: { r: monthlyStartRow, c: 0 }, e: { r: monthlyStartRow, c: 4 } },
+    { s: { r: genderStartRow, c: 0 }, e: { r: genderStartRow, c: 1 } },
+  ];
+
+  worksheet["!autofilter"] = { ref: "A6:C6" };
+
+  worksheet["!margins"] = {
+    left: 0.5,
+    right: 0.5,
+    top: 0.75,
+    bottom: 0.75,
+    header: 0.3,
+    footer: 0.3,
+  };
+
+  worksheet["!pageSetup"] = {
+    paperSize: 9,
+    orientation: "portrait",
+    scale: 100,
+    fitToWidth: 1,
+    fitToHeight: 0,
+    firstPageNumber: 1,
+  };
+
+  worksheet["!printOptions"] = {
+    headings: false,
+    gridLines: true,
+    gridLinesSet: true,
+    horizontalCentered: true,
+    verticalCentered: false,
+  };
+
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Statistik PPDB");
 
-  // Download
   const dateStr = format(new Date(), "yyyyMMdd_HHmm");
   XLSX.writeFile(workbook, `Statistik_PPDB_${dateStr}.xlsx`);
 }

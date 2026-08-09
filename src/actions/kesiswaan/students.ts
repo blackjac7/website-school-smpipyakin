@@ -11,6 +11,10 @@ import {
   getLatenessPointConfig,
   calculateLatenessPoints,
 } from "@/lib/latenessPoints";
+import {
+  getAttributePointConfig,
+  calculateAttributePoints,
+} from "@/lib/attributePoints";
 
 // Validation schemas
 const GetStudentsSchema = z.object({
@@ -41,6 +45,8 @@ export type StudentData = {
   workCount: number;
   latenessCount: number;
   latenessPoints: number;
+  attributeViolationCount: number;
+  attributePoints: number;
 };
 
 export type StudentsResult = {
@@ -129,25 +135,28 @@ export async function getStudentsForKesiswaan(
     }
 
     // Get total count and students in parallel
-    const [total, students, latenessPointConfig] = await Promise.all([
-      prisma.siswa.count({ where }),
-      prisma.siswa.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: [{ class: "asc" }, { name: "asc" }],
-        include: {
-          _count: {
-            select: {
-              achievements: true,
-              works: true,
-              latenessRecords: true,
+    const [total, students, latenessPointConfig, attributePointConfig] =
+      await Promise.all([
+        prisma.siswa.count({ where }),
+        prisma.siswa.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: [{ class: "asc" }, { name: "asc" }],
+          include: {
+            _count: {
+              select: {
+                achievements: true,
+                works: true,
+                latenessRecords: true,
+                attributeViolations: true,
+              },
             },
           },
-        },
-      }),
-      getLatenessPointConfig(),
-    ]);
+        }),
+        getLatenessPointConfig(),
+        getAttributePointConfig(),
+      ]);
 
     const formattedStudents: StudentData[] = students.map((student) => ({
       id: student.id,
@@ -173,6 +182,12 @@ export async function getStudentsForKesiswaan(
         student._count.latenessRecords,
         latenessPointConfig.threshold,
         latenessPointConfig.pointsPerThreshold,
+      ),
+      attributeViolationCount: student._count.attributeViolations,
+      attributePoints: calculateAttributePoints(
+        student._count.attributeViolations,
+        attributePointConfig.threshold,
+        attributePointConfig.pointsPerThreshold,
       ),
     }));
 
@@ -245,22 +260,25 @@ export async function getAllStudentsForExport(params?: {
       where.AND = conditions;
     }
 
-    const [students, latenessPointConfig] = await Promise.all([
-      prisma.siswa.findMany({
-        where,
-        orderBy: [{ class: "asc" }, { name: "asc" }],
-        include: {
-          _count: {
-            select: {
-              achievements: true,
-              works: true,
-              latenessRecords: true,
+    const [students, latenessPointConfig, attributePointConfig] =
+      await Promise.all([
+        prisma.siswa.findMany({
+          where,
+          orderBy: [{ class: "asc" }, { name: "asc" }],
+          include: {
+            _count: {
+              select: {
+                achievements: true,
+                works: true,
+                latenessRecords: true,
+                attributeViolations: true,
+              },
             },
           },
-        },
-      }),
-      getLatenessPointConfig(),
-    ]);
+        }),
+        getLatenessPointConfig(),
+        getAttributePointConfig(),
+      ]);
 
     const formattedStudents: StudentData[] = students.map((student) => ({
       id: student.id,
@@ -286,6 +304,12 @@ export async function getAllStudentsForExport(params?: {
         student._count.latenessRecords,
         latenessPointConfig.threshold,
         latenessPointConfig.pointsPerThreshold,
+      ),
+      attributeViolationCount: student._count.attributeViolations,
+      attributePoints: calculateAttributePoints(
+        student._count.attributeViolations,
+        attributePointConfig.threshold,
+        attributePointConfig.pointsPerThreshold,
       ),
     }));
 
