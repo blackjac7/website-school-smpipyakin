@@ -18,6 +18,7 @@ import {
   EditActivityModal,
   MenuItem,
   OsisActivity,
+  MissionControl,
 } from "@/components/dashboard/osis";
 import {
   getOsisNotifications,
@@ -220,6 +221,11 @@ function OSISDashboard() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
+      <MissionControl
+        activities={activities}
+        onNavigate={setActiveMenu}
+        onAddActivity={handleAddActivity}
+      />
       <StatsCards />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <ActivitiesList
@@ -232,6 +238,7 @@ function OSISDashboard() {
         <Calendar
           currentMonth={currentMonth}
           setCurrentMonth={setCurrentMonth}
+          activities={activities}
         />
       </div>
     </motion.div>
@@ -298,6 +305,7 @@ function OSISDashboard() {
               <Calendar
                 currentMonth={currentMonth}
                 setCurrentMonth={setCurrentMonth}
+                activities={activities}
               />
             </motion.div>
           )}

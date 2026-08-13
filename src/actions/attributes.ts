@@ -7,8 +7,6 @@ import { hasOsisAccess, isRoleMatch, isSiswaRole } from "@/lib/roles";
 import {
   validateQRScan,
   formatTimeWIB,
-  isWithinAttributeWindow,
-  isAfterAttributeWindow,
 } from "@/lib/qr-token";
 import { updateSettings } from "@/lib/siteSettings";
 import {
@@ -25,6 +23,8 @@ import {
   WIB_TIMEZONE,
   type PeriodInput,
 } from "@/lib/reportPeriod";
+import { getScanWindowError, getScanWindowStatus } from "@/lib/scan-window";
+import { verifyScanOverrideToken } from "@/lib/scan-override";
 
 // Periode di-re-export karena komponen laporan meng-import dari sini,
 // bukan langsung dari @/lib/reportPeriod.
@@ -65,6 +65,25 @@ async function verifyKesiswaanAccess() {
   return { authorized: true, user };
 }
 
+async function verifyAttributeWindow(
+  userId: string,
+  overrideToken?: string,
+) {
+  const status = getScanWindowStatus("attribute");
+  if (status.isOpen) return { allowed: true, status };
+
+  const overrideValid = await verifyScanOverrideToken(overrideToken, {
+    osisUserId: userId,
+    mode: "attribute",
+  });
+
+  return {
+    allowed: overrideValid,
+    status,
+    error: overrideValid ? undefined : getScanWindowError(status),
+  };
+}
+
 // =============================================
 // ATTRIBUTE ITEMS (OSIS - read-only, for scanner checklist)
 // =============================================
@@ -97,18 +116,21 @@ export async function getActiveAttributeItems() {
 // ATTRIBUTE VIOLATION SCANNING (OSIS)
 // =============================================
 
-export async function verifyAttributeScanQR(qrData: string) {
+export async function verifyAttributeScanQR(
+  qrData: string,
+  overrideToken?: string,
+) {
   const auth = await verifyOsisAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
-  // Attribute scanning is only allowed within the window: after 06:30 WIB, up to 14:00 WIB
-  if (!isWithinAttributeWindow()) {
-    const error = isAfterAttributeWindow()
-      ? `Waktu pencatatan pelanggaran atribut sudah berakhir (sampai pukul 14:00 WIB). Sekarang pukul ${formatTimeWIB()} WIB.`
-      : `Belum waktunya pencatatan pelanggaran atribut. Pencatatan dimulai pukul 06:31 WIB (sekarang ${formatTimeWIB()} WIB).`;
-    return { success: false, error };
+  const windowAccess = await verifyAttributeWindow(
+    auth.user!.userId,
+    overrideToken,
+  );
+  if (!windowAccess.allowed) {
+    return { success: false, error: windowAccess.error };
   }
 
   try {
@@ -182,17 +204,19 @@ export async function recordAttributeViolation(
   scanTime: string,
   attributeItemIds: string[],
   notes?: string,
+  overrideToken?: string,
 ) {
   const auth = await verifyOsisAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
-  if (!isWithinAttributeWindow()) {
-    const error = isAfterAttributeWindow()
-      ? `Waktu pencatatan pelanggaran atribut sudah berakhir (sampai pukul 14:00 WIB). Sekarang pukul ${formatTimeWIB()} WIB.`
-      : `Belum waktunya pencatatan pelanggaran atribut. Pencatatan dimulai pukul 06:31 WIB (sekarang ${formatTimeWIB()} WIB).`;
-    return { success: false, error };
+  const windowAccess = await verifyAttributeWindow(
+    auth.user!.userId,
+    overrideToken,
+  );
+  if (!windowAccess.allowed) {
+    return { success: false, error: windowAccess.error };
   }
 
   if (!attributeItemIds || attributeItemIds.length === 0) {

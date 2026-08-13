@@ -9,8 +9,6 @@ import {
   generateQRPayload,
   validateQRScan,
   formatTimeWIB,
-  isCurrentlyLateTime,
-  isAfterLatenessWindow,
 } from "@/lib/qr-token";
 import { updateSettings } from "@/lib/siteSettings";
 import {
@@ -27,6 +25,8 @@ import {
   WIB_TIMEZONE,
   type PeriodInput,
 } from "@/lib/reportPeriod";
+import { getScanWindowError, getScanWindowStatus } from "@/lib/scan-window";
+import { verifyScanOverrideToken } from "@/lib/scan-override";
 
 // Periode di-re-export karena komponen laporan meng-import dari sini,
 // bukan langsung dari @/lib/reportPeriod.
@@ -65,6 +65,25 @@ async function verifyKesiswaanAccess() {
   }
 
   return { authorized: true, user };
+}
+
+async function verifyLatenessWindow(
+  userId: string,
+  overrideToken?: string,
+) {
+  const status = getScanWindowStatus("lateness");
+  if (status.isOpen) return { allowed: true, status };
+
+  const overrideValid = await verifyScanOverrideToken(overrideToken, {
+    osisUserId: userId,
+    mode: "lateness",
+  });
+
+  return {
+    allowed: overrideValid,
+    status,
+    error: overrideValid ? undefined : getScanWindowError(status),
+  };
 }
 
 // =============================================
@@ -145,18 +164,18 @@ export async function getStudentQRCode(siswaId: string) {
 /**
  * Verify a scanned QR code and return student info
  */
-export async function verifyScanQR(qrData: string) {
+export async function verifyScanQR(qrData: string, overrideToken?: string) {
   const auth = await verifyOsisAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
-  // Lateness is only recorded within the window: after 06:30 WIB, up to 09:00 WIB
-  if (!isCurrentlyLateTime()) {
-    const error = isAfterLatenessWindow()
-      ? `Waktu pencatatan keterlambatan sudah berakhir (sampai pukul 09:00 WIB). Sekarang pukul ${formatTimeWIB()} WIB.`
-      : `Belum waktunya pencatatan keterlambatan. Keterlambatan dicatat mulai pukul 06:31 WIB (sekarang ${formatTimeWIB()} WIB).`;
-    return { success: false, error };
+  const windowAccess = await verifyLatenessWindow(
+    auth.user!.userId,
+    overrideToken,
+  );
+  if (!windowAccess.allowed) {
+    return { success: false, error: windowAccess.error };
   }
 
   try {
@@ -230,18 +249,19 @@ export async function recordLateness(
   siswaId: string,
   arrivalTime: string,
   reason?: string,
+  overrideToken?: string,
 ) {
   const auth = await verifyOsisAccess();
   if (!auth.authorized) {
     return { success: false, error: auth.error };
   }
 
-  // Lateness is only recorded within the window: after 06:30 WIB, up to 09:00 WIB
-  if (!isCurrentlyLateTime()) {
-    const error = isAfterLatenessWindow()
-      ? `Waktu pencatatan keterlambatan sudah berakhir (sampai pukul 09:00 WIB). Sekarang pukul ${formatTimeWIB()} WIB.`
-      : `Belum waktunya pencatatan keterlambatan. Keterlambatan dicatat mulai pukul 06:31 WIB (sekarang ${formatTimeWIB()} WIB).`;
-    return { success: false, error };
+  const windowAccess = await verifyLatenessWindow(
+    auth.user!.userId,
+    overrideToken,
+  );
+  if (!windowAccess.allowed) {
+    return { success: false, error: windowAccess.error };
   }
 
   try {

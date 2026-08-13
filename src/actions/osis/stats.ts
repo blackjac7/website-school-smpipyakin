@@ -1,10 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { hasOsisAccess } from "@/lib/roles";
 
 export async function getOsisStats() {
-  // We don't necessarily need strict user auth for reading stats if the page is protected,
-  // but good practice to keep consistent.
+  const user = await getAuthenticatedUser();
+  if (!user || !(await hasOsisAccess(user.userId, user.role))) {
+    return { success: false, error: "Akses OSIS diperlukan" };
+  }
 
   // Calculate:
   // 1. Total Budget Used (Sum of approved activities)

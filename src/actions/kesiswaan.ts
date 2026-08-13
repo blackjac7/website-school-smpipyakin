@@ -7,6 +7,7 @@ import { z } from "zod";
 import { NotificationService } from "@/lib/notificationService";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { isRoleMatch } from "@/lib/roles";
+import { getDateRange } from "@/lib/reportPeriod";
 
 // Helper to verify kesiswaan role
 async function verifyKesiswaanRole() {
@@ -348,6 +349,147 @@ export interface DashboardStats {
     rejected: number;
     total: number;
   };
+}
+
+export interface KesiswaanOperationalOverview {
+  totalStudents: number;
+  totalClasses: number;
+  latenessToday: number;
+  latenessThisWeek: number;
+  attributeToday: number;
+  attributeThisWeek: number;
+  pendingContent: number;
+  recentIncidents: Array<{
+    id: string;
+    type: "lateness" | "attribute";
+    studentName: string;
+    className: string | null;
+    time: string;
+    createdAt: Date;
+  }>;
+}
+
+export async function getKesiswaanOperationalOverview(): Promise<KesiswaanOperationalOverview> {
+  const auth = await verifyKesiswaanRole();
+  if (!auth.authorized) {
+    return {
+      totalStudents: 0,
+      totalClasses: 0,
+      latenessToday: 0,
+      latenessThisWeek: 0,
+      attributeToday: 0,
+      attributeThisWeek: 0,
+      pendingContent: 0,
+      recentIncidents: [],
+    };
+  }
+
+  try {
+    const today = getDateRange({ period: "day" });
+    const week = getDateRange({ period: "week" });
+
+    const [
+      totalStudents,
+      classRows,
+      latenessToday,
+      latenessThisWeek,
+      attributeToday,
+      attributeThisWeek,
+      achievementPending,
+      workPending,
+      newsPending,
+      recentLateness,
+      recentAttributes,
+    ] = await Promise.all([
+      prisma.siswa.count(),
+      prisma.siswa.findMany({
+        where: { class: { not: null } },
+        select: { class: true },
+        distinct: ["class"],
+      }),
+      prisma.latenessRecord.count({
+        where: { date: { gte: today.start, lte: today.end } },
+      }),
+      prisma.latenessRecord.count({
+        where: { date: { gte: week.start, lte: week.end } },
+      }),
+      prisma.attributeViolation.count({
+        where: { date: { gte: today.start, lte: today.end } },
+      }),
+      prisma.attributeViolation.count({
+        where: { date: { gte: week.start, lte: week.end } },
+      }),
+      prisma.studentAchievement.count({
+        where: { statusPersetujuan: "PENDING" },
+      }),
+      prisma.studentWork.count({ where: { statusPersetujuan: "PENDING" } }),
+      prisma.news.count({ where: { statusPersetujuan: "PENDING" } }),
+      prisma.latenessRecord.findMany({
+        take: 4,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          arrivalTime: true,
+          createdAt: true,
+          siswa: { select: { name: true, class: true } },
+        },
+      }),
+      prisma.attributeViolation.findMany({
+        take: 4,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          scanTime: true,
+          createdAt: true,
+          siswa: { select: { name: true, class: true } },
+        },
+      }),
+    ]);
+
+    const recentIncidents = [
+      ...recentLateness.map((item) => ({
+        id: item.id,
+        type: "lateness" as const,
+        studentName: item.siswa.name || "Siswa",
+        className: item.siswa.class,
+        time: item.arrivalTime,
+        createdAt: item.createdAt,
+      })),
+      ...recentAttributes.map((item) => ({
+        id: item.id,
+        type: "attribute" as const,
+        studentName: item.siswa.name || "Siswa",
+        className: item.siswa.class,
+        time: item.scanTime,
+        createdAt: item.createdAt,
+      })),
+    ]
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, 6);
+
+    return {
+      totalStudents,
+      totalClasses: classRows.length,
+      latenessToday,
+      latenessThisWeek,
+      attributeToday,
+      attributeThisWeek,
+      pendingContent: achievementPending + workPending + newsPending,
+      recentIncidents,
+    };
+  } catch (error) {
+    console.error("Error fetching operational overview:", error);
+    return {
+      totalStudents: 0,
+      totalClasses: 0,
+      latenessToday: 0,
+      latenessThisWeek: 0,
+      attributeToday: 0,
+      attributeThisWeek: 0,
+      pendingContent: 0,
+      recentIncidents: [],
+    };
+  }
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {

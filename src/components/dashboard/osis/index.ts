@@ -6,4 +6,5 @@ export { default as ValidationStatusCard } from './ValidationStatusCard';
 export { default as AddActivityModal } from './AddActivityModal';
 export { default as EditActivityModal } from './EditActivityModal';
 export { default as NewsManagement } from './NewsManagement';
+export { default as MissionControl } from './MissionControl';
 export * from './types';

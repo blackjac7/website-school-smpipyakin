@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   CheckCircle,
+  LayoutDashboard,
   Settings,
   Users,
   FileText,
@@ -21,6 +22,7 @@ import {
   ContentItem,
   StudentManagement,
   ReportsWrapper, // Added
+  OverviewDashboard,
 } from "@/components/dashboard/kesiswaan";
 import { DashboardSidebar } from "@/components/dashboard/layout";
 import {
@@ -29,6 +31,7 @@ import {
   ValidationItem,
   DashboardStats,
   ValidationQueueResult,
+  KesiswaanOperationalOverview,
 } from "@/actions/kesiswaan";
 import {
   getKesiswaanNotifications,
@@ -44,13 +47,15 @@ import "@/components/dashboard/kesiswaan/StudentCard/studentCard.styles.css";
 interface DashboardClientProps {
   initialQueueResult: ValidationQueueResult;
   initialStats: DashboardStats;
+  initialOperationalOverview: KesiswaanOperationalOverview;
 }
 
 export default function DashboardClient({
   initialQueueResult,
   initialStats,
+  initialOperationalOverview,
 }: DashboardClientProps) {
-  const [activeMenu, setActiveMenu] = useState("validation");
+  const [activeMenu, setActiveMenu] = useState("overview");
   const [notifications, setNotifications] = useState<
     KesiswaanNotificationData[]
   >([]);
@@ -183,6 +188,7 @@ export default function DashboardClient({
   };
 
   const menuItems: MenuItem[] = [
+    { id: "overview", label: "Ringkasan Hari Ini", icon: LayoutDashboard },
     {
       id: "validation",
       label: "Validasi Konten",
@@ -311,6 +317,13 @@ export default function DashboardClient({
 
         {/* Content */}
         <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+          {activeMenu === "overview" && (
+            <OverviewDashboard
+              overview={initialOperationalOverview}
+              validationStats={initialStats}
+              onNavigate={setActiveMenu}
+            />
+          )}
           {activeMenu === "validation" && (
             <div className="space-y-6">
               <AlertCard count={pendingCount} />
