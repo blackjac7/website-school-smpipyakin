@@ -267,7 +267,7 @@ export default function StudentManagement() {
               aria-label="Cari siswa"
               type="text"
               placeholder="Cari nama, NISN, atau email..."
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full rounded-xl border border-slate-300 py-2.5 pl-10 pr-4 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
             />
@@ -282,7 +282,7 @@ export default function StudentManagement() {
                   aria-label="Filter kelas"
                   value={classFilter}
                   onChange={(e) => handleClassFilterChange(e.target.value)}
-                  className="w-full lg:w-auto px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 lg:w-auto"
                 >
                   <option value="all">Semua Kelas</option>
                   {availableClasses.map((cls) => (
@@ -303,7 +303,7 @@ export default function StudentManagement() {
                       e.target.value as "all" | "MALE" | "FEMALE",
                     )
                   }
-                  className="w-full lg:w-auto px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 lg:w-auto"
                 >
                   <option value="all">Semua Gender</option>
                   <option value="MALE">Laki-laki</option>
@@ -317,7 +317,7 @@ export default function StudentManagement() {
                   aria-label="Filter angkatan"
                   value={angkatanFilter}
                   onChange={(e) => handleAngkatanFilterChange(e.target.value)}
-                  className="w-full lg:w-auto px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 lg:w-auto"
                 >
                   <option value="all">Semua Angkatan</option>
                   {availableAngkatan.map((year) => (
@@ -333,15 +333,15 @@ export default function StudentManagement() {
             <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:items-center gap-2">
               <button
                 onClick={() => setIsImportModalOpen(true)}
-                className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 lg:w-auto"
               >
                 <Upload className="w-4 h-4" />
-                Import
+                Impor
               </button>
 
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium whitespace-nowrap"
+                className="flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-blue-700 lg:w-auto"
               >
                 <Plus className="w-4 h-4" />
                 Tambah Siswa
@@ -350,14 +350,14 @@ export default function StudentManagement() {
               <button
                 onClick={handleExport}
                 disabled={isExporting}
-                className="w-full lg:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 text-sm font-medium"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50 lg:w-auto"
               >
                 {isExporting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Download className="w-4 h-4" />
                 )}
-                Export
+                Ekspor
               </button>
             </div>
           </div>
@@ -368,7 +368,7 @@ export default function StudentManagement() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+            <div className="flex items-center gap-3" role="status"><Loader2 className="h-7 w-7 animate-spin text-blue-600" aria-hidden="true" /><span className="text-sm font-semibold text-slate-600">Memuat data siswa...</span></div>
           </div>
         ) : students.length === 0 ? (
           <div className="px-6 py-12 text-center text-gray-500">

@@ -1,30 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import dynamic from "next/dynamic";
 import {
-  CheckCircle,
-  LayoutDashboard,
-  Settings,
-  Users,
-  FileText,
-  CreditCard,
-  Loader2,
-} from "lucide-react";
-import {
-  Header,
   AlertCard,
   ContentList,
-  // ReportsContent, // Removed, used in wrapper
-  SettingsContent,
   PreviewModal,
   ValidationModal,
-  MenuItem,
   ContentItem,
-  StudentManagement,
-  ReportsWrapper, // Added
   OverviewDashboard,
 } from "@/components/dashboard/kesiswaan";
-import { DashboardSidebar } from "@/components/dashboard/layout";
+import { DashboardSidebar, DashboardTopbar, WORKSPACE_CONFIG } from "@/components/dashboard/layout";
 import {
   validateContent,
   getValidationQueue,
@@ -40,9 +27,32 @@ import {
 } from "@/actions/kesiswaan/notifications";
 import toast from "react-hot-toast";
 import { useSidebar } from "@/hooks/useSidebar";
-import StudentCardSystem from "@/components/dashboard/kesiswaan/StudentCard/StudentCardSystem";
 import "@/components/dashboard/kesiswaan/StudentCard/studentCard.styles.css";
-// import LatenessReportsContent from "@/components/dashboard/kesiswaan/LatenessReportsContent"; // Removed, used in wrapper
+import { SkipLink } from "@/components/shared";
+
+const FeatureLoading = ({ label }: { label: string }) => (
+  <div className="flex items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white py-20" role="status">
+    <Loader2 className="h-6 w-6 animate-spin text-blue-600" aria-hidden="true" />
+    <span className="text-sm font-semibold text-slate-600">{label}</span>
+  </div>
+);
+
+const StudentManagement = dynamic(
+  () => import("@/components/dashboard/kesiswaan/StudentManagement"),
+  { loading: () => <FeatureLoading label="Memuat data siswa..." /> },
+);
+const StudentCardSystem = dynamic(
+  () => import("@/components/dashboard/kesiswaan/StudentCard/StudentCardSystem"),
+  { loading: () => <FeatureLoading label="Memuat sistem kartu siswa..." /> },
+);
+const ReportsWrapper = dynamic(
+  () => import("@/components/dashboard/kesiswaan/ReportsWrapper"),
+  { loading: () => <FeatureLoading label="Memuat laporan..." /> },
+);
+const SettingsContent = dynamic(
+  () => import("@/components/dashboard/kesiswaan/SettingsContent"),
+  { loading: () => <FeatureLoading label="Memuat pengaturan..." /> },
+);
 
 interface DashboardClientProps {
   initialQueueResult: ValidationQueueResult;
@@ -187,21 +197,9 @@ export default function DashboardClient({
     }
   };
 
-  const menuItems: MenuItem[] = [
-    { id: "overview", label: "Ringkasan Hari Ini", icon: LayoutDashboard },
-    {
-      id: "validation",
-      label: "Validasi Konten",
-      icon: CheckCircle,
-      badge:
-        validationQueue.filter((i) => i.status === "PENDING").length ||
-        undefined,
-    },
-    { id: "students", label: "Data Siswa", icon: Users },
-    { id: "kartu-siswa", label: "Kartu Siswa", icon: CreditCard },
-    { id: "reports", label: "Laporan", icon: FileText }, // Consolidated menu
-    { id: "settings", label: "Pengaturan", icon: Settings },
-  ];
+  const menuItems = WORKSPACE_CONFIG.kesiswaan.menu.map((item) =>
+    item.id === "validation" ? { ...item, badge: pendingCount || undefined } : item,
+  );
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -290,33 +288,38 @@ export default function DashboardClient({
     "https://ui-avatars.com/api/?name=Kesiswaan&background=1E3A8A&color=F59E0B&size=128&bold=true";
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-dvh overflow-hidden bg-slate-100">
+      <SkipLink href="#kesiswaan-main-content" />
       <DashboardSidebar
+        workspace="kesiswaan"
         menuItems={menuItems}
         activeMenu={activeMenu}
         setActiveMenu={setActiveMenu}
-        title="Kesiswaan"
-        subtitle="MANAGEMENT AREA"
-        userRole="Kesiswaan"
+        title={WORKSPACE_CONFIG.kesiswaan.title}
+        subtitle={WORKSPACE_CONFIG.kesiswaan.eyebrow}
+        userRole={WORKSPACE_CONFIG.kesiswaan.role}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
         userAvatar={kesiswaanAvatar}
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <Header
-          activeMenu={activeMenu}
+      <div className="flex h-dvh min-w-0 flex-1 flex-col overflow-hidden">
+        <DashboardTopbar
+          workspace="kesiswaan"
+          activePage={activeMenu}
           notifications={notifications}
           showNotifications={showNotifications}
           setShowNotifications={setShowNotifications}
           unreadCount={unreadCount}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          isSidebarOpen={isSidebarOpen}
           onMarkAsRead={handleMarkNotificationAsRead}
         />
 
         {/* Content */}
-        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+        <main id="kesiswaan-main-content" tabIndex={-1} className="dashboard-workspace flex-1 overflow-y-auto px-3 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
+          <div className="mx-auto w-full max-w-[1600px]">
           {activeMenu === "overview" && (
             <OverviewDashboard
               overview={initialOperationalOverview}
@@ -328,8 +331,9 @@ export default function DashboardClient({
             <div className="space-y-6">
               <AlertCard count={pendingCount} />
               {isLoading ? (
-                <div className="flex items-center justify-center py-20">
-                  <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+                <div className="flex items-center justify-center gap-3 py-20" role="status" aria-live="polite">
+                  <Loader2 className="h-7 w-7 animate-spin text-blue-600" aria-hidden="true" />
+                  <span className="text-sm font-semibold text-slate-600">Memuat antrean validasi...</span>
                 </div>
               ) : (
                 <ContentList
@@ -360,6 +364,7 @@ export default function DashboardClient({
             <ReportsWrapper reportStats={initialStats} />
           )}
           {activeMenu === "settings" && <SettingsContent />}
+          </div>
         </main>
       </div>
 

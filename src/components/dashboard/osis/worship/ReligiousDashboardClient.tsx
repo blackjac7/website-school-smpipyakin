@@ -80,15 +80,20 @@ export default function ReligiousDashboardClient({
 
   return (
     <div className="space-y-6">
-      {/* Header & Tabs */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex bg-gray-100 p-1 rounded-xl w-fit">
+      {/* Tabs expose detail progressively without adding sidebar items. */}
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div role="tablist" aria-label="Jenis manajemen ibadah" className="grid w-full grid-cols-3 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm md:w-fit">
           {tabs.map((tab) => (
             <button
+              type="button"
               key={tab.id}
+              id={`worship-tab-${tab.id}`}
               onClick={() => handleTabChange(tab.id)}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              aria-controls={`worship-panel-${tab.id}`}
               className={`
-                relative flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all
+                relative flex min-w-0 items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs font-bold transition-all sm:gap-2 sm:px-4 sm:text-sm
                 ${activeTab === tab.id ? "text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}
               `}
             >
@@ -104,7 +109,7 @@ export default function ReligiousDashboardClient({
                   size={16}
                   className={activeTab === tab.id ? tab.color : ""}
                 />
-                {tab.label}
+                <span className="truncate">{tab.label}</span>
               </span>
             </button>
           ))}
@@ -118,7 +123,7 @@ export default function ReligiousDashboardClient({
       </div>
 
       {/* Content */}
-      <div className="min-h-125">
+      <div id={`worship-panel-${activeTab}`} role="tabpanel" aria-labelledby={`worship-tab-${activeTab}`} tabIndex={0} className="min-h-125 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
         {activeTab === "menstruation" && (
           <MenstruationTab records={menstruationRecords} onRefresh={onRefresh} />
         )}

@@ -353,6 +353,65 @@ html {
   animation-delay: 0.4s;
 }
 
+/* Shared dashboard surface. Feature components keep their business logic while
+   receiving one visual language from a single parent scope. */
+.dashboard-workspace {
+  background:
+    radial-gradient(circle at 100% 0%, rgb(219 234 254 / 0.55), transparent 28rem),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.dashboard-workspace :where(.bg-white) {
+  border-color: rgb(226 232 240 / 0.9);
+}
+
+.dashboard-workspace :where(.rounded-xl) {
+  border-radius: 1rem;
+}
+
+.dashboard-workspace :where(.rounded-2xl) {
+  border-radius: 1.25rem;
+}
+
+.dashboard-workspace :where(input, select, textarea, button) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dashboard-workspace :where(button, a, input, select, textarea):focus-visible,
+header :where(button, a):focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.dashboard-workspace :where(button, input, select, textarea):disabled {
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .dashboard-workspace *,
+  .dashboard-workspace *::before,
+  .dashboard-workspace *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 639px) {
+  .dashboard-workspace :where(table) {
+    font-size: 0.8125rem;
+  }
+
+  .dashboard-workspace :where(button, a, input, select) {
+    min-height: 2.75rem;
+  }
+}
+
 /* Line clamp utilities */
 .line-clamp-1 {
   overflow: hidden;

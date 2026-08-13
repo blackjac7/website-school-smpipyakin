@@ -104,13 +104,13 @@ export default function Calendar({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+      className="space-y-4"
     >
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
-        <h3 className="text-base sm:text-lg font-bold text-gray-900">
-          Kalender Kegiatan
-        </h3>
-        <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-1 self-start sm:self-auto">
+      <p className="text-sm text-slate-600">Kalender hanya menampilkan kegiatan yang sudah disetujui.</p>
+      <section className="rounded-3xl border border-slate-200 bg-white p-3 shadow-sm sm:p-5">
+        <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <p className="text-sm font-bold text-slate-700">Navigasi bulan</p>
+        <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1">
           <button
             onClick={() =>
               setCurrentMonth(
@@ -120,7 +120,7 @@ export default function Calendar({
                 ),
               )
             }
-            className="p-1 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-600"
+            className="rounded-lg p-2 text-slate-600 hover:bg-white hover:shadow-sm"
             aria-label="Bulan sebelumnya"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -137,13 +137,13 @@ export default function Calendar({
                 ),
               )
             }
-            className="p-1 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-600"
+            className="rounded-lg p-2 text-slate-600 hover:bg-white hover:shadow-sm"
             aria-label="Bulan berikutnya"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
-      </div>
+        </div>
 
       <div className="grid grid-cols-7 gap-1 mb-2">
         {dayNames.map((day) => (
@@ -156,7 +156,7 @@ export default function Calendar({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">{renderCalendar()}</div>
+      <div className="grid grid-cols-7 gap-0.5 sm:gap-1">{renderCalendar()}</div>
 
       <div className="mt-6 pt-4 border-t border-gray-100 text-xs text-gray-500 flex gap-4">
         <div className="flex items-center gap-2">
@@ -164,6 +164,7 @@ export default function Calendar({
           <span>Kegiatan Disetujui</span>
         </div>
       </div>
+      </section>
     </motion.div>
   );
 }

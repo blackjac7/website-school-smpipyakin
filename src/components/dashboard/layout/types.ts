@@ -1,11 +1,6 @@
-import { LucideIcon } from "lucide-react";
+import type { DashboardMenuItem } from "./dashboard-config";
 
-export interface DashboardMenuItem {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-  badge?: number; // Optional badge count
-}
+export type { DashboardMenuItem } from "./dashboard-config";
 
 export interface DashboardSidebarProps {
   menuItems: DashboardMenuItem[];
@@ -17,4 +12,5 @@ export interface DashboardSidebarProps {
   subtitle?: string;
   userRole?: string;
   userAvatar?: string; // URL for user avatar image
+  workspace?: "osis" | "kesiswaan";
 }
