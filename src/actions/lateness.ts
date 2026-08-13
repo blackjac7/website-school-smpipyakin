@@ -278,7 +278,7 @@ export async function recordLateness(
     }
 
     // Create record
-    await prisma.latenessRecord.create({
+    const created = await prisma.latenessRecord.create({
       data: {
         siswaId,
         arrivalTime,
@@ -293,10 +293,67 @@ export async function recordLateness(
     return {
       success: true,
       message: `Keterlambatan ${siswa.name} berhasil dicatat`,
+      recordId: created.id,
     };
   } catch (error) {
     console.error("Error recording lateness:", error);
     return { success: false, error: "Gagal mencatat keterlambatan" };
+  }
+}
+
+/**
+ * Undo a lateness record the current OSIS scanner just created.
+ *
+ * Scoped deliberately so this stays an "undo", not a delete privilege:
+ * the caller must be the OSIS member who recorded it (`recordedBy`), and the
+ * record must be newer than UNDO_WINDOW_MS. Lasting edits belong to Kesiswaan.
+ * The client only surfaces this right after a scan, but we re-check here so a
+ * crafted request cannot remove someone else's or an older record.
+ */
+export async function deleteLatenessRecord(id: string) {
+  const auth = await verifyOsisAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  try {
+    const record = await prisma.latenessRecord.findUnique({
+      where: { id },
+      select: { id: true, recordedBy: true, createdAt: true },
+    });
+
+    if (!record) {
+      return {
+        success: false,
+        error: "Pencatatan tidak ditemukan atau sudah dibatalkan",
+      };
+    }
+
+    if (record.recordedBy !== auth.user!.userId) {
+      return {
+        success: false,
+        error: "Hanya bisa membatalkan pencatatan yang Anda buat sendiri",
+      };
+    }
+
+    const UNDO_WINDOW_MS = 5 * 60 * 1000; // 5 menit
+    if (Date.now() - record.createdAt.getTime() > UNDO_WINDOW_MS) {
+      return {
+        success: false,
+        error:
+          "Waktu pembatalan sudah lewat. Hubungi Kesiswaan untuk mengubah data.",
+      };
+    }
+
+    await prisma.latenessRecord.delete({ where: { id } });
+
+    revalidatePath("/dashboard-osis/keterlambatan");
+    revalidatePath("/dashboard-kesiswaan/keterlambatan");
+
+    return { success: true, message: "Pencatatan keterlambatan dibatalkan" };
+  } catch (error) {
+    console.error("Error deleting lateness record:", error);
+    return { success: false, error: "Gagal membatalkan pencatatan" };
   }
 }
 
