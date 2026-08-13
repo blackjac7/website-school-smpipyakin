@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { validateOsisActivity } from "@/actions/pembina-osis/validation";
 import toast from "react-hot-toast";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 
 interface OsisActivity {
   id: string;
@@ -47,29 +49,36 @@ export default function PendingActivitiesList({
   const [rejectionNote, setRejectionNote] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const confirmModal = useToastConfirm();
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
   const handleApprove = async (activity: OsisActivity) => {
-    if (!confirm("Apakah Anda yakin ingin MENYETUJUI program kerja ini?"))
-      return;
-
-    setIsProcessing(true);
-    try {
-      const result = await validateOsisActivity(activity.id, "APPROVE");
-      if (result.success) {
-        toast.success(result.message || "Validasi berhasil");
-      } else {
-        toast.error(result.error || "Gagal memproses");
-      }
-    } catch (err) {
-      console.error("Approve error:", err);
-      toast.error("Terjadi kesalahan");
-    } finally {
-      setIsProcessing(false);
-    }
+    confirmModal.showConfirm(
+      {
+        title: "Setujui Program Kerja",
+        message: `Setujui program “${activity.title}”?`,
+        description: "OSIS akan menerima keputusan ini dan program dapat dilanjutkan sesuai proposal.",
+        type: "success",
+        confirmText: "Ya, setujui",
+        cancelText: "Periksa lagi",
+      },
+      async () => {
+        setIsProcessing(true);
+        try {
+          const result = await validateOsisActivity(activity.id, "APPROVE");
+          if (result.success) toast.success(result.message || "Program kerja disetujui");
+          else toast.error(result.error || "Keputusan gagal disimpan");
+        } catch (err) {
+          console.error("Approve error:", err);
+          toast.error("Keputusan gagal disimpan. Silakan coba lagi.");
+        } finally {
+          setIsProcessing(false);
+        }
+      },
+    );
   };
 
   const handleReject = async () => {
@@ -104,30 +113,27 @@ export default function PendingActivitiesList({
 
   if (activities.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 bg-white rounded-xl border border-dashed border-gray-300">
+      <div className="dashboard-empty-state">
         <div className="bg-gray-50 p-4 rounded-full mb-4">
           <CheckCircle className="w-8 h-8 text-gray-400" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900">Semua Beres!</h3>
+        <h3 className="text-lg font-bold text-gray-900">Semua sudah ditinjau</h3>
         <p className="text-gray-500 text-center mt-1">
-          Tidak ada proposal program kerja yang menunggu validasi saat ini.
+          Tidak ada proposal program kerja yang memerlukan keputusan saat ini.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="grid gap-6">
+    <div className="mx-auto grid w-full max-w-5xl gap-4 sm:gap-5">
       {activities.map((activity) => (
         <div
           key={activity.id}
-          className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+          className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-blue-200 hover:shadow-md"
         >
           <div className="p-6">
-            <div
-              className="flex justify-between items-start mb-4 cursor-pointer"
-              onClick={() => toggleExpand(activity.id)}
-            >
+            <button type="button" className="flex w-full items-start justify-between gap-3 text-left" onClick={() => toggleExpand(activity.id)} aria-expanded={expandedId === activity.id} aria-controls={`proposal-${activity.id}`}>
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-1">
                   {activity.title}
@@ -152,9 +158,9 @@ export default function PendingActivitiesList({
                   <ChevronDown className="w-5 h-5 text-gray-400" />
                 )}
               </div>
-            </div>
+            </button>
 
-            <div
+            <div id={`proposal-${activity.id}`}
               className={`transition-all duration-300 ${expandedId === activity.id ? "block" : "hidden"}`}
             >
               <p className="text-gray-600 mb-6 leading-relaxed">
@@ -190,9 +196,9 @@ export default function PendingActivitiesList({
                 </div>
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-gray-100">
+              <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end">
                 <button
-                  className="flex items-center px-4 py-2 border border-red-200 text-red-600 bg-white hover:bg-red-50 rounded-lg transition-colors font-medium text-sm disabled:opacity-50"
+                  className="dashboard-button border border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedActivity(activity);
@@ -204,7 +210,7 @@ export default function PendingActivitiesList({
                   Tolak
                 </button>
                 <button
-                  className="flex items-center px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg shadow-sm shadow-green-200 transition-colors font-medium text-sm disabled:opacity-50"
+                  className="dashboard-button bg-emerald-700 text-white hover:bg-emerald-800"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleApprove(activity);
@@ -222,17 +228,18 @@ export default function PendingActivitiesList({
 
       {/* Reject Modal Overlay */}
       {isRejectModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="reject-proposal-title">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-xl animate-in fade-in zoom-in duration-200">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-bold text-red-600 flex items-center gap-2">
+                <h3 id="reject-proposal-title" className="flex items-center gap-2 text-lg font-bold text-red-700">
                   <AlertCircle className="w-5 h-5" />
                   Tolak Program Kerja
                 </h3>
                 <button
                   onClick={() => setIsRejectModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-500"
+                  className="dashboard-icon-button"
+                  aria-label="Tutup formulir penolakan"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -244,23 +251,27 @@ export default function PendingActivitiesList({
               </p>
 
               <textarea
+                aria-label="Alasan penolakan"
+                aria-describedby="rejection-helper"
+                required
                 placeholder="Contoh: Anggaran terlalu besar, tanggal bentrok dengan kegiatan sekolah..."
                 value={rejectionNote}
                 onChange={(e) => setRejectionNote(e.target.value)}
-                className="w-full min-h-[100px] p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none resize-none text-sm mb-6"
+                className="mb-2 min-h-28 w-full resize-y border border-slate-300 p-3 text-sm"
               />
+              <p id="rejection-helper" className="mb-6 text-xs leading-5 text-slate-500">Tuliskan alasan yang spesifik dan dapat ditindaklanjuti oleh pengurus OSIS.</p>
 
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setIsRejectModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="dashboard-button dashboard-button-secondary"
                 >
                   Batal
                 </button>
                 <button
                   onClick={handleReject}
                   disabled={!rejectionNote.trim() || isProcessing}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50 transition-colors"
+                  className="dashboard-button dashboard-button-danger"
                 >
                   {isProcessing ? "Memproses..." : "Konfirmasi Penolakan"}
                 </button>
@@ -269,6 +280,13 @@ export default function PendingActivitiesList({
           </div>
         </div>
       )}
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        isLoading={confirmModal.isLoading}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+        {...confirmModal.options}
+      />
     </div>
   );
 }

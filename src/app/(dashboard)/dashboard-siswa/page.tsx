@@ -5,10 +5,7 @@ import {
   Trophy,
   Medal,
   Award,
-  LucideIcon,
-  Home,
-  BookOpen,
-  QrCode,
+  type LucideIcon,
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
@@ -16,13 +13,12 @@ import {
   UploadAchievementModal,
   WorksSection,
   UploadWorkModal,
-  StudentHeader,
   DashboardOverview,
   QuickEditModal,
   FullProfileModal,
   MenuItem,
 } from "@/components/dashboard/student";
-import { DashboardSidebar } from "@/components/dashboard/layout";
+import { DashboardSidebar, DashboardTopbar, getWorkspaceMenu } from "@/components/dashboard/layout";
 import EditWorkModal from "@/components/dashboard/student/EditWorkModal";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
@@ -108,12 +104,7 @@ function SiswaDashboardContent() {
   const [loading, setLoading] = useState(true);
   const confirmModal = useToastConfirm();
 
-  const menuItems: MenuItem[] = [
-    { id: "dashboard", label: "Dashboard", icon: Home },
-    { id: "achievements", label: "Prestasi", icon: Trophy },
-    { id: "works", label: "Karya", icon: BookOpen },
-    { id: "qrcode", label: "QR Code Saya", icon: QrCode },
-  ];
+  const menuItems: MenuItem[] = [...getWorkspaceMenu("siswa")];
   const [profileData, setProfileData] = useState<ProfileData>({
     id: "",
     name: "",
@@ -462,7 +453,7 @@ function SiswaDashboardContent() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="dashboard-shell flex min-h-dvh overflow-hidden bg-slate-50">
       <DashboardSidebar
         menuItems={menuItems}
         activeMenu={activeMenu}
@@ -472,23 +463,26 @@ function SiswaDashboardContent() {
         title="Dashboard"
         subtitle="SISWA AREA"
         userRole="Siswa"
+        workspace="siswa"
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <StudentHeader
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <DashboardTopbar
+          workspace="siswa"
+          activePage={activeMenu}
           notifications={notifications}
           showNotifications={showNotifications}
           setShowNotifications={setShowNotifications}
           unreadCount={notifications.filter((n) => !n.read).length}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          markAsRead={markAsRead}
+          isSidebarOpen={isSidebarOpen}
+          onMarkAsRead={markAsRead}
           onEditProfile={() => setShowFullProfile(true)}
-          activeTab={activeMenu}
         />
 
         {/* Content */}
-        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+        <main id="main-content" className="dashboard-workspace min-w-0 flex-1 overflow-y-auto p-3 sm:p-5 lg:p-7">
           {renderContent()}
         </main>
       </div>

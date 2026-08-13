@@ -106,7 +106,7 @@ export default function DashboardOverview({
   const handleUploadAchievement = () => {
     if (pendingAchievements.length >= 2) {
       toast.error(
-        "Anda memiliki 2 prestasi pending. Mohon tunggu persetujuan.",
+        "Dua prestasi sedang menunggu validasi. Mohon tunggu sebelum mengunggah lagi.",
       );
       return;
     }
@@ -378,7 +378,7 @@ export default function DashboardOverview({
                   <span
                     className={`text-xs font-semibold px-2 py-1 rounded-md ${pendingAchievements.length >= 2 ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-700"}`}
                   >
-                    {pendingAchievements.length}/2 Pending
+                    {pendingAchievements.length}/2 menunggu
                   </span>
                   <div
                     className={`p-2 rounded-full ${pendingAchievements.length >= 2 ? "bg-gray-200" : "bg-white shadow-sm group-hover:translate-x-1 transition-transform"}`}

@@ -116,16 +116,11 @@ export default function FacilitiesClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">
-            Manajemen Fasilitas
-          </h1>
-          <p className="text-gray-600">Kelola daftar fasilitas sekolah</p>
-        </div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-slate-600"><span className="font-bold text-slate-950">{filteredFacilities.length} fasilitas</span> sesuai pencarian saat ini.</p>
         <button
           onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="dashboard-button dashboard-button-primary w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           Tambah Fasilitas

@@ -116,7 +116,7 @@ export default function AchievementsSection({
               {isUploadDisabled && (
                 <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 px-3 py-2 rounded-lg border border-amber-100">
                   <AlertCircle className="w-3.5 h-3.5" />
-                  Limit pending tercapai
+                  Batas antrean tercapai
                 </div>
               )}
               <motion.button
@@ -143,7 +143,7 @@ export default function AchievementsSection({
           {isUploadDisabled && (
             <div className="sm:hidden mt-4 flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 px-3 py-2 rounded-lg border border-amber-100">
               <AlertCircle className="w-3.5 h-3.5" />
-              Maksimal 2 prestasi pending
+              Maksimal 2 prestasi menunggu validasi
             </div>
           )}
         </div>
@@ -370,7 +370,7 @@ export default function AchievementsSection({
                         {achievement.status === "approved"
                           ? "Disetujui"
                           : achievement.status === "pending"
-                            ? "Pending"
+                            ? "Menunggu"
                             : "Ditolak"}
                       </span>
                     </div>

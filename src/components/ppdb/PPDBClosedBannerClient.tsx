@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { AnimatedBackground } from "@/components/common/AnimatedBackground";
 import { useEffect, useState } from "react";
+import { schoolIdentity } from "@/lib/public-site";
 
 interface PPDBClosedBannerClientProps {
   showFull: boolean;
@@ -226,25 +227,25 @@ export function PPDBClosedBannerClient({
               className="grid md:grid-cols-2 gap-4 mb-8"
             >
               <a
-                href="tel:0215403540"
+                href={schoolIdentity.phoneHref}
                 className="flex items-center justify-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
               >
                 <div className="p-2 bg-white dark:bg-slate-700 rounded-lg shadow-sm group-hover:scale-110 transition-transform">
                   <Phone className="w-5 h-5 text-school-blue dark:text-school-yellow" />
                 </div>
                 <span className="text-slate-600 dark:text-slate-300 font-medium">
-                  (021) 5403540
+                  {schoolIdentity.phoneDisplay}
                 </span>
               </a>
               <a
-                href="mailto:info@smpipyakin.sch.id"
+                href={`mailto:${schoolIdentity.email}`}
                 className="flex items-center justify-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
               >
                 <div className="p-2 bg-white dark:bg-slate-700 rounded-lg shadow-sm group-hover:scale-110 transition-transform">
                   <Mail className="w-5 h-5 text-school-blue dark:text-school-yellow" />
                 </div>
                 <span className="text-slate-600 dark:text-slate-300 font-medium">
-                  info@smpipyakin.sch.id
+                  {schoolIdentity.email}
                 </span>
               </a>
             </motion.div>

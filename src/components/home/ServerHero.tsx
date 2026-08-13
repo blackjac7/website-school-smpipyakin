@@ -1,56 +1,25 @@
 import Image from "next/image";
 import Link from "next/link";
-import { HeroSlide } from "@/components/home/HeroCarousel";
+import { ArrowRight, MapPin } from "lucide-react";
+import type { HeroSlide } from "@/components/home/HeroCarousel";
 
 export default function ServerHero({ slide }: { slide: HeroSlide }) {
   if (!slide) return null;
 
   return (
-    <section
-      id="server-hero"
-      className="relative h-[100dvh] min-h-[600px] overflow-hidden bg-black"
-    >
-      {/* Server-rendered LCP image so preload is useful */}
-      <div className="absolute inset-0">
-        <Image
-          src={slide.image.medium}
-          alt={slide.title}
-          fill
-          sizes="100vw"
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
-      </div>
-
-      <div className="relative h-full max-w-7xl mx-auto px-4 flex items-center">
-        <div className="text-white max-w-2xl z-10 pb-20 md:pb-0">
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-lg">
-            {slide.title}
-          </h1>
-          <p className="text-xl md:text-2xl mb-10 text-gray-200 font-light drop-shadow-md">
-            {slide.subtitle}
+    <section id="server-hero" aria-hidden="true" className="relative h-[clamp(42rem,84dvh,54rem)] overflow-hidden bg-slate-950 text-white">
+      <Image src={slide.image.medium} alt="" fill sizes="100vw" className="object-cover" priority />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,.94)_0%,rgba(2,6,23,.76)_48%,rgba(2,6,23,.3)_100%)]" />
+      <div className="public-container relative flex h-full items-center pt-18">
+        <div className="max-w-3xl py-14">
+          <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white/90 backdrop-blur-sm">
+            <MapPin aria-hidden="true" className="h-4 w-4 text-amber-300" /> Jakarta Barat
           </p>
-
-          <div className="flex flex-col sm:flex-row gap-4">
-            {slide.linkPrimary && (
-              <Link
-                href={slide.linkPrimary.href}
-                className="group w-full sm:w-auto flex items-center justify-center gap-2 bg-yellow-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-400 transition shadow-[0_0_20px_rgba(245,158,11,0.5)]"
-                prefetch={false}
-              >
-                {slide.linkPrimary.text}
-              </Link>
-            )}
-            {slide.linkSecondary && (
-              <Link
-                href={slide.linkSecondary.href}
-                prefetch={false}
-                className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-lg border-2 border-white text-white hover:bg-white hover:text-black transition flex items-center justify-center"
-              >
-                {slide.linkSecondary.text}
-              </Link>
-            )}
+          <div className="text-balance text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl lg:text-7xl">{slide.title}</div>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-200 sm:text-xl">{slide.subtitle}</p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link href="/ppdb" className="public-button-primary min-h-12 px-6">Informasi PPDB <ArrowRight aria-hidden="true" className="h-5 w-5" /></Link>
+            <Link href={slide.linkPrimary?.href ?? "/profile/visi-misi"} className="focus-ring inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 bg-white/10 px-6 font-bold text-white backdrop-blur-sm hover:bg-white hover:text-slate-950">Kenali sekolah</Link>
           </div>
         </div>
       </div>

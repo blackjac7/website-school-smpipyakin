@@ -19,7 +19,6 @@ import {
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import LoadingEffect from "@/components/shared/LoadingEffect";
 import { DashboardSidebar, DashboardTopbar, WORKSPACE_CONFIG } from "@/components/dashboard/layout";
-import { SkipLink } from "@/components/shared";
 import { getActivities, deleteActivity } from "@/actions/osis/activities";
 import {
   getMenstruationRecords,
@@ -252,7 +251,6 @@ function OSISDashboard() {
 
   return (
     <div className="flex h-dvh overflow-hidden bg-slate-100">
-      <SkipLink href="#osis-main-content" />
       <DashboardSidebar
         workspace="osis"
         menuItems={menuItems}
@@ -281,7 +279,7 @@ function OSISDashboard() {
         />
 
         {/* Content */}
-        <main id="osis-main-content" tabIndex={-1} className="dashboard-workspace flex-1 overflow-y-auto px-3 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
+        <main id="main-content" tabIndex={-1} className="dashboard-workspace min-w-0 flex-1 overflow-y-auto px-3 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
           <div className="mx-auto w-full max-w-[1600px]">
           {activeMenu === "dashboard" && renderDashboardContent()}
 

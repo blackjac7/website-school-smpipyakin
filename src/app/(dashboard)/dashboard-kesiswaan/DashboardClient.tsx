@@ -28,7 +28,6 @@ import {
 import toast from "react-hot-toast";
 import { useSidebar } from "@/hooks/useSidebar";
 import "@/components/dashboard/kesiswaan/StudentCard/studentCard.styles.css";
-import { SkipLink } from "@/components/shared";
 
 const FeatureLoading = ({ label }: { label: string }) => (
   <div className="flex items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white py-20" role="status">
@@ -289,7 +288,6 @@ export default function DashboardClient({
 
   return (
     <div className="flex h-dvh overflow-hidden bg-slate-100">
-      <SkipLink href="#kesiswaan-main-content" />
       <DashboardSidebar
         workspace="kesiswaan"
         menuItems={menuItems}
@@ -318,7 +316,7 @@ export default function DashboardClient({
         />
 
         {/* Content */}
-        <main id="kesiswaan-main-content" tabIndex={-1} className="dashboard-workspace flex-1 overflow-y-auto px-3 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
+        <main id="main-content" tabIndex={-1} className="dashboard-workspace min-w-0 flex-1 overflow-y-auto px-3 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
           <div className="mx-auto w-full max-w-[1600px]">
           {activeMenu === "overview" && (
             <OverviewDashboard

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import {
-  Settings,
   Shield,
   Calendar,
   Users,
@@ -19,6 +18,8 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import LoadingEffect from "@/components/shared/LoadingEffect";
+import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
+import { useToastConfirm } from "@/hooks/useToastConfirm";
 import {
   toggleMaintenanceMode,
   updatePPDBSettings,
@@ -68,6 +69,7 @@ interface MaintenanceSchedule {
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const confirmModal = useToastConfirm();
 
   // States
   const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({
@@ -279,29 +281,49 @@ export default function SettingsPage() {
   };
 
   // Delete Schedule
-  const handleDeleteSchedule = async (id: string) => {
-    if (!confirm("Yakin ingin menghapus jadwal ini?")) return;
-
-    const result = await deleteMaintenanceSchedule(id);
-    if (result.success) {
-      toast.success(result.message || "Berhasil");
-      loadData();
-    } else {
-      toast.error(result.error || "Gagal menghapus jadwal");
-    }
+  const handleDeleteSchedule = (id: string) => {
+    confirmModal.showConfirm(
+      {
+        title: "Hapus jadwal pemeliharaan?",
+        message: "Jadwal yang dipilih akan dihapus dari sistem.",
+        description: "Tindakan ini tidak dapat dibatalkan.",
+        type: "danger",
+        confirmText: "Hapus jadwal",
+        cancelText: "Batal",
+      },
+      async () => {
+        const result = await deleteMaintenanceSchedule(id);
+        if (result.success) {
+          toast.success(result.message || "Jadwal berhasil dihapus");
+          loadData();
+        } else {
+          toast.error(result.error || "Gagal menghapus jadwal");
+        }
+      },
+    );
   };
 
   // Seed Settings
-  const handleSeedSettings = async () => {
-    if (!confirm("Ini akan membuat pengaturan default. Lanjutkan?")) return;
-
-    const result = await seedSettingsAction();
-    if (result.success) {
-      toast.success(result.message || "Berhasil");
-      loadData();
-    } else {
-      toast.error(result.error || "Gagal membuat pengaturan");
-    }
+  const handleSeedSettings = () => {
+    confirmModal.showConfirm(
+      {
+        title: "Pulihkan pengaturan awal?",
+        message: "Konfigurasi default akan dibuat kembali.",
+        description: "Tinjau kembali pengaturan PPDB dan fitur website setelah proses selesai.",
+        type: "warning",
+        confirmText: "Pulihkan default",
+        cancelText: "Batal",
+      },
+      async () => {
+        const result = await seedSettingsAction();
+        if (result.success) {
+          toast.success(result.message || "Pengaturan default berhasil dipulihkan");
+          loadData();
+        } else {
+          toast.error(result.error || "Gagal memulihkan pengaturan");
+        }
+      },
+    );
   };
 
   if (loading) {
@@ -310,23 +332,13 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Settings className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-            Pengaturan Sistem
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-            Kelola mode pemeliharaan, PPDB, dan fitur website
-          </p>
-        </div>
+      <div className="flex justify-end">
         <button
           onClick={handleSeedSettings}
-          className="self-start sm:self-auto px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+          className="dashboard-button dashboard-button-secondary w-full sm:w-auto"
         >
           <RefreshCw className="w-4 h-4 inline mr-2" />
-          Reset ke Default
+          Pulihkan Default
         </button>
       </div>
 
@@ -854,7 +866,8 @@ export default function SettingsPage() {
                 </div>
                 <button
                   onClick={() => handleDeleteSchedule(schedule.id)}
-                  className="text-red-500 hover:text-red-700 transition-colors"
+                  className="dashboard-button dashboard-button-secondary text-rose-700 hover:border-rose-200 hover:bg-rose-50"
+                  aria-label={`Hapus jadwal ${schedule.title}`}
                 >
                   Hapus
                 </button>
@@ -867,6 +880,20 @@ export default function SettingsPage() {
           </p>
         )}
       </div>
+
+      <ToastConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.options.title}
+        message={confirmModal.options.message}
+        description={confirmModal.options.description}
+        type={confirmModal.options.type}
+        confirmText={confirmModal.options.confirmText}
+        cancelText={confirmModal.options.cancelText}
+        isLoading={confirmModal.isLoading}
+        showCloseButton={confirmModal.options.showCloseButton}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+      />
     </div>
   );
 }

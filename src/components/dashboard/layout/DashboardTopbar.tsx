@@ -2,10 +2,11 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useId, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Bell, BellOff, Menu } from "lucide-react";
 import { LogoutButton } from "@/components/shared";
 import { useAuth } from "@/components/shared/AuthProvider";
-import { DASHBOARD_COPY, getWorkspacePageMeta, type DashboardNotification, type DashboardWorkspace } from "./dashboard-config";
+import { DASHBOARD_COPY, WORKSPACE_CONFIG, getWorkspacePageMeta, type DashboardNotification, type DashboardWorkspace } from "./dashboard-config";
 
 interface DashboardTopbarProps {
   workspace: DashboardWorkspace;
@@ -17,6 +18,7 @@ interface DashboardTopbarProps {
   onToggleSidebar?: () => void;
   isSidebarOpen?: boolean;
   onMarkAsRead?: (notificationId: string) => void;
+  onEditProfile?: () => void;
 }
 
 export default function DashboardTopbar({
@@ -29,11 +31,14 @@ export default function DashboardTopbar({
   onToggleSidebar,
   isSidebarOpen = false,
   onMarkAsRead,
+  onEditProfile,
 }: DashboardTopbarProps) {
   const { user } = useAuth();
+  const router = useRouter();
   const meta = getWorkspacePageMeta(workspace, activePage);
   const Icon = meta.icon;
-  const role = workspace === "osis" ? "Organisasi Siswa" : "Staff Kesiswaan";
+  const role = WORKSPACE_CONFIG[workspace].role;
+  const notificationPath = workspace === "pembina-osis" ? null : `/dashboard-${workspace}/notifications`;
   const notificationId = useId();
   const notificationButtonRef = useRef<HTMLButtonElement>(null);
   const notificationPanelRef = useRef<HTMLDivElement>(null);
@@ -90,11 +95,12 @@ export default function DashboardTopbar({
                   <div className="max-h-80 overflow-y-auto">
                     {notifications.length ? notifications.map((notification) => <button type="button" key={notification.id} onClick={() => !notification.read && onMarkAsRead?.(notification.id)} disabled={notification.read} className={`block w-full border-b border-slate-100 p-4 text-left enabled:hover:bg-slate-50 disabled:cursor-default ${!notification.read ? "bg-blue-50/50" : ""}`} aria-label={`${notification.read ? "Sudah dibaca" : "Belum dibaca"}: ${notification.title || notification.type}`}><div className="flex gap-3"><span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${notification.type === "success" ? "bg-emerald-500" : notification.type === "pending" ? "bg-amber-500" : "bg-blue-600"}`} aria-hidden="true" /><div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900">{notification.title || notification.type}</p><p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-600">{notification.message}</p><p className="mt-1.5 text-[11px] text-slate-400">{notification.time}</p></div></div></button>) : <div className="p-8 text-center"><BellOff className="mx-auto h-8 w-8 text-slate-300" aria-hidden="true" /><p className="mt-2 text-sm text-slate-500">{DASHBOARD_COPY.noNotifications}</p></div>}
                   </div>
+                  {notificationPath && notifications.length > 0 && <div className="border-t border-slate-100 bg-slate-50 p-2"><button type="button" onClick={() => { setShowNotifications(false); router.push(notificationPath); }} className="w-full rounded-xl px-3 py-2 text-sm font-bold text-blue-700 hover:bg-blue-100">Lihat semua notifikasi</button></div>}
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-          <LogoutButton variant="profile" userName={user?.name || user?.username || "User"} userRole={role} className="ml-1" />
+          <LogoutButton variant="profile" userName={user?.name || user?.username || "User"} userRole={role} className="ml-1" onEditProfile={onEditProfile} />
         </div>
       </div>
     </header>

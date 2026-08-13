@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import toast from "react-hot-toast";
 import TeachersTable from "@/components/dashboard/admin/TeachersTable";
 import TeacherModal from "@/components/dashboard/admin/TeacherModal";
@@ -166,31 +166,13 @@ export default function TeachersPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="space-y-5">
       {/* Page Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-      >
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-linear-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-200">
-            <Users className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Manajemen Profil Guru
-            </h1>
-            <p className="text-sm text-gray-500">
-              Kelola data guru yang ditampilkan di halaman profil sekolah
-            </p>
-          </div>
-        </div>
-
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-end">
         <button
           onClick={fetchTeachers}
           disabled={isLoading}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+          className="dashboard-button dashboard-button-secondary"
         >
           <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
           Refresh

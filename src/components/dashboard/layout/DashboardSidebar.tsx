@@ -25,6 +25,16 @@ export default function DashboardSidebar({
   const navigationId = workspace
     ? `${workspace}-navigation`
     : `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-navigation`;
+  const sections = menuItems.reduce<Array<{ label: string; items: typeof menuItems }>>(
+    (groups, item) => {
+      const label = item.section || DASHBOARD_COPY.navigation;
+      const current = groups.find((group) => group.label === label);
+      if (current) current.items.push(item);
+      else groups.push({ label, items: [item] });
+      return groups;
+    },
+    [],
+  );
 
   return (
     <>
@@ -77,10 +87,11 @@ export default function DashboardSidebar({
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-5" aria-label={title}>
-          <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">{DASHBOARD_COPY.navigation}</p>
-          <div className="space-y-1">
-            {menuItems.map((item) => {
+        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label={title}>
+          <div className="space-y-5">
+            {sections.map((section) => <div key={section.label}>
+              <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">{section.label}</p>
+              <div className="space-y-1">{section.items.map((item) => {
               const isActive = activeMenu === item.id;
               return (
                 <button
@@ -91,7 +102,7 @@ export default function DashboardSidebar({
                     if (setIsSidebarOpen && window.innerWidth < 1024) setIsSidebarOpen(false);
                   }}
                   aria-current={isActive ? "page" : undefined}
-                  className={`group relative flex min-h-12 w-full items-center gap-3 rounded-2xl px-3.5 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${isActive ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"}`}
+                  className={`group relative flex min-h-11 w-full items-center gap-3 rounded-xl px-3.5 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${isActive ? "bg-blue-700 text-white shadow-md shadow-blue-700/15" : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"}`}
                 >
                   <item.icon className={`h-5 w-5 shrink-0 ${isActive ? "text-amber-300" : "text-slate-400 group-hover:text-blue-600"}`} aria-hidden="true" />
                   <span className="min-w-0 flex-1 truncate">{item.label}</span>
@@ -99,7 +110,7 @@ export default function DashboardSidebar({
                   {isActive && <ChevronRight className="h-4 w-4 text-blue-100" aria-hidden="true" />}
                 </button>
               );
-            })}
+            })}</div></div>)}
           </div>
         </nav>
 

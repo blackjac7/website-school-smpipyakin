@@ -1,4 +1,5 @@
 import type { DashboardMenuItem } from "./dashboard-config";
+import type { DashboardWorkspace } from "./dashboard-config";
 
 export type { DashboardMenuItem } from "./dashboard-config";
 
@@ -12,5 +13,5 @@ export interface DashboardSidebarProps {
   subtitle?: string;
   userRole?: string;
   userAvatar?: string; // URL for user avatar image
-  workspace?: "osis" | "kesiswaan";
+  workspace?: DashboardWorkspace;
 }

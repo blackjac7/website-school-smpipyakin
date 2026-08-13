@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, FileText, LayoutDashboard } from "lucide-react";
 import {
-  Header,
   MenuItem,
   ApplicantDetailModal,
 } from "@/components/dashboard/ppdb";
-import { DashboardSidebar } from "@/components/dashboard/layout";
+import { DashboardSidebar, DashboardTopbar, getWorkspaceMenu } from "@/components/dashboard/layout";
 import DashboardOverviewEnhanced from "@/components/dashboard/ppdb/DashboardOverviewEnhanced";
 import ValidationContentEnhanced from "@/components/dashboard/ppdb/ValidationContentEnhanced";
 import ReportsContentEnhanced from "@/components/dashboard/ppdb/ReportsContentEnhanced";
@@ -64,12 +62,7 @@ export default function PPDBDashboardClient({
     useState<EnhancedApplicant | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const menuItems: MenuItem[] = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "validation", label: "Validasi Pendaftar", icon: Users },
-    { id: "reports", label: "Laporan", icon: FileText },
-    // { id: "settings", label: "Pengaturan", icon: Settings }, // Disabled
-  ];
+  const menuItems: MenuItem[] = [...getWorkspaceMenu("ppdb")];
 
   // Load notifications from API
   const loadNotifications = async () => {
@@ -180,7 +173,7 @@ export default function PPDBDashboardClient({
     "https://ui-avatars.com/api/?name=PPDB&background=F59E0B&color=fff&size=128&bold=true";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="dashboard-shell flex min-h-dvh overflow-hidden bg-slate-50">
       {/* Sidebar */}
       <DashboardSidebar
         menuItems={menuItems}
@@ -189,27 +182,30 @@ export default function PPDBDashboardClient({
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
         title="PPDB Center"
-        subtitle="OFFICER AREA"
-        userRole="PPDB Staff"
+        subtitle="PENERIMAAN SISWA"
+        userRole="Petugas PPDB"
         userAvatar={ppdbAvatar}
+        workspace="ppdb"
       />
 
       {/* Main Content Shell - Matches Admin Dashboard structure */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Header */}
-        <Header
-          activeMenu={activeMenu}
-          onToggleSidebar={handleToggleSidebar}
+        <DashboardTopbar
+          workspace="ppdb"
+          activePage={activeMenu}
           notifications={notifications}
           showNotifications={showNotifications}
           setShowNotifications={setShowNotifications}
           unreadCount={notifications.filter((n) => !n.read).length}
-          markAsRead={markAsRead}
+          onToggleSidebar={handleToggleSidebar}
+          isSidebarOpen={isSidebarOpen}
+          onMarkAsRead={markAsRead}
         />
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="p-4 md:p-6 lg:p-8 pb-20 max-w-7xl mx-auto w-full">
+        <main id="main-content" className="dashboard-workspace min-w-0 flex-1 overflow-y-auto">
+          <div className="mx-auto w-full max-w-7xl p-3 pb-20 sm:p-5 lg:p-8">
             {activeMenu === "dashboard" && <DashboardOverviewEnhanced />}
 
             {activeMenu === "validation" && (

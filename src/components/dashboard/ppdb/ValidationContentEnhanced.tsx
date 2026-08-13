@@ -9,7 +9,6 @@ import {
   XCircle,
   Clock,
   Download,
-  Users,
   School,
   Phone,
 } from "lucide-react";
@@ -161,23 +160,6 @@ export default function ValidationContentEnhanced({
 
   return (
     <div className="space-y-6">
-      {/* Header Section */}
-      <div className="bg-linear-to-r from-[#1E3A8A] to-[#2563EB] rounded-2xl p-4 sm:p-6 text-white shadow-lg">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-          </div>
-          <div className="min-w-0">
-            <h2 className="text-lg sm:text-2xl font-bold truncate">
-              Validasi Pendaftar
-            </h2>
-            <p className="text-xs sm:text-base text-blue-100 opacity-90 truncate">
-              Kelola data dan status penerimaan calon siswa
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Filters & Search */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
         <div className="flex flex-col md:flex-row gap-4">
@@ -186,6 +168,7 @@ export default function ValidationContentEnhanced({
             <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 group-focus-within:text-blue-600 transition-colors" />
             <input
               type="text"
+              aria-label="Cari pendaftar"
               placeholder="Cari nama, NISN, atau asal sekolah..."
               className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               value={searchTerm}
@@ -197,6 +180,7 @@ export default function ValidationContentEnhanced({
           <div className="relative min-w-45">
             <Filter className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
             <select
+              aria-label="Filter status pendaftar"
               className="w-full pl-10 pr-8 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}

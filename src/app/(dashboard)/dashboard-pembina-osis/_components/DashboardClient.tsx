@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Home, Clock, History, Menu } from "lucide-react";
+import { Home, Clock, History, Menu, ArrowRight } from "lucide-react";
 import PendingActivitiesList from "./PendingActivitiesList";
 import ActivityHistoryList from "./ActivityHistoryList";
-import { DashboardSidebar } from "@/components/dashboard/layout";
+import { DashboardSidebar, getWorkspaceMenu, getWorkspacePageMeta } from "@/components/dashboard/layout";
 import { useSidebar } from "@/hooks/useSidebar";
 import { motion } from "framer-motion";
 
@@ -44,20 +44,17 @@ export default function DashboardClient({
   const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } =
     useSidebar(true);
 
-  const menuItems: MenuItem[] = [
-    { id: "dashboard", label: "Dashboard", icon: Home },
-    {
-      id: "pending",
-      label: "Menunggu Validasi",
-      icon: Clock,
-      badge:
-        pendingActivities.length > 0 ? pendingActivities.length : undefined,
-    },
-    { id: "history", label: "Riwayat Validasi", icon: History },
-  ];
+  const menuItems: MenuItem[] = getWorkspaceMenu("pembina-osis").map((item) =>
+    item.id === "pending"
+      ? { ...item, badge: pendingActivities.length || undefined }
+      : { ...item },
+  );
 
   const pembinaAvatar =
     "https://ui-avatars.com/api/?name=Pembina+OSIS&background=f97316&color=fff&size=128&bold=true";
+
+  const pageMeta = getWorkspacePageMeta("pembina-osis", activeMenu);
+  const PageIcon = pageMeta.icon;
 
   // Dashboard content
   const renderDashboardContent = () => (
@@ -65,11 +62,11 @@ export default function DashboardClient({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6"
+      className="mx-auto w-full max-w-7xl space-y-6"
     >
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <div className="bg-linear-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+      <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <button type="button" onClick={() => setActiveMenu("pending")} className="group rounded-2xl bg-blue-700 p-5 text-left text-white shadow-lg shadow-blue-900/10 transition hover:-translate-y-0.5 hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">
           <div className="flex flex-row items-center justify-between pb-2 space-y-0">
             <h3 className="tracking-tight text-sm font-medium opacity-90">
               Menunggu Validasi
@@ -78,11 +75,12 @@ export default function DashboardClient({
           </div>
           <div>
             <div className="text-3xl font-bold">{pendingActivities.length}</div>
-            <p className="text-xs opacity-75 mt-1">Proposal baru</p>
+            <p className="mt-1 text-xs text-blue-100">Proposal baru</p>
           </div>
-        </div>
+          <ArrowRight className="mt-4 h-4 w-4 text-blue-200 transition group-hover:translate-x-1" aria-hidden="true" />
+        </button>
 
-        <div className="rounded-xl border bg-white shadow-sm p-6">
+        <button type="button" onClick={() => setActiveMenu("history")} className="group rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">
           <div className="flex flex-row items-center justify-between pb-2 space-y-0">
             <h3 className="tracking-tight text-sm font-medium text-gray-600">
               Total Diproses
@@ -93,11 +91,12 @@ export default function DashboardClient({
             <div className="text-3xl font-bold text-gray-900">
               {historyActivities.length}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Disetujui/Ditolak</p>
+            <p className="mt-1 text-xs text-slate-500">Disetujui atau ditolak</p>
           </div>
-        </div>
+          <ArrowRight className="mt-4 h-4 w-4 text-slate-400 transition group-hover:translate-x-1 group-hover:text-blue-600" aria-hidden="true" />
+        </button>
 
-        <div className="rounded-xl border bg-linear-to-br from-green-50 to-green-100 shadow-sm p-6">
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm">
           <div className="flex flex-row items-center justify-between pb-2 space-y-0">
             <h3 className="tracking-tight text-sm font-medium text-green-700">
               Tingkat Approval
@@ -116,17 +115,17 @@ export default function DashboardClient({
                 : 0}
               %
             </div>
-            <p className="text-xs text-green-600 mt-1">Proposal disetujui</p>
+            <p className="mt-1 text-xs text-emerald-700">Proposal disetujui</p>
           </div>
         </div>
       </div>
 
       {/* Recent Activities */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border shadow-sm p-6">
+        <section aria-labelledby="pending-preview" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 id="pending-preview" className="text-lg font-semibold text-gray-900">
               Terbaru Menunggu
             </h2>
           </div>
@@ -137,7 +136,7 @@ export default function DashboardClient({
           ) : (
             <div className="space-y-3">
               {pendingActivities.slice(0, 3).map((activity) => (
-                <div key={activity.id} className="p-3 bg-gray-50 rounded-lg">
+                <button type="button" key={activity.id} onClick={() => setActiveMenu("pending")} className="w-full rounded-xl border border-transparent bg-slate-50 p-3 text-left transition hover:border-blue-200 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
                   <h3 className="font-medium text-sm text-gray-900">
                     {activity.title}
                   </h3>
@@ -145,16 +144,16 @@ export default function DashboardClient({
                     {new Date(activity.date).toLocaleDateString("id-ID")} •{" "}
                     {activity.organizer}
                   </p>
-                </div>
+                </button>
               ))}
             </div>
           )}
-        </div>
+        </section>
 
-        <div className="bg-white rounded-xl border shadow-sm p-6">
+        <section aria-labelledby="history-preview" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-center gap-2 mb-4">
             <History className="w-5 h-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 id="history-preview" className="text-lg font-semibold text-gray-900">
               Riwayat Terbaru
             </h2>
           </div>
@@ -163,7 +162,7 @@ export default function DashboardClient({
           ) : (
             <div className="space-y-3">
               {historyActivities.slice(0, 3).map((activity) => (
-                <div key={activity.id} className="p-3 bg-gray-50 rounded-lg">
+                <button type="button" key={activity.id} onClick={() => setActiveMenu("history")} className="w-full rounded-xl border border-transparent bg-slate-50 p-3 text-left transition hover:border-blue-200 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="font-medium text-sm text-gray-900">
@@ -189,17 +188,17 @@ export default function DashboardClient({
                           : activity.status}
                     </span>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
-        </div>
+        </section>
       </div>
     </motion.div>
   );
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="dashboard-shell flex min-h-dvh overflow-hidden bg-slate-50">
       <DashboardSidebar
         menuItems={menuItems}
         activeMenu={activeMenu}
@@ -207,65 +206,51 @@ export default function DashboardClient({
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
         title="Pembina OSIS"
-        subtitle="OSIS SUPERVISOR"
+        subtitle="PENDAMPING ORGANISASI"
         userRole="Pembina OSIS"
         userAvatar={pembinaAvatar}
+        workspace="pembina-osis"
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Header */}
         <motion.header
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-6 py-4 sticky top-0 z-40"
+          className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur-xl sm:px-6"
         >
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
+          <div className="flex min-h-12 items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="lg:hidden p-2 rounded-xl hover:bg-orange-50 transition-all duration-200 group"
-                aria-label="Toggle sidebar"
+                className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 hover:text-blue-700 lg:hidden"
+                aria-label={isSidebarOpen ? "Tutup navigasi" : "Buka navigasi"}
+                aria-controls="pembina-osis-navigation"
+                aria-expanded={isSidebarOpen}
               >
-                <Menu className="w-5 h-5 text-gray-600 group-hover:text-orange-600" />
+                <Menu className="h-5 w-5" aria-hidden="true" />
               </button>
 
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-100 rounded-xl">
-                  {activeMenu === "dashboard" && (
-                    <Home className="w-5 h-5 text-orange-600" />
-                  )}
-                  {activeMenu === "pending" && (
-                    <Clock className="w-5 h-5 text-orange-600" />
-                  )}
-                  {activeMenu === "history" && (
-                    <History className="w-5 h-5 text-orange-600" />
-                  )}
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-gray-900">
-                    {activeMenu === "dashboard" && "Dashboard Pembina OSIS"}
-                    {activeMenu === "pending" && "Validasi Proposal"}
-                    {activeMenu === "history" && "Riwayat Validasi"}
-                  </h1>
-                  <p className="text-xs text-gray-500 hidden sm:block">
-                    {activeMenu === "dashboard" &&
-                      "Pantau dan kelola proposal OSIS"}
-                    {activeMenu === "pending" &&
-                      "Review dan approve proposal program kerja"}
-                    {activeMenu === "history" &&
-                      "Lihat riwayat proposal yang sudah diproses"}
-                  </p>
-                </div>
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-700 text-white shadow-lg shadow-blue-700/20">
+                <PageIcon className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="truncate text-base font-black tracking-tight text-slate-950 sm:text-lg">
+                  {pageMeta.title}
+                </h1>
+                <p className="hidden truncate text-xs text-slate-500 sm:block">
+                  {pageMeta.description}
+                </p>
               </div>
             </div>
           </div>
         </motion.header>
 
         {/* Content */}
-        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+        <main id="main-content" className="dashboard-workspace min-w-0 flex-1 overflow-y-auto p-3 sm:p-5 lg:p-7">
           {activeMenu === "dashboard" && renderDashboardContent()}
 
           {activeMenu === "pending" && (

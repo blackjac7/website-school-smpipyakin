@@ -1,19 +1,9 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Users,
-  Calendar,
-  Layout,
-  Activity,
-  Bell,
-  Newspaper,
-  GraduationCap,
-  Settings,
-  LayoutDashboard,
-} from "lucide-react";
 import DashboardSidebar from "@/components/dashboard/layout/DashboardSidebar";
-import { DashboardMenuItem } from "@/components/dashboard/layout/types";
+import { getWorkspaceMenu } from "@/components/dashboard/layout";
+import type { DashboardMenuItem } from "@/components/dashboard/layout";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -84,19 +74,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   };
 
-  const adminMenuItems: DashboardMenuItem[] = [
-    { id: "dashboard", label: "Overview", icon: LayoutDashboard },
-    { id: "hero", label: "Hero Carousel", icon: Layout },
-    { id: "stats", label: "Quick Stats", icon: Activity },
-    { id: "news", label: "Berita Sekolah", icon: Newspaper },
-    { id: "announcements", label: "Pengumuman", icon: Bell },
-    { id: "facilities", label: "Fasilitas", icon: Layout },
-    { id: "extracurricular", label: "Ekstrakurikuler", icon: Activity },
-    { id: "calendar", label: "Kalender Akademik", icon: Calendar },
-    { id: "teachers", label: "Profil Guru", icon: GraduationCap },
-    { id: "users", label: "Manajemen Pengguna", icon: Users },
-    { id: "settings", label: "Pengaturan", icon: Settings },
-  ];
+  const adminMenuItems = [...getWorkspaceMenu("admin")];
 
   // Professional admin avatar
   const adminAvatar =
@@ -109,10 +87,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       setActiveMenu={handleMenuClick}
       isSidebarOpen={isOpen}
       setIsSidebarOpen={onClose}
-      title="Admin Dashboard"
-      subtitle="CONTENT MANAGEMENT"
-      userRole="Admin"
+      title="Pusat Admin"
+      subtitle="MANAJEMEN SEKOLAH"
+      userRole="Administrator"
       userAvatar={adminAvatar}
+      workspace="admin"
     />
   );
 }
