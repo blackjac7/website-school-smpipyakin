@@ -1,8 +1,6 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getActivities } from "@/actions/osis/activities";
 import { OsisActivity } from "./types";
 import { isSameDay } from "date-fns";
 import { motion } from "framer-motion";
@@ -10,23 +8,14 @@ import { motion } from "framer-motion";
 interface CalendarProps {
   currentMonth: Date;
   setCurrentMonth: (date: Date) => void;
+  activities: OsisActivity[];
 }
 
 export default function Calendar({
   currentMonth,
   setCurrentMonth,
+  activities,
 }: CalendarProps) {
-  const [activities, setActivities] = useState<OsisActivity[]>([]);
-
-  useEffect(() => {
-    async function fetch() {
-      const res = await getActivities();
-      if (res.success && res.data) {
-        setActivities(res.data as unknown as OsisActivity[]);
-      }
-    }
-    fetch();
-  }, []);
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -80,17 +69,18 @@ export default function Calendar({
       const isToday = isSameDay(date, new Date());
 
       days.push(
-        <motion.div
+        <motion.button
+          type="button"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: day * 0.01 }}
           key={day}
-          className={`p-2 text-center cursor-pointer rounded-lg hover:bg-gray-100 relative ${
+          className={`min-h-10 p-2 text-center rounded-lg hover:bg-gray-100 relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
             isToday
               ? "bg-blue-50 text-blue-700 font-bold ring-1 ring-blue-200"
               : "text-gray-700"
           }`}
-          title={dayActivities.map((a) => a.title).join(", ")}
+          aria-label={`${day} ${monthNames[currentMonth.getMonth()]}${hasEvent ? `, ${dayActivities.length} kegiatan: ${dayActivities.map((a) => a.title).join(", ")}` : ", tidak ada kegiatan"}`}
         >
           {day}
           {hasEvent && (
@@ -103,7 +93,7 @@ export default function Calendar({
               ))}
             </div>
           )}
-        </motion.div>,
+        </motion.button>,
       );
     }
 
@@ -131,6 +121,7 @@ export default function Calendar({
               )
             }
             className="p-1 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-600"
+            aria-label="Bulan sebelumnya"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -147,6 +138,7 @@ export default function Calendar({
               )
             }
             className="p-1 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-600"
+            aria-label="Bulan berikutnya"
           >
             <ChevronRight className="w-4 h-4" />
           </button>

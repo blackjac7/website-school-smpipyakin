@@ -264,6 +264,7 @@ export default function StudentManagement() {
           <div className="relative w-full lg:flex-1 lg:max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
+              aria-label="Cari siswa"
               type="text"
               placeholder="Cari nama, NISN, atau email..."
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -278,6 +279,7 @@ export default function StudentManagement() {
               <div className="flex items-center gap-2 w-full lg:w-auto">
                 <Filter className="w-4 h-4 text-gray-400 shrink-0" />
                 <select
+                  aria-label="Filter kelas"
                   value={classFilter}
                   onChange={(e) => handleClassFilterChange(e.target.value)}
                   className="w-full lg:w-auto px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
@@ -294,6 +296,7 @@ export default function StudentManagement() {
               <div className="flex items-center gap-2 w-full lg:w-auto">
                 <Users className="w-4 h-4 text-gray-400 shrink-0" />
                 <select
+                  aria-label="Filter gender"
                   value={genderFilter}
                   onChange={(e) =>
                     handleGenderFilterChange(
@@ -311,6 +314,7 @@ export default function StudentManagement() {
               <div className="flex items-center gap-2 w-full sm:col-span-2 lg:w-auto lg:col-span-1">
                 <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
                 <select
+                  aria-label="Filter angkatan"
                   value={angkatanFilter}
                   onChange={(e) => handleAngkatanFilterChange(e.target.value)}
                   className="w-full lg:w-auto px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
@@ -598,6 +602,7 @@ export default function StudentManagement() {
               <button
                 onClick={() => setIsDetailModalOpen(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label="Tutup detail siswa"
               >
                 <X className="w-5 h-5" />
               </button>

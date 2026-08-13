@@ -123,6 +123,7 @@ export default function ActivitiesList({
                         onClick={() => onEditActivity(activity)}
                         className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         title="Edit"
+                        aria-label={`Edit program ${activity.title}`}
                       >
                         <Edit className="w-4 h-4" />
                       </button>
@@ -130,6 +131,7 @@ export default function ActivitiesList({
                         onClick={() => onDeleteActivity(activity.id)}
                         className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="Hapus"
+                        aria-label={`Hapus program ${activity.title}`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

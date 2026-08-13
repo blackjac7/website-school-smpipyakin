@@ -83,6 +83,7 @@ export default function DashboardSidebar({
               <button
                 onClick={() => setIsSidebarOpen(false)}
                 className="lg:hidden p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                aria-label={`Tutup menu ${displayTitle}`}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -107,7 +108,12 @@ export default function DashboardSidebar({
                 variants={menuItemVariants}
                 whileHover="hover"
                 whileTap="tap"
-                onClick={() => setActiveMenu(item.id)}
+                onClick={() => {
+                  setActiveMenu(item.id);
+                  if (setIsSidebarOpen && window.innerWidth < 1024) {
+                    setIsSidebarOpen(false);
+                  }
+                }}
                 aria-current={isActive ? "page" : undefined}
                 className={`
                   relative flex w-full items-center gap-3 px-4 py-3.5 rounded-xl cursor-pointer transition-colors duration-200 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2

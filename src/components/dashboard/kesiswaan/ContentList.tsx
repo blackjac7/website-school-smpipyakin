@@ -173,10 +173,10 @@ export default function ContentList({
                 <option value="Rejected">Rejected</option>
               </select>
             </div>
-            <button className="btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-400">
               <Filter className="w-4 h-4" />
-              Filter
-            </button>
+              Filter diterapkan otomatis
+            </div>
           </div>
         </div>
       </div>

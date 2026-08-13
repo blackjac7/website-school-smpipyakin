@@ -1,7 +1,9 @@
 import {
   getValidationQueue,
   getDashboardStats,
+  getKesiswaanOperationalOverview,
   DashboardStats,
+  KesiswaanOperationalOverview,
   ValidationQueueResult,
 } from "@/actions/kesiswaan";
 import DashboardClient from "./DashboardClient";
@@ -29,14 +31,26 @@ export default async function KesiswaanDashboardPage() {
       total: 0,
     },
   };
+  let operationalOverview: KesiswaanOperationalOverview = {
+    totalStudents: 0,
+    totalClasses: 0,
+    latenessToday: 0,
+    latenessThisWeek: 0,
+    attributeToday: 0,
+    attributeThisWeek: 0,
+    pendingContent: 0,
+    recentIncidents: [],
+  };
 
   try {
-    const [queueData, statsData] = await Promise.all([
+    const [queueData, statsData, overviewData] = await Promise.all([
       getValidationQueue("PENDING", 1, 10),
       getDashboardStats(),
+      getKesiswaanOperationalOverview(),
     ]);
     validationQueueResult = queueData;
     stats = statsData;
+    operationalOverview = overviewData;
   } catch (error) {
     console.error("Failed to fetch kesiswaan dashboard data:", error);
     // In production build without DB access, this might fail.
@@ -48,6 +62,7 @@ export default async function KesiswaanDashboardPage() {
       <DashboardClient
         initialQueueResult={validationQueueResult}
         initialStats={stats}
+        initialOperationalOverview={operationalOverview}
       />
     </ProtectedRoute>
   );

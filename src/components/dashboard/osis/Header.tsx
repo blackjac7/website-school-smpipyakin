@@ -72,7 +72,7 @@ const getHeaderInfo = (
       return {
         icon: Home,
         title: "OSIS Center",
-        subtitle: "Management area OSIS",
+        subtitle: "Pusat kerja organisasi siswa",
       };
   }
 };
@@ -142,7 +142,7 @@ export default function Header({
                   ? "bg-blue-100 text-blue-600"
                   : "text-gray-500 hover:text-blue-600 hover:bg-blue-50"
               }`}
-              aria-label={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ""}`}
+              aria-label={`Notifikasi${unreadCount > 0 ? `, ${unreadCount} belum dibaca` : ""}`}
             >
               <Bell className="w-5 h-5" />
               <AnimatePresence>

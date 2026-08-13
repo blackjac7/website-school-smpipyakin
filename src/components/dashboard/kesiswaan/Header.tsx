@@ -8,6 +8,7 @@ import {
   Settings,
   Users,
   CreditCard,
+  LayoutDashboard,
 } from "lucide-react";
 import { LogoutButton } from "@/components/shared";
 import { useAuth } from "@/components/shared/AuthProvider";
@@ -37,6 +38,12 @@ export default function Header({
 
   const getHeaderInfo = () => {
     switch (activeMenu) {
+      case "overview":
+        return {
+          title: "Ringkasan Hari Ini",
+          description: "Pantau kondisi siswa dan prioritas Kesiswaan",
+          icon: LayoutDashboard,
+        };
       case "validation":
         return {
           title: "Validasi Konten",
@@ -70,7 +77,7 @@ export default function Header({
       default:
         return {
           title: "Kesiswaan",
-          description: "Management area kesiswaan",
+          description: "Pusat kendali Kesiswaan",
           icon: Settings,
         };
     }
@@ -90,13 +97,14 @@ export default function Header({
           {onToggleSidebar && (
             <button
               onClick={onToggleSidebar}
-              className="lg:hidden shrink-0 p-2 rounded-lg hover:bg-purple-50 hover:text-purple-600 transition-colors"
+              className="lg:hidden shrink-0 p-2 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+              aria-label="Buka menu Kesiswaan"
             >
               <Menu className="w-5 h-5 text-gray-600" />
             </button>
           )}
           <div className="flex items-center gap-3 min-w-0">
-            <div className="hidden sm:flex w-10 h-10 bg-linear-to-br from-purple-500 to-violet-600 rounded-xl items-center justify-center shadow-sm shrink-0">
+            <div className="hidden sm:flex w-10 h-10 bg-linear-to-br from-blue-700 to-blue-950 rounded-xl items-center justify-center shadow-sm shrink-0">
               <headerInfo.icon className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
@@ -116,12 +124,13 @@ export default function Header({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowNotifications(!showNotifications)}
+              aria-label={`Notifikasi${unreadCount > 0 ? `, ${unreadCount} belum dibaca` : ""}`}
               className={`
                 relative p-2.5 rounded-full transition-all duration-200
                 ${
                   showNotifications
-                    ? "bg-purple-50 text-purple-600"
-                    : "text-gray-500 hover:text-purple-600 hover:bg-gray-100"
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-gray-500 hover:text-blue-700 hover:bg-gray-100"
                 }
               `}
             >
@@ -147,7 +156,7 @@ export default function Header({
                   <div className="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
                     <h3 className="font-semibold text-gray-900">Notifikasi</h3>
                     {unreadCount > 0 && (
-                      <span className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
+                      <span className="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
                         {unreadCount} baru
                       </span>
                     )}
@@ -167,7 +176,7 @@ export default function Header({
                               onMarkAsRead(notification.id);
                             }
                           }}
-                          className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${!notification.read ? "bg-purple-50/50" : ""}`}
+                          className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${!notification.read ? "bg-blue-50/50" : ""}`}
                         >
                           <div className="flex items-start gap-3">
                             <div
@@ -176,7 +185,7 @@ export default function Header({
                                   ? "bg-green-500"
                                   : notification.type === "pending"
                                     ? "bg-yellow-500"
-                                    : "bg-purple-500"
+                                    : "bg-blue-600"
                               }`}
                             />
                             <div className="flex-1 min-w-0">

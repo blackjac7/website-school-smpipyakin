@@ -22,6 +22,11 @@ import {
   Volume2,
   Shirt,
   ShieldCheck,
+  LockKeyhole,
+  Eye,
+  EyeOff,
+  KeyRound,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { verifyScanQR, recordLateness, deleteLatenessRecord } from "@/actions/lateness";
@@ -34,6 +39,8 @@ import toast from "react-hot-toast";
 import { playScanSound, initAudio } from "@/lib/sound-effects";
 import { cn } from "@/lib/utils";
 import AttributeChecklist from "./AttributeChecklist";
+import { getScanWindowStatus } from "@/lib/scan-window";
+import { requestScanTimeOverride } from "@/actions/osis/scanOverride";
 
 interface StudentInfo {
   id: string;
@@ -218,6 +225,15 @@ export default function LatnessScannerContent() {
   const [errorInfo, setErrorInfo] = useState<ScanErrorInfo | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [overrideTokens, setOverrideTokens] = useState<
+    Partial<Record<ScanMode, { token: string; expiresAt: number }>>
+  >({});
+  const [showOverrideModal, setShowOverrideModal] = useState(false);
+  const [adminUsername, setAdminUsername] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
+  const [isRequestingOverride, setIsRequestingOverride] = useState(false);
+  const [overrideError, setOverrideError] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scannerReady, setScannerReady] = useState(false);
@@ -234,6 +250,12 @@ export default function LatnessScannerContent() {
   const inputRef = useRef<HTMLInputElement>(null);
   const prefersReducedMotion = useReducedMotion();
   const theme = MODE_THEME[mode];
+  const windowStatus = getScanWindowStatus(mode, currentTime);
+  const activeOverride = overrideTokens[mode];
+  const overrideActive = Boolean(
+    activeOverride && activeOverride.expiresAt > currentTime.getTime(),
+  );
+  const scannerAllowed = windowStatus.isOpen || overrideActive;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const html5QrCodeRef = useRef<any>(null);
 
@@ -248,6 +270,20 @@ export default function LatnessScannerContent() {
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    setOverrideTokens((current) => {
+      const next = { ...current };
+      let changed = false;
+      for (const scanMode of ["lateness", "attribute"] as const) {
+        if (next[scanMode] && next[scanMode]!.expiresAt <= Date.now()) {
+          delete next[scanMode];
+          changed = true;
+        }
+      }
+      return changed ? next : current;
+    });
+  }, [currentTime]);
 
   // Undo countdown: tick down while the success screen offers an undo. When it
   // reaches 0 the button auto-hides (the server also stops accepting the undo).
@@ -268,7 +304,7 @@ export default function LatnessScannerContent() {
 
   // Initialize camera scanner
   useEffect(() => {
-    if (scanState === "camera") {
+    if (scanState === "camera" && scannerAllowed) {
       setScannerReady(false);
       setIsScanning(false);
       isProcessingRef.current = false; // Reset lock
@@ -308,7 +344,7 @@ export default function LatnessScannerContent() {
       stopCameraScanner();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scanState]);
+  }, [scanState, scannerAllowed]);
 
   const initCameraScanner = async () => {
     try {
@@ -442,6 +478,7 @@ export default function LatnessScannerContent() {
 
   // Update handleQRScanned to play beep
   const handleQRScanned = async (qrData: string) => {
+    if (!scannerAllowed) return;
     // 1. Play beep (fire and forget to not block UI)
     playScanSound("beep").catch(console.error);
 
@@ -459,6 +496,10 @@ export default function LatnessScannerContent() {
   };
 
   const handleVerify = async () => {
+    if (!scannerAllowed) {
+      setShowOverrideModal(true);
+      return;
+    }
     if (!qrInput.trim()) {
       toast.error("Masukkan data QR Code");
       return;
@@ -499,6 +540,11 @@ export default function LatnessScannerContent() {
   };
 
   const verifyQR = async (qrData: string) => {
+    if (!scannerAllowed) {
+      setScanState("input");
+      setShowOverrideModal(true);
+      return;
+    }
     setScanState("verifying");
     setErrorInfo(null);
 
@@ -514,7 +560,10 @@ export default function LatnessScannerContent() {
       // Call each mode's action in its own branch so `result` keeps its own
       // precise type instead of collapsing into an untyped union.
       if (mode === "attribute") {
-        const result = await verifyAttributeScanQR(qrData);
+        const result = await verifyAttributeScanQR(
+          qrData,
+          activeOverride?.token,
+        );
         if (result.success && result.student) {
           setStudentInfo({
             id: result.student.id,
@@ -541,7 +590,7 @@ export default function LatnessScannerContent() {
           );
         }
       } else {
-        const result = await verifyScanQR(qrData);
+        const result = await verifyScanQR(qrData, activeOverride?.token);
         if (result.success && result.student) {
           setStudentInfo({
             id: result.student.id,
@@ -594,12 +643,14 @@ export default function LatnessScannerContent() {
               studentInfo.id,
               arrivalTime,
               reason || undefined,
+              activeOverride?.token,
             )
           : await recordAttributeViolation(
               studentInfo.id,
               arrivalTime,
               checkedAttributeIds,
               attributeNotes || undefined,
+              activeOverride?.token,
             );
 
       if (result.success) {
@@ -709,6 +760,10 @@ export default function LatnessScannerContent() {
   };
 
   const switchToCamera = () => {
+    if (!scannerAllowed) {
+      setShowOverrideModal(true);
+      return;
+    }
     initAudio(); // Initialize audio context on user interaction
     setScanState("camera");
     setCameraError(null);
@@ -717,6 +772,49 @@ export default function LatnessScannerContent() {
   const switchToManual = () => {
     stopCameraScanner();
     setScanState("input");
+  };
+
+  const handleRequestOverride = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setIsRequestingOverride(true);
+    setOverrideError(null);
+
+    try {
+      const result = await requestScanTimeOverride({
+        adminUsername,
+        adminPassword,
+        mode,
+      });
+
+      if (!result.success || !result.token || !result.expiresAt) {
+        setOverrideError(result.error || "Verifikasi Admin gagal.");
+        return;
+      }
+
+      setOverrideTokens((current) => ({
+        ...current,
+        [mode]: { token: result.token, expiresAt: result.expiresAt },
+      }));
+      setAdminUsername("");
+      setAdminPassword("");
+      setShowOverrideModal(false);
+      toast.success("Akses khusus aktif selama 10 menit");
+    } catch {
+      setOverrideError("Tidak dapat memverifikasi Admin. Silakan coba lagi.");
+    } finally {
+      setIsRequestingOverride(false);
+    }
+  };
+
+  const revokeOverride = () => {
+    setOverrideTokens((current) => {
+      const next = { ...current };
+      delete next[mode];
+      return next;
+    });
+    stopCameraScanner();
+    resetScanner();
+    toast.success("Akses khusus dinonaktifkan");
   };
 
   const formatTime = (date: Date) => {
@@ -730,49 +828,13 @@ export default function LatnessScannerContent() {
 
   return (
     <div className="space-y-6">
-      {/* Persistent Mode Banner — the backbone of wrong-tab prevention.
-          Rendered ABOVE the state switch so it shows in every scanState; the
-          active category is therefore never ambiguous, and the live clock +
-          recording window live here instead of a separate pill. Keyed on
-          `mode` so switching replays a quick pop as an unmissable cue. */}
-      <motion.div
-        key={mode}
-        initial={prefersReducedMotion ? false : { opacity: 0.5, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3 }}
-        className={cn(
-          "max-w-md mx-auto rounded-2xl text-white shadow-lg overflow-hidden bg-gradient-to-r",
-          theme.gradient,
-        )}
-      >
-        <div className="p-4 flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-            <theme.icon className="w-6 h-6" aria-hidden="true" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/80">
-              Mode Pencatatan
-            </p>
-            <h1 className="text-lg font-bold leading-tight">{theme.label}</h1>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <Clock className="w-4 h-4 text-white/80" aria-hidden="true" />
-            <span className="font-mono text-2xl font-bold tabular-nums">
-              {formatTime(currentTime)}
-            </span>
-          </div>
-        </div>
-        <div className="px-4 py-2 bg-black/10 flex items-center justify-between gap-3 text-xs text-white/90">
-          <span className="truncate">{theme.duty}</span>
-          <span className="shrink-0 font-medium">{theme.window}</span>
-        </div>
-      </motion.div>
-
-      {/* Mode toggle (input/camera states only). Each button carries its OWN
+      {/* One context panel: mode, schedule, live status, and scanner access. */}
+      {(scanState === "input" || scanState === "camera") && (
+        <div className="max-w-md mx-auto space-y-3">
+          {/* Mode toggle. Each button carries its OWN
           fixed mode color so the choice reads even before you commit — active =
           that mode's gradient, inactive = quiet white outline. */}
-      {(scanState === "input" || scanState === "camera") && (
-        <div className="max-w-md mx-auto grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => switchMode("lateness")}
             aria-pressed={mode === "lateness"}
@@ -799,13 +861,65 @@ export default function LatnessScannerContent() {
             <Shirt className="w-4 h-4" />
             Atribut
           </button>
+          </div>
+
+          <div
+            className={cn(
+              "rounded-2xl border p-4 sm:p-5",
+              scannerAllowed
+                ? overrideActive
+                  ? "border-violet-200 bg-violet-50"
+                  : "border-emerald-200 bg-emerald-50"
+                : "border-amber-200 bg-amber-50",
+            )}
+            role="status"
+            aria-live="polite"
+          >
+            <div className="flex items-start gap-3">
+              <div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-xl", scannerAllowed ? (overrideActive ? "bg-violet-100 text-violet-700" : "bg-emerald-100 text-emerald-700") : "bg-amber-100 text-amber-700")}>
+                {scannerAllowed ? <theme.icon className="h-5 w-5" /> : <LockKeyhole className="h-5 w-5" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{theme.label}</p>
+                    <p className="font-bold text-gray-900">
+                      {overrideActive ? "Akses Admin aktif" : scannerAllowed ? "Scanner aktif" : windowStatus.phase === "after" ? "Jam scan telah berakhir" : "Belum waktunya scan"}
+                    </p>
+                  </div>
+                  <span className={cn("rounded-full px-2.5 py-1 text-xs font-bold", scannerAllowed ? (overrideActive ? "bg-violet-100 text-violet-700" : "bg-emerald-100 text-emerald-700") : "bg-amber-100 text-amber-800")}>
+                    {overrideActive ? "OVERRIDE" : scannerAllowed ? "AKTIF" : "TERKUNCI"}
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
+                  <span className="inline-flex items-center gap-1.5 font-mono font-semibold text-gray-900"><Clock className="h-4 w-4" />{formatTime(currentTime)} WIB</span>
+                  <span>Jadwal {windowStatus.startTime}–{windowStatus.endTime} WIB</span>
+                </div>
+                <p className="mt-1 text-xs text-gray-500">{theme.duty}</p>
+                {!scannerAllowed && (
+                  <div className="mt-3 space-y-3">
+                    <p className="text-xs font-medium text-amber-800">Dibuka {windowStatus.nextOpenLabel}</p>
+                    <button type="button" onClick={() => { setOverrideError(null); setShowOverrideModal(true); }} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gray-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2">
+                      <KeyRound className="h-4 w-4" /> Minta akses Admin
+                    </button>
+                  </div>
+                )}
+                {overrideActive && (
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs text-violet-700">Berakhir pukul {new Date(activeOverride!.expiresAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" })} WIB.</p>
+                    <button type="button" onClick={revokeOverride} className="shrink-0 rounded-lg border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-violet-700 hover:bg-violet-100">Akhiri akses</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Manual/Camera Input Toggle (only show on input/camera states).
           Kept neutral (grey) so it never competes with the mode identity —
           this picks the input METHOD, not the recording category. */}
-      {(scanState === "input" || scanState === "camera") && (
+      {scannerAllowed && (scanState === "input" || scanState === "camera") && (
         <div className="flex flex-col items-center gap-4">
           <div className="flex justify-center gap-2">
             <button
@@ -851,7 +965,7 @@ export default function LatnessScannerContent() {
       <div className="max-w-md mx-auto">
         <AnimatePresence mode="wait">
           {/* Manual Input */}
-          {scanState === "input" && (
+          {scannerAllowed && scanState === "input" && (
             <motion.div
               key="input"
               initial={{ opacity: 0, scale: 0.95 }}
@@ -906,7 +1020,7 @@ export default function LatnessScannerContent() {
           )}
 
           {/* Camera Scanner */}
-          {scanState === "camera" && (
+          {scannerAllowed && scanState === "camera" && (
             <motion.div
               key="camera"
               initial={{ opacity: 0, scale: 0.95 }}
@@ -1411,6 +1525,145 @@ export default function LatnessScannerContent() {
           )}
         </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {showOverrideModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/65 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="scan-override-title"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget && !isRequestingOverride) {
+                setShowOverrideModal(false);
+              }
+            }}
+          >
+            <motion.div
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 30 }}
+              className="max-h-[92vh] w-full overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:max-w-md sm:rounded-3xl"
+            >
+              <div className="relative overflow-hidden bg-blue-950 px-5 pb-6 pt-5 text-white sm:px-6">
+                <div className="absolute -right-14 -top-14 h-40 w-40 rounded-full bg-amber-400/20 blur-2xl" />
+                <div className="relative flex items-start justify-between gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400 text-blue-950 shadow-lg shadow-amber-400/20">
+                    <ShieldCheck className="h-6 w-6" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowOverrideModal(false)}
+                    disabled={isRequestingOverride}
+                    className="rounded-xl p-2 text-blue-100 hover:bg-white/10 disabled:opacity-50"
+                    aria-label="Tutup verifikasi Admin"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="relative mt-5">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">
+                    Persetujuan di luar jadwal
+                  </p>
+                  <h2 id="scan-override-title" className="mt-2 text-2xl font-black">
+                    Verifikasi akun Admin
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-blue-100">
+                    Akses hanya berlaku untuk mode {theme.label.toLowerCase()}
+                    selama 10 menit dan tidak membuka fitur Admin lainnya.
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleRequestOverride} className="space-y-4 p-5 sm:p-6">
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                  <p className="font-bold">Catatan keamanan</p>
+                  <p className="mt-1 leading-5 text-amber-800">
+                    Admin harus memasukkan username dan passwordnya sendiri.
+                    Password tidak disimpan di perangkat ini.
+                  </p>
+                </div>
+
+                <div>
+                  <label htmlFor="override-admin-username" className="mb-1.5 block text-sm font-semibold text-gray-700">
+                    Username Admin
+                  </label>
+                  <input
+                    id="override-admin-username"
+                    value={adminUsername}
+                    onChange={(event) => setAdminUsername(event.target.value)}
+                    autoComplete="username"
+                    required
+                    disabled={isRequestingOverride}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100"
+                    placeholder="Masukkan username Admin"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="override-admin-password" className="mb-1.5 block text-sm font-semibold text-gray-700">
+                    Password Admin
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="override-admin-password"
+                      type={showAdminPassword ? "text" : "password"}
+                      value={adminPassword}
+                      onChange={(event) => setAdminPassword(event.target.value)}
+                      autoComplete="current-password"
+                      required
+                      minLength={8}
+                      disabled={isRequestingOverride}
+                      className="w-full rounded-xl border border-gray-200 py-3 pl-4 pr-12 text-gray-900 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100"
+                      placeholder="Masukkan password Admin"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowAdminPassword((value) => !value)}
+                      className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-gray-400 hover:text-gray-700"
+                      aria-label={showAdminPassword ? "Sembunyikan password" : "Tampilkan password"}
+                    >
+                      {showAdminPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                {overrideError && (
+                  <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">
+                    {overrideError}
+                  </div>
+                )}
+
+                <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() => setShowOverrideModal(false)}
+                    disabled={isRequestingOverride}
+                    className="min-h-12 flex-1 rounded-xl border border-gray-200 px-4 py-3 font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isRequestingOverride || !adminUsername || !adminPassword}
+                    className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-900 px-4 py-3 font-bold text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-gray-300"
+                  >
+                    {isRequestingOverride ? (
+                      <Loader2 className={cn("h-5 w-5", !prefersReducedMotion && "animate-spin")} />
+                    ) : (
+                      <KeyRound className="h-5 w-5" />
+                    )}
+                    {isRequestingOverride ? "Memverifikasi..." : "Aktifkan 10 menit"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

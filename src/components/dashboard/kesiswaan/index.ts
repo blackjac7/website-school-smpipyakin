@@ -10,6 +10,7 @@ export { default as PreviewModal } from "./PreviewModal";
 export { default as ValidationModal } from "./ValidationModal";
 export { default as StudentList } from "./StudentList";
 export { default as StudentManagement } from "./StudentManagement";
+export { default as OverviewDashboard } from "./OverviewDashboard";
 
 // Export types
 export type {
