@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import {
-  Camera,
   CheckCircle2,
   Clock,
   User,
@@ -15,17 +14,25 @@ import {
   VideoOff,
   Scan,
   AlertCircle,
+  AlertTriangle,
+  UserX,
+  ShieldAlert,
+  Info,
+  Undo2,
   Volume2,
   Shirt,
   ShieldCheck,
+  type LucideIcon,
 } from "lucide-react";
-import { verifyScanQR, recordLateness } from "@/actions/lateness";
+import { verifyScanQR, recordLateness, deleteLatenessRecord } from "@/actions/lateness";
 import {
   verifyAttributeScanQR,
   recordAttributeViolation,
+  deleteAttributeViolation,
 } from "@/actions/attributes";
 import toast from "react-hot-toast";
 import { playScanSound, initAudio } from "@/lib/sound-effects";
+import { cn } from "@/lib/utils";
 import AttributeChecklist from "./AttributeChecklist";
 
 interface StudentInfo {
@@ -49,8 +56,155 @@ type ScanState =
   | "camera"
   | "verifying"
   | "found"
+  | "duplicate"
   | "error"
   | "success";
+
+/**
+ * Per-mode visual identity. The two QR categories share ONE category-less QR
+ * per student, so "wrong tab" can't be rejected from data — it has to be
+ * prevented by making the active mode impossible to miss. Warm (amber) vs cool
+ * (indigo) is distinguishable at a glance and safe on the blue↔yellow axis for
+ * the common colorblindness types; it's always paired with a distinct icon +
+ * label so we never lean on color alone.
+ *
+ * Every value is a COMPLETE Tailwind class string. Do not build these with
+ * template literals like `bg-${c}-600` — Tailwind v4's JIT only ships classes
+ * it can find verbatim in the source.
+ */
+const MODE_THEME = {
+  lateness: {
+    label: "Keterlambatan",
+    icon: Clock,
+    duty: "Catat siswa yang terlambat masuk sekolah",
+    window: "Jam pencatatan 06:31–09:00 WIB",
+    gradient: "from-amber-500 to-orange-500",
+    solidButton: "bg-amber-600 hover:bg-amber-700",
+    tint: "bg-amber-50",
+    border: "border-amber-200",
+    ring: "ring-amber-200",
+    accentText: "text-amber-700",
+    accentIconBg: "bg-amber-100",
+    frameBorder: "border-amber-500",
+    scanLineVia: "via-amber-500",
+    spinnerRing: "border-amber-500",
+    spinnerBg: "bg-amber-100",
+    spinnerText: "text-amber-600",
+    focusRing: "focus-visible:ring-amber-500",
+    inputFocus: "focus:border-amber-500 focus:ring-amber-500",
+    submitLabel: "Catat Keterlambatan",
+    successVerb: "Keterlambatan",
+    scanTimeLabel: "⏰ Waktu Kedatangan",
+    scanTimeHint: "Terlambat masuk sekolah",
+  },
+  attribute: {
+    label: "Pelanggaran Atribut",
+    icon: Shirt,
+    duty: "Periksa kelengkapan atribut seragam siswa",
+    window: "Jam pencatatan 06:31–14:00 WIB",
+    gradient: "from-indigo-500 to-violet-500",
+    solidButton: "bg-indigo-600 hover:bg-indigo-700",
+    tint: "bg-indigo-50",
+    border: "border-indigo-200",
+    ring: "ring-indigo-200",
+    accentText: "text-indigo-700",
+    accentIconBg: "bg-indigo-100",
+    frameBorder: "border-indigo-500",
+    scanLineVia: "via-indigo-500",
+    spinnerRing: "border-indigo-500",
+    spinnerBg: "bg-indigo-100",
+    spinnerText: "text-indigo-600",
+    focusRing: "focus-visible:ring-indigo-500",
+    inputFocus: "focus:border-indigo-500 focus:ring-indigo-500",
+    submitLabel: "Catat Pelanggaran Atribut",
+    successVerb: "Pelanggaran atribut",
+    scanTimeLabel: "👕 Waktu Pemeriksaan",
+    scanTimeHint: "Pemeriksaan atribut siswa",
+  },
+} as const;
+
+type ErrorTone = "red" | "amber" | "slate";
+
+interface ScanErrorInfo {
+  title: string;
+  message: string;
+  icon: LucideIcon;
+  tone: ErrorTone;
+}
+
+/**
+ * Map the server's existing Indonesian error strings to a specific, honest
+ * heading + icon + tone. This is intentionally client-only: the server already
+ * returns a precise message, so we just categorize it instead of adding new
+ * server error codes. If those strings are reworded, update these matchers.
+ *
+ * Tone semantics stay mode-independent: red = genuine error, amber = a timing
+ * situation (informational, not the scanner's fault), slate = unexpected.
+ */
+function categorizeScanError(message: string): {
+  title: string;
+  icon: LucideIcon;
+  tone: ErrorTone;
+} {
+  // Timing first: these messages carry "WIB"/"waktunya"/"berakhir" and are
+  // never the QR's fault, so they must not fall through to "QR tidak terbaca".
+  if (/waktunya|berakhir|wib/i.test(message)) {
+    return {
+      title: /berakhir/i.test(message)
+        ? "Waktu Pencatatan Berakhir"
+        : "Belum Waktunya",
+      icon: Clock,
+      tone: "amber",
+    };
+  }
+  if (/tidak ditemukan/i.test(message)) {
+    return { title: "Siswa Tidak Ditemukan", icon: UserX, tone: "red" };
+  }
+  if (/unauthorized|akses/i.test(message)) {
+    return { title: "Akses Ditolak", icon: ShieldAlert, tone: "red" };
+  }
+  if (/tidak valid|terbaca|dikenali/i.test(message)) {
+    return { title: "QR Code Tidak Terbaca", icon: AlertTriangle, tone: "red" };
+  }
+  return { title: "Terjadi Kesalahan", icon: AlertCircle, tone: "slate" };
+}
+
+/** Full class strings per error tone (JIT-safe). */
+const TONE_STYLES: Record<
+  ErrorTone,
+  {
+    container: string;
+    iconBg: string;
+    iconText: string;
+    title: string;
+    body: string;
+  }
+> = {
+  red: {
+    container: "bg-red-50 border-red-200",
+    iconBg: "bg-red-100",
+    iconText: "text-red-500",
+    title: "text-red-700",
+    body: "text-red-600",
+  },
+  amber: {
+    container: "bg-amber-50 border-amber-200",
+    iconBg: "bg-amber-100",
+    iconText: "text-amber-500",
+    title: "text-amber-700",
+    body: "text-amber-600",
+  },
+  slate: {
+    container: "bg-slate-50 border-slate-200",
+    iconBg: "bg-slate-100",
+    iconText: "text-slate-500",
+    title: "text-slate-700",
+    body: "text-slate-600",
+  },
+};
+
+/** How long after a save the OSIS member can undo it (mirrors the server). */
+const UNDO_WINDOW_SECONDS = 5;
 
 export default function LatnessScannerContent() {
   const [mode, setMode] = useState<ScanMode>("lateness");
@@ -61,14 +215,25 @@ export default function LatnessScannerContent() {
   const [attributeItems, setAttributeItems] = useState<AttributeItemData[]>([]);
   const [checkedAttributeIds, setCheckedAttributeIds] = useState<string[]>([]);
   const [attributeNotes, setAttributeNotes] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorInfo, setErrorInfo] = useState<ScanErrorInfo | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scannerReady, setScannerReady] = useState(false);
   const [, setFlash] = useState(false);
+  // Undo ("prevent by clarity, recover by undo"): after a successful save we
+  // keep just enough to reverse it, and count down the window client-side.
+  const [lastRecord, setLastRecord] = useState<{
+    recordId: string;
+    mode: ScanMode;
+    studentName: string;
+  } | null>(null);
+  const [undoSecondsLeft, setUndoSecondsLeft] = useState(0);
+  const [isUndoing, setIsUndoing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+  const theme = MODE_THEME[mode];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const html5QrCodeRef = useRef<any>(null);
 
@@ -83,6 +248,14 @@ export default function LatnessScannerContent() {
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Undo countdown: tick down while the success screen offers an undo. When it
+  // reaches 0 the button auto-hides (the server also stops accepting the undo).
+  useEffect(() => {
+    if (scanState !== "success" || undoSecondsLeft <= 0) return;
+    const t = setTimeout(() => setUndoSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [scanState, undoSecondsLeft]);
 
   // Auto focus input
   useEffect(() => {
@@ -293,17 +466,47 @@ export default function LatnessScannerContent() {
     await verifyQR(qrInput.trim());
   };
 
+  // Categorize a server (or client) error message into an honest heading +
+  // icon + tone, then show the error panel. The body keeps the server's
+  // precise wording; only the heading is derived.
+  const showScanError = async (message: string) => {
+    const info = categorizeScanError(message);
+    setErrorInfo({ ...info, message });
+    setScanState("error");
+    await playScanSound("error");
+    toast.error(info.title);
+  };
+
+  // "Sudah tercatat hari ini" is benign, not an error — the student card the
+  // server already returns is reused here so the OSIS member sees WHO is
+  // duplicated instead of a scary red "QR invalid".
+  const showDuplicate = async (student: {
+    id: string;
+    name: string | null;
+    nisn: string;
+    class: string | null;
+  }) => {
+    setStudentInfo({
+      id: student.id,
+      name: student.name,
+      nisn: student.nisn,
+      class: student.class,
+      image: null,
+    });
+    setScanState("duplicate");
+    await playScanSound("error");
+    toast(`${student.name || "Siswa"} sudah tercatat hari ini`, { icon: "ℹ️" });
+  };
+
   const verifyQR = async (qrData: string) => {
     setScanState("verifying");
-    setErrorMessage("");
+    setErrorInfo(null);
 
-    // Basic length check - QR data should be reasonably long (Base64 encoded)
+    // Client-side sanity check: a real payload is a longish Base64 string.
     if (!qrData || qrData.length < 10) {
-      setErrorMessage(
-        "QR Code tidak valid. Pastikan menggunakan QR Code siswa SMP IP Yakin.",
+      await showScanError(
+        "QR Code tidak terbaca. Pastikan ini QR Code kartu siswa SMP IP Yakin, tidak buram atau terpotong.",
       );
-      setScanState("error");
-      toast.error("QR Code tidak valid!");
       return;
     }
 
@@ -326,13 +529,16 @@ export default function LatnessScannerContent() {
           setScanState("found");
           await playScanSound("success");
           toast.success(`Siswa ditemukan: ${result.student.name}`);
+        } else if (
+          "alreadyRecorded" in result &&
+          result.alreadyRecorded &&
+          result.student
+        ) {
+          await showDuplicate(result.student);
         } else {
-          setErrorMessage(
-            result.error || "QR Code tidak valid atau sudah kedaluwarsa.",
+          await showScanError(
+            result.error || "Terjadi kesalahan. Silakan coba lagi.",
           );
-          setScanState("error");
-          await playScanSound("error");
-          toast.error(result.error || "QR Code tidak valid!");
         }
       } else {
         const result = await verifyScanQR(qrData);
@@ -347,20 +553,22 @@ export default function LatnessScannerContent() {
           setScanState("found");
           await playScanSound("success");
           toast.success(`Siswa ditemukan: ${result.student.name}`);
+        } else if (
+          "alreadyRecorded" in result &&
+          result.alreadyRecorded &&
+          result.student
+        ) {
+          await showDuplicate(result.student);
         } else {
-          setErrorMessage(
-            result.error || "QR Code tidak valid atau sudah kedaluwarsa.",
+          await showScanError(
+            result.error || "Terjadi kesalahan. Silakan coba lagi.",
           );
-          setScanState("error");
-          await playScanSound("error");
-          toast.error(result.error || "QR Code tidak valid!");
         }
       }
     } catch {
-      setErrorMessage("Terjadi kesalahan saat verifikasi. Silakan coba lagi.");
-      setScanState("error");
-      await playScanSound("error");
-      toast.error("Gagal memverifikasi QR Code");
+      await showScanError(
+        "Terjadi kesalahan saat verifikasi. Silakan coba lagi.",
+      );
     }
   };
 
@@ -395,11 +603,20 @@ export default function LatnessScannerContent() {
             );
 
       if (result.success) {
+        // Remember just enough to undo, and open the countdown window. The
+        // `in` + truthiness check narrows recordId to a definite string; if it
+        // were ever missing we still confirm success, just without the undo.
+        if ("recordId" in result && result.recordId) {
+          setLastRecord({
+            recordId: result.recordId,
+            mode,
+            studentName: studentInfo.name || "Siswa",
+          });
+          setUndoSecondsLeft(UNDO_WINDOW_SECONDS);
+        }
         setScanState("success");
         toast.success(
-          mode === "lateness"
-            ? `Keterlambatan ${studentInfo.name} berhasil dicatat`
-            : `Pelanggaran atribut ${studentInfo.name} berhasil dicatat`,
+          `${theme.successVerb} ${studentInfo.name} berhasil dicatat`,
         );
       } else {
         toast.error(
@@ -415,6 +632,32 @@ export default function LatnessScannerContent() {
     setIsSubmitting(false);
   };
 
+  // Undo the record we just committed. The server independently re-checks that
+  // the caller owns it and the window hasn't elapsed, so this can only ever
+  // reverse an "undo just now" — never a general OSIS delete.
+  const handleUndo = async () => {
+    if (!lastRecord) return;
+    setIsUndoing(true);
+    try {
+      const result =
+        lastRecord.mode === "lateness"
+          ? await deleteLatenessRecord(lastRecord.recordId)
+          : await deleteAttributeViolation(lastRecord.recordId);
+
+      if (result.success) {
+        toast.success("Pencatatan dibatalkan");
+        setLastRecord(null);
+        setUndoSecondsLeft(0);
+        resetScanner();
+      } else {
+        toast.error(result.error || "Gagal membatalkan pencatatan");
+      }
+    } catch {
+      toast.error("Gagal membatalkan pencatatan");
+    }
+    setIsUndoing(false);
+  };
+
   const resetScanner = () => {
     setScanState("input");
     setStudentInfo(null);
@@ -423,10 +666,12 @@ export default function LatnessScannerContent() {
     setAttributeItems([]);
     setCheckedAttributeIds([]);
     setAttributeNotes("");
-    setErrorMessage("");
+    setErrorInfo(null);
     setCameraError(null);
     setScannerReady(false);
     setIsScanning(false);
+    setLastRecord(null);
+    setUndoSecondsLeft(0);
   };
 
   // Reset to camera mode (for quick rescan after error)
@@ -437,7 +682,7 @@ export default function LatnessScannerContent() {
     setAttributeItems([]);
     setCheckedAttributeIds([]);
     setAttributeNotes("");
-    setErrorMessage("");
+    setErrorInfo(null);
     setCameraError(null);
     setScannerReady(false);
     setIsScanning(false);
@@ -485,42 +730,71 @@ export default function LatnessScannerContent() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
-          <Camera className="w-7 h-7 text-blue-600" />
-          {mode === "lateness"
-            ? "Scan Keterlambatan Siswa"
-            : "Scan Pelanggaran Atribut Siswa"}
-        </h1>
-        <p className="text-gray-500">
-          {mode === "lateness"
-            ? "Scan QR Code siswa dengan kamera atau input manual"
-            : "Periksa kelengkapan atribut siswa via scan QR Code"}
-        </p>
-      </div>
+      {/* Persistent Mode Banner — the backbone of wrong-tab prevention.
+          Rendered ABOVE the state switch so it shows in every scanState; the
+          active category is therefore never ambiguous, and the live clock +
+          recording window live here instead of a separate pill. Keyed on
+          `mode` so switching replays a quick pop as an unmissable cue. */}
+      <motion.div
+        key={mode}
+        initial={prefersReducedMotion ? false : { opacity: 0.5, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+        className={cn(
+          "max-w-md mx-auto rounded-2xl text-white shadow-lg overflow-hidden bg-gradient-to-r",
+          theme.gradient,
+        )}
+      >
+        <div className="p-4 flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+            <theme.icon className="w-6 h-6" aria-hidden="true" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/80">
+              Mode Pencatatan
+            </p>
+            <h1 className="text-lg font-bold leading-tight">{theme.label}</h1>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Clock className="w-4 h-4 text-white/80" aria-hidden="true" />
+            <span className="font-mono text-2xl font-bold tabular-nums">
+              {formatTime(currentTime)}
+            </span>
+          </div>
+        </div>
+        <div className="px-4 py-2 bg-black/10 flex items-center justify-between gap-3 text-xs text-white/90">
+          <span className="truncate">{theme.duty}</span>
+          <span className="shrink-0 font-medium">{theme.window}</span>
+        </div>
+      </motion.div>
 
-      {/* Scan Type Toggle (only show on input/camera states) */}
+      {/* Mode toggle (input/camera states only). Each button carries its OWN
+          fixed mode color so the choice reads even before you commit — active =
+          that mode's gradient, inactive = quiet white outline. */}
       {(scanState === "input" || scanState === "camera") && (
         <div className="max-w-md mx-auto grid grid-cols-2 gap-2">
           <button
             onClick={() => switchMode("lateness")}
-            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors ${
+            aria-pressed={mode === "lateness"}
+            className={cn(
+              "flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
               mode === "lateness"
-                ? "bg-red-600 text-white shadow-sm"
-                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-            }`}
+                ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm focus-visible:ring-amber-500"
+                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 focus-visible:ring-gray-400",
+            )}
           >
             <Clock className="w-4 h-4" />
             Keterlambatan
           </button>
           <button
             onClick={() => switchMode("attribute")}
-            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors ${
+            aria-pressed={mode === "attribute"}
+            className={cn(
+              "flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
               mode === "attribute"
-                ? "bg-red-600 text-white shadow-sm"
-                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-            }`}
+                ? "bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-sm focus-visible:ring-indigo-500"
+                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 focus-visible:ring-gray-400",
+            )}
           >
             <Shirt className="w-4 h-4" />
             Atribut
@@ -528,38 +802,34 @@ export default function LatnessScannerContent() {
         </div>
       )}
 
-      {/* Current Time */}
-      <div className="text-center">
-        <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl shadow-lg">
-          <Clock className="w-5 h-5" />
-          <span className="font-mono text-2xl font-bold">
-            {formatTime(currentTime)}
-          </span>
-        </div>
-      </div>
-
-      {/* Manual/Camera Input Toggle (only show on input/camera states) */}
+      {/* Manual/Camera Input Toggle (only show on input/camera states).
+          Kept neutral (grey) so it never competes with the mode identity —
+          this picks the input METHOD, not the recording category. */}
       {(scanState === "input" || scanState === "camera") && (
         <div className="flex flex-col items-center gap-4">
           <div className="flex justify-center gap-2">
             <button
               onClick={switchToManual}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+              aria-pressed={scanState === "input"}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500",
                 scanState === "input"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
+                  ? "bg-gray-800 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200",
+              )}
             >
               <Keyboard className="w-4 h-4" />
               Input Manual
             </button>
             <button
               onClick={switchToCamera}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+              aria-pressed={scanState === "camera"}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500",
                 scanState === "camera"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
+                  ? "bg-gray-800 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200",
+              )}
             >
               <Video className="w-4 h-4" />
               Kamera
@@ -568,7 +838,7 @@ export default function LatnessScannerContent() {
 
           <button
             onClick={() => playScanSound("success")}
-            className="text-xs text-gray-500 hover:text-blue-600 flex items-center gap-1 transition-colors px-3 py-1 rounded hover:bg-gray-50"
+            className="text-xs text-gray-500 hover:text-gray-800 flex items-center gap-1 transition-colors px-3 py-1 rounded hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400"
             title="Klik untuk tes suara"
           >
             <Volume2 className="w-3 h-3" />
@@ -612,7 +882,10 @@ export default function LatnessScannerContent() {
                     if (e.key === "Enter") handleVerify();
                   }}
                   placeholder="Scan atau paste data QR..."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center font-mono"
+                  className={cn(
+                    "w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 text-center font-mono outline-none",
+                    theme.inputFocus,
+                  )}
                   autoComplete="off"
                 />
               </div>
@@ -620,7 +893,11 @@ export default function LatnessScannerContent() {
               <button
                 onClick={handleVerify}
                 disabled={!qrInput.trim()}
-                className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className={cn(
+                  "w-full px-4 py-3 text-white font-semibold rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                  theme.solidButton,
+                  theme.focusRing,
+                )}
               >
                 <CheckCircle2 className="w-5 h-5" />
                 Verifikasi QR Code
@@ -638,14 +915,19 @@ export default function LatnessScannerContent() {
               className="bg-white rounded-2xl shadow-xl overflow-hidden"
             >
               {cameraError ? (
-                <div className="text-center py-10 px-4">
-                  <VideoOff className="w-16 h-16 text-red-400 mx-auto mb-4" />
-                  <p className="text-red-600 mb-4">{cameraError}</p>
+                <div className="text-center py-10 px-6">
+                  <div className="w-20 h-20 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+                    <VideoOff className="w-10 h-10 text-red-500" />
+                  </div>
+                  <h3 className="text-lg font-bold text-red-700 mb-2">
+                    Masalah Kamera
+                  </h3>
+                  <p className="text-red-600 text-sm mb-5">{cameraError}</p>
                   <button
                     onClick={switchToManual}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="px-4 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500"
                   >
-                    <Keyboard className="w-4 h-4 inline mr-2" />
+                    <Keyboard className="w-4 h-4" />
                     Gunakan Input Manual
                   </button>
                 </div>
@@ -665,7 +947,12 @@ export default function LatnessScannerContent() {
                   {/* Active Scanning Indicator */}
                   {scannerReady && isScanning && (
                     <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
-                      <div className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-full shadow-lg animate-pulse">
+                      <div
+                        className={cn(
+                          "flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-full shadow-lg",
+                          !prefersReducedMotion && "animate-pulse",
+                        )}
+                      >
                         <Scan className="w-4 h-4" />
                         <span className="text-sm font-medium">
                           Scanning aktif...
@@ -677,26 +964,58 @@ export default function LatnessScannerContent() {
                   {/* Scan Frame Corners */}
                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                     <div className="w-56 h-56 relative">
-                      {/* Corner borders */}
-                      <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-blue-500 rounded-tl-lg" />
-                      <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-blue-500 rounded-tr-lg" />
-                      <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-blue-500 rounded-bl-lg" />
-                      <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-blue-500 rounded-br-lg" />
+                      {/* Corner borders (mode-colored) */}
+                      <div
+                        className={cn(
+                          "absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 rounded-tl-lg",
+                          theme.frameBorder,
+                        )}
+                      />
+                      <div
+                        className={cn(
+                          "absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 rounded-tr-lg",
+                          theme.frameBorder,
+                        )}
+                      />
+                      <div
+                        className={cn(
+                          "absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 rounded-bl-lg",
+                          theme.frameBorder,
+                        )}
+                      />
+                      <div
+                        className={cn(
+                          "absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 rounded-br-lg",
+                          theme.frameBorder,
+                        )}
+                      />
 
-                      {/* Scanning Line Animation */}
-                      {scannerReady && (
-                        <motion.div
-                          className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent"
-                          animate={{
-                            top: ["0%", "100%", "0%"],
-                          }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "linear",
-                          }}
-                        />
-                      )}
+                      {/* Scanning Line — animated, or a static guide when the
+                          user prefers reduced motion. */}
+                      {scannerReady &&
+                        (prefersReducedMotion ? (
+                          <div
+                            className={cn(
+                              "absolute left-0 right-0 top-1/2 h-0.5 bg-gradient-to-r from-transparent to-transparent",
+                              theme.scanLineVia,
+                            )}
+                          />
+                        ) : (
+                          <motion.div
+                            className={cn(
+                              "absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent to-transparent",
+                              theme.scanLineVia,
+                            )}
+                            animate={{
+                              top: ["0%", "100%", "0%"],
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                              ease: "linear",
+                            }}
+                          />
+                        ))}
                     </div>
                   </div>
                 </div>
@@ -706,7 +1025,7 @@ export default function LatnessScannerContent() {
               {!cameraError && (
                 <div className="p-4 bg-gray-50 border-t">
                   <p className="text-center text-gray-600 text-sm flex items-center justify-center gap-2">
-                    <Scan className="w-4 h-4 text-blue-500" />
+                    <Scan className={cn("w-4 h-4", theme.accentText)} />
                     Arahkan QR Code siswa ke dalam kotak
                   </p>
                 </div>
@@ -724,14 +1043,30 @@ export default function LatnessScannerContent() {
               className="bg-white rounded-2xl shadow-xl p-12 flex flex-col items-center justify-center"
             >
               <div className="relative">
-                <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+                <div
+                  className={cn(
+                    "w-20 h-20 rounded-full flex items-center justify-center",
+                    theme.spinnerBg,
+                  )}
+                >
+                  <Loader2
+                    className={cn(
+                      "w-10 h-10",
+                      theme.spinnerText,
+                      !prefersReducedMotion && "animate-spin",
+                    )}
+                  />
                 </div>
-                <motion.div
-                  className="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                />
+                {!prefersReducedMotion && (
+                  <motion.div
+                    className={cn(
+                      "absolute inset-0 rounded-full border-4 border-t-transparent",
+                      theme.spinnerRing,
+                    )}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                )}
               </div>
               <p className="text-gray-600 mt-4 font-medium">
                 Memverifikasi QR Code...
@@ -742,44 +1077,115 @@ export default function LatnessScannerContent() {
             </motion.div>
           )}
 
-          {/* Error State */}
-          {scanState === "error" && (
+          {/* Error State — heading/icon/tone come from categorizeScanError;
+              the body keeps the server's precise message. */}
+          {scanState === "error" && errorInfo && (
             <motion.div
               key="error"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-red-50 border-2 border-red-200 rounded-2xl p-8 text-center"
+              className={cn(
+                "border-2 rounded-2xl p-8 text-center",
+                TONE_STYLES[errorInfo.tone].container,
+              )}
             >
               <motion.div
-                initial={{ scale: 0 }}
+                initial={prefersReducedMotion ? false : { scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 200, damping: 15 }}
               >
-                <div className="w-20 h-20 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
-                  <AlertCircle className="w-10 h-10 text-red-500" />
+                <div
+                  className={cn(
+                    "w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4",
+                    TONE_STYLES[errorInfo.tone].iconBg,
+                  )}
+                >
+                  <errorInfo.icon
+                    className={cn(
+                      "w-10 h-10",
+                      TONE_STYLES[errorInfo.tone].iconText,
+                    )}
+                  />
                 </div>
               </motion.div>
-              <h3 className="text-lg font-bold text-red-700 mb-2">
-                QR Code Tidak Valid
+              <h3
+                className={cn(
+                  "text-lg font-bold mb-2",
+                  TONE_STYLES[errorInfo.tone].title,
+                )}
+              >
+                {errorInfo.title}
               </h3>
-              <p className="text-red-600 mb-4">{errorMessage}</p>
+              <p className={cn("mb-4", TONE_STYLES[errorInfo.tone].body)}>
+                {errorInfo.message}
+              </p>
               <div className="flex gap-2 justify-center">
                 <button
                   onClick={resetToCamera}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+                  className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500"
                 >
                   <Video className="w-4 h-4" />
                   Kamera
                 </button>
                 <button
                   onClick={resetScanner}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors inline-flex items-center gap-2"
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400"
                 >
                   <Keyboard className="w-4 h-4" />
                   Manual
                 </button>
               </div>
+            </motion.div>
+          )}
+
+          {/* Duplicate — benign info, NOT a red error. Reuses the student card
+              the server already returns so the member sees WHO is duplicated. */}
+          {scanState === "duplicate" && studentInfo && (
+            <motion.div
+              key="duplicate"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 text-center space-y-4"
+            >
+              <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center">
+                <Info className="w-8 h-8 text-blue-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-blue-700">
+                  Sudah Tercatat Hari Ini
+                </h3>
+                <p className="text-blue-600 text-sm mt-1">
+                  {mode === "lateness"
+                    ? "Keterlambatan siswa ini sudah dicatat hari ini."
+                    : "Pelanggaran atribut siswa ini sudah dicatat hari ini."}
+                </p>
+              </div>
+
+              {/* Mini student card */}
+              <div className="flex items-center gap-3 bg-white rounded-xl p-3 border border-blue-100 text-left">
+                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                  <User className="w-6 h-6 text-blue-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold text-gray-900 truncate">
+                    {studentInfo.name || "Tanpa Nama"}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    NISN: {studentInfo.nisn} ·{" "}
+                    {studentInfo.class || "Belum Ada Kelas"}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={resetScanner}
+                className="w-full px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors inline-flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+              >
+                <Scan className="w-4 h-4" />
+                Scan Siswa Lain
+              </button>
             </motion.div>
           )}
 
@@ -806,7 +1212,12 @@ export default function LatnessScannerContent() {
 
               {/* Student Info */}
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 flex-shrink-0 ring-4 ring-green-100">
+                <div
+                  className={cn(
+                    "w-20 h-20 rounded-full overflow-hidden bg-gray-200 flex-shrink-0 ring-4",
+                    theme.ring,
+                  )}
+                >
                   {studentInfo.image ? (
                     <Image
                       src={studentInfo.image}
@@ -816,8 +1227,13 @@ export default function LatnessScannerContent() {
                       className="object-cover w-full h-full"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
-                      <User className="w-10 h-10 text-blue-600" />
+                    <div
+                      className={cn(
+                        "w-full h-full flex items-center justify-center",
+                        theme.tint,
+                      )}
+                    >
+                      <User className={cn("w-10 h-10", theme.accentText)} />
                     </div>
                   )}
                 </div>
@@ -826,26 +1242,39 @@ export default function LatnessScannerContent() {
                     {studentInfo.name || "Tanpa Nama"}
                   </h3>
                   <p className="text-gray-500">NISN: {studentInfo.nisn}</p>
-                  <span className="inline-block mt-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                  <span
+                    className={cn(
+                      "inline-block mt-1 px-3 py-1 rounded-full text-sm",
+                      theme.accentIconBg,
+                      theme.accentText,
+                    )}
+                  >
                     {studentInfo.class || "Belum Ada Kelas"}
                   </span>
                 </div>
               </div>
 
-              {/* Scan Time */}
-              <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 text-center border border-red-100">
-                <p className="text-sm text-red-600 mb-1 font-medium">
-                  {mode === "lateness"
-                    ? "⏰ Waktu Kedatangan"
-                    : "⏰ Waktu Pemeriksaan"}
+              {/* Scan Time (mode-colored) */}
+              <div
+                className={cn(
+                  "rounded-xl p-4 text-center border",
+                  theme.tint,
+                  theme.border,
+                )}
+              >
+                <p className={cn("text-sm mb-1 font-medium", theme.accentText)}>
+                  {theme.scanTimeLabel}
                 </p>
-                <p className="text-3xl font-mono font-bold text-red-700">
+                <p
+                  className={cn(
+                    "text-3xl font-mono font-bold tabular-nums",
+                    theme.accentText,
+                  )}
+                >
                   {formatTime(currentTime)}
                 </p>
-                <p className="text-xs text-red-500 mt-1">
-                  {mode === "lateness"
-                    ? "Terlambat masuk sekolah"
-                    : "Pemeriksaan atribut siswa"}
+                <p className={cn("text-xs mt-1 opacity-80", theme.accentText)}>
+                  {theme.scanTimeHint}
                 </p>
               </div>
 
@@ -854,13 +1283,16 @@ export default function LatnessScannerContent() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     <FileText className="w-4 h-4 inline mr-1" />
-                    Alasan Keterlambatan (Opsional)
+                    Alasan keterlambatan (opsional)
                   </label>
                   <textarea
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
                     placeholder="Masukkan alasan keterlambatan..."
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                    className={cn(
+                      "w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 resize-none outline-none",
+                      theme.inputFocus,
+                    )}
                     rows={3}
                   />
                 </div>
@@ -878,16 +1310,16 @@ export default function LatnessScannerContent() {
               {mode === "attribute" && (
                 <button
                   onClick={handleNoViolation}
-                  className="w-full px-4 py-2.5 border border-green-300 text-green-700 bg-green-50 rounded-xl hover:bg-green-100 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                  className="w-full px-4 py-2.5 border border-green-300 text-green-700 bg-green-50 rounded-xl hover:bg-green-100 transition-colors flex items-center justify-center gap-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500"
                 >
                   <ShieldCheck className="w-4 h-4" />
-                  Tidak Ada Pelanggaran
+                  Tidak ada pelanggaran
                 </button>
               )}
               <div className="flex gap-3">
                 <button
                   onClick={resetScanner}
-                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400"
                 >
                   Batal
                 </button>
@@ -897,16 +1329,23 @@ export default function LatnessScannerContent() {
                     isSubmitting ||
                     (mode === "attribute" && checkedAttributeIds.length === 0)
                   }
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className={cn(
+                    "flex-1 px-4 py-3 text-white font-semibold rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                    theme.solidButton,
+                    theme.focusRing,
+                  )}
                 >
                   {isSubmitting ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2
+                      className={cn(
+                        "w-5 h-5",
+                        !prefersReducedMotion && "animate-spin",
+                      )}
+                    />
                   ) : (
                     <CheckCircle2 className="w-5 h-5" />
                   )}
-                  {mode === "lateness"
-                    ? "Catat Terlambat"
-                    : "Catat Pelanggaran"}
+                  {theme.submitLabel}
                 </button>
               </div>
             </motion.div>
@@ -922,7 +1361,7 @@ export default function LatnessScannerContent() {
               className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-8 text-center"
             >
               <motion.div
-                initial={{ scale: 0 }}
+                initial={prefersReducedMotion ? false : { scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 200, damping: 15 }}
               >
@@ -933,18 +1372,41 @@ export default function LatnessScannerContent() {
               <h3 className="text-xl font-bold text-green-700 mb-2">
                 Berhasil!
               </h3>
-              <p className="text-green-600 mb-4">
-                {mode === "lateness"
+              <p className="text-green-600 mb-6">
+                {(lastRecord?.mode ?? mode) === "lateness"
                   ? "Keterlambatan siswa telah dicatat ke sistem."
                   : "Pelanggaran atribut siswa telah dicatat ke sistem."}
               </p>
-              <button
-                onClick={resetScanner}
-                className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors inline-flex items-center gap-2"
-              >
-                <Scan className="w-4 h-4" />
-                Scan Siswa Lain
-              </button>
+              <div className="flex flex-col gap-2">
+                {lastRecord && undoSecondsLeft > 0 && (
+                  <button
+                    onClick={handleUndo}
+                    disabled={isUndoing}
+                    className="w-full px-4 py-3 border border-green-300 text-green-700 bg-white rounded-xl hover:bg-green-50 transition-colors inline-flex items-center justify-center gap-2 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500"
+                  >
+                    {isUndoing ? (
+                      <Loader2
+                        className={cn(
+                          "w-4 h-4",
+                          !prefersReducedMotion && "animate-spin",
+                        )}
+                      />
+                    ) : (
+                      <Undo2 className="w-4 h-4" />
+                    )}
+                    {isUndoing
+                      ? "Membatalkan..."
+                      : `Urungkan (${undoSecondsLeft})`}
+                  </button>
+                )}
+                <button
+                  onClick={resetScanner}
+                  className="w-full px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors inline-flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500"
+                >
+                  <Scan className="w-4 h-4" />
+                  Scan Siswa Lain
+                </button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

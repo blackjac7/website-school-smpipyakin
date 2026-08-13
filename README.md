@@ -33,7 +33,7 @@ Dibangun dengan teknologi web modern dan best practice industri, sistem ini memp
 
 | Aspect                  | Description                                        |
 | ----------------------- | -------------------------------------------------- |
-| **5 Role Dashboards**   | Admin, Kesiswaan, OSIS, Siswa, PPDB Admin          |
+| **6 Role Dashboards**   | Admin, Kesiswaan, OSIS, Pembina OSIS, Siswa, PPDB Admin |
 | **25+ Database Models** | Comprehensive data structure with Prisma ORM       |
 | **Enterprise Security** | JWT + IP Binding, Rate Limiting, CAPTCHA           |
 | **Modern Stack**        | Next.js 15 App Router, TypeScript, Tailwind CSS v4 |
@@ -149,7 +149,7 @@ flowchart LR
 | **Maintenance Bypass**        | Cookie-driven dengan admin exemption                        | Controlled Access   |
 | **Input Sanitization & CSP**  | Zod validation + React auto-escaping                        | XSS                 |
 | **CAPTCHA & Honeypot**        | Math CAPTCHA + hidden honeypot fields                       | Bot Attacks         |
-| **Role-Based Access Control** | 5 roles dengan permission granular + OSIS access flag       | Unauthorized Access |
+| **Role-Based Access Control** | 6 roles dengan permission granular + OSIS access flag       | Unauthorized Access |
 | **Server Action Auth**        | Defense-in-depth dengan per-action role verification        | Function-level Auth |
 
 ### 🚀 Performance Features
@@ -230,7 +230,7 @@ graph TB
 | Category          | Technology                                         | Implementation                    |
 | ----------------- | -------------------------------------------------- | --------------------------------- |
 | **JWT Library**   | [Jose](https://github.com/panva/jose)              | Token signing & verification      |
-| **Password Hash** | [bcryptjs](https://www.npmjs.com/package/bcryptjs) | 12 salt rounds                    |
+| **Password Hash** | [bcryptjs](https://www.npmjs.com/package/bcryptjs) | 10 salt rounds                    |
 | **Session**       | HTTP-Only Cookies                                  | auth-token dengan IP binding      |
 | **Rate Limiting** | Database-backed                                    | LoginAttempt model + cron cleanup |
 
@@ -354,18 +354,13 @@ Create a `.env` file from [.env.example](./.env.example) and fill in the values.
 
 ## 📚 Documentation
 
-| Document                                                     | Description                                    |
-| ------------------------------------------------------------ | ---------------------------------------------- |
-| [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)               | REST API endpoints (auth, PPDB uploads/status) |
-| [docs/DOCS.md](./docs/DOCS.md)                               | Technical deep dive (architecture, flows, API) |
-| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)               | High-level system architecture & diagrams      |
-| [docs/PROJECT_STRUCTURE.md](./docs/PROJECT_STRUCTURE.md)     | Directory layout & module ownership            |
-| [docs/TECH_STACK.md](./docs/TECH_STACK.md)                   | Frameworks, libraries, and services used       |
-| [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)                   | CI/CD, environments, and secret management     |
-| [docs/TESTING.md](./docs/TESTING.md)                         | Playwright setup, commands, and fixtures       |
-| [docs/TEST_STRATEGY.md](./docs/TEST_STRATEGY.md)             | Scope for critical-path suite and extensions   |
-| [docs/SECURITY.md](./docs/SECURITY.md)                       | Security controls and recommendations          |
-| [docs/VISUAL_ARCHITECTURE.md](./docs/VISUAL_ARCHITECTURE.md) | Visual diagrams & role matrix                  |
+| Document                                                 | Description                                                   |
+| -------------------------------------------------------- | ------------------------------------------------------------- |
+| [docs/RINGKASAN-TEKNIS.md](./docs/RINGKASAN-TEKNIS.md)   | Ringkasan teknis menyeluruh (RAG, auth multi-peran, PPDB)     |
+| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)           | Arsitektur sistem, diagram, struktur database, & API          |
+| [docs/CHATBOT_RAG.md](./docs/CHATBOT_RAG.md)             | Integrasi chatbot RAG via Flowise (batas sistem & konfigurasi) |
+| [docs/SECURITY.md](./docs/SECURITY.md)                   | Kontrol keamanan, RBAC, rate limiting, & rekomendasi          |
+| [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)               | CI/CD, environment, & manajemen secret                        |
 
 ---
 
@@ -375,14 +370,14 @@ Create a `.env` file from [.env.example](./.env.example) and fill in the values.
 ├── .github/                # GitHub Actions (CI/CD on main/develop)
 │   └── workflows/
 │       └── ci.yml          # Quality → tests (Postgres) → build → deploy
-├── docs/                   # Project documentation & diagrams
+├── docs/                   # Project documentation (diagram Mermaid inline)
+│   ├── RINGKASAN-TEKNIS.md # Ringkasan teknis menyeluruh
 │   ├── ARCHITECTURE.md     # System architecture & ERD
-│   ├── DEPLOYMENT.md       # CI/CD & environment setup
+│   ├── CHATBOT_RAG.md      # Integrasi chatbot RAG (Flowise)
 │   ├── SECURITY.md         # Security implementations
-│   ├── TESTING.md          # E2E testing guide
-│   └── diagrams/           # Mermaid, PlantUML, DOT diagrams
+│   └── DEPLOYMENT.md       # CI/CD & environment setup
 ├── prisma/                 # Database schema, migrations, and seeders
-│   ├── schema.prisma       # 25+ models with full relationship mapping
+│   ├── schema.prisma       # 27 models with full relationship mapping
 │   ├── seed.ts             # Base users & settings seeder
 │   ├── seedContent.ts      # Content seeder (news, announcements, etc.)
 │   └── migrations/         # Database migration history
@@ -398,7 +393,7 @@ Create a `.env` file from [.env.example](./.env.example) and fill in the values.
 │   │   └── worship.ts      # Religious program management
 │   ├── app/                # Next.js App Router
 │   │   ├── (public)/       # 10+ public pages (home, news, PPDB, etc.)
-│   │   ├── (dashboard)/    # 5 role-based dashboard areas
+│   │   ├── (dashboard)/    # 6 role-based dashboard areas
 │   │   ├── api/            # REST endpoints (auth, PPDB, cron)
 │   │   └── maintenance/, not-found.tsx, unauthorized/
 │   ├── components/         # 16 feature-focused component directories
@@ -407,10 +402,11 @@ Create a `.env` file from [.env.example](./.env.example) and fill in the values.
 │   ├── shared/             # Shared data & typings
 │   ├── types/              # Type-only helpers
 │   └── utils/              # Helper functions
-├── tests/                  # Playwright E2E testing (11 tests)
+├── tests/                  # Playwright E2E testing (17 tests)
 │   ├── _global-hooks.ts    # Network stubbing for deterministic tests
-│   ├── critical-path.spec.ts  # 6 critical tests (public, CRUD, RBAC)
-│   ├── dashboards.spec.ts  # 5 dashboard smoke tests
+│   ├── critical-path.spec.ts  # 8 critical tests (public, CRUD, RBAC)
+│   ├── dashboards.spec.ts  # 6 dashboard smoke tests (parametrized per role)
+│   ├── laporan-poin.spec.ts   # 3 tests (Excel export vs tabel layar)
 │   ├── fixtures/           # Test fixtures & helpers
 │   └── pages/              # Page Object Models (Login, Dashboard, Public)
 └── lighthouserc.json       # Lighthouse CI config
@@ -426,7 +422,7 @@ This application implements multiple layers of security:
 
 - JWT tokens with HTTP-Only cookies (`auth-token`) and SameSite Strict in production
 - IP binding inside JWT payloads to prevent session hijacking
-- Secure password hashing (bcrypt, 12 salt rounds) for all seeded/auth users
+- Secure password hashing (bcrypt, 10 salt rounds pada runtime aplikasi; 12 pada skrip seed/impor)
 - Role-based access control for **ADMIN**, **KESISWAAN**, **OSIS**, **SISWA**, and **PPDB_ADMIN**
 - Login attempts logged and reset after successful authentication
 
@@ -445,14 +441,17 @@ For detailed security documentation, see [docs/SECURITY.md](./docs/SECURITY.md).
 
 ## 🧪 Testing
 
-End-to-end tests use **Playwright 1.57** with Page Object Model pattern. The test suite is streamlined to **11 focused tests** that run in ~2 minutes.
+End-to-end tests use **Playwright 1.57** with Page Object Model pattern. The test suite consists of **17 focused tests**.
 
 ### Test Structure
 
 | Spec File               | Tests | Coverage                                                          |
 | ----------------------- | ----- | ----------------------------------------------------------------- |
-| `critical-path.spec.ts` | 6     | Public pages, admin news CRUD with DB verification, RBAC security |
-| `dashboards.spec.ts`    | 5     | Smoke tests for all 5 role dashboards                             |
+| `critical-path.spec.ts` | 8     | Public pages, admin news CRUD with DB verification, RBAC security |
+| `dashboards.spec.ts`    | 6     | Smoke tests for all 6 role dashboards (parametrized per role)     |
+| `laporan-poin.spec.ts`  | 3     | Export Excel poin keterlambatan/atribut vs tabel di layar         |
+
+Hanya `critical-path.spec.ts` yang dijalankan di CI (`npm run test:critical`); dua spec lain dijalankan manual dengan `npm test`.
 
 External assets and analytics are stubbed in `tests/_global-hooks.ts` to keep tests deterministic.
 
@@ -470,7 +469,7 @@ npm run test:ui         # Interactive mode
 npm run test:report     # Open the latest HTML report
 ```
 
-For detailed testing documentation, see [docs/TESTING.md](./docs/TESTING.md) and [docs/TEST_STRATEGY.md](./docs/TEST_STRATEGY.md).
+Konfigurasi Playwright ada di `playwright.config.ts`; strategi pengujian dan cakupannya dibahas di [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md).
 
 ---
 
@@ -507,7 +506,7 @@ See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed instructions including:
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read our [Contributing Guidelines](./CONTRIBUTING.md) before submitting a pull request.
+Contributions are welcome. Sebelum membuka pull request, pastikan `npm run lint`, `npx tsc --noEmit`, dan `npm run test:critical` lulus — ketiganya dijalankan juga oleh CI (`.github/workflows/ci.yml`).
 
 ---
 

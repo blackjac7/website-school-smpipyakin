@@ -42,14 +42,15 @@ export default function AttributeChecklist({
                   key={item.id}
                   type="button"
                   onClick={() => onToggle(item.id)}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-left transition-colors ${
+                  aria-pressed={checked}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 ${
                     checked
-                      ? "bg-red-50 border-red-300 text-red-700"
+                      ? "bg-indigo-50 border-indigo-300 text-indigo-700"
                       : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   {checked ? (
-                    <CheckSquare className="w-5 h-5 text-red-600 shrink-0" />
+                    <CheckSquare className="w-5 h-5 text-indigo-600 shrink-0" />
                   ) : (
                     <Square className="w-5 h-5 text-gray-300 shrink-0" />
                   )}
@@ -72,7 +73,7 @@ export default function AttributeChecklist({
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
           placeholder="Catatan tambahan..."
-          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none outline-none"
           rows={2}
         />
       </div>

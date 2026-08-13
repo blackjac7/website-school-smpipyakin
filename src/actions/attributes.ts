@@ -242,7 +242,7 @@ export async function recordAttributeViolation(
       };
     }
 
-    await prisma.attributeViolation.create({
+    const created = await prisma.attributeViolation.create({
       data: {
         siswaId,
         scanTime,
@@ -262,10 +262,68 @@ export async function recordAttributeViolation(
     return {
       success: true,
       message: `Pelanggaran atribut ${siswa.name} berhasil dicatat`,
+      recordId: created.id,
     };
   } catch (error) {
     console.error("Error recording attribute violation:", error);
     return { success: false, error: "Gagal mencatat pelanggaran atribut" };
+  }
+}
+
+/**
+ * Undo an attribute-violation record the current OSIS scanner just created.
+ *
+ * Same "undo, not delete" scoping as lateness: caller must be the recorder and
+ * the record must be within UNDO_WINDOW_MS. The linked AttributeViolationItem
+ * rows are removed automatically via onDelete: Cascade.
+ */
+export async function deleteAttributeViolation(id: string) {
+  const auth = await verifyOsisAccess();
+  if (!auth.authorized) {
+    return { success: false, error: auth.error };
+  }
+
+  try {
+    const record = await prisma.attributeViolation.findUnique({
+      where: { id },
+      select: { id: true, recordedBy: true, createdAt: true },
+    });
+
+    if (!record) {
+      return {
+        success: false,
+        error: "Pencatatan tidak ditemukan atau sudah dibatalkan",
+      };
+    }
+
+    if (record.recordedBy !== auth.user!.userId) {
+      return {
+        success: false,
+        error: "Hanya bisa membatalkan pencatatan yang Anda buat sendiri",
+      };
+    }
+
+    const UNDO_WINDOW_MS = 5 * 60 * 1000; // 5 menit
+    if (Date.now() - record.createdAt.getTime() > UNDO_WINDOW_MS) {
+      return {
+        success: false,
+        error:
+          "Waktu pembatalan sudah lewat. Hubungi Kesiswaan untuk mengubah data.",
+      };
+    }
+
+    await prisma.attributeViolation.delete({ where: { id } });
+
+    revalidatePath("/dashboard-osis/keterlambatan");
+    revalidatePath("/dashboard-kesiswaan/keterlambatan");
+
+    return {
+      success: true,
+      message: "Pencatatan pelanggaran atribut dibatalkan",
+    };
+  } catch (error) {
+    console.error("Error deleting attribute violation:", error);
+    return { success: false, error: "Gagal membatalkan pencatatan" };
   }
 }
 
