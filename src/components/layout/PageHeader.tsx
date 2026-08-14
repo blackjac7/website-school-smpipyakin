@@ -1,9 +1,5 @@
-"use client";
-
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
-import { clsx } from "clsx";
 
 interface PageHeaderProps {
   title: string;
@@ -19,91 +15,69 @@ export default function PageHeader({
   image,
 }: PageHeaderProps) {
   return (
-    <div className="relative w-full h-75 md:h-100 flex items-center justify-center overflow-hidden">
-      {/* Background Image/Overlay */}
-      <div className="absolute inset-0 z-0">
-        {image ? (
-          <div
-            className="w-full h-full bg-cover bg-center"
-            style={{ backgroundImage: `url(${image})` }}
-          />
-        ) : (
-          <div className="w-full h-full bg-linear-to-br from-blue-900 to-blue-700" />
-        )}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
+    <header className="relative isolate overflow-hidden bg-slate-950 pt-18 text-white">
+      {image && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-20 bg-cover bg-center"
+          style={{ backgroundImage: `url(${image})` }}
+        />
+      )}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-[linear-gradient(105deg,rgba(2,6,23,.96)_5%,rgba(15,23,42,.88)_52%,rgba(30,64,175,.68)_100%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute -right-24 top-12 -z-10 h-72 w-72 rounded-full bg-amber-400/15 blur-3xl"
+      />
 
-        {/* Animated Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <svg
-            className="h-full w-full"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white" />
-          </svg>
+      <div className="public-container py-14 sm:py-18 lg:py-22">
+        <nav aria-label="Breadcrumb" className="mb-6">
+          <ol className="flex flex-wrap items-center gap-2 text-sm text-slate-300">
+            <li>
+              <Link
+                href="/"
+                aria-label="Beranda"
+                className="focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg hover:bg-white/10 hover:text-white"
+              >
+                <Home aria-hidden="true" className="h-4 w-4" />
+              </Link>
+            </li>
+            {breadcrumbs.map((crumb, index) => {
+              const current = index === breadcrumbs.length - 1;
+              return (
+                <li key={`${crumb.href}-${index}`} className="flex items-center gap-2">
+                  <ChevronRight aria-hidden="true" className="h-4 w-4 text-slate-500" />
+                  {current ? (
+                    <span aria-current="page" className="font-semibold text-amber-300">
+                      {crumb.label}
+                    </span>
+                  ) : (
+                    <Link href={crumb.href} className="focus-ring rounded hover:text-white">
+                      {crumb.label}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
+
+        <div className="max-w-3xl">
+          <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.18em] text-amber-300">
+            {breadcrumbs[0]?.label ?? "SMP IP Yakin Jakarta"}
+          </p>
+          <h1 className="text-balance text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
+            {title}
+          </h1>
+          {description && (
+            <p className="mt-5 max-w-2xl text-base leading-8 text-slate-200 sm:text-lg">
+              {description}
+            </p>
+          )}
         </div>
       </div>
-
-      {/* Content */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-16">
-        <motion.nav
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex justify-center items-center gap-2 text-sm md:text-base text-gray-300 mb-4"
-        >
-          <Link href="/" className="hover:text-yellow-400 transition-colors">
-            <Home className="w-4 h-4" />
-          </Link>
-          {breadcrumbs.map((crumb, index) => (
-            <div key={crumb.href} className="flex items-center gap-2">
-              <ChevronRight className="w-4 h-4 text-gray-500" />
-              <Link
-                href={crumb.href}
-                className={clsx(
-                  "transition-colors hover:text-yellow-400",
-                  index === breadcrumbs.length - 1
-                    ? "text-yellow-400 font-semibold"
-                    : "text-gray-300"
-                )}
-              >
-                {crumb.label}
-              </Link>
-            </div>
-          ))}
-        </motion.nav>
-
-        <motion.h1
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight"
-        >
-          {title}
-        </motion.h1>
-
-        {description && (
-          <motion.p
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto leading-relaxed"
-          >
-            {description}
-          </motion.p>
-        )}
-      </div>
-
-      {/* Wave Bottom Decoration */}
-      <div className="absolute bottom-0 left-0 right-0 h-16 md:h-24">
-        <svg
-          className="h-full w-full text-gray-50 dark:text-gray-900 fill-current"
-          viewBox="0 0 1440 320"
-          preserveAspectRatio="none"
-        >
-          <path
-            fillOpacity="1"
-            d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-          ></path>
-        </svg>
-      </div>
-    </div>
+    </header>
   );
 }

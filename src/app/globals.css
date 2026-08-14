@@ -87,6 +87,196 @@ html {
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgb(245 158 11 / 0.3);
+  color: inherit;
+}
+
+/* Public website design system. The public shell and content pages share these
+   primitives so spacing, focus, buttons, surfaces and typography stay aligned. */
+.public-container {
+  width: min(100% - 2rem, 80rem);
+  margin-inline: auto;
+}
+
+.public-section {
+  padding-block: clamp(4rem, 8vw, 7rem);
+}
+
+.public-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.dark .public-eyebrow {
+  color: #93c5fd;
+}
+
+.public-heading {
+  color: #0f172a;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.dark .public-heading {
+  color: #f8fafc;
+}
+
+.public-lead {
+  max-width: 42rem;
+  color: #475569;
+  font-size: clamp(1rem, 2vw, 1.125rem);
+  line-height: 1.8;
+}
+
+.dark .public-lead {
+  color: #cbd5e1;
+}
+
+.public-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 1.5rem;
+  background: #ffffff;
+  box-shadow: 0 18px 45px -32px rgb(15 23 42 / 0.32);
+}
+
+.dark .public-card {
+  border-color: #334155;
+  background: #1e293b;
+  box-shadow: 0 18px 45px -32px rgb(0 0 0 / 0.8);
+}
+
+.public-button-primary,
+.public-button-secondary {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  font-weight: 750;
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.public-button-primary {
+  background: #f59e0b;
+  color: #172554;
+  box-shadow: 0 12px 26px -18px rgb(245 158 11 / 0.9);
+}
+
+.public-button-primary:hover {
+  background: #fbbf24;
+  transform: translateY(-1px);
+}
+
+.public-button-secondary {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.public-button-secondary:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.dark .public-button-secondary {
+  border-color: #475569;
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+.dark .public-button-secondary:hover {
+  background: #334155;
+}
+
+/* Legacy public pages still use Tailwind gray utility classes. Keep their
+   existing component structure while lifting muted text to WCAG-friendly
+   values on both themes. This scope intentionally excludes dashboards. */
+.public-site .text-gray-400,
+.public-site .text-gray-500 {
+  color: #475569;
+}
+
+.public-site .text-gray-600 {
+  color: #334155;
+}
+
+.public-site .text-gray-700 {
+  color: #1e293b;
+}
+
+.dark .public-site .text-gray-300,
+.dark .public-site .text-gray-400 {
+  color: #cbd5e1;
+}
+
+.dark .public-site .text-gray-500,
+.dark .public-site .text-gray-600 {
+  color: #cbd5e1;
+}
+
+.dark .public-site .text-gray-700 {
+  color: #e2e8f0;
+}
+
+.focus-ring:focus-visible,
+.public-button-primary:focus-visible,
+.public-button-secondary:focus-visible,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .public-container {
+    width: min(100% - 1.5rem, 80rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Dark mode scrollbar */
@@ -351,6 +541,348 @@ html {
 
 .animation-delay-400 {
   animation-delay: 0.4s;
+}
+
+/* Shared dashboard surface. Feature components keep their business logic while
+   receiving one visual language from a single parent scope. */
+.dashboard-workspace {
+  background:
+    radial-gradient(circle at 100% 0%, rgb(219 234 254 / 0.55), transparent 28rem),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+  color: #0f172a;
+}
+
+.dashboard-shell {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.dashboard-workspace > * {
+  min-width: 0;
+}
+
+.dashboard-workspace :where(.bg-white) {
+  border-color: rgb(226 232 240 / 0.9);
+}
+
+.dashboard-workspace :where(h1, h2, h3) {
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-workspace :where(h1) {
+  font-weight: 800;
+}
+
+.dashboard-workspace :where(h2, h3) {
+  font-weight: 700;
+}
+
+.dashboard-workspace :where(.rounded-xl) {
+  border-radius: 1rem;
+}
+
+.dashboard-workspace :where(.rounded-2xl) {
+  border-radius: 1.25rem;
+}
+
+.dashboard-workspace :where(input, select, textarea, button) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dashboard-workspace :where(input, select, textarea) {
+  font-size: 1rem;
+  min-height: 2.75rem;
+  border-color: #cbd5e1;
+  border-radius: 0.75rem;
+  background-color: #fff;
+  color: #0f172a;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.dashboard-workspace :where(input, select, textarea)::placeholder {
+  color: #94a3b8;
+}
+
+.dashboard-workspace :where(input, select, textarea):hover:not(:disabled) {
+  border-color: #94a3b8;
+}
+
+.dashboard-workspace :where(input, select, textarea):focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.12);
+  outline: none;
+}
+
+.dashboard-workspace :where(label) {
+  color: #334155;
+  font-weight: 650;
+}
+
+.dashboard-workspace :where(table) {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.dashboard-workspace :where(thead) {
+  background: #f8fafc;
+}
+
+.dashboard-workspace :where(th) {
+  color: #475569;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dashboard-workspace :where(th, td) {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.dashboard-workspace :where(tbody tr) {
+  transition: background-color 150ms ease;
+}
+
+.dashboard-workspace :where(tbody tr:hover) {
+  background: rgb(248 250 252 / 0.9);
+}
+
+.dashboard-workspace :where(.shadow-xl, .shadow-2xl) {
+  box-shadow: 0 18px 45px -24px rgb(15 23 42 / 0.35);
+}
+
+.dashboard-workspace :where(button, a) {
+  touch-action: manipulation;
+}
+
+.dashboard-workspace :where(button) {
+  font-weight: 650;
+}
+
+.dashboard-workspace :where(button, a, input, select, textarea):focus-visible,
+header :where(button, a):focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.dashboard-workspace :where(button, input, select, textarea):disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.dashboard-icon-button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  color: #475569;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.dashboard-icon-button:hover {
+  background: #f1f5f9;
+  color: #1d4ed8;
+}
+
+.dashboard-icon-box {
+  display: flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.875rem;
+  background: #1d4ed8;
+  color: white;
+  box-shadow: 0 10px 22px -12px rgb(29 78 216 / 0.65);
+}
+
+.dashboard-button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.dashboard-button:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+.dashboard-button-primary {
+  background: #1d4ed8;
+  color: white;
+  box-shadow: 0 10px 22px -14px rgb(29 78 216 / 0.8);
+}
+
+.dashboard-button-primary:hover:not(:disabled) {
+  background: #1e40af;
+}
+
+.dashboard-button-secondary {
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #334155;
+}
+
+.dashboard-button-secondary:hover:not(:disabled) {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.dashboard-button-danger {
+  background: #be123c;
+  color: white;
+}
+
+.dashboard-button-danger:hover:not(:disabled) {
+  background: #9f1239;
+}
+
+.dashboard-segmented {
+  display: inline-flex;
+  max-width: 100%;
+  gap: 0.25rem;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.875rem;
+  background: white;
+  padding: 0.25rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.dashboard-segmented > button {
+  min-height: 2.5rem;
+  white-space: nowrap;
+  border-radius: 0.625rem;
+  padding: 0.5rem 0.875rem;
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.dashboard-segmented > button:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.dashboard-segmented > button.is-active,
+.dashboard-segmented > button[aria-selected="true"] {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.dashboard-empty-state {
+  display: flex;
+  min-height: 18rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #cbd5e1;
+  border-radius: 1.25rem;
+  background: rgb(255 255 255 / 0.72);
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.dashboard-empty-icon {
+  display: flex;
+  height: 3.5rem;
+  width: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.dashboard-empty-state h2 {
+  margin-top: 1rem;
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+.dashboard-empty-state p {
+  margin-top: 0.375rem;
+  max-width: 30rem;
+  color: #64748b;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+}
+
+/* Common legacy dashboard components inherit the same modern surface. */
+.dashboard-workspace :where(.rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl).bg-white {
+  border-color: #e2e8f0;
+}
+
+.dashboard-workspace :where(.border.bg-white, .bg-white.border) {
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.035);
+}
+
+.dashboard-workspace :where(.fixed.inset-0) > :where(.bg-white) {
+  border: 1px solid #e2e8f0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .dashboard-workspace *,
+  .dashboard-workspace *::before,
+  .dashboard-workspace *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 639px) {
+  .dashboard-workspace :where(table) {
+    font-size: 0.8125rem;
+  }
+
+  .dashboard-workspace :where(button, a, input, select) {
+    min-height: 2.75rem;
+  }
+
+  .dashboard-workspace :where(.overflow-x-auto) {
+    margin-inline: -0.75rem;
+    padding-inline: 0.75rem;
+    scroll-padding-inline: 0.75rem;
+  }
+
+  .dashboard-workspace :where(.fixed.inset-0.flex.items-center) {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .dashboard-workspace :where(.fixed.inset-0.flex.items-center) > :where(.bg-white) {
+    width: 100%;
+    max-width: none;
+    max-height: min(90dvh, 48rem);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 1.25rem;
+    border-top-right-radius: 1.25rem;
+  }
+
+  .dashboard-button {
+    padding-inline: 0.875rem;
+  }
 }
 
 /* Line clamp utilities */

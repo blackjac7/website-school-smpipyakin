@@ -1,134 +1,104 @@
-import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Phone, Mail, Clock, ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { Clock3, Instagram, Mail, MapPin, Phone } from "lucide-react";
 import logo from "@/assets/logo.svg";
+import { operationalHours, schoolIdentity } from "@/lib/public-site";
+
+const exploreLinks = [
+  { label: "Tentang Sekolah", href: "/profile/visi-misi" },
+  { label: "Guru & Tenaga Pendidik", href: "/profile/guru" },
+  { label: "Fasilitas", href: "/facilities" },
+  { label: "Ekstrakurikuler", href: "/extracurricular" },
+  { label: "Karya Siswa", href: "/karya-siswa" },
+];
+
+const informationLinks = [
+  { label: "Berita & Prestasi", href: "/news" },
+  { label: "Pengumuman", href: "/announcements" },
+  { label: "Kalender Akademik", href: "/academic-calendar" },
+  { label: "Informasi PPDB", href: "/ppdb" },
+  { label: "Cek Status PPDB", href: "/ppdb/status" },
+];
 
 export default function Footer() {
-  const quickLinks = [
-    { name: "Profil Sekolah", href: "/profile" },
-    { name: "Fasilitas", href: "/facilities" },
-    { name: "Berita", href: "/news" },
-    { name: "PPDB", href: "/ppdb" },
-    { name: "Kontak", href: "/contact" },
-  ];
-
-  const operationalHours = [
-    { day: "Senin - Jumat", time: "07:00 - 15:00" },
-    { day: "Sabtu", time: "07:00 - 12:00" },
-    { day: "Minggu", time: "Tutup" },
-  ];
-
   return (
-    <footer className="bg-gradient-to-b from-gray-900 to-gray-950 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
-          {/* Sekolah Info */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center gap-3 mb-6">
-              <Image src={logo} alt="Logo SMP IP Yakin" className="h-12 w-12" />
-              <div>
-                <h3 className="text-xl font-bold">SMP IP Yakin</h3>
-                <p className="text-gray-400 text-sm">Jakarta Barat</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <a
-                href="https://maps.google.com/?q=Jl.+Bangun+Nusa+Raya+No.+10,+Cengkareng+Timur,+Jakarta+Barat"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-start gap-3 text-gray-300 hover:text-yellow-400 transition-colors group"
-              >
-                <div className="p-2 bg-gray-800 rounded-lg group-hover:bg-yellow-500/20 transition-colors">
-                  <MapPin className="h-4 w-4" />
-                </div>
-                <p className="text-sm leading-relaxed">
-                  Jl. Bangun Nusa Raya No. 10,
-                  <br />
-                  Cengkareng Timur, Jakarta Barat
-                </p>
+    <footer className="border-t border-slate-800 bg-slate-950 text-slate-200">
+      <div className="public-container py-14 lg:py-18">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.35fr_0.8fr_0.8fr_1fr]">
+          <div>
+            <Link href="/" className="focus-ring inline-flex items-center gap-3 rounded-xl">
+              <Image src={logo} alt="" className="h-12 w-12" />
+              <span>
+                <span className="block text-lg font-bold text-white">{schoolIdentity.name}</span>
+                <span className="text-sm text-slate-400">{schoolIdentity.location}</span>
+              </span>
+            </Link>
+            <p className="mt-5 max-w-md text-sm leading-7 text-slate-400">
+              {schoolIdentity.description} Temukan informasi sekolah, kegiatan,
+              pengumuman, dan penerimaan peserta didik baru di satu tempat.
+            </p>
+            <div className="mt-6 space-y-3 text-sm">
+              <a href={schoolIdentity.mapsHref} target="_blank" rel="noreferrer" className="focus-ring flex w-fit gap-3 rounded-lg text-slate-300 hover:text-amber-300">
+                <MapPin aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
+                <span>{schoolIdentity.address}</span>
               </a>
-              <a
-                href="tel:+62216194381"
-                className="flex items-center gap-3 text-gray-300 hover:text-yellow-400 transition-colors group"
-              >
-                <div className="p-2 bg-gray-800 rounded-lg group-hover:bg-yellow-500/20 transition-colors">
-                  <Phone className="h-4 w-4" />
-                </div>
-                <p className="text-sm">+62 21 6194 381</p>
+              <a href={schoolIdentity.phoneHref} className="focus-ring flex w-fit items-center gap-3 rounded-lg text-slate-300 hover:text-amber-300">
+                <Phone aria-hidden="true" className="h-5 w-5" /> {schoolIdentity.phoneDisplay}
               </a>
-              <a
-                href="mailto:info@smpipyakin.sch.id"
-                className="flex items-center gap-3 text-gray-300 hover:text-yellow-400 transition-colors group"
-              >
-                <div className="p-2 bg-gray-800 rounded-lg group-hover:bg-yellow-500/20 transition-colors">
-                  <Mail className="h-4 w-4" />
-                </div>
-                <p className="text-sm">info@smpipyakin.sch.id</p>
+              <a href={`mailto:${schoolIdentity.email}`} className="focus-ring flex w-fit items-center gap-3 rounded-lg text-slate-300 hover:text-amber-300">
+                <Mail aria-hidden="true" className="h-5 w-5" /> {schoolIdentity.email}
               </a>
             </div>
           </div>
 
-          {/* Link Cepat */}
-          <div>
-            <h3 className="text-lg font-semibold mb-5 flex items-center gap-2">
-              <ExternalLink className="h-4 w-4 text-yellow-400" />
-              Link Cepat
-            </h3>
-            <ul className="space-y-3">
-              {quickLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-gray-300 hover:text-yellow-400 text-sm transition-colors inline-flex items-center gap-1 group"
-                  >
-                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full group-hover:bg-yellow-400 transition-colors" />
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <FooterLinks title="Jelajahi" links={exploreLinks} />
+          <FooterLinks title="Informasi" links={informationLinks} />
 
-          {/* Jam Operasional */}
           <div>
-            <h3 className="text-lg font-semibold mb-5 flex items-center gap-2">
-              <Clock className="h-4 w-4 text-yellow-400" />
-              Jam Operasional
-            </h3>
-            <ul className="space-y-3">
-              {operationalHours.map((item, index) => (
-                <li
-                  key={index}
-                  className="flex justify-between items-center text-sm border-b border-gray-800 pb-2 last:border-0"
-                >
-                  <span className="text-gray-300">{item.day}</span>
-                  <span
-                    className={`font-medium ${item.time === "Tutup" ? "text-red-400" : "text-white"}`}
-                  >
-                    {item.time}
-                  </span>
-                </li>
+            <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-white">Jam layanan</h2>
+            <div className="mt-5 space-y-3">
+              {operationalHours.map((item) => (
+                <div key={item.day} className="flex items-center justify-between gap-4 border-b border-slate-800 pb-3 text-sm">
+                  <span className="text-slate-400">{item.day}</span>
+                  <span className="font-semibold text-slate-200">{item.time}</span>
+                </div>
               ))}
-            </ul>
+            </div>
+            <p className="mt-4 flex gap-2 text-xs leading-5 text-slate-500">
+              <Clock3 aria-hidden="true" className="h-4 w-4 shrink-0" />
+              Hubungi sekolah lebih dahulu untuk kunjungan di luar jam layanan.
+            </p>
+            <a href={schoolIdentity.instagramHref} target="_blank" rel="noreferrer" className="focus-ring mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-700 px-4 text-sm font-semibold text-white hover:border-amber-400 hover:text-amber-300">
+              <Instagram aria-hidden="true" className="h-5 w-5" /> {schoolIdentity.instagramHandle}
+            </a>
           </div>
         </div>
 
-        {/* Footer bawah */}
-        <div className="border-t border-gray-800 mt-10 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-gray-400">
-            © {new Date().getFullYear()} SMP IP Yakin Jakarta. All rights
-            reserved.
-          </p>
-          <div className="flex items-center gap-4 text-sm text-gray-500">
-            <Link
-              href="/login"
-              className="hover:text-yellow-400 transition-colors"
-            >
-              Portal Login
-            </Link>
+        <div className="mt-12 flex flex-col gap-4 border-t border-slate-800 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} {schoolIdentity.name}. Hak cipta dilindungi.</p>
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            <Link href="/contact" className="focus-ring rounded hover:text-white">Kontak</Link>
+            <Link href="/login" className="focus-ring rounded hover:text-white">Portal pengguna</Link>
           </div>
         </div>
       </div>
     </footer>
+  );
+}
+
+function FooterLinks({ title, links }: { title: string; links: { label: string; href: string }[] }) {
+  return (
+    <div>
+      <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-white">{title}</h2>
+      <ul className="mt-5 space-y-3 text-sm">
+        {links.map((link) => (
+          <li key={link.href}>
+            <Link href={link.href} className="focus-ring rounded text-slate-400 transition-colors hover:text-amber-300">
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import {
-  BarChart3,
   Download,
   Users,
   Target,
@@ -103,27 +102,12 @@ export default function ReportsContentEnhanced() {
 
   return (
     <div className="space-y-8">
-      {/* Enhanced Header */}
-      <div className="bg-linear-to-r from-purple-600 to-pink-600 rounded-2xl p-5 sm:p-8 text-white shadow-xl">
-        <div className="flex items-center gap-3 sm:gap-4 mb-6">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-inner">
-            <BarChart3 className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-3xl font-bold">
-              Laporan & Analytics
-            </h1>
-            <p className="text-sm sm:text-lg text-purple-100 opacity-90">
-              Analisis mendalam performa PPDB
-            </p>
-          </div>
-        </div>
-
-        {/* Controls */}
-        <div className="flex flex-col sm:flex-row gap-4 mt-8">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex flex-col sm:flex-row gap-2">
             <select
-              className="w-full sm:w-auto px-4 py-2 bg-white/10 border border-white/20 text-white rounded-xl focus:bg-white/20 focus:outline-none transition-colors backdrop-blur-sm cursor-pointer [&>option]:text-gray-900"
+              aria-label="Periode laporan"
+              className="w-full sm:w-auto px-4 py-2 border border-slate-300 bg-white text-slate-900 rounded-xl cursor-pointer"
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
             >
@@ -134,7 +118,8 @@ export default function ReportsContentEnhanced() {
             </select>
 
             <select
-              className="w-full sm:w-auto px-4 py-2 bg-white/10 border border-white/20 text-white rounded-xl focus:bg-white/20 focus:outline-none transition-colors backdrop-blur-sm cursor-pointer [&>option]:text-gray-900"
+              aria-label="Jenis laporan"
+              className="w-full sm:w-auto px-4 py-2 border border-slate-300 bg-white text-slate-900 rounded-xl cursor-pointer"
               value={reportType}
               onChange={(e) => setReportType(e.target.value)}
             >
@@ -145,13 +130,13 @@ export default function ReportsContentEnhanced() {
             </select>
           </div>
 
-          <div className="flex gap-2 sm:ml-auto">
+          <div className="flex gap-2">
             <button
               onClick={exportToExcel}
-              className="flex items-center gap-2 px-4 py-2 bg-white text-purple-700 rounded-xl hover:bg-gray-50 transition-colors font-medium shadow-sm"
+              className="dashboard-button dashboard-button-primary w-full sm:w-auto"
             >
               <Download className="w-4 h-4" />
-              Export Excel
+              Ekspor Excel
             </button>
           </div>
         </div>

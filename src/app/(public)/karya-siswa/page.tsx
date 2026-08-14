@@ -5,9 +5,9 @@ import { getSettingTyped } from "@/lib/siteSettings";
 import { notFound } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Galeri Karya Siswa | Modern School",
+  title: "Galeri Karya Siswa | SMP IP Yakin Jakarta",
   description:
-    "Koleksi karya kreatif, inovasi, dan prestasi siswa Modern School dalam berbagai bidang.",
+    "Koleksi karya kreatif, inovasi, dan hasil belajar siswa SMP IP Yakin Jakarta dalam berbagai bidang.",
 };
 
 export default async function KaryaSiswaPage() {

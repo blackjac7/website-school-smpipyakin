@@ -124,9 +124,12 @@ test.describe.serial("Critical Path Suite", () => {
         );
       }
 
-      // 2. Ensure News page is ready and open "Tambah Berita" Modal
-      const heading = page.locator('h1:has-text("Manajemen Berita")');
-      await heading.waitFor({ state: "visible", timeout: 30000 });
+      // 2. Ensure the redesigned News page is ready and open the modal.
+      // Use the accessible heading exposed by DashboardTopbar instead of the
+      // old component-specific title, which was removed during the UI refactor.
+      await expect(
+        page.getByRole("heading", { name: "Berita Sekolah", level: 1 }),
+      ).toBeVisible({ timeout: 30000 });
 
       // Use role-based query which is more robust to whitespace/markup changes
       const addButton = page

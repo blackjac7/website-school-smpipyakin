@@ -32,7 +32,7 @@ export default async function PublicLayout({
       {!hideNavigation && <Navbar />}
       <main
         id="main-content"
-        className="min-h-screen"
+        className="public-site min-h-screen"
         role="main"
         tabIndex={-1}
       >

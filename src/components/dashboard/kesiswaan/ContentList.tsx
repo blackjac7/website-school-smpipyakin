@@ -3,7 +3,6 @@
 import { useState } from "react";
 import {
   Search,
-  Filter,
   Check,
   X,
   Eye,
@@ -17,6 +16,12 @@ import {
 import { ContentItem } from "./types";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
+import {
+  APPROVAL_STATUS,
+  DASHBOARD_COPY,
+  VALIDATION_FILTERS,
+  type ApprovalStatus,
+} from "@/components/dashboard/layout";
 
 interface ServerPaginationProps {
   page: number;
@@ -90,6 +95,10 @@ export default function ContentList({
       );
 
   const startIndex = (currentPage - 1) * itemsPerPage;
+  const hasActiveFilters =
+    Boolean(searchTerm) ||
+    categoryFilter !== "Semua Kategori" ||
+    statusFilter !== "Semua Status";
 
   // Reset page when filters change
   const handleSearchChange = (value: string) => {
@@ -115,76 +124,77 @@ export default function ContentList({
     }
   };
 
+  const clearFilters = () => {
+    setSearchTerm("");
+    setCategoryFilter("Semua Kategori");
+    setStatusFilter("Semua Status");
+    if (!useServerPagination) setClientPage(1);
+  };
+
   return (
     <>
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+      <section aria-label="Filter antrean validasi" className="mb-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="grid gap-3 lg:grid-cols-[minmax(16rem,1fr)_auto_auto]">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" aria-hidden="true" />
             <label htmlFor="content-search" className="sr-only">
               Cari konten
             </label>
             <input
               id="content-search"
               type="text"
-              placeholder="Cari konten..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+              placeholder="Cari judul atau penulis"
+              className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
             />
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <label htmlFor="category-filter" className="sr-only">
-              Filter kategori
-            </label>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Tag className="w-4 h-4 text-gray-400 shrink-0" />
+          <div className="relative">
+              <Tag className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+              <label htmlFor="category-filter" className="sr-only">Filter kategori</label>
               <select
                 id="category-filter"
-                className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-9 text-sm text-slate-700 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 lg:w-48"
                 value={categoryFilter}
                 onChange={(e) => handleCategoryChange(e.target.value)}
               >
-                <option>Semua Kategori</option>
-                <option value="Akademik">Akademik</option>
-                <option value="Olahraga">Olahraga</option>
-                <option value="Seni">Seni</option>
-                <option value="Fotografi">Fotografi</option>
-                <option value="Videografi">Videografi</option>
-                <option value="Kegiatan">Kegiatan OSIS</option>
-                <option value="Prestasi">Prestasi</option>
+                {VALIDATION_FILTERS.category.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
               </select>
-            </div>
-            <label htmlFor="status-filter" className="sr-only">
-              Filter status
-            </label>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <CheckCircle2 className="w-4 h-4 text-gray-400 shrink-0" />
+          </div>
+          <div className="relative">
+              <CheckCircle2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+              <label htmlFor="status-filter" className="sr-only">Filter status</label>
               <select
                 id="status-filter"
-                className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-9 text-sm text-slate-700 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 lg:w-44"
                 value={statusFilter}
                 onChange={(e) => handleStatusChange(e.target.value)}
               >
-                <option>Semua Status</option>
-                <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
+                {VALIDATION_FILTERS.status.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
               </select>
-            </div>
-            <div className="hidden sm:flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-400">
-              <Filter className="w-4 h-4" />
-              Filter diterapkan otomatis
-            </div>
           </div>
         </div>
-      </div>
+        <div className="mt-3 flex min-h-8 flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3">
+          <p className="text-xs text-slate-500" aria-live="polite">
+            {DASHBOARD_COPY.automaticFilters} · {displayItems.length} item pada halaman ini
+          </p>
+          {hasActiveFilters && (
+            <button type="button" onClick={clearFilters} className="rounded-lg px-2.5 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-50">
+              Reset filter
+            </button>
+          )}
+        </div>
+      </section>
 
       {/* Content List */}
       <div className="space-y-4">
         {displayItems.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-lg border border-gray-200">
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-14 text-center">
             <Inbox className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <h3 className="text-lg font-medium text-gray-900">
               Tidak ada konten yang ditemukan
@@ -197,11 +207,11 @@ export default function ContentList({
           </div>
         ) : (
           displayItems.map((item) => (
-            <div
+            <article
               key={item.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
+              className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:shadow-md sm:p-5"
             >
-              <div className="flex flex-wrap items-center gap-2 justify-between mb-4">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex flex-wrap items-center gap-2">
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -219,16 +229,8 @@ export default function ContentList({
                         : "Karya Siswa"}
                   </span>
 
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      item.status === "PENDING"
-                        ? "bg-orange-100 text-orange-700"
-                        : item.status === "APPROVED"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {item.status}
+                  <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${APPROVAL_STATUS[item.status as ApprovalStatus].className}`}>
+                    {APPROVAL_STATUS[item.status as ApprovalStatus].label}
                   </span>
 
                   <span className="text-sm text-gray-500 whitespace-nowrap shrink-0">
@@ -239,35 +241,39 @@ export default function ContentList({
                 </div>
 
                 {item.status === "PENDING" && (
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="grid grid-cols-3 gap-2 sm:flex sm:shrink-0">
                     <button
+                      type="button"
                       onClick={() => onApprove(item)}
-                      className="btn-success flex items-center gap-1"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-bold text-white hover:bg-emerald-700"
                     >
                       <Check className="w-4 h-4" />
-                      Approve
+                      Setujui
                     </button>
                     <button
+                      type="button"
                       onClick={() => onReject(item)}
-                      className="btn-danger flex items-center gap-1"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-bold text-rose-700 hover:bg-rose-100"
                     >
                       <X className="w-4 h-4" />
-                      Reject
+                      Tolak
                     </button>
                     <button
+                      type="button"
                       onClick={() => onPreview(item)}
-                      className="btn-secondary flex items-center gap-1"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
                     >
                       <Eye className="w-4 h-4" />
-                      Preview
+                      Tinjau
                     </button>
                   </div>
                 )}
 
                 {item.status !== "PENDING" && (
                   <button
+                    type="button"
                     onClick={() => onPreview(item)}
-                    className="btn-secondary flex items-center gap-1 shrink-0"
+                    className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
                   >
                     <Eye className="w-4 h-4" />
                     Detail
@@ -282,7 +288,7 @@ export default function ContentList({
                 {item.description || "Tidak ada deskripsi"}
               </p>
 
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3 text-sm text-gray-500">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
@@ -301,14 +307,14 @@ export default function ContentList({
                   )}
                 </div>
               </div>
-            </div>
+            </article>
           ))
         )}
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4 mt-6">
+        <nav aria-label="Paginasi antrean validasi" className="mt-6 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-gray-600">
             Menampilkan {startIndex + 1}-
             {Math.min(
@@ -338,7 +344,7 @@ export default function ContentList({
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-        </div>
+        </nav>
       )}
     </>
   );

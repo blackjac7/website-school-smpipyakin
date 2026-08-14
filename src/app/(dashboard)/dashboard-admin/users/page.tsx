@@ -222,14 +222,7 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Manajemen Pengguna</h1>
-        <p className="text-gray-600">
-          Kelola akun siswa, guru, dan staff sekolah
-        </p>
-      </div>
-
+    <div>
       <UsersTable
         users={users}
         isLoading={isLoading}

@@ -17,6 +17,7 @@ import { OsisActivity } from "./types";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import { motion } from "framer-motion";
+import { APPROVAL_STATUS } from "@/components/dashboard/layout";
 
 interface ActivitiesListProps {
   activities: OsisActivity[];
@@ -42,45 +43,21 @@ export default function ActivitiesList({
     startIndex + itemsPerPage
   );
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "APPROVED":
-        return "bg-green-100 text-green-700 border-green-200";
-      case "REJECTED":
-        return "bg-red-100 text-red-700 border-red-200";
-      default:
-        return "bg-yellow-100 text-yellow-700 border-yellow-200";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "APPROVED":
-        return "Disetujui";
-      case "REJECTED":
-        return "Ditolak";
-      default:
-        return "Menunggu";
-    }
-  };
-
   return (
-    <div className="lg:col-span-2 space-y-6">
-      {/* Add Program Kerja Button */}
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-          <ClipboardList className="w-5 h-5 text-blue-600" />
-          Program Kerja OSIS
-        </h3>
+    <div className="lg:col-span-2 space-y-4 sm:space-y-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-slate-600">
+          <span className="font-bold text-slate-900">{activities.length} program</span> tercatat. Program yang menunggu masih dapat diedit.
+        </p>
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
+          type="button"
           onClick={onAddActivity}
-          className="px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition-colors flex items-center gap-2 shadow-md shadow-blue-200"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2 font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700"
         >
           <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Tambah Proker</span>
-          <span className="sm:hidden">Baru</span>
+          Tambah program
         </motion.button>
       </div>
 
@@ -102,7 +79,7 @@ export default function ActivitiesList({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               key={activity.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group"
+              className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:shadow-lg sm:p-5"
             >
               <div className="flex justify-between items-start mb-3">
                 <div>
@@ -110,9 +87,9 @@ export default function ActivitiesList({
                     {activity.title}
                   </h4>
                   <span
-                    className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getStatusColor(activity.status)}`}
+                    className={`mt-1 inline-block rounded-full border px-2.5 py-0.5 text-xs font-semibold ${APPROVAL_STATUS[activity.status].className}`}
                   >
-                    {getStatusLabel(activity.status)}
+                    {APPROVAL_STATUS[activity.status].label}
                   </span>
                 </div>
 
@@ -142,7 +119,7 @@ export default function ActivitiesList({
               <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
                 {activity.description}
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+              <div className="grid grid-cols-2 gap-x-3 gap-y-2 rounded-xl bg-slate-50 p-3 text-xs text-slate-500 sm:text-sm">
                 <div className="flex items-center gap-2">
                   <CalendarIcon className="w-4 h-4 text-gray-400" />
                   <span>

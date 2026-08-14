@@ -152,14 +152,9 @@ export default function AnnouncementsAdmin({
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">
-            Manajemen Pengumuman
-          </h1>
-          <p className="text-gray-600 text-sm">Kelola pengumuman sekolah</p>
-        </div>
+    <div className="space-y-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-slate-600"><span className="font-bold text-slate-950">{announcements.length} pengumuman</span> tersimpan.</p>
         <button
           onClick={() => {
             setEditingItem(null);
@@ -167,7 +162,7 @@ export default function AnnouncementsAdmin({
             setKeepExisting(false);
             setIsModalOpen(true);
           }}
-          className="bg-blue-600 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors shadow-sm"
+          className="dashboard-button dashboard-button-primary w-full sm:w-auto"
           aria-label="Tambah pengumuman baru"
         >
           <Plus size={20} aria-hidden="true" /> Tambah Pengumuman

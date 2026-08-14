@@ -20,7 +20,11 @@ export default function CategoryFilter({
   onCategoryChange,
 }: CategoryFilterProps) {
   return (
-    <div className="flex flex-wrap justify-center gap-2 p-1.5 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-100 dark:border-gray-700 rounded-full shadow-sm max-w-fit mx-auto mb-10">
+    <div
+      role="group"
+      aria-label="Filter kategori berita"
+      className="mx-auto mb-10 flex max-w-fit flex-wrap justify-center gap-2 rounded-full border border-slate-200 bg-white/95 p-1.5 shadow-lg shadow-slate-900/10 backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95"
+    >
       {categories.map(({ id, label, icon: Icon }) => {
         const isActive = activeCategory === id;
         return (
@@ -28,11 +32,12 @@ export default function CategoryFilter({
             key={id}
             onClick={() => onCategoryChange(id)}
             className={clsx(
-              "relative px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+              "focus-ring relative inline-flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-200",
               isActive
                 ? "text-white"
-                : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                : "text-slate-700 hover:bg-slate-100 hover:text-blue-800 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-200"
             )}
+            aria-pressed={isActive}
           >
             {isActive && (
               <motion.div

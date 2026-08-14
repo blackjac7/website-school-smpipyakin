@@ -16,44 +16,33 @@ export default function NotificationCard({
   className,
   showReadIndicator = true,
 }: NotificationCardProps) {
-  const baseClassName = `bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer ${
-    !notification.read ? "bg-blue-50 border-blue-200" : ""
-  }`;
+  const baseClassName = `group w-full rounded-2xl border p-4 text-left transition sm:p-5 ${
+    !notification.read
+      ? "border-blue-200 bg-blue-50/70 shadow-sm hover:border-blue-300 hover:bg-blue-50"
+      : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
+  } ${onClick ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" : ""}`;
 
-  return (
-    <div
-      className={className || baseClassName}
-      onClick={() => onClick?.(notification)}
-    >
-      <div className="flex items-start gap-4">
-        <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center ${
-            !notification.read ? "bg-blue-100" : "bg-gray-100"
-          }`}
-        >
-          <notification.icon className={`w-5 h-5 ${notification.color}`} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h4
-                className={`text-sm ${
-                  !notification.read ? "font-semibold" : "font-medium"
-                } text-gray-900`}
-              >
-                {notification.title}
-              </h4>
-              <p className="text-sm text-gray-600 mt-1">
-                {notification.message}
-              </p>
-              <p className="text-xs text-gray-500 mt-2">{notification.time}</p>
-            </div>
-            {showReadIndicator && !notification.read && (
-              <div className="w-3 h-3 bg-blue-500 rounded-full ml-4 mt-1 flex-shrink-0"></div>
-            )}
+  const content = (
+    <div className="flex items-start gap-3 sm:gap-4">
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${!notification.read ? "bg-blue-100" : "bg-slate-100"}`}>
+        <notification.icon className={`h-5 w-5 ${notification.color}`} aria-hidden="true" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h2 className={`text-sm text-slate-950 ${!notification.read ? "font-bold" : "font-semibold"}`}>{notification.title}</h2>
+            <p className="mt-1 text-sm leading-6 text-slate-600">{notification.message}</p>
+            <p className="mt-2 text-xs font-medium text-slate-400">{notification.time}</p>
           </div>
+          {showReadIndicator && !notification.read && <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-blue-600" aria-label="Belum dibaca" />}
         </div>
       </div>
     </div>
+  );
+
+  return onClick ? (
+    <button type="button" className={className || baseClassName} onClick={() => onClick(notification)}>{content}</button>
+  ) : (
+    <article className={className || baseClassName}>{content}</article>
   );
 }

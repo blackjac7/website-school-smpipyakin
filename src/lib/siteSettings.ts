@@ -79,7 +79,7 @@ export const DEFAULT_SETTINGS = {
 
   // General Site Settings
   "site.name": {
-    value: "SMP IP Yakin Jakarta",
+    value: "SMP IP YAKIN",
     type: "STRING" as const,
     category: "general",
     description: "Site name",

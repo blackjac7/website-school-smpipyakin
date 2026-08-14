@@ -2,7 +2,7 @@
 
 import { Sidebar } from "@/components/dashboard/admin/Sidebar";
 import { useSidebar } from "@/hooks/useSidebar";
-import Header from "@/components/dashboard/admin/Header";
+import { DashboardTopbar } from "@/components/dashboard/layout";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
@@ -75,23 +75,26 @@ export default function AdminDashboardLayout({
   const showHeader = !pathname.includes("/notifications");
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="dashboard-shell flex min-h-dvh overflow-hidden bg-slate-50">
       <Sidebar isOpen={isOpen} onClose={() => setIsOpen(!isOpen)} />
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {showHeader && (
-          <Header
-            activeTab={activeTab}
+          <DashboardTopbar
+            workspace="admin"
+            activePage={activeTab}
             showNotifications={showNotifications}
             setShowNotifications={setShowNotifications}
             notifications={notifications}
             onToggleSidebar={() => setIsOpen(!isOpen)}
+            isSidebarOpen={isOpen}
+            unreadCount={notifications.filter((notification) => !notification.read).length}
             onMarkAsRead={handleMarkAsRead}
           />
         )}
 
         {/* Content area */}
-        <div className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="p-4 md:p-6 lg:p-8 pb-20">{children}</div>
+        <div id="main-content" className="dashboard-workspace min-w-0 flex-1 overflow-y-auto">
+          <div className="mx-auto w-full max-w-[1600px] p-3 pb-20 sm:p-5 lg:p-8">{children}</div>
         </div>
       </div>
     </div>

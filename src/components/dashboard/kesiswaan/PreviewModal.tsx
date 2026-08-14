@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { ContentItem } from "./types";
 import Image from "next/image";
+import { FocusTrap } from "@/components/shared";
+import { APPROVAL_STATUS, type ApprovalStatus } from "@/components/dashboard/layout";
 
 interface PreviewModalProps {
   isOpen: boolean;
@@ -98,16 +100,17 @@ export default function PreviewModal({
 
   const typeBadge = getTypeBadge();
   const TypeIcon = typeBadge.icon;
+  const statusMeta = APPROVAL_STATUS[content.status as ApprovalStatus];
+  const titleId = "content-preview-title";
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/55 p-0 backdrop-blur-sm sm:items-center sm:p-4" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <FocusTrap active onEscape={onClose}>
+      <div role="dialog" aria-modal="true" aria-labelledby={titleId} className="flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:max-w-4xl sm:rounded-3xl">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center gap-3">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Preview & Validasi Konten
-            </h3>
+            <h2 id={titleId} className="text-lg font-black text-slate-950">Tinjau dan validasi konten</h2>
             {hasChanges && (
               <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
                 Sudah diedit
@@ -115,8 +118,10 @@ export default function PreviewModal({
             )}
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Tutup tinjauan konten"
           >
             <X className="w-5 h-5" />
           </button>
@@ -132,20 +137,8 @@ export default function PreviewModal({
               <TypeIcon className="w-4 h-4" />
               {typeBadge.label}
             </span>
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${
-                content.status === "PENDING"
-                  ? "bg-orange-100 text-orange-700"
-                  : content.status === "APPROVED"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
-              }`}
-            >
-              {content.status === "PENDING"
-                ? "Menunggu Validasi"
-                : content.status === "APPROVED"
-                  ? "Disetujui"
-                  : "Ditolak"}
+            <span className={`rounded-full border px-3 py-1 text-sm font-semibold ${statusMeta.className}`}>
+              {statusMeta.longLabel}
             </span>
           </div>
 
@@ -193,13 +186,9 @@ export default function PreviewModal({
             ) : (
               <div className="prose max-w-none bg-gray-50 rounded-lg p-4">
                 {content.type === "news" ? (
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html:
-                        editedDescription ||
-                        "<p class='text-gray-400'>Tidak ada konten</p>",
-                    }}
-                  />
+                  <p className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                    {editedDescription.replace(/<[^>]*>/g, "").trim() || "Tidak ada konten"}
+                  </p>
                 ) : (
                   <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                     {editedDescription || "Tidak ada deskripsi"}
@@ -332,6 +321,7 @@ export default function PreviewModal({
           </div>
         )}
       </div>
+      </FocusTrap>
     </div>
   );
 }

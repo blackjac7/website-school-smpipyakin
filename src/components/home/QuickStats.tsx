@@ -1,161 +1,53 @@
-"use client";
-
-import * as React from "react";
 import * as LucideIcons from "lucide-react";
-import { motion, Variants } from "framer-motion";
-import { SchoolStat } from "@prisma/client";
+import type { SchoolStat } from "@prisma/client";
 
 interface QuickStatsProps {
   stats?: SchoolStat[];
 }
 
-const defaultStats = [
-  {
-    label: "Siswa Aktif",
-    value: "450+",
-    iconName: "GraduationCap",
-  },
-  {
-    label: "Guru Berkualitas",
-    value: "23",
-    iconName: "Users",
-  },
-  {
-    label: "Prestasi",
-    value: "120+",
-    iconName: "Award",
-  },
-  {
-    label: "Ekstrakurikuler",
-    value: "9",
-    iconName: "Activity",
-  },
+const fallbackStats = [
+  { label: "Siswa aktif", value: "450+", iconName: "GraduationCap" },
+  { label: "Guru & staf", value: "35+", iconName: "Users" },
+  { label: "Berdiri sejak", value: "1974", iconName: "CalendarDays" },
+  { label: "Prestasi", value: "100+", iconName: "Trophy" },
 ];
 
-function useCountUp(targetStr: string, duration = 800) {
-  const [display, setDisplay] = React.useState<string>(targetStr);
-
-  React.useEffect(() => {
-    // Parse numeric part and suffix
-    const match = String(targetStr).match(/^([\d,]+)(\D*)$/);
-    if (!match) {
-      setDisplay(targetStr);
-      return;
-    }
-    const numStr = match[1].replace(/,/g, "");
-    const suffix = match[2] || "";
-    const target = parseInt(numStr, 10);
-    if (Number.isNaN(target)) {
-      setDisplay(targetStr);
-      return;
-    }
-
-    let rafId: number;
-    const start = performance.now();
-    const step = (now: number) => {
-      const t = Math.min(1, (now - start) / duration);
-      const current = Math.round(target * t);
-      // Add thousand separators
-      const formatted = current
-        .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-      setDisplay(`${formatted}${suffix}`);
-      if (t < 1) rafId = requestAnimationFrame(step);
-    };
-
-    rafId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(rafId);
-  }, [targetStr, duration]);
-
-  return display;
-}
-
-const container: Variants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.12,
-    },
-  },
-};
-
-const item: Variants = {
-  hidden: { opacity: 0, y: 18 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 80,
-      damping: 12,
-    },
-  },
-};
-
-// Safe icon renderer (falls back to LayoutGrid)
-function RenderIcon({ name }: { name?: string }) {
-  type IconComponent = React.ComponentType<{ className?: string }>;
-  const lucideIcons = LucideIcons as unknown as Record<string, IconComponent>;
-  const Icon = name ? lucideIcons[name] : undefined;
-  const Component = Icon ?? lucideIcons["LayoutGrid"];
-  return <Component className="w-6 h-6 text-white" />;
-}
-
 export default function QuickStats({ stats }: QuickStatsProps) {
-  const displayStats =
-    stats && stats.length > 0
-      ? stats.map((s) => ({
-          label: s.label,
-          value: s.value,
-          iconName: s.iconName,
-        }))
-      : defaultStats;
+  const items = stats?.length ? stats : fallbackStats;
 
   return (
-    <section className="relative -mt-20 z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-      <motion.div
-        variants={container}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, amount: 0.2 }}
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6"
-      >
-        {displayStats.map((stat) => (
-          <StatCard key={stat.label} stat={stat} />
-        ))}
-      </motion.div>
+    <section aria-label="Ringkasan sekolah" className="relative z-20 -mt-8 pb-8 sm:-mt-10">
+      <div className="public-container">
+        <div className="public-card grid grid-cols-2 overflow-hidden md:grid-cols-4">
+          {items.map((stat, index) => {
+            const Icon = resolveIcon(stat.iconName);
+            return (
+              <div
+                key={stat.label}
+                className={`flex min-h-32 flex-col justify-center p-5 sm:flex-row sm:items-center sm:gap-4 sm:p-6 ${index > 0 ? "border-l border-slate-200 dark:border-slate-700" : ""} ${index > 1 ? "border-t md:border-t-0" : ""}`}
+              >
+                <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-800 dark:bg-blue-950/60 dark:text-blue-200 sm:mb-0">
+                  <Icon aria-hidden="true" className="h-5 w-5" />
+                </span>
+                <span>
+                  <strong className="block text-2xl font-extrabold tracking-tight text-slate-950 dark:text-white sm:text-3xl">
+                    {stat.value}
+                  </strong>
+                  <span className="mt-1 block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                    {stat.label}
+                  </span>
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </section>
   );
 }
 
-function StatCard({
-  stat,
-}: {
-  stat: { label: string; value: string; iconName?: string };
-}) {
-  const displayValue = useCountUp(stat.value, 900);
-
-  return (
-    <motion.div
-      variants={item}
-      className="group bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg dark:shadow-black/40 hover:shadow-2xl hover:-translate-y-1 transform-gpu transition-all duration-300 border border-gray-100 dark:border-gray-700"
-      style={{ willChange: "transform" }}
-    >
-      <div className="flex items-center justify-center mb-4 w-fit mx-auto">
-        <div className="rounded-full p-3 bg-gradient-to-br from-yellow-500 to-amber-500 shadow-md flex items-center justify-center w-12 h-12 group-hover:scale-105 transition-transform">
-          <RenderIcon name={stat.iconName} />
-        </div>
-      </div>
-
-      <div className="text-center">
-        <div className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
-          {displayValue}
-        </div>
-        <div className="text-gray-500 dark:text-gray-300 font-medium uppercase tracking-wider text-sm mt-1">
-          {stat.label}
-        </div>
-      </div>
-    </motion.div>
-  );
+function resolveIcon(name?: string) {
+  type Icon = React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
+  const icons = LucideIcons as unknown as Record<string, Icon>;
+  return icons[name ?? ""] ?? icons.School;
 }

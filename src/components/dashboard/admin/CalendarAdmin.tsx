@@ -209,18 +209,13 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
   };
 
   return (
-    <div className="p-4 sm:p-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
-            Kalender Akademik
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Kelola jadwal kegiatan sekolah ({filteredActivities.length}{" "}
-            kegiatan)
+    <div className="space-y-4 p-3 sm:p-5 lg:p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-3 sm:p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <p className="text-sm font-semibold text-slate-600" aria-live="polite">
+            {filteredActivities.length} kegiatan sesuai filter
           </p>
-        </div>
-        <div className="flex flex-wrap gap-2 w-full md:w-auto">
+          <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:w-auto lg:flex-wrap">
           {/* Filter Tahun Pelajaran */}
           <div className="relative">
             <CalendarIcon
@@ -264,7 +259,7 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
             onClick={handleExportExcel}
             disabled={isExporting}
             aria-label="Ekspor ke Excel"
-            className="bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-emerald-700 transition focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="dashboard-button dashboard-button-secondary"
           >
             {isExporting ? (
               <Loader2 size={20} className="animate-spin" />
@@ -279,10 +274,11 @@ export default function CalendarAdmin({ activities }: CalendarPageProps) {
               setIsModalOpen(true);
             }}
             aria-label="Tambah kegiatan baru"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="dashboard-button dashboard-button-primary"
           >
             <Plus size={20} /> Tambah Kegiatan
           </button>
+          </div>
         </div>
       </div>
 

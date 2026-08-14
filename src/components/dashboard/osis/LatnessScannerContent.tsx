@@ -41,6 +41,7 @@ import { cn } from "@/lib/utils";
 import AttributeChecklist from "./AttributeChecklist";
 import { getScanWindowStatus } from "@/lib/scan-window";
 import { requestScanTimeOverride } from "@/actions/osis/scanOverride";
+import { FocusTrap } from "@/components/shared";
 
 interface StudentInfo {
   id: string;
@@ -1533,16 +1534,24 @@ export default function LatnessScannerContent() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/65 p-0 backdrop-blur-sm sm:items-center sm:p-4"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="scan-override-title"
             onMouseDown={(event) => {
               if (event.target === event.currentTarget && !isRequestingOverride) {
                 setShowOverrideModal(false);
               }
             }}
           >
+            <FocusTrap
+              active
+              onEscape={
+                isRequestingOverride
+                  ? undefined
+                  : () => setShowOverrideModal(false)
+              }
+            >
             <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="scan-override-title"
               initial={prefersReducedMotion ? false : { opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 30 }}
@@ -1661,6 +1670,7 @@ export default function LatnessScannerContent() {
                 </div>
               </form>
             </motion.div>
+            </FocusTrap>
           </motion.div>
         )}
       </AnimatePresence>

@@ -42,12 +42,12 @@ export const metadata: Metadata = {
     ],
     apple: "/icons/apple-touch-icon.png",
   },
-  title: "SMP IP Yakin Jakarta | Sekolah Menengah Pertama Cengkareng",
+  title: "SMP IP YAKIN | Sekolah Menengah Pertama Cengkareng",
   description:
-    "SMP IP Yakin Jakarta: Sekolah unggulan dengan pendidikan berkualitas, program inovatif, dan pembentukan generasi berkarakter.",
+    "SMP IP YAKIN: Sekolah unggulan dengan pendidikan berkualitas, program inovatif, dan pembentukan generasi berkarakter.",
   keywords:
     "SMP IP Yakin Jakarta, SMP Swasta Jakarta, SMP Terbaik Cengkareng, Sekolah Berkarakter, Kurikulum Merdeka, PPDB SMP Jakarta, Sekolah Unggulan Jakarta",
-  authors: [{ name: "SMP IP Yakin Jakarta" }],
+  authors: [{ name: "SMP IP YAKIN" }],
   robots: "index, follow",
   alternates: {
     canonical: "https://www.smpipyakin.sch.id",
@@ -56,11 +56,11 @@ export const metadata: Metadata = {
     google: "4sneV0C9--1COSlSa37T4GUITi8mTQz1RGIeS6Hn_W0",
   },
   openGraph: {
-    title: "SMP IP Yakin Jakarta",
+    title: "SMP IP YAKIN",
     description:
       "Sekolah Menengah Pertama dengan pendidikan berkualitas dan program pembelajaran inovatif.",
     url: "https://smpipyakin.sch.id",
-    siteName: "SMP IP Yakin Jakarta",
+    siteName: "SMP IP YAKIN",
     images: [
       {
         url: "https://www.smpipyakin.sch.id/logo.png",
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "SMP IP Yakin Jakarta",
+    title: "SMP IP YAKIN",
     description:
       "Sekolah Menengah Pertama dengan pendidikan berkualitas dan program pembelajaran inovatif.",
     images: ["https://www.smpipyakin.sch.id/logo.png"],
@@ -101,7 +101,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="SMP IP Yakin" />
+        <meta name="apple-mobile-web-app-title" content="SMP IP YAKIN" />
 
         {/* Preload images for desktop */}
         <link

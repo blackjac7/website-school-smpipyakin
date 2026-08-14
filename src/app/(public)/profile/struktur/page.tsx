@@ -3,9 +3,9 @@ import { getPublicTeachers } from "@/actions/public/teachers";
 import StrukturOrganisasi from "@/components/profile/StrukturOrganisasi";
 
 export const metadata: Metadata = {
-  title: "Struktur Organisasi | SMP Islam PY",
+  title: "Struktur Organisasi | SMP IP Yakin Jakarta",
   description:
-    "Struktur organisasi sekolah SMP Islam PY - Kepemimpinan dan jajaran pengurus sekolah",
+    "Struktur organisasi SMP IP Yakin Jakarta, kepemimpinan, dan jajaran pengelola sekolah.",
 };
 
 export default async function StrukturPage() {

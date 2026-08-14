@@ -1,6 +1,6 @@
 export const HERO_SLIDES_DATA = [
   {
-    title: "Selamat Datang di SMP IP Yakin Jakarta",
+    title: "Selamat Datang di SMP IP YAKIN",
     subtitle: "Membentuk Generasi Unggul, Berakhlak, dan Berprestasi",
     imageSmall:
       "https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_640/q_auto/f_auto/v1733055889/hero1_qjwkk1.webp",
@@ -60,7 +60,7 @@ export const SCHOOL_STATS_DATA = [
   },
   {
     label: "Tahun Berdiri",
-    value: "1986",
+    value: "1974",
     iconName: "Calendar",
     isActive: true,
     sortOrder: 2,
@@ -130,7 +130,7 @@ export const SITE_SETTINGS_DATA = [
   // General Site Settings
   {
     key: "site.name",
-    value: "SMP IP Yakin Jakarta",
+    value: "SMP IP YAKIN",
     type: "STRING",
     category: "general",
     description: "Site name",

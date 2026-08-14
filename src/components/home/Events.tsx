@@ -1,79 +1,42 @@
-// components/home/Events.tsx
-"use client";
-
-import { Calendar, MapPin, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, CalendarDays } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
-import { SerializableActivity } from "@/lib/data/homepage";
-import Link from "next/link";
+import type { SerializableActivity } from "@/lib/data/homepage";
 
-interface EventsProps {
-  events: SerializableActivity[];
-}
-
-export default function Events({ events }: EventsProps) {
-  const data = events || [];
-
+export default function Events({ events = [] }: { events: SerializableActivity[] }) {
   return (
-    <section className="bg-gray-50 dark:bg-gray-900/50 py-16">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Agenda Mendatang
-          </h2>
-          <div className="bg-yellow-100 dark:bg-yellow-900/30 p-2 rounded-full">
-            <Calendar className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+    <section className="public-section bg-slate-50 dark:bg-slate-900/50">
+      <div className="public-container">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="public-eyebrow"><CalendarDays aria-hidden="true" className="h-4 w-4" /> Kalender</p>
+            <h2 className="public-heading mt-3">Agenda terdekat</h2>
           </div>
+          <Link href="/academic-calendar" className="public-button-secondary shrink-0">Kalender lengkap <ArrowRight aria-hidden="true" className="h-4 w-4" /></Link>
         </div>
 
-        {data.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {data.map((event, index) => (
-              <div
-                key={event.id || index}
-                className="group bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md dark:shadow-gray-900/50 hover:shadow-2xl dark:hover:shadow-gray-900/70 hover:-translate-y-1 transition-all duration-300 border-t-4 border-yellow-500 flex flex-col"
-              >
-                <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400 font-semibold mb-3 bg-yellow-50 dark:bg-yellow-900/20 w-fit px-3 py-1 rounded-full text-sm">
-                  <Calendar className="w-4 h-4" />
-                  {event.date
-                    ? format(new Date(event.date), "dd MMM yyyy", {
-                        locale: id,
-                      })
-                    : "TBA"}
-                </div>
-
-                <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white line-clamp-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">
-                  {event.title}
-                </h3>
-
-                <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 text-sm flex-grow">
-                  {event.information}
-                </p>
-
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <MapPin className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                  <span>SMP IP Yakin Jakarta</span>
-                </div>
-              </div>
-            ))}
+        {events.length ? (
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {events.map((event) => {
+              const date = new Date(event.date);
+              return (
+                <article key={event.id} className="public-card flex gap-5 p-6">
+                  <time dateTime={event.date} className="flex h-18 w-16 shrink-0 flex-col items-center justify-center rounded-2xl bg-blue-900 text-white">
+                    <span className="text-2xl font-extrabold leading-none">{format(date, "dd")}</span>
+                    <span className="mt-1 text-xs font-bold uppercase tracking-wider text-blue-100">{format(date, "MMM", { locale: id })}</span>
+                  </time>
+                  <div>
+                    <h3 className="font-extrabold leading-snug text-slate-950 dark:text-white">{event.title}</h3>
+                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{event.information}</p>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         ) : (
-          <div className="text-center py-10 bg-white dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 mb-8">
-            <p className="text-gray-500 dark:text-gray-400">
-              Belum ada agenda kegiatan mendatang.
-            </p>
-          </div>
+          <div className="public-card mt-10 p-8 text-center text-slate-500 dark:text-slate-400">Belum ada agenda mendatang.</div>
         )}
-
-        <div className="flex justify-center">
-          <Link
-            href="/academic-calendar"
-            className="inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-500 text-white font-medium py-2.5 px-6 rounded-lg transition-colors shadow-sm hover:shadow-md"
-          >
-            Lihat Semua Agenda
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
       </div>
     </section>
   );

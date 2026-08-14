@@ -39,16 +39,24 @@ export function VisuallyHidden({ children }: { children: React.ReactNode }) {
 interface FocusTrapProps {
   children: React.ReactNode;
   active?: boolean;
+  onEscape?: () => void;
 }
 
-export function FocusTrap({ children, active = true }: FocusTrapProps) {
+export function FocusTrap({ children, active = true, onEscape }: FocusTrapProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = React.useRef<HTMLElement | null>(null);
+  const onEscapeRef = React.useRef(onEscape);
+
+  React.useEffect(() => {
+    onEscapeRef.current = onEscape;
+  }, [onEscape]);
 
   React.useEffect(() => {
     if (!active) return;
 
     const container = containerRef.current;
     if (!container) return;
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
 
     const focusableElements = container.querySelectorAll<HTMLElement>(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -58,6 +66,11 @@ export function FocusTrap({ children, active = true }: FocusTrapProps) {
     const lastElement = focusableElements[focusableElements.length - 1];
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && onEscapeRef.current) {
+        e.preventDefault();
+        onEscapeRef.current();
+        return;
+      }
       if (e.key !== "Tab") return;
 
       if (e.shiftKey) {
@@ -78,10 +91,11 @@ export function FocusTrap({ children, active = true }: FocusTrapProps) {
 
     return () => {
       container.removeEventListener("keydown", handleKeyDown);
+      previouslyFocusedRef.current?.focus();
     };
   }, [active]);
 
-  return <div ref={containerRef}>{children}</div>;
+  return <div ref={containerRef} className="contents">{children}</div>;
 }
 
 /**

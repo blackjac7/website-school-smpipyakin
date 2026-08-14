@@ -14,6 +14,23 @@ import {
   getPPDBNotifications,
   markPPDBNotificationAsRead,
 } from "@/actions/ppdb/notifications";
+import {
+  getAdminNotifications,
+  markAdminNotificationAsRead,
+  markAllAdminNotificationsAsRead,
+} from "@/actions/admin/notifications";
+import {
+  getKesiswaanNotifications,
+  markKesiswaanNotificationAsRead,
+  markAllKesiswaanNotificationsAsRead,
+} from "@/actions/kesiswaan/notifications";
+import {
+  getOsisNotifications,
+  markOsisNotificationAsRead,
+  markAllOsisNotificationsAsRead,
+} from "@/actions/osis/notifications";
+
+type NotificationRole = "admin" | "kesiswaan" | "osis" | "siswa" | "ppdb_admin";
 
 /**
  * Notification API Service
@@ -218,7 +235,7 @@ export class NotificationAPIService {
   }: {
     page?: number;
     filter?: "all" | "unread";
-    userRole?: string;
+    userRole?: NotificationRole;
   } = {}): Promise<{
     success: boolean;
     data: FormattedNotification[];
@@ -233,6 +250,20 @@ export class NotificationAPIService {
         page,
         unreadOnly: filter === "unread",
       });
+    } else if (userRole === "admin" || userRole === "kesiswaan" || userRole === "osis") {
+      const params = {
+        limit: NOTIFICATION_CONFIG.ALL_NOTIFICATIONS_LIMIT,
+        page,
+        unreadOnly: filter === "unread",
+      };
+      const roleResult = userRole === "admin"
+        ? await getAdminNotifications(params)
+        : userRole === "kesiswaan"
+          ? await getKesiswaanNotifications(params)
+          : await getOsisNotifications(params);
+      result = roleResult.success
+        ? { success: true, data: formatNotifications(roleResult.data as unknown as RawNotification[]) }
+        : { success: false, data: [], error: roleResult.error };
     } else {
       result = await this.fetchNotifications({
         limit: NOTIFICATION_CONFIG.ALL_NOTIFICATIONS_LIMIT,
@@ -253,16 +284,29 @@ export class NotificationAPIService {
    */
   static async markNotificationAsReadByRole(
     notificationId: string,
-    userRole?: string
+    userRole?: NotificationRole
   ): Promise<{
     success: boolean;
     error?: string;
   }> {
     if (userRole === "ppdb_admin") {
       return this.markPPDBNotificationAsRead(notificationId);
+    } else if (userRole === "admin") {
+      return markAdminNotificationAsRead(notificationId);
+    } else if (userRole === "kesiswaan") {
+      return markKesiswaanNotificationAsRead(notificationId);
+    } else if (userRole === "osis") {
+      return markOsisNotificationAsRead(notificationId);
     } else {
       return this.markNotificationAsRead(notificationId);
     }
+  }
+
+  static async markAllNotificationsAsReadByRole(userRole?: NotificationRole) {
+    if (userRole === "admin") return markAllAdminNotificationsAsRead();
+    if (userRole === "kesiswaan") return markAllKesiswaanNotificationsAsRead();
+    if (userRole === "osis") return markAllOsisNotificationsAsRead();
+    return this.markAllNotificationsAsRead();
   }
 }
 

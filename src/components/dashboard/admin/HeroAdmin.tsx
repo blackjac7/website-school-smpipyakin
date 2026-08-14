@@ -101,25 +101,18 @@ export default function HeroAdmin({ slides }: HeroPageProps) {
   };
 
   return (
-    <div className="p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
-            Manajemen Hero Carousel
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Kelola slide hero di halaman utama
-          </p>
-        </div>
+    <div className="space-y-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-slate-600"><span className="font-bold text-slate-950">{slides.length} banner</span> ditampilkan bergantian pada halaman utama.</p>
         <button
           onClick={() => {
             setEditingSlide(null);
             setIsModalOpen(true);
           }}
           aria-label="Tambah slide baru"
-          className="w-full sm:w-auto justify-center bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="dashboard-button dashboard-button-primary w-full sm:w-auto"
         >
-          <Plus size={20} /> Tambah Slide
+          <Plus size={18} aria-hidden="true" /> Tambah banner
         </button>
       </div>
 

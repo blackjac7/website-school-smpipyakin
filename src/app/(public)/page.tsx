@@ -13,6 +13,7 @@ import {
 } from "@/components/home/HomeSkeletons";
 import EducationalMotivation from "@/components/home/EducationalMotivation";
 import InstagramEmbed from "@/components/home/InstagramEmbed";
+import HomeJourneys from "@/components/home/HomeJourneys";
 import {
   getLatestNews,
   getUpcomingAnnouncements,
@@ -22,13 +23,14 @@ import { getHeroSlides } from "@/actions/hero";
 import { getSchoolStats } from "@/actions/stats";
 import { getSettingTyped } from "@/lib/siteSettings";
 import { HeroSlide } from "@/components/home/HeroCarousel";
+import { normalizePublicSchoolName } from "@/lib/public-site";
 
 export const metadata = {
-  title: "SMP IP Yakin Jakarta - Membentuk Generasi Unggul",
+  title: "SMP IP YAKIN - Membentuk Generasi Unggul",
   description:
-    "Selamat datang di website resmi SMP IP Yakin Jakarta. Sekolah Menengah Pertama yang mengedepankan pendidikan karakter dan prestasi.",
+    "Selamat datang di website resmi SMP IP YAKIN. Sekolah Menengah Pertama yang mengedepankan pendidikan karakter dan prestasi.",
   openGraph: {
-    title: "SMP IP Yakin Jakarta - Membentuk Generasi Unggul",
+    title: "SMP IP YAKIN - Membentuk Generasi Unggul",
     description:
       "Sekolah Menengah Pertama yang mengedepankan pendidikan karakter dan prestasi.",
     type: "website",
@@ -56,7 +58,7 @@ const defaultSlides: HeroSlide[] = [
       medium:
         "https://res.cloudinary.com/dvnyimxmi/image/upload/t_My%20Logo/w_1024/q_auto/f_auto/v1733055889/hero1_qjwkk1.webp",
     },
-    title: "Selamat Datang di SMP IP Yakin Jakarta",
+    title: "Selamat Datang di SMP IP YAKIN",
     subtitle: "Membentuk Generasi Unggul, Berakhlak, dan Berprestasi",
     linkPrimary: { text: "Pelajari Lebih Lanjut", href: "/profile" },
     linkSecondary: { text: "Pendaftaran PPDB", href: "/ppdb" },
@@ -122,8 +124,8 @@ export default async function HomePage() {
             small: slide.imageSmall,
             medium: slide.imageMedium,
           },
-          title: slide.title,
-          subtitle: slide.subtitle,
+          title: normalizePublicSchoolName(slide.title),
+          subtitle: normalizePublicSchoolName(slide.subtitle),
           linkPrimary: slide.linkPrimaryText
             ? {
                 text: slide.linkPrimaryText,
@@ -141,7 +143,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <div className="relative h-[100dvh] min-h-[600px]">
+      <div className="relative h-[clamp(42rem,84dvh,54rem)]">
         {/* Server-rendered initial hero to ensure preload is used for LCP */}
         {transformedSlides.length > 0 && (
           <div className="absolute inset-0 z-0">
@@ -156,6 +158,8 @@ export default async function HomePage() {
       </div>
 
       <QuickStats stats={schoolStats} />
+
+      <HomeJourneys />
 
       {/* Announcements Section */}
       {announcementsEnabled && (

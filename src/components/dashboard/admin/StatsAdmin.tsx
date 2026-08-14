@@ -169,16 +169,9 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
   };
 
   return (
-    <div className="p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
-            Manajemen Statistik
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Kelola angka statistik yang ditampilkan
-          </p>
-        </div>
+    <div className="space-y-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-slate-600"><span className="font-bold text-slate-950">{stats.length} statistik</span> aktif untuk membangun kepercayaan pengunjung.</p>
         <button
           onClick={() => {
             setEditingStat(null);
@@ -188,9 +181,9 @@ export default function StatsAdmin({ stats }: StatsPageProps) {
             setIsModalOpen(true);
           }}
           aria-label="Tambah statistik baru"
-          className="w-full sm:w-auto justify-center bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="dashboard-button dashboard-button-primary w-full sm:w-auto"
         >
-          <Plus size={20} /> Tambah Statistik
+          <Plus size={18} aria-hidden="true" /> Tambah statistik
         </button>
       </div>
 

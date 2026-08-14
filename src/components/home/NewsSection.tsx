@@ -1,114 +1,45 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Calendar } from "lucide-react";
+import { ArrowRight, CalendarDays, Newspaper } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
-import { SerializableNews } from "@/lib/data/homepage";
+import type { SerializableNews } from "@/lib/data/homepage";
 
-interface NewsSectionProps {
-  news: SerializableNews[];
-}
+const excerpt = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim().slice(0, 150);
 
-const getExcerpt = (html: string, maxLength = 160) => {
-  const plain = html
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (plain.length <= maxLength) return plain;
-  return `${plain.slice(0, maxLength).trim()}…`;
-};
-
-export default function NewsSection({ news }: NewsSectionProps) {
-  // Use passed data or empty array
-  const newsList = news || [];
-
+export default function NewsSection({ news = [] }: { news: SerializableNews[] }) {
   return (
-    <section className="bg-white dark:bg-gray-900 py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-4">
-            Berita Terbaru
-          </h2>
-          <div className="h-1 w-24 bg-yellow-500 mx-auto rounded-full" />
-          <p className="mt-4 text-xl text-gray-500 dark:text-gray-400">
-            Ikuti perkembangan terkini dari SMP IP Yakin
-          </p>
+    <section className="public-section bg-white dark:bg-slate-950">
+      <div className="public-container">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-2xl">
+            <p className="public-eyebrow"><Newspaper aria-hidden="true" className="h-4 w-4" /> Kabar sekolah</p>
+            <h2 className="public-heading mt-3">Berita dan prestasi terbaru</h2>
+            <p className="public-lead mt-5">Lihat kegiatan nyata, pencapaian, dan cerita dari lingkungan SMP IP Yakin.</p>
+          </div>
+          <Link href="/news" className="public-button-secondary shrink-0">Semua berita <ArrowRight aria-hidden="true" className="h-4 w-4" /></Link>
         </div>
 
-        {newsList.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {newsList.map((item, index) => (
-              <div
-                key={item.id || index}
-                className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg dark:shadow-gray-900/50 border border-gray-100 dark:border-gray-700 flex flex-col h-full group hover:-translate-y-2 transition-transform duration-300"
-              >
-                <div className="relative w-full h-56 overflow-hidden bg-gray-200 dark:bg-gray-700">
-                  {item.image ? (
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 33vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
-                      No Image
-                    </div>
-                  )}
-
-                  <div className="absolute top-4 left-4 bg-yellow-500 dark:bg-yellow-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-                    {item.kategori || "Berita"}
-                  </div>
+        {news.length ? (
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {news.map((item) => (
+              <article key={item.id} className="public-card group flex h-full flex-col overflow-hidden">
+                <Link href={`/news/${item.id}`} className="focus-ring relative block aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-slate-800">
+                  {item.image ? <Image src={item.image} alt="" fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-105" /> : <div className="flex h-full items-center justify-center text-sm text-slate-400">Gambar belum tersedia</div>}
+                  <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-extrabold text-blue-900 shadow-sm">{item.kategori || "Berita"}</span>
+                </Link>
+                <div className="flex flex-1 flex-col p-6">
+                  <p className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400"><CalendarDays aria-hidden="true" className="h-4 w-4" />{format(new Date(item.date), "d MMMM yyyy", { locale: id })}</p>
+                  <h3 className="mt-3 line-clamp-2 text-xl font-extrabold leading-snug text-slate-950 dark:text-white"><Link href={`/news/${item.id}`} className="focus-ring rounded hover:text-blue-800 dark:hover:text-blue-300">{item.title}</Link></h3>
+                  <p className="mt-3 line-clamp-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{excerpt(item.content) || item.title}</p>
+                  <Link href={`/news/${item.id}`} className="focus-ring mt-5 inline-flex min-h-11 items-center gap-2 self-start rounded-lg font-bold text-blue-800 dark:text-blue-300">Baca selengkapnya <ArrowRight aria-hidden="true" className="h-4 w-4" /></Link>
                 </div>
-                <div className="p-6 flex flex-col flex-grow">
-                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3 gap-2">
-                    <Calendar className="w-4 h-4" />
-                    {item.date
-                      ? format(new Date(item.date), "dd MMMM yyyy", {
-                          locale: id,
-                        })
-                      : "-"}
-                  </div>
-                  <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white line-clamp-2 group-hover:text-yellow-700 dark:group-hover:text-yellow-400 transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300 line-clamp-3 mb-4 text-sm">
-                    {getExcerpt(item.content) || item.title}
-                  </p>
-                  <div className="mt-auto pt-4">
-                    <Link
-                      href={`/news/${item.id}`}
-                      className="inline-flex items-center text-yellow-600 dark:text-yellow-400 font-bold hover:text-yellow-800 dark:hover:text-yellow-300 transition"
-                    >
-                      Baca selengkapnya{" "}
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
+              </article>
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <p className="text-gray-500 dark:text-gray-400">
-              Belum ada berita yang diterbitkan.
-            </p>
-          </div>
+          <div className="public-card mt-10 p-10 text-center text-slate-500 dark:text-slate-400">Belum ada berita yang diterbitkan.</div>
         )}
-
-        <div className="mt-12 text-center">
-          <Link
-            href="/news"
-            className="inline-flex items-center px-6 py-3 border-2 border-yellow-500 text-yellow-600 dark:text-yellow-400 rounded-full font-bold hover:bg-yellow-500 hover:text-white transition-all"
-          >
-            Lihat Semua Berita
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </div>
       </div>
     </section>
   );

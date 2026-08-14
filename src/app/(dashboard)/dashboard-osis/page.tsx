@@ -1,22 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import {
-  Home,
-  Calendar as CalendarIcon,
-  Newspaper,
-  FileText,
-  Heart,
-  Clock,
-} from "lucide-react";
-import {
-  Header,
   StatsCards,
   ActivitiesList,
   Calendar,
   AddActivityModal,
   EditActivityModal,
-  MenuItem,
   OsisActivity,
   MissionControl,
 } from "@/components/dashboard/osis";
@@ -27,21 +18,38 @@ import {
 } from "@/actions/osis/notifications";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import LoadingEffect from "@/components/shared/LoadingEffect";
-import { DashboardSidebar } from "@/components/dashboard/layout";
+import { DashboardSidebar, DashboardTopbar, WORKSPACE_CONFIG } from "@/components/dashboard/layout";
 import { getActivities, deleteActivity } from "@/actions/osis/activities";
 import {
   getMenstruationRecords,
   getAdzanSchedules,
   getCarpetSchedules,
 } from "@/actions/worship";
-import NewsManagement from "@/components/dashboard/osis/NewsManagement";
-import ReligiousDashboardClient from "@/components/dashboard/osis/worship/ReligiousDashboardClient";
 import toast from "react-hot-toast";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useToastConfirm } from "@/hooks/useToastConfirm";
 import ToastConfirmModal from "@/components/shared/ToastConfirmModal";
 import { motion } from "framer-motion";
-import LatnessScannerContent from "@/components/dashboard/osis/LatnessScannerContent";
+
+const FeatureLoading = ({ label }: { label: string }) => (
+  <div className="rounded-2xl border border-slate-200 bg-white py-20" role="status">
+    <LoadingEffect fullScreen={false} showMessage={false} size="xs" />
+    <p className="mt-3 text-center text-sm font-semibold text-slate-600">{label}</p>
+  </div>
+);
+
+const NewsManagement = dynamic(
+  () => import("@/components/dashboard/osis/NewsManagement"),
+  { loading: () => <FeatureLoading label="Memuat berita kegiatan..." /> },
+);
+const ReligiousDashboardClient = dynamic(
+  () => import("@/components/dashboard/osis/worship/ReligiousDashboardClient"),
+  { loading: () => <FeatureLoading label="Memuat manajemen ibadah..." /> },
+);
+const LatnessScannerContent = dynamic(
+  () => import("@/components/dashboard/osis/LatnessScannerContent"),
+  { loading: () => <FeatureLoading label="Menyiapkan scanner..." /> },
+);
 
 function OSISDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
@@ -98,14 +106,7 @@ function OSISDashboard() {
   }>({ menstruation: [], adzan: [], carpet: [] });
   const [loadingWorship, setLoadingWorship] = useState(false);
 
-  const menuItems: MenuItem[] = [
-    { id: "dashboard", label: "Dashboard", icon: Home },
-    { id: "activities", label: "Program Kerja (Proker)", icon: FileText },
-    { id: "news", label: "Berita Kegiatan", icon: Newspaper },
-    { id: "schedule", label: "Jadwal Kegiatan", icon: CalendarIcon },
-    { id: "keterlambatan", label: "Scan Pelanggaran", icon: Clock },
-    { id: "ibadah", label: "Ibadah", icon: Heart },
-  ];
+  const menuItems = WORKSPACE_CONFIG.osis.menu;
 
   useEffect(() => {
     fetchActivities();
@@ -249,33 +250,37 @@ function OSISDashboard() {
     "https://ui-avatars.com/api/?name=OSIS&background=1E3A8A&color=fff&size=128&bold=true";
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-dvh overflow-hidden bg-slate-100">
       <DashboardSidebar
+        workspace="osis"
         menuItems={menuItems}
         activeMenu={activeMenu}
         setActiveMenu={setActiveMenu}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
-        title="OSIS Center"
-        subtitle="STUDENT COUNCIL"
-        userRole="Pengurus OSIS"
+        title={WORKSPACE_CONFIG.osis.title}
+        subtitle={WORKSPACE_CONFIG.osis.eyebrow}
+        userRole={WORKSPACE_CONFIG.osis.role}
         userAvatar={osisAvatar}
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <Header
+      <div className="flex h-dvh min-w-0 flex-1 flex-col overflow-hidden">
+        <DashboardTopbar
+          workspace="osis"
+          activePage={activeMenu}
           notifications={notifications}
           showNotifications={showNotifications}
           setShowNotifications={setShowNotifications}
           unreadCount={unreadCount}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          activeTab={activeMenu}
+          isSidebarOpen={isSidebarOpen}
           onMarkAsRead={handleMarkNotificationAsRead}
         />
 
         {/* Content */}
-        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+        <main id="main-content" tabIndex={-1} className="dashboard-workspace min-w-0 flex-1 overflow-y-auto px-3 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
+          <div className="mx-auto w-full max-w-[1600px]">
           {activeMenu === "dashboard" && renderDashboardContent()}
 
           {activeMenu === "activities" && (
@@ -329,6 +334,7 @@ function OSISDashboard() {
                 />
               </motion.div>
             ))}
+          </div>
         </main>
       </div>
 
